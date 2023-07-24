@@ -300,7 +300,7 @@ const desktopSidebar = ref(true);
 const navigation = [
   { name: "Token Generator", href: "/tokengenerator", icon: generatorIcon, current: false },
   { name: "Token Transfer", href: "/tokentransfer", icon: transfer, current: false },
-  { name: "Claimable Balance", href: "#", icon: BalanceIIcon, current: false },
+  { name: "Claimable Balance", href: "/claimable-balance", icon: BalanceIIcon, current: false },
   { name: "Toml File Generator", href: "#", icon: docIcon, current: false },
 ];
 

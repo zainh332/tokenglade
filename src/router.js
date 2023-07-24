@@ -4,6 +4,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import Home from "./pages/Home.vue";
 import TokenGenerator from "./pages/TokenGenerator.vue";
 import TokenTransfer from "./pages/TokenTransfer.vue";
+import ClaimableBalance from "./pages/ClaimableBalance.vue";
 
 const routes = [
   {
@@ -26,7 +27,15 @@ const routes = [
     path: "/tokentransfer",
     component: TokenTransfer,
     meta: {
-      title: "Home",
+      title: "Token Transfer",
+      description: "Welcome to Sorostellar - Home Page",
+    },
+  },
+  {
+    path: "/claimable-balance",
+    component: ClaimableBalance,
+    meta: {
+      title: "Claimable Balance",
       description: "Welcome to Sorostellar - Home Page",
     },
   },
