@@ -155,25 +155,14 @@
             </li>
 
             <li>
-             <div class="flex items-center flex-col gap-2 mt-24 px-4 mb-4 justify-center md:justify-between">
-   
-
-
-   
-     <div
-      class=" flex items-center sm:flex-row divide-x flex-col flex-wrap gap-4 "
-    >
-      <router-link class="text-xs text-gray-300 text-center font-normal" to="#">Privacy Policy</router-link>
-      <router-link class="text-xs text-gray-300 text-center pl-2 font-normal" to="#">Cookies</router-link>
-      <router-link class="text-xs text-gray-300 text-center pl-2 font-normal" to="#"
-        >Contact us</router-link
-      >
-     
-    </div>
-
-     <p class="text-xs text-gray-300 font-normal">© Copyright by 2023 | NovaGlade</p>
-     
-    </div>
+              <div class="flex items-center flex-col gap-2 mt-24 px-4 mb-4 justify-center md:justify-between">
+                <div class=" flex items-center sm:flex-row divide-x flex-col flex-wrap gap-4 ">
+                  <router-link class="text-xs text-gray-300 text-center font-normal" to="#">Privacy Policy</router-link>
+                  <router-link class="text-xs text-gray-300 text-center pl-2 font-normal" to="#">Cookies</router-link>
+                  <router-link class="text-xs text-gray-300 text-center pl-2 font-normal" to="#">Contact us</router-link>
+                </div>
+                <p class="text-xs text-gray-300 font-normal">© Copyright by 2023 | NovaGlade</p>
+              </div>
             </li>
           </ul>
         </nav>
@@ -181,9 +170,7 @@
     </div>
 
     <div :class="desktopSidebar ? 'lg:pl-72' : 'lg:pl-0'">
-      <div
-        class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8"
-      >
+      <div class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
         <button
           type="button"
           class="-m-2.5 p-2.5 text-gray-700 lg:hidden"
@@ -197,11 +184,7 @@
         <div class="h-6 w-px bg-gray-900/10 lg:hidden" aria-hidden="true" />
 
         <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-          <div
-            class="relative flex flex-1 items-center"
-            action="#"
-            method="GET"
-          >
+          <div class="relative flex flex-1 items-center"  action="#" method="GET" >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="26"
@@ -298,10 +281,10 @@ import { useRoute } from "vue-router";
 
 const desktopSidebar = ref(true);
 const navigation = [
-  { name: "Token Generator", href: "/tokengenerator", icon: generatorIcon, current: false },
-  { name: "Token Transfer", href: "/tokentransfer", icon: transfer, current: false },
+  { name: "Token Generator", href: "/token-generator", icon: generatorIcon, current: false },
+  { name: "Token Transfer", href: "/token-transfer", icon: transfer, current: false },
   { name: "Claimable Balance", href: "/claimable-balance", icon: BalanceIIcon, current: false },
-  { name: "Toml File Generator", href: "#", icon: docIcon, current: false },
+  { name: "Toml File Generator", href: "/toml-file-generator", icon: docIcon, current: false },
 ];
 
 const route = useRoute();

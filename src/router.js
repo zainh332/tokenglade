@@ -5,6 +5,7 @@ import Home from "./pages/Home.vue";
 import TokenGenerator from "./pages/TokenGenerator.vue";
 import TokenTransfer from "./pages/TokenTransfer.vue";
 import ClaimableBalance from "./pages/ClaimableBalance.vue";
+import TomlFileGenerator from "./pages/TomlFileGenerator.vue";
 
 const routes = [
   {
@@ -16,7 +17,7 @@ const routes = [
     },
   },
   {
-    path: "/tokengenerator",
+    path: "/token-generator",
     component: TokenGenerator,
     meta: {
       title: "Token Generator",
@@ -24,7 +25,7 @@ const routes = [
     },
   },
   {
-    path: "/tokentransfer",
+    path: "/token-transfer",
     component: TokenTransfer,
     meta: {
       title: "Token Transfer",
@@ -38,6 +39,16 @@ const routes = [
       title: "Claimable Balance",
       description: "Welcome to Sorostellar - Home Page",
     },
+    // beforeEnter: conditionalNext('isAdmin'),
+  },
+  {
+    path: "/toml-file-generator",
+    component: TomlFileGenerator,
+    meta: {
+      title: "Toml File Generator",
+      description: "Welcome to Sorostellar - Home Page",
+    },
+    // beforeEnter: conditionalNext('isAdmin'),
   },
   // Add more routes as needed
 ];
@@ -45,6 +56,12 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+// Set the page title dynamically when the route changes
+router.beforeEach((to, from, next) => {
+  document.title = to.meta.title + " | TokenGlade";
+  next();
 });
 
 export default router;
