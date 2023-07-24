@@ -64,7 +64,7 @@
                   <ul role="list" class="flex flex-1 flex-col gap-y-7">
                     <li>
                       <ul role="list" class="-mx-2 space-y-1">
-                        <li v-for="item in navigation" :key="item.name">
+                        <li v-for="item in stellar_navigation" :key="item.name">
                           <a
                             :href="item.href"
                             :class="[
@@ -130,10 +130,34 @@
           </router-link>
         </div>
         <nav class="flex mt-8 flex-1 flex-col">
+          <h1 class="text-gray-400">Stellar</h1>
           <ul role="list" class="flex justify-between flex-1 flex-col gap-y-7">
             <li>
               <ul role="list" class="-mx-2 space-y-3">
-                <li v-for="item in navigation" :key="item.name">
+                <li v-for="item in stellar_navigation" :key="item.name">
+                  <a
+                    :href="item.href"
+                    :class="[
+                      item.current
+                        ? 'bg-gray-800 text-white'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-800',
+                      'group flex gap-x-3 rounded-md p-2 text-[16px] leading-6 font-normal',
+                    ]"
+                  >
+                    <component
+                      :is="item.icon"
+                      class="h-6 w-6 shrink-0"
+                      aria-hidden="true"
+                    />
+                    {{ item.name }}
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <h1 class="text-gray-400">Soroban</h1>
+              <ul role="list" class="-mx-2 space-y-3">
+                <li v-for="item in soroban_navigation" :key="item.name">
                   <a
                     :href="item.href"
                     :class="[
@@ -205,11 +229,11 @@
             <p class="sm:pl-6" @click="sidebarOpen = true">Dashboard</p>
           </div>
           <div class="sm:flex hidden items-center gap-x-4 lg:gap-x-6">
-            <router-link
+            <!-- <router-link
               to="#"
               class="btn-padding text-xs sm:text-t14 rounded-full border border-black/50 text-black/50 bg-white"
               >GA424GAVZIOMZ...
-            </router-link>
+            </router-link> -->
             <router-link
               to="#"
               class="btn-padding text-xs sm:text-t14 rounded-full text-white bg-gradient"
@@ -280,24 +304,30 @@ import Tabs from "@/components/Tabs.vue";
 import { useRoute } from "vue-router";
 
 const desktopSidebar = ref(true);
-const navigation = [
+
+const stellar_navigation = [
   { name: "Token Generator", href: "/token-generator", icon: generatorIcon, current: false },
   { name: "Token Transfer", href: "/token-transfer", icon: transfer, current: false },
   { name: "Claimable Balance", href: "/claimable-balance", icon: BalanceIIcon, current: false },
   { name: "Toml File Generator", href: "/toml-file-generator", icon: docIcon, current: false },
 ];
 
+const soroban_navigation = [
+  { name: "Smart Contract", href: "/smart-contract", icon: generatorIcon, current: false },
+  { name: "Tokenization of Assets", href: "", icon: transfer, current: false },
+];
+
 const route = useRoute();
-navigation.forEach(item => {
+stellar_navigation.forEach(item => {
   item.current = item.href === route.path;
 });
-
 
 const teams = [
   { id: 1, name: "Heroicons", href: "#", initial: "H", current: false },
   { id: 2, name: "Tailwind Labs", href: "#", initial: "T", current: false },
   { id: 3, name: "Workcation", href: "#", initial: "W", current: false },
 ];
+
 const userNavigation = [
   { name: "Your profile", href: "#" },
   { name: "Sign out", href: "#" },

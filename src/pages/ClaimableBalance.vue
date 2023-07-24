@@ -6,7 +6,7 @@
         <div class="space-y-2 py-8">
           <h1 class="text-t34 text-center font-semibold">Claimable Balance</h1>
           <p class="text-t16 text-center font-normal">
-            It is a long established fact that a reader will be distracted
+            Claimable Balance allows users to manage and distribute tokens securely, providing flexible options for handling token ownership and transfers
           </p>
         </div>
   

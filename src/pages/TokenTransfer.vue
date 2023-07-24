@@ -4,9 +4,9 @@
       class="max-w-2xl px-4 sm:px-16 mx-auto flex items-center flex-col space-y-4"
     >
       <div class="space-y-2 py-8">
-        <h1 class="text-t34 text-center font-semibold">Bulk Token Transfer</h1>
+        <h1 class="text-t34 text-center font-semibold">Token Transfer</h1>
         <p class="text-t16 text-center font-normal">
-          It is a long established fact that a reader will be distracted
+          Effortlessly transfer tokens between multiple wallets
         </p>
       </div>
       <!-- Tabs here -->

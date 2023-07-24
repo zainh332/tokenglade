@@ -6,6 +6,7 @@ import TokenGenerator from "./pages/TokenGenerator.vue";
 import TokenTransfer from "./pages/TokenTransfer.vue";
 import ClaimableBalance from "./pages/ClaimableBalance.vue";
 import TomlFileGenerator from "./pages/TomlFileGenerator.vue";
+import SmartContract from "./pages/SmartContract.vue";
 
 const routes = [
   {
@@ -46,6 +47,24 @@ const routes = [
     component: TomlFileGenerator,
     meta: {
       title: "Toml File Generator",
+      description: "Welcome to Sorostellar - Home Page",
+    },
+    // beforeEnter: conditionalNext('isAdmin'),
+  },
+  {
+    path: "/smart-contract",
+    component: SmartContract,
+    meta: {
+      title: "Smart Contract",
+      description: "Welcome to Sorostellar - Home Page",
+    },
+    // beforeEnter: conditionalNext('isAdmin'),
+  },
+  {
+    path: "/tokenization-assets",
+    component: TomlFileGenerator,
+    meta: {
+      title: "Tokenization of Assets",
       description: "Welcome to Sorostellar - Home Page",
     },
     // beforeEnter: conditionalNext('isAdmin'),
