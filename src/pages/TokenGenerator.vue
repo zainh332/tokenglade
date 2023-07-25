@@ -27,12 +27,16 @@
               
               <div>
                 <div class="flex items-center justify-between">
-                  <label for="total_supply" class="block text-t16 font-normal leading-6 text-gray-900">Total
-                    Supply</label>
+                  <label for="total_supply" class="block text-t16 font-normal leading-6 text-gray-900">Total Supply</label>
                 </div>
                 <div class="mt-2">
-                  <input id="total_supply" name="total_supply" type="text" autocomplete="total_supply" required=""
-                    class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                  <input 
+                  id="total_supply" 
+                  name="total_supply" 
+                  type="text" 
+                  autocomplete="total_supply" 
+                  required=""
+                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
                 </div>
               </div>
 
@@ -42,9 +46,13 @@
                     class="block text-t16 font-normal leading-6 text-gray-900">Issuer Wallet Address Key</label>
                 </div>
                 <div class="mt-2">
-                  <input id="issuer_wallet_private_key" name="issuer_wallet_private_key" type="password"
-                    autocomplete="issuer_wallet_private_key" required=""
-                    class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                  <input 
+                  id="issuer_wallet_private_key" 
+                  name="issuer_wallet_private_key" 
+                  type="password"
+                  autocomplete="issuer_wallet_private_key" 
+                  required=""
+                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
                 </div>
               </div>
               
@@ -54,9 +62,13 @@
                     class="block text-t16 font-normal leading-6 text-gray-900">Distributor Wallet Address Key</label>
                 </div>
                 <div class="mt-2">
-                  <input id="distributor_wallet_private_key" name="distributor_wallet_private_key" type="password"
-                    autocomplete="distributor_wallet_private_key" required=""
-                    class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                  <input 
+                  id="distributor_wallet_private_key" 
+                  name="distributor_wallet_private_key" 
+                  type="password"
+                  autocomplete="distributor_wallet_private_key" 
+                  required=""
+                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
                 </div>
               </div>
 
@@ -88,15 +100,27 @@
 
 <script setup>
 import Layout from "@/components/Layout.vue";
-import { ref } from "vue";
+import { ref, defineProps, withDefaults } from "vue";
 import Modal from '@/components/Modal.vue';
 import Toggle from '@/components/Toggle.vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import {ErrorMessage, Field, Form} from "vee-validate";
+import { useForm, useField } from "vee-validate";
 import * as Yup from "yup";
 
 const open = ref(false);
+
+const schema = Yup.object({
+    ticker: Yup.string().required("Ticker is required").max(4, "Ticker must not exceed 4 characters"),
+    total_supply: Yup.number().required("Total supply is required"),
+    issuer_wallet_private_key: Yup.string().required("Issuer wallet private key is required"),
+    distributor_wallet_private_key: Yup.string().required("Distributor wallet private key is required"),
+  });
+
+  const { handleSubmit, setFieldValue, errors } = useForm({
+    validationSchema: schema,
+    validateOnValueUpdate: true, // Trigger validation on field value update
+  });
 
 
 const setOpen = (e) => {
