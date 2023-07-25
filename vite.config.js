@@ -12,7 +12,8 @@ export default defineConfig({
     vue()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src')
+      '@': path.resolve(__dirname, 'src'),
+      'vee-validate': 'vee-validate/dist/vee-validate.esm.js',
     }
   }
 })

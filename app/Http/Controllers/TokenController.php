@@ -63,13 +63,12 @@ class TokenController extends Controller
 
     public function generate_token(Request $request)
     {
+        dd($request->all());
         try {
-            $name = $request->input('name');
             $ticker = $request->input('ticker');
             $total_supply = $request->input('total_supply');
-            $issuer_wallet_address_private_key = $request->input('issuer_wallet_address_private_key');
-            $distributor_wallet_address_private_key = $request->input('distributor_wallet_address_private_key');
-
+            $issuer_wallet_address_private_key = $request->input('issuer_wallet_private_key');
+            $distributor_wallet_address_private_key = $request->input('distributor_wallet_private_key');
 
             // issuer account
             $issuerKeyPair = KeyPair::fromSeed($issuer_wallet_address_private_key);
@@ -91,7 +90,7 @@ class TokenController extends Controller
             $transactionBuilder
                 ->setMaxOperationFee($this->maxFee)
                 ->addOperation($changeTrustOperation);
-            // ->addMemo(new Memo(1, 'Memo'));
+            // ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'by TokenGlade'));
 
             $transaction = $transactionBuilder->build();
             $transaction->sign($distributorKeyPair, Network::testnet());
@@ -112,14 +111,13 @@ class TokenController extends Controller
             $response = $this->sdk->submitTransaction($transaction);
             if ($response) {
                 // Sleep for a few seconds to allow the transaction to be confirmed (not recommended in production)
-                // sleep(5);
+                sleep(5);
 
                 // Load the distributor account data from the Stellar network again to get updated balances
                 $distributorAccount = $this->sdk->requestAccount($distributorAccountId);
                 $paymentReceived = false;
                 // Check that the payment was successfully received by the distributor
                 foreach ($distributorAccount->getBalances() as $balance) {
-                    // dd($balance->getAssetCode());
                     $balanceFloat = floatval($balance->getBalance());
                     $balanceInteger = number_format($balanceFloat, 0, '', '');
                     if ($balance->getAssetType() != 'native' && $balance->getAssetCode() == $ticker && $balanceInteger == $total_supply) {
@@ -128,9 +126,9 @@ class TokenController extends Controller
                     }
                 }
                 if ($paymentReceived) {
-                    return response()->json(['status' => 'success', 'msg' => 'Payment received by the distributor']);
+                    return response()->json(['status' => 'success', 'msg' => 'Token Created Successfully']);
                 } else {
-                    return response()->json(['status' => 'error', 'msg' => 'Something Went Wrong 1']);
+                    return response()->json(['status' => 'error', 'msg' => 'Something Went Wrong']);
                 }
             }
         } catch (\Throwable $th) {
@@ -141,107 +139,111 @@ class TokenController extends Controller
     public function claimable_balance(Request $request)
     {
         try {
-        $user_wallet_address_private_key = $request->wallet_address_private_key;
-        $assetCode = $request->input('token');
-        $amount = $request->input('amount');
-        $target_addresses = $request->input('target_wallet_address');
-        $memo = $request->input('memo');
+            $user_wallet_address_private_key = $request->wallet_address_private_key;
+            $assetCode = $request->input('token');
+            $amount = $request->input('amount');
+            $target_addresses = $request->input('target_wallet_address');
+            $memo = $request->input('memo');
 
 
-        $receiver_claim_time = $request->input('receiver_claim_time');
-        if (!empty($receiver_claim_time)) {
-            $dateTime = new DateTime($receiver_claim_time);
-            $timestamp = $dateTime->getTimestamp();
-            
-            //when the funds can be claimed by receivers
-            $ReceiverCanClaim = Claimant::predicateBeforeRelativeTime($timestamp);  
-        } else {
-            // Set $ReceiverCanClaim to null, indicating that the claimants can claim the funds immediately
-            $ReceiverCanClaim = null;
-        }
+            $receiver_claim_time = $request->input('receiver_claim_time');
+            if (!empty($receiver_claim_time)) {
+                $dateTime = new DateTime($receiver_claim_time);
+                $timestamp = $dateTime->getTimestamp();
 
-        $soon = time() + 60;
-        //The funds can only be reclaimed within a specific timeframe
-        $UserCanReclaim = Claimant::predicateNot(
-            Claimant::predicateBeforeAbsoluteTime(strval($soon))
-        );
-
-        // Split the $target_addresses string into an array of individual addresses
-        $target_addresses_array = explode("\n", $target_addresses);
-
-        $UserKeypair = KeyPair::fromSeed($user_wallet_address_private_key);
-        // if (!KeyPair::fromSeed($user_wallet_address_private_key)) {
-        //     throw new Exception("The distributor wallet address private key is not a valid seed.");
-        // }
-        $user_public_key = $UserKeypair->getAccountId();
-        $userAccount = $this->sdk->requestAccount($user_public_key);
-
-        $claimantsByReceiver = [];
-
-        // Add claimants for each receiver to the $claimants array
-        foreach ($target_addresses_array as $receiver) {
-            $claimants = [];
-
-            if ($ReceiverCanClaim !== null) {
-                $claimants[] = new Claimant($receiver, $ReceiverCanClaim);
+                //when the funds can be claimed by receivers
+                $ReceiverCanClaim = Claimant::predicateBeforeRelativeTime($timestamp);
+            } else {
+                // Set $ReceiverCanClaim to null, indicating that the claimants can claim the funds immediately
+                $ReceiverCanClaim = null;
             }
-            $claimants[] = new Claimant($user_public_key, $UserCanReclaim);
-            $claimantsByReceiver[$receiver] = $claimants;
-        }
 
+            $soon = time() + 60;
+            //The funds can only be reclaimed within a specific timeframe
+            $UserCanReclaim = Claimant::predicateNot(
+                Claimant::predicateBeforeAbsoluteTime(strval($soon))
+            );
 
-        $issuer_id = null; // Initialize the issuer_id variable
-        $hasEnoughBalance = false; // Initialize a flag variable
+            // Split the $target_addresses string into an array of individual addresses
+            $target_addresses_array = explode("\n", $target_addresses);
 
-        foreach ($userAccount->getBalances() as $balance) {
-            $balanceFloat = floatval($balance->getBalance());
-            $balanceInteger = number_format($balanceFloat, 0, '', '');
+            $UserKeypair = KeyPair::fromSeed($user_wallet_address_private_key);
+            // if (!KeyPair::fromSeed($user_wallet_address_private_key)) {
+            //     throw new Exception("The distributor wallet address private key is not a valid seed.");
+            // }
+            $user_public_key = $UserKeypair->getAccountId();
+            $userAccount = $this->sdk->requestAccount($user_public_key);
 
-            if ($balance->getAssetType() != 'native' && $balance->getAssetCode() == $assetCode && $balanceInteger >= $amount) {
-                $issuer_id = $balance->getAssetIssuer();
-                $hasEnoughBalance = true; // Set the flag to true
-                break; // Exit the loop since we found a matching balance
-            }
-        }
+            $claimantsByReceiver = [];
 
-        // Check the flag variable to determine if enough balance was found
-        if ($hasEnoughBalance) {
-            // Create the asset
-            $asset = new AssetTypeCreditAlphanum4($assetCode, $issuer_id);
+            // Add claimants for each receiver to the $claimants array
+            foreach ($target_addresses_array as $receiver) {
+                $claimants = [];
 
-            // Build the transaction for each receiver and sign it separately
-            $transactionIds = [];
-            foreach ($claimantsByReceiver as $receiver => $claimants) {
-                // Create the claimable balance operation
-                $claimableBalanceOperation = new CreateClaimableBalanceOperation($claimants, $asset, $amount);
-                $cleanedReceiver = trim($receiver);
-
-
-                // Build the transaction
-                $transactionBuilder = new TransactionBuilder($userAccount);
-                $transactionBuilder
-                    ->setMaxOperationFee($this->maxFee)
-                    ->addOperation($claimableBalanceOperation);
-
-                if (!empty($memo)) {
-                    $transactionBuilder->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, $memo, 'by SoroStellar'));
+                if ($ReceiverCanClaim !== null) {
+                    $claimants[] = new Claimant($receiver, $ReceiverCanClaim);
                 }
-                else{
-                    $transactionBuilder->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'by SoroStellar'));
-                }
-
-                $transaction = $transactionBuilder->build();
-                $transaction->sign($UserKeypair, Network::testnet());
-                $result = $this->sdk->submitTransaction($transaction);
-                $transactionIds[$cleanedReceiver] = $result->getId();
+                $claimants[] = new Claimant($user_public_key, $UserCanReclaim);
+                $claimantsByReceiver[$receiver] = $claimants;
             }
 
-            return $transactionIds;
-        } else {
-            return response()->json(['status' => 'error', 'msg' => 'Insufficient balance for the specified asset and amount']);
-        }
+
+            $issuer_id = null; // Initialize the issuer_id variable
+            $hasEnoughBalance = false; // Initialize a flag variable
+
+            foreach ($userAccount->getBalances() as $balance) {
+                $balanceFloat = floatval($balance->getBalance());
+                $balanceInteger = number_format($balanceFloat, 0, '', '');
+
+                if ($balance->getAssetType() != 'native' && $balance->getAssetCode() == $assetCode && $balanceInteger >= $amount) {
+                    $issuer_id = $balance->getAssetIssuer();
+                    $hasEnoughBalance = true; // Set the flag to true
+                    break; // Exit the loop since we found a matching balance
+                }
+            }
+
+            // Check the flag variable to determine if enough balance was found
+            if ($hasEnoughBalance) {
+                // Create the asset
+                $asset = new AssetTypeCreditAlphanum4($assetCode, $issuer_id);
+
+                // Build the transaction for each receiver and sign it separately
+                $transactionIds = [];
+                foreach ($claimantsByReceiver as $receiver => $claimants) {
+                    // Create the claimable balance operation
+                    $claimableBalanceOperation = new CreateClaimableBalanceOperation($claimants, $asset, $amount);
+                    $cleanedReceiver = trim($receiver);
+
+
+                    // Build the transaction
+                    $transactionBuilder = new TransactionBuilder($userAccount);
+                    $transactionBuilder
+                        ->setMaxOperationFee($this->maxFee)
+                        ->addOperation($claimableBalanceOperation);
+
+                    if (!empty($memo)) {
+                        $transactionBuilder->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, $memo, 'by TokenGlade'));
+                    } else {
+                        $transactionBuilder->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'by TokenGlade'));
+                    }
+
+                    $transaction = $transactionBuilder->build();
+                    $transaction->sign($UserKeypair, Network::testnet());
+                    $result = $this->sdk->submitTransaction($transaction);
+                    $transactionIds[$cleanedReceiver] = $result->getId();
+                }
+
+                return $transactionIds;
+            } else {
+                return response()->json(['status' => 'error', 'msg' => 'Insufficient balance for the specified asset and amount']);
+            }
         } catch (\Throwable $th) {
             return "Something Went Wrong";
         }
+    }
+
+    public function token_transfer(Request $request)
+    {
+        return null;
     }
 }

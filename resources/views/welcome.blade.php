@@ -11,6 +11,11 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
         @vite(['../resources/js/app.js', '../resources/css/app.css'])
+        <script>
+            window.Laravel = {!! json_encode([
+                'csrfToken' => csrf_token(),
+            ]) !!};
+        </script>
     </head>
     <body class="antialiased">
        <div id="app"></div>

@@ -65,23 +65,12 @@ import logo from '@/assets/logo.png';
 
 const Links = [
   {
-    name:'Token Generator',
+    name:'Generator',
     to:'/token-generator'
   },
   {
-    name:'Token Transfer',
+    name:'About Us',
     to:'/token-transfer'
   },
-  {
-    name:'Claimable Balance',
-    to:'/claimable-balance'
-  },
-  {
-    name:'Toml File Generator',
-    to:'/toml-file-generator'
-  }, 
 ]
-
-
-
 </script>
