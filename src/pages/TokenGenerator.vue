@@ -11,18 +11,24 @@
       <div class="w-full">
         <div class="flex min-h-full flex-1 flex-col justify-center py-8">
           <div class="w-full">
-            <form class="space-y-6" action="#" method="POST">
-              <div class="flex items-center justify-between">
-                <label for="ticker" class="block text-t16 font-normal leading-6 text-gray-900">Symbol</label>
-              </div>
-              <div class="mt-2">
-                <input 
-                id="ticker" 
-                name="ticker" 
-                type="text" 
-                autocomplete="ticker" 
-                required=""
-                class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+            <form class="space-y-6" 
+              novalidate="novalidate"
+              @submit="submit"
+              :validation-schema="schema"
+              >
+              <div>
+                <div class="flex items-center justify-between">
+                  <label for="ticker" class="block text-t16 font-normal leading-6 text-gray-900">Symbol</label>
+                </div>
+                <div class="mt-2">
+                  <Field 
+                  id="ticker" 
+                  name="ticker" 
+                  type="text" 
+                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" 
+                  >
+                </Field>
+                </div>
               </div>
               
               <div>
@@ -30,13 +36,13 @@
                   <label for="total_supply" class="block text-t16 font-normal leading-6 text-gray-900">Total Supply</label>
                 </div>
                 <div class="mt-2">
-                  <input 
+                  <Field 
                   id="total_supply" 
                   name="total_supply" 
                   type="text" 
-                  autocomplete="total_supply" 
-                  required=""
-                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" 
+                  >
+                </Field>
                 </div>
               </div>
 
@@ -46,13 +52,13 @@
                     class="block text-t16 font-normal leading-6 text-gray-900">Issuer Wallet Address Key</label>
                 </div>
                 <div class="mt-2">
-                  <input 
+                  <Field 
                   id="issuer_wallet_private_key" 
                   name="issuer_wallet_private_key" 
                   type="password"
-                  autocomplete="issuer_wallet_private_key" 
-                  required=""
-                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" 
+                  >
+                </Field>
                 </div>
               </div>
               
@@ -62,13 +68,13 @@
                     class="block text-t16 font-normal leading-6 text-gray-900">Distributor Wallet Address Key</label>
                 </div>
                 <div class="mt-2">
-                  <input 
+                  <Field 
                   id="distributor_wallet_private_key" 
                   name="distributor_wallet_private_key" 
                   type="password"
-                  autocomplete="distributor_wallet_private_key" 
-                  required=""
-                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" 
+                  >
+                </Field>
                 </div>
               </div>
 
@@ -105,8 +111,10 @@ import Modal from '@/components/Modal.vue';
 import Toggle from '@/components/Toggle.vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { useForm, useField } from "vee-validate";
+import { useForm, useField, Field } from "vee-validate";
 import * as Yup from "yup";
+
+
 
 const open = ref(false);
 
@@ -117,10 +125,11 @@ const schema = Yup.object({
     distributor_wallet_private_key: Yup.string().required("Distributor wallet private key is required"),
   });
 
-  const { handleSubmit, setFieldValue, errors } = useForm({
-    validationSchema: schema,
-    validateOnValueUpdate: true, // Trigger validation on field value update
-  });
+  // const { handleSubmit, setFieldValue, errors } = useForm({
+  //   validationSchema: schema,
+  //   validateOnValueUpdate: true, // Trigger validation on field value update
+  //   validateOnBlur: true, 
+  // });
 
 
 const setOpen = (e) => {
