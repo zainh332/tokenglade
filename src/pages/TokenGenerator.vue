@@ -11,7 +11,7 @@
       <div class="w-full">
         <div class="flex min-h-full flex-1 flex-col justify-center py-8">
           <div class="w-full">
-            <form class="space-y-6" @submit="handleSubmit">
+            <form class="space-y-6">
               <div>
                 <div class="flex items-center justify-between">
                   <label for="ticker" class="block text-t16 font-normal leading-6 text-gray-900">
@@ -20,10 +20,16 @@
                   </label>
                 </div>
                 <div class="mt-2">
-                  <Field v-model="ticker" id="ticker" name="ticker" type="text" @input="clearTickerError"
-                    @blur="clearTickerError"
-                    class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
-                  <span class="text-red-500 text-sm font-normal">{{ tickerErrorMessage }}</span>
+                  <input
+                   v-model="formData.ticker" 
+                   id="ticker" 
+                   name="ticker" 
+                   type="text" 
+                   class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  />
+                  <span v-for="error in v$.ticker.$errors" :key="error.$uid" class="text-red-500 text-sm font-normal">
+                    {{ error.$message }}
+                  </span>
                 </div>
               </div>
 
@@ -34,10 +40,16 @@
                   </label>
                 </div>
                 <div class="mt-2">
-                  <Field v-model="total_supply" id="total_supply" name="total_supply" type="text"
-                    @input="clearTotalSupplyError" @blur="clearTotalSupplyError"
-                    class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
-                  <span class="text-red-500 text-sm font-normal">{{ totalSupplyErrorMessage }}</span>
+                  <input 
+                  v-model="formData.total_supply"
+                  id="total_supply" 
+                  name="total_supply" 
+                  type="text"
+                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  />
+                  <span v-for="error in v$.total_supply.$errors" :key="error.$uid" class="text-red-500 text-sm font-normal">
+                    {{ error.$message }}
+                  </span>
                 </div>
               </div>
 
@@ -47,7 +59,7 @@
               </div>
 
               <div>
-                <button @click="handleSubmit" type="submit"
+                <button @click="submitForm" type="submit"
                   class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white">
                   Generate Token
                 </button>
@@ -63,93 +75,108 @@
 
 <script setup>
 import Layout from "@/components/Layout.vue";
-import { ref, defineProps, withDefaults } from "vue";
+import { ref, defineProps, withDefaults, reactive } from "vue";
 import Modal from '@/components/Modal.vue';
 import Toggle from '@/components/Toggle.vue';
 import axios from 'axios';
+
+//importing class of sweetalert2 library
 import Swal from 'sweetalert2';
+
+//importing fucntion 
 import { useField } from 'vee-validate';
 import { useForm } from 'vee-validate';
 import * as Yup from "yup";
-
+import useVuelidate from '@vuelidate/core';
+import { required } from '@vuelidate/validators';
+import { Input } from "postcss";
 
 const open = ref(false);
 
-const tickerErrorMessage = ref('');
-const totalSupplyErrorMessage = ref(''); // New: Error message for total_supply field
-
-
-const schema = Yup.object().shape({
-  ticker: Yup.string().max(4, "Ticker must not exceed 4 characters").required("Ticker is required"),
-  total_supply: Yup.string().required("Total Supply is required"), // New: Validation for total_supply field
+const formData = reactive({
+  ticker: "",
+  total_supply: "",
 });
 
-const { meta, value: ticker } = useField("ticker", schema);
-const { meta: totalSupplyMeta, value: total_supply } = useField("total_supply", schema);
-
-// Add the clearTickerError method to clear the error message
-const clearTickerError = () => {
-  tickerErrorMessage.value = '';
+const rules = {
+  ticker: { required },
+  total_supply: { required },
 };
 
-// New: Add the clearTotalSupplyError method to clear the error message for total_supply
-const clearTotalSupplyError = () => {
-  totalSupplyErrorMessage.value = '';
-};
+const v$ = useVuelidate (rules, formData); 
 
-const form = useForm();
-
-const handleSubmit = async (e) => {
-
-  form.validate();
-
-  if (form.errors.value['ticker']) {
-    tickerErrorMessage.value = form.errors.value['ticker'][0];
-    return;
-  }
-
-  // New: Check for errors in the total_supply field
-  if (form.errors.value['total_supply']) {
-    totalSupplyErrorMessage.value = form.errors.value['total_supply'][0];
-    return;
-  }
-  
+const submitForm = async (e) =>{
   e.preventDefault();
-  try {
-    // Trigger the form validation
-    await schema.validate({ ticker: ticker.value, total_supply: total_supply.value });
+  const result = await v$.value.$validate();
+  if(result){
+    // try {
 
-    // Make the API call to generate the token
-    const response = await axios.post('api/generate_token', {
-      ticker: ticker.value,
-      total_supply: total_supply.value,
-    }, {
-      headers: {
-        'X-CSRF-TOKEN': window.Laravel.csrfToken,
+      // Make the API call to generate the token
+      const response = await axios.post('api/generate_token', {
+        ticker: ticker.value,
+        total_supply: total_supply.value,
+      }, {
+        headers: {
+          'X-CSRF-TOKEN': window.Laravel.csrfToken,
+        }
+      });
+
+      if (response.data.status === 'success') {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: response.data.msg,
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: response.data.msg,
+        });
       }
-    });
+    // } catch (error) {
+    //   // Handle the validation error and set the error message
+    //   // if (error.path === 'ticker') {
+    //   //   tickerErrorMessage.value = error.errors[0];
+    //   // } else if (error.path === 'total_supply') {
+    //   //   totalSupplyErrorMessage.value = error.errors[0];
+    //   // }
+    // }
+  }
 
-    if (response.data.status === 'success') {
-      Swal.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: response.data.msg,
-      });
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error!',
-        text: response.data.msg,
-      });
-    }
-  } catch (error) {
-    // Handle the validation error and set the error message
-    if (error.path === 'ticker') {
-      tickerErrorMessage.value = error.errors[0];
-    } else if (error.path === 'total_supply') {
-      totalSupplyErrorMessage.value = error.errors[0];
-    }
+  else{
+    // console.log('bithc');
   }
 };
+
+// const tickerErrorMessage = ref('');
+// const totalSupplyErrorMessage = ref(''); // New: Error message for total_supply field
+
+
+// const schema = Yup.object().shape({
+//   ticker: Yup.string().max(4, "Ticker must not exceed 4 characters").required("Ticker is required"),
+//   total_supply: Yup.string().required("Total Supply is required"), // New: Validation for total_supply field
+// });
+
+// const { meta, value: ticker } = useField("ticker", schema);
+// const { meta: totalSupplyMeta, value: total_supply } = useField("total_supply", schema);
+
+// // Add the clearTickerError method to clear the error message
+// const clearTickerError = () => {
+//   tickerErrorMessage.value = '';
+// };
+
+// // New: Add the clearTotalSupplyError method to clear the error message for total_supply
+// const clearTotalSupplyError = () => {
+//   totalSupplyErrorMessage.value = '';
+// };
+
+// const form = useForm();
+
+// const handleSubmit = async (e) => {
+
+  
+  
+// };
 </script>
 <style lang="scss" scoped></style>
