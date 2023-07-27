@@ -74,22 +74,22 @@
 </template>
 
 <script setup>
+// import { useField } from 'vee-validate';
+// import { useForm } from 'vee-validate';
+// import * as Yup from "yup";
 import Layout from "@/components/Layout.vue";
-import { ref, defineProps, withDefaults, reactive } from "vue";
 import Modal from '@/components/Modal.vue';
 import Toggle from '@/components/Toggle.vue';
+import { ref, defineProps, computed, reactive } from "vue";
 import axios from 'axios';
+import useVuelidate from '@vuelidate/core';
+import { required, maxLength, helpers } from '@vuelidate/validators';
+//importing function 
+import { Input} from "postcss";
 
 //importing class of sweetalert2 library
 import Swal from 'sweetalert2';
 
-//importing fucntion 
-import { useField } from 'vee-validate';
-import { useForm } from 'vee-validate';
-import * as Yup from "yup";
-import useVuelidate from '@vuelidate/core';
-import { required } from '@vuelidate/validators';
-import { Input } from "postcss";
 
 const open = ref(false);
 
@@ -98,10 +98,19 @@ const formData = reactive({
   total_supply: "",
 });
 
-const rules = {
-  ticker: { required },
-  total_supply: { required },
-};
+
+const rules = computed(() =>{
+  return {
+    ticker: { 
+        required, 
+        maxLength:maxLength(4), 
+    },
+    total_supply: { 
+        required,
+    },
+  };
+});
+
 
 const v$ = useVuelidate (rules, formData); 
 
@@ -109,7 +118,7 @@ const submitForm = async (e) =>{
   e.preventDefault();
   const result = await v$.value.$validate();
   if(result){
-    // try {
+    try {
 
       // Make the API call to generate the token
       const response = await axios.post('api/generate_token', {
@@ -134,49 +143,11 @@ const submitForm = async (e) =>{
           text: response.data.msg,
         });
       }
-    // } catch (error) {
-    //   // Handle the validation error and set the error message
-    //   // if (error.path === 'ticker') {
-    //   //   tickerErrorMessage.value = error.errors[0];
-    //   // } else if (error.path === 'total_supply') {
-    //   //   totalSupplyErrorMessage.value = error.errors[0];
-    //   // }
-    // }
-  }
+    } catch (error) {
 
-  else{
-    // console.log('bithc');
+    }
   }
 };
 
-// const tickerErrorMessage = ref('');
-// const totalSupplyErrorMessage = ref(''); // New: Error message for total_supply field
-
-
-// const schema = Yup.object().shape({
-//   ticker: Yup.string().max(4, "Ticker must not exceed 4 characters").required("Ticker is required"),
-//   total_supply: Yup.string().required("Total Supply is required"), // New: Validation for total_supply field
-// });
-
-// const { meta, value: ticker } = useField("ticker", schema);
-// const { meta: totalSupplyMeta, value: total_supply } = useField("total_supply", schema);
-
-// // Add the clearTickerError method to clear the error message
-// const clearTickerError = () => {
-//   tickerErrorMessage.value = '';
-// };
-
-// // New: Add the clearTotalSupplyError method to clear the error message for total_supply
-// const clearTotalSupplyError = () => {
-//   totalSupplyErrorMessage.value = '';
-// };
-
-// const form = useForm();
-
-// const handleSubmit = async (e) => {
-
-  
-  
-// };
 </script>
 <style lang="scss" scoped></style>
