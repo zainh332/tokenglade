@@ -38,7 +38,7 @@
                 <div class="sm:mx-auto sm:w-full sm:max-w-md">
                   <img
                     class="mx-auto h-10 w-auto"
-                    :src="stellarMinterLogo"
+                    :src="tokenGladeLogo"
                     alt="Your Company"
                   />
                   <h2
@@ -192,7 +192,7 @@
 
 <script setup>
 import { ref , defineProps, defineEmits , watch} from "vue";
-import stellarMinterLogo from '@/assets/stellar-minter-logo.png'
+import tokenGladeLogo from '@/assets/stellar-minter-logo.png'
 import {
   Dialog,
   DialogPanel,
@@ -207,7 +207,7 @@ const props = defineProps({
   open: Boolean
 });
 
-console.log(props);
+// console.log(props);
 const emits = defineEmits();
 
 // Create a local ref for the 'open' prop to be used in the component
