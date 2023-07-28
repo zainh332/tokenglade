@@ -1,135 +1,189 @@
 <template>
-    <Layout>
-      <div
-        class="max-w-2xl px-4 sm:px-16 mx-auto flex items-center flex-col space-y-4"
-      >
-        <div class="space-y-2 py-8">
-          <h1 class="text-t34 text-center font-semibold">Claimable Balance</h1>
-          <p class="text-t16 text-center font-normal">
-            Claimable Balance allows users to manage and distribute tokens securely, providing flexible options for handling token ownership and transfers
-          </p>
-        </div>
-  
-        <div class="w-full">
-          <div class="flex min-h-full flex-1 flex-col justify-center py-8">
-            <div class="w-full">
-              <form class="space-y-6" action="#" method="POST">
-                <div>
-                  <div class="flex items-center justify-between">
-                    <label for="wallet_address_private_key" class="block text-t16 font-normal leading-6 text-gray-900">Wallet Private Key</label>
-                  </div>
-                  <div class="mt-2">
-                    <input
-                      id="wallet_address_private_key"
-                      name="wallet_address_private_key"
-                      type="text"
-                      autocomplete="wallet_address_private_key"
-                      required=""
-                      class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label for="target_wallet_address" class="block text-t16 font-normal leading-6 text-gray-900"> Bulk Stellar Wallet Address</label>
-                  <div class="mt-2">
-                    <textarea
-                      rows="4"
-                      name="target_wallet_address"
-                      id="target_wallet_address"
-                      class="block px-3 w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <div class="flex items-center justify-between">
-                    <label for="amount" class="block text-t16 font-normal leading-6 text-gray-900" >Amount</label>
-                  </div>
-                  <div class="mt-2">
-                    <input
-                      id="amount"
-                      name="amount"
-                      type="text"
-                      autocomplete="amount"
-                      required=""
-                      class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <div class="flex items-center justify-between">
-                    <label for="token" class="block text-t16 font-normal leading-6 text-gray-900" >Token</label>
-                  </div>
-                  <div class="mt-2">
-                    <input
-                      id="token"
-                      name="token"
-                      type="text"
-                      autocomplete="token"
-                      required=""
-                      class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    />
-                  </div>
-                </div>
-  
-                <div>
-                  <div class="flex items-center justify-between">
-                    <label for="memo" class="block text-t16 font-normal leading-6 text-gray-900" >Memo</label>
-                  </div>
-                  <div class="mt-2">
-                    <input
-                      id="memo"
-                      name="memo"
-                      type="text"
-                      autocomplete="memo"
-                      required=""
-                      class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    />
-                  </div>
-                </div>
-  
-                <div>
-                  <button
-                  @click="setOpen"
-                    type="submit"
-                    class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white"
-                  >
-                    Send Token
-                  </button>
-                </div>
-              </form>
+  <Layout>
+    <div class="max-w-2xl px-4 sm:px-16 mx-auto flex items-center flex-col space-y-4">
+      <div class="space-y-2 py-8">
+        <h1 class="text-t34 text-center font-semibold">Claimable Balance</h1>
+        <p class="text-t16 text-center font-normal">
+          Claimable Balance allows users to manage and distribute tokens securely, providing flexible options for handling token ownership and transfers
+        </p>
+      </div>
+
+      <div class="w-full">
+        <div class="flex min-h-full flex-1 flex-col justify-center py-8">
+          <div class="w-full">
+            <Form class="space-y-6" @submit="submitForm" :validationSchema="schema">
+              <div>
+              <div class="flex items-center justify-between">
+                <label for="wallet_address_private_key" class="block text-t16 font-normal leading-6 text-gray-900">Wallet Private Key
+                  <span class="text-red-500">*</span>
+                </label>
+              </div>
+              <div class="mt-2">
+                <Field 
+                id="wallet_address_private_key" 
+                name="wallet_address_private_key" 
+                type="text"
+                class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                />
+                <ErrorMessage class="text-red-500 text-sm font-normal" name="wallet_address_private_key" />
+              </div>
             </div>
+              <div>
+                <label for="target_wallet_address" class="block text-t16 font-normal leading-6 text-gray-900"> Bulk Stellar Wallet Address
+                  <span class="text-red-500">*</span>
+                </label>
+                <div class="mt-2">
+                  <Field
+                    id="target_wallet_address"
+                    name="target_wallet_address"
+                    type="text"
+                    rows="4"
+                    class="block px-3 w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  />
+                  <ErrorMessage class="text-red-500 text-sm font-normal" name="target_wallet_address" />
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between">
+                  <label for="amount" class="block text-t16 font-normal leading-6 text-gray-900" >Amount
+                    <span class="text-red-500">*</span>
+                  </label>
+                </div>
+                <div class="mt-2">
+                  <Field
+                    id="amount"
+                    name="amount"
+                    type="text"
+                    class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  />
+                  <ErrorMessage class="text-red-500 text-sm font-normal" name="amount" />
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between">
+                  <label for="token" class="block text-t16 font-normal leading-6 text-gray-900" >Token
+                    <span class="text-red-500">*</span>
+                  </label>
+                </div>
+                <div class="mt-2">
+                  <Field
+                    id="token"
+                    name="token"
+                    type="text"
+                    class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  />
+                  <ErrorMessage class="text-red-500 text-sm font-normal" name="token" />
+                </div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between">
+                  <label for="memo" class="block text-t16 font-normal leading-6 text-gray-900" >Memo</label>
+                </div>
+                <div class="mt-2">
+                  <Field
+                    id="memo"
+                    name="memo"
+                    type="text"
+                    class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  />
+                  <ErrorMessage class="text-red-500 text-sm font-normal" name="memo" />
+                </div>
+              </div>
+
+              <div>
+                <button type="submit"
+                  class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white">
+                  Send Token
+                </button>
+              </div>
+            </Form>
           </div>
         </div>
       </div>
-      <Modal :open="open"  />
-    </Layout>
-  </template>
-  
-  <script setup>
-  import Layout from "@/components/Layout.vue";
-  import { ref } from "vue";
-  import Modal from '@/components/Modal.vue';
-  const open  = ref(false);
-  
-  const current = ref(0);
-  const tabs = [
-    { name: "Individual", id: 0 },
-    { name: "Bulk", href: "#", id: 1 },
-  ];
-  
-  const tabChange = (i) => {
-    current.value = i;
-  };
-  
-  
-  const  setOpen = (e) => {
-    e.preventDefault();
-    open.value = !open.value;
-    console.log(open.value);
-  };
-  
-  
-  </script>
-  
-  <style lang="scss" scoped></style>
-  
+    </div>
+  </Layout>
+</template>
+
+<script setup>
+import Layout from "@/components/Layout.vue";
+import { ref } from "vue";
+
+//Used to submit the route
+import axios from 'axios';
+
+//Importing class of sweetalert2 library for Alert Box
+import Swal from 'sweetalert2';
+
+//We have called these both functions Form and Field and used in Token Generator Form
+import { Form , Field} from 'vee-validate';
+
+//Used for Validation
+import * as Yup from "yup";
+
+const open = ref(false);
+
+const schema = Yup.object({
+wallet_address_private_key: Yup.string().required().min(56).label('Private Key'),
+target_wallet_address: Yup.string().required().min(56).label('Target Wallet Address'),
+amount: Yup.string().required().label('Amount'),
+token: Yup.string().required().label('Token'),
+memo: Yup.string().max(28).label('Memo'),
+});
+
+
+const submitForm = (values) =>{
+
+try {
+  // Show loading indicator
+    Swal.fire({
+      showConfirmButton: false,
+      title: 'Sending Payment',
+      allowOutsideClick: false,
+      didOpen: () => {
+      Swal.showLoading()
+    },
+    });
+
+
+axios.post('api/claimable_balance', values, {
+      headers: {
+        'X-CSRF-TOKEN': window.Laravel.csrfToken,
+      }
+    }).then((response) => {
+      // Hide loading indicator
+      Swal.close();
+
+      if (response.data.status === 'success') {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: response.data.msg,
+        }).then(() => {
+          // Reset form values
+          const formData = reactive({
+          wallet_address_private_key: "",
+          amount: "",
+          token: "",
+          memo: "",
+          target_wallet_address: "",
+          });
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: response.data.msg,
+        });
+      }
+    });
+}
+     
+catch (error) {
+
+}
+};
+
+</script>
+
+<style lang="scss" scoped></style>

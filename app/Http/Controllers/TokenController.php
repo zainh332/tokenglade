@@ -63,6 +63,7 @@ class TokenController extends Controller
 
     public function generate_token(Request $request)
     {
+        // dd($request->all());
         try {
             $ticker = $request->input('ticker');
             $total_supply = $request->input('total_supply');
@@ -125,7 +126,7 @@ class TokenController extends Controller
                     }
                 }
                 if ($paymentReceived) {
-                    return response()->json(['status' => 'success', 'msg' => 'Token Created Successfully']);
+                    return response()->json(['status' => 'success', 'msg' => 'Token has Created Successfully. Please Check Your Wallet']);
                 } else {
                     return response()->json(['status' => 'error', 'msg' => 'Something Went Wrong']);
                 }
@@ -137,6 +138,7 @@ class TokenController extends Controller
 
     public function claimable_balance(Request $request)
     {
+        dd($request->all());
         try {
             $user_wallet_address_private_key = $request->wallet_address_private_key;
             $assetCode = $request->input('token');

@@ -11,7 +11,7 @@
       <div class="w-full">
         <div class="flex min-h-full flex-1 flex-col justify-center py-8">
           <div class="w-full">
-            <Form class="space-y-6" @submit="submitForm" :validationSchema="schema" v-slot=" { errors}">
+            <Form class="space-y-6" @submit="submitForm" :validationSchema="schema">
               <div>
                 <div class="flex items-center justify-between">
                   <label for="ticker" class="block text-t16 font-normal leading-6 text-gray-900">
@@ -82,7 +82,7 @@
               </div>
 
               <div>
-                <button  type="submit"
+                <button type="submit"
                   class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white">
                   Generate Token
                 </button>
@@ -92,7 +92,6 @@
         </div>
       </div>
     </div>
-    <Modal :open="open" />
   </Layout>
 </template>
 
@@ -110,7 +109,7 @@ import axios from 'axios';
 //Importing class of sweetalert2 library for Alert Box
 import Swal from 'sweetalert2';
 
-//We have called these both functions Form and Field in Token Generator Form
+//We have called these both functions Form and Field and used in Token Generator Form
 import { Form , Field} from 'vee-validate';
 
 //Used for Validation
@@ -138,6 +137,7 @@ try {
     Swal.showLoading()
   },
   });
+
 
   axios.post('api/generate_token', values, {
     headers: {
