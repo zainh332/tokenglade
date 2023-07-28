@@ -101,12 +101,19 @@ import Layout from "@/components/Layout.vue";
 import Modal from '@/components/Modal.vue';
 import Toggle from '@/components/Toggle.vue';
 
-//importing function 
+//Importing ref function from vue
 import { ref } from "vue";
-//importing class of sweetalert2 library
+
+//Used to submit the route
 import axios from 'axios';
+
+//Importing class of sweetalert2 library for Alert Box
 import Swal from 'sweetalert2';
+
+//We have called these both functions Form and Field in Token Generator Form
 import { Form , Field} from 'vee-validate';
+
+//Used for Validation
 import * as Yup from "yup";
 
 
