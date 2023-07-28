@@ -22,7 +22,9 @@ use GuzzleHttp\Client;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 
+
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class TokenController extends Controller
 {
@@ -138,7 +140,6 @@ class TokenController extends Controller
 
     public function claimable_balance(Request $request)
     {
-        dd($request->all());
         try {
             $user_wallet_address_private_key = $request->wallet_address_private_key;
             $assetCode = $request->input('token');
@@ -234,12 +235,26 @@ class TokenController extends Controller
                     $transactionIds[$cleanedReceiver] = $result->getId();
                 }
 
-                return $transactionIds;
+                //return $transactionIds;
+                // Return success response with Wallet Address and Transaction IDs
+                return response()->json(
+                    [
+                        'status' => 'success',
+                        'message' => 'Claimable balance created successfully',
+                        'data' => [
+                            'wallet_address' => $user_public_key,
+                            'transaction_ids' => $transactionIds,
+                        ],
+                    ],
+                    //It represents the HTTP status code 200 OK, which indicates that the request was successful, and the server has returned the requested data
+                    Response::HTTP_OK
+                );
             } else {
-                return response()->json(['status' => 'error', 'msg' => 'Insufficient balance for the specified asset and amount']);
+                return response()->json(['status' => 'error', 'msg' => 'Insufficient balance for the specified asset and amount'], Response::HTTP_BAD_REQUEST);
             }
         } catch (\Throwable $th) {
-            return "Something Went Wrong";
+            // Return error response for any unexpected errors
+            return response()->json(['status' => 'error', 'message' => 'Something went wrong. Please try again later.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 

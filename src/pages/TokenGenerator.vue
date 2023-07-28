@@ -119,11 +119,28 @@ import * as Yup from "yup";
 const open = ref(false);
 
 const schema = Yup.object({
-  ticker: Yup.string().required().max(4).label('Ticker'),
-  total_supply: Yup.string().required().label('Total Supply'),
-  issuer_wallet_private_key: Yup.string().required().min(56).label('Issuer Wallet Private Key'),
-  distributor_wallet_private_key: Yup.string().required().min(56).label('Distributor Wallet Private Key'),
+  
+  ticker: Yup.string()
+    .required('Ticker is a required field.')
+    .max(4, 'Ticker should not exceed 4 characters.')
+    .label('Ticker'),
+
+  total_supply: Yup.string()
+    .required('Total Supply is a required field.')
+    .label('Total Supply'),
+
+  issuer_wallet_private_key: Yup.string()
+    .required('Issuer Wallet Private Key is a required field.')
+    .length(56, 'Issuer Wallet Private Key should be exactly 56 characters long.')
+    .label('Issuer Wallet Private Key'),
+
+  distributor_wallet_private_key: Yup.string()
+    .required('Distributor Wallet Private Key is a required field.')
+    .length(56, 'Distributor Wallet Private Key should be exactly 56 characters long.')
+    .label('Distributor Wallet Private Key'),
+
 });
+
 
 const submitForm = (values) =>{
 

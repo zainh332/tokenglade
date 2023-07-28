@@ -36,10 +36,10 @@
                   <Field
                     id="target_wallet_address"
                     name="target_wallet_address"
-                    type="text"
+                    as="textarea"
                     rows="4"
-                    class="block px-3 w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  />
+                    class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    />
                   <ErrorMessage class="text-red-500 text-sm font-normal" name="target_wallet_address" />
                 </div>
               </div>
@@ -124,12 +124,30 @@ import * as Yup from "yup";
 const open = ref(false);
 
 const schema = Yup.object({
-wallet_address_private_key: Yup.string().required().min(56).label('Private Key'),
-target_wallet_address: Yup.string().required().min(56).label('Target Wallet Address'),
-amount: Yup.string().required().label('Amount'),
-token: Yup.string().required().label('Token'),
-memo: Yup.string().max(28).label('Memo'),
+  wallet_address_private_key: Yup.string()
+    .required('Private Key is required.')
+    .length(56, 'Private Key should be exactly 56 characters long.')
+    .label('Private Key'),
+  target_wallet_address: Yup.string()
+    .required('Receiver Wallet Address is required.')
+    .test('is-valid-addresses', 'Invalid wallet addresses', (value) => {
+      // Custom validation logic for multiple wallet addresses with 56 characters each.
+      const addresses = value.split('\n');
+      const addressRegex = /^.{56}$/;
+      return addresses.every((address) => addressRegex.test(address));
+    })
+    .label('Receiver Wallet Address'),
+  amount: Yup.string()
+    .required('Amount is required.')
+    .label('Amount'),
+  token: Yup.string()
+    .required('Token is required.')
+    .label('Token'),
+  memo: Yup.string()
+    .max(15, 'Memo should not exceed 15 characters.')
+    .label('Memo'),
 });
+
 
 
 const submitForm = (values) =>{
