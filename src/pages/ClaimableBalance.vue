@@ -107,7 +107,7 @@
 
 <script setup>
 import Layout from "@/components/Layout.vue";
-import { ref } from "vue";
+import { ref , reactive} from "vue";
 
 //Used to submit the route
 import axios from 'axios';
@@ -170,31 +170,38 @@ axios.post('api/claimable_balance', values, {
       }
     }).then((response) => {
       // Hide loading indicator
-      Swal.close();
+        Swal.close();
 
-      if (response.data.status === 'success') {
-        Swal.fire({
-          icon: 'success',
-          title: 'Success!',
-          text: response.data.msg,
-        }).then(() => {
-          // Reset form values
-          const formData = reactive({
-          wallet_address_private_key: "",
-          amount: "",
-          token: "",
-          memo: "",
-          target_wallet_address: "",
+        if (response.data.status === 'success') {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: response.data.message,
+          }).then(() => {
+            // Reset form values
+            const formData = reactive({
+            wallet_address_private_key: "",
+            amount: "",
+            token: "",
+            memo: "",
+            target_wallet_address: "",
+            });
           });
-        });
-      } else {
+        } else if (response.data.status === 'error') {
         Swal.fire({
           icon: 'error',
           title: 'Error!',
-          text: response.data.msg,
+          text: response.data.message,
         });
+      } else {
+        // Handle other statuses here, if applicable
+        console.log('Unexpected status:', response.data.status);
       }
-    });
+    })
+    .catch((error) => {
+    // Handle server request errors
+    console.error('Error:', error);
+  });
 }
      
 catch (error) {

@@ -101,7 +101,7 @@ import Modal from '@/components/Modal.vue';
 import Toggle from '@/components/Toggle.vue';
 
 //Importing ref function from vue
-import { ref } from "vue";
+import { ref , reactive} from "vue";
 
 //Used to submit the route
 import axios from 'axios';
@@ -119,7 +119,7 @@ import * as Yup from "yup";
 const open = ref(false);
 
 const schema = Yup.object({
-  
+
   ticker: Yup.string()
     .required('Ticker is a required field.')
     .max(4, 'Ticker should not exceed 4 characters.')
