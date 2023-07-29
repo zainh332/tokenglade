@@ -136,12 +136,13 @@
               <ul role="list" class="-mx-2 space-y-3">
                 <li v-for="item in stellar_navigation" :key="item.name">
                   <a
+                    v-if="!item.comingSoon"
                     :href="item.href"
                     :class="[
                       item.current
                         ? 'bg-gray-800 text-white'
                         : 'text-gray-400 hover:text-white hover:bg-gray-800',
-                      'group flex gap-x-3 rounded-md p-2 text-[16px] leading-6 font-normal',
+                      'group flex gap-x-3 rounded-md p-2 text-[14px] leading-6 font-normal',
                     ]"
                   >
                     <component
@@ -151,6 +152,14 @@
                     />
                     {{ item.name }}
                   </a>
+                  <span v-else class="group flex gap-x-3 rounded-md p-2 text-[14px] leading-6 font-normal text-gray-400">
+                    <component
+                      :is="item.icon"
+                      class="h-6 w-6 shrink-0"
+                      aria-hidden="true"
+                    />
+                    {{ item.name }} (Coming Soon)
+                  </span>
                 </li>
               </ul>
             </li>
@@ -159,12 +168,13 @@
               <ul role="list" class="-mx-2 space-y-3">
                 <li v-for="item in soroban_navigation" :key="item.name">
                   <a
+                    v-if="!item.comingSoon"
                     :href="item.href"
                     :class="[
                       item.current
                         ? 'bg-gray-800 text-white'
                         : 'text-gray-400 hover:text-white hover:bg-gray-800',
-                      'group flex gap-x-3 rounded-md p-2 text-[16px] leading-6 font-normal',
+                      'group flex gap-x-3 rounded-md p-2 text-[14px] leading-6 font-normal',
                     ]"
                   >
                     <component
@@ -174,6 +184,14 @@
                     />
                     {{ item.name }}
                   </a>
+                  <span v-else class="group flex gap-x-3 rounded-md p-2 text-[14px] leading-6 font-normal text-gray-400">
+                    <component
+                      :is="item.icon"
+                      class="h-6 w-6 shrink-0"
+                      aria-hidden="true"
+                    />
+                    {{ item.name }} (Coming Soon)
+                  </span>
                 </li>
               </ul>
             </li>
@@ -307,14 +325,14 @@ const desktopSidebar = ref(true);
 
 const stellar_navigation = [
   { name: "Token Generator", href: "/token-generator", icon: generatorIcon, current: false },
-  { name: "Token Transfer", href: "/token-transfer", icon: transfer, current: false },
-  { name: "Claimable Balance", href: "/claimable-balance", icon: BalanceIIcon, current: false },
-  { name: "Toml File Generator", href: "/toml-file-generator", icon: docIcon, current: false },
+  { name: "Claimable Balance", href: "/claimable-balance", icon: BalanceIIcon, current: false , },
+  { name: "Token Transfer", href: "/token-transfer", icon: transfer, current: false, comingSoon: true },
+  { name: "Toml File Generator", href: "/toml-file-generator", icon: docIcon, current: false, comingSoon: true },
 ];
 
 const soroban_navigation = [
-  { name: "Smart Contract", href: "/smart-contract", icon: generatorIcon, current: false },
-  { name: "Tokenization of Assets", href: "", icon: transfer, current: false },
+  { name: "Smart Contract", href: "/smart-contract", icon: generatorIcon, current: false, comingSoon: true},
+  { name: "Tokenization of Assets", href: "", icon: transfer, current: false, comingSoon: true},
 ];
 
 const route = useRoute();
