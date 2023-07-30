@@ -14,7 +14,7 @@ const routes = [
     component: Home,
     meta: {
       title: "Home",
-      description: "Welcome to Sorostellar - Home Page",
+      description: "Welcome to TokenGalde - Home Page",
     },
   },
   {
@@ -22,7 +22,7 @@ const routes = [
     component: TokenGenerator,
     meta: {
       title: "Token Generator",
-      description: "Welcome to Sorostellar - Home Page",
+      description: "Welcome to TokenGlade - Home Page",
     },
   },
   {
@@ -30,7 +30,7 @@ const routes = [
     component: TokenTransfer,
     meta: {
       title: "Token Transfer",
-      description: "Welcome to Sorostellar - Home Page",
+      description: "Welcome to TokenGlade - Home Page",
     },
   },
   {
@@ -38,7 +38,7 @@ const routes = [
     component: ClaimableBalance,
     meta: {
       title: "Claimable Balance",
-      description: "Welcome to Sorostellar - Home Page",
+      description: "Welcome to TokenGlade - Home Page",
     },
     // beforeEnter: conditionalNext('isAdmin'),
   },
@@ -47,7 +47,7 @@ const routes = [
     component: TomlFileGenerator,
     meta: {
       title: "Toml File Generator",
-      description: "Welcome to Sorostellar - Home Page",
+      description: "Welcome to TokenGlade - Home Page",
     },
     // beforeEnter: conditionalNext('isAdmin'),
   },
@@ -56,7 +56,7 @@ const routes = [
     component: SmartContract,
     meta: {
       title: "Smart Contract",
-      description: "Welcome to Sorostellar - Home Page",
+      description: "Welcome to TokenGlade - Home Page",
     },
     // beforeEnter: conditionalNext('isAdmin'),
   },
@@ -65,7 +65,7 @@ const routes = [
     component: TomlFileGenerator,
     meta: {
       title: "Tokenization of Assets",
-      description: "Welcome to Sorostellar - Home Page",
+      description: "Welcome to TokenGlade - Home Page",
     },
     // beforeEnter: conditionalNext('isAdmin'),
   },
