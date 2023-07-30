@@ -203,7 +203,7 @@
                   <router-link class="text-xs text-gray-300 text-center pl-2 font-normal" to="#">Cookies</router-link>
                   <router-link class="text-xs text-gray-300 text-center pl-2 font-normal" to="#">Contact us</router-link>
                 </div>
-                <p class="text-xs text-gray-300 font-normal">© Copyright by 2023 | NovaGlade</p>
+                <p class="text-xs text-gray-300 font-normal">© Copyright by 2023 | TokenGlade</p>
               </div>
             </li>
           </ul>
