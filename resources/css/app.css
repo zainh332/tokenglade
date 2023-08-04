@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&display=swap');
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+*{
+  font-family: 'Inter', sans-serif;
+}
+
+
+.bg-gradient
+{ 
+background:  linear-gradient(86deg, #00FEFE 0%, #859BFF 49.48%, #FB44FF 100%);
+background-repeat: no-repeat;
+background-size: cover;
+}
+
+.hover-gradient:hover
+{ 
+background:  linear-gradient(86deg, #00FEFE 0%, #859BFF 49.48%, #FB44FF 100%);
+background-repeat: no-repeat;
+background-size: cover;
+}
+
+.btn-padding
+{
+  padding: 10px 30px;
+}
+
+ .drop-shadow
+ {
+  fill: #FFF;
+  filter: drop-shadow(0px 10px 20px #F2F2F2);
+ }
+
+ .card-gradient:hover {
+  transition: o.3s ease;
+  
+background: linear-gradient(137deg, #00FEFE 0%, #859BFF 44.54%, #FB44FF 100%);
+
+/* Dropshadow */
+box-shadow: 0px 10px 20px 0px #F2F2F2;
+ }
+
+ .blur
+ {
+  backdrop-filter: blur(150px);
+ }
