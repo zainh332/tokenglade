@@ -6,17 +6,26 @@ import path from 'path'
 export default defineConfig({
   plugins: [
     laravel({
-      input: ['resources/css/app.css', 'resources/js/app.js'],
+      input: ['resources/css/app.css', '../src/main.js'],
       refresh: true,
     }),
     vue()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
-      'vee-validate': 'vee-validate/dist/vee-validate.esm.js',
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, 'src'),
+        'vee-validate': 'vee-validate/dist/vee-validate.esm.js',
+      }
+    },
+    
+    build: {
+      outDir: 'dist',
+      rollupOptions: {
+        input: ['src/main.js']
+      }
     }
-  }
 })
+
+
 
 // // https://vitejs.dev/config/
 // export default defineConfig({
