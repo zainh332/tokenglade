@@ -192,7 +192,7 @@
 
 <script setup>
 import { ref , defineProps, defineEmits , watch} from "vue";
-import tokenGladeLogo from '@/assets/stellar-minter-logo.png'
+import tokenGladeLogo from '@/assets/token-glade-logo.png'
 import {
   Dialog,
   DialogPanel,
