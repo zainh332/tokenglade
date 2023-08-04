@@ -65,7 +65,6 @@ class TokenController extends Controller
 
     public function generate_token(Request $request)
     {
-        // dd($request->all());
         try {
             $ticker = $request->input('ticker');
             $total_supply = $request->input('total_supply');
