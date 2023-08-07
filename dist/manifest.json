@@ -19,10 +19,6 @@
     "file": "assets/token-glade-logo-14ce1d6b.png",
     "src": "src/assets/token-glade-logo.png"
   },
-  "src/main.css": {
-    "file": "assets/main-03cdeda7.css",
-    "src": "src/main.css"
-  },
   "src/main.js": {
     "assets": [
       "assets/logo-85d8ef3c.png",
@@ -31,10 +27,7 @@
       "assets/lights-c425c569.png",
       "assets/token-glade-logo-14ce1d6b.png"
     ],
-    "css": [
-      "assets/main-03cdeda7.css"
-    ],
-    "file": "assets/main-a79c4cd0.js",
+    "file": "assets/main-71cf53fd.js",
     "isEntry": true,
     "src": "src/main.js"
   }
