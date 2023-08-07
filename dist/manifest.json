@@ -1,4 +1,9 @@
 {
+  "resources/css/app.css": {
+    "file": "assets/app-03cdeda7.css",
+    "isEntry": true,
+    "src": "resources/css/app.css"
+  },
   "src/assets/flower.png": {
     "file": "assets/flower-9bebdb58.png",
     "src": "src/assets/flower.png"
