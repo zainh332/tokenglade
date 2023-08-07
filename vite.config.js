@@ -20,10 +20,10 @@ export default defineConfig({
       }
     },
     
-    build: {
-      outDir: 'dist',
-      rollupOptions: {
-        input: ['src/main.js']
-      }
-    }
+    // build: {
+    //   outDir: 'dist',
+    //   rollupOptions: {
+    //     input: ['src/main.js']
+    //   }
+    // }
 })
