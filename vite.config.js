@@ -8,7 +8,8 @@ export default defineConfig({
     laravel({
       input: [
         'resources/css/app.css',
-        'resources/js/app.js',
+        // 'resources/js/app.js',
+        'src/main.js',
     ],
       refresh: true,
     }),
@@ -16,14 +17,13 @@ export default defineConfig({
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'src'),
-        // 'vee-validate': 'vee-validate/dist/vee-validate.esm.js',
       }
     },
     
-    // build: {
-    //   outDir: 'dist',
-    //   rollupOptions: {
-    //     input: ['src/main.js']
-    //   }
-    // }
+    build: {
+      outDir: 'dist',
+      rollupOptions: {
+        // input: ['src/main.js']
+      }
+    }
 })
