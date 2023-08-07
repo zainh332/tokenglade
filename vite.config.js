@@ -8,7 +8,6 @@ export default defineConfig({
     laravel({
       input: [
         'resources/css/app.css',
-        // 'resources/js/app.js',
         'src/main.js',
     ],
       refresh: true,
@@ -23,7 +22,6 @@ export default defineConfig({
     build: {
       outDir: 'dist',
       rollupOptions: {
-        // input: ['src/main.js']
       }
     }
 })
