@@ -69,6 +69,15 @@ const routes = [
     },
     // beforeEnter: conditionalNext('isAdmin'),
   },
+  {
+    path: "/about-us",
+    component: TomlFileGenerator,
+    meta: {
+      title: "About Us | TokenGlade",
+      description: "About Us | TokenGlade",
+    },
+    // beforeEnter: conditionalNext('isAdmin'),
+  },
   // Add more routes as needed
 ];
 

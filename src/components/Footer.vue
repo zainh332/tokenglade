@@ -10,15 +10,15 @@
     <div
       class="max-w-sm mx-auto flex my-8 justify-center flex-wrap items-center gap-6"
     >
-      <router-link class="text-t14 font-normal" to="#">Home</router-link>
-      <router-link class="text-t14 font-normal" to="#">About us</router-link>
-      <router-link class="text-t14 font-normal" to="#"
+      <router-link class="text-t14 font-normal" to="/">Home</router-link>
+      <router-link class="text-t14 font-normal" to="/about-us">About us</router-link>
+      <router-link class="text-t14 font-normal" to="/token-generator"
         >Generator</router-link
       >
-      <router-link class="text-t14 font-normal" to="#"
+      <!-- <router-link class="text-t14 font-normal" to="#"
         >Dashboard</router-link
-      >
-      <router-link class="text-t14 font-normal" to="#">Docs</router-link>
+      > -->
+      <!-- <router-link class="text-t14 font-normal" to="#">Docs</router-link> -->
     </div>
 
     <!-- Logos -->

@@ -30,30 +30,30 @@ import { MinusSmallIcon, PlusSmallIcon } from '@heroicons/vue/24/outline'
 
 const faqs = [
   {
-    question: "How does the token creation process look like?",
+    question: "How long does it take to create a token?",
     answer:
-      "I don't know, but the flag is a big plus. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quas cupiditate laboriosam fugiat.",
+      "The process to generate a token is quite straightforward. You just need to fill out the required form fields and click the 'Generate' button. It usually takes a couple of minutes to complete the process, and once done, you'll find the generated tokens in your distributor's wallet.",
   },
   {
-    question: "Do I have full ownership of the generated token?",
+    question: "Is the private key of my distributor and issuer's wallet secure?",
     answer:
-      "I don't know, but the flag is a big plus. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quas cupiditate laboriosam fugiat.",
+      "Absolutely. We prioritize the privacy and security of our valuable customers. The private keys of both distributor and issuer wallets are treated with utmost care to ensure their security.",
   },
   {
-    question: "How can i verify my generated token, for instance on Stellar?",
+    question: "How can I verify my generated token, for instance on the Stellar network?",
     answer:
-      "I don't know, but the flag is a big plus. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quas cupiditate laboriosam fugiat.",
+      "You can verify the generated token by checking your distributor's wallet, where the generated tokens will be available. Additionally, if you're using the Stellar network, you can also use the relevant Stellar tools to verify and track your generated tokens.",
   },
   {
-    question: "How can i know if the token is secure?",
+    question: "What additional information can you provide?",
     answer:
-      "I don't know, but the flag is a big plus. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quas cupiditate laboriosam fugiat.",
+      "Certainly! If you have specific questions in mind, please don't hesitate to ask. We're here to offer you detailed information and assistance.",
   },
   {
-    question: "I still don’t know how to use StellarMinter. Where can i find help?",
+    question: "Do you have any more questions?",
     answer:
-      "I don't know, but the flag is a big plus. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quas cupiditate laboriosam fugiat.",
+      "Certainly! Feel free to ask any additional questions you may have. We're here to help and provide you with the answers you need.",
   },
-   
-]
+];
+
 </script>

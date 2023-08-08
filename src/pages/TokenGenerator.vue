@@ -57,7 +57,7 @@
                   <Field 
                   id="issuer_wallet_private_key" 
                   name="issuer_wallet_private_key" 
-                  type="text"
+                  type="password"
                   class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                   <ErrorMessage class="text-red-500 text-sm font-normal" name="issuer_wallet_private_key" />
@@ -74,7 +74,7 @@
                   <Field 
                   id="distributor_wallet_private_key" 
                   name="distributor_wallet_private_key" 
-                  type="text"
+                  type="password"
                   class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                   <ErrorMessage class="text-red-500 text-sm font-normal" name="distributor_wallet_private_key" />

@@ -154,7 +154,6 @@ const tabChange = (i) => {
 const  setOpen = (e) => {
   e.preventDefault();
   open.value = !open.value;
-  console.log(open.value);
 };
 
 

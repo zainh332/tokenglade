@@ -2,16 +2,13 @@
   <div>
     <Header />
     <div class="bg-red-500 relative">
-      <div
-        class="absolute md:w-[500px] md:h-[800px]  lg:w-[600px] lg:h-[800px] xl:w-[860px] xl:h-[955px] z-10 hidden lg:block right-0 top-32"
-         
-      >
+      <div class="absolute md:w-[500px] md:h-[800px]  lg:w-[600px] lg:h-[800px] xl:w-[860px] xl:h-[955px] z-10 hidden lg:block right-0 top-32">
         <img class="left-0 -z-10 top-0" :src="flower" alt="" />
       </div>
     </div>
     <div class="">
       <div
-        class="mx-auto max-w-6xl z-50 relative pt-24 sm:pt-44 px-4 flex items-center justify-between sm:px-6 lg:px-8"
+        class="mx-auto max-w-6xl z-10 relative pt-24 sm:pt-44 px-4 flex items-center justify-between sm:px-6 lg:px-8"
       >
         <div class="shrink-0">
           <div class="">
@@ -30,15 +27,15 @@
             class="mt-6 flex items-center sm:gap-4 justify-around sm:justify-start max-w-xs ml-auto mr-auto sm:ml-0 sm:mr-0"
           >
             <router-link
-              to="#"
+              to="/token-generator"
               class="btn-padding text-white rounded-full text-t14 bg-gradient"
               >Create Token</router-link
             >
-            <router-link
+            <!-- <router-link
               to="#"
               class="btn-padding text-black/50 text-t14s border border-black/50 rounded-full"
               >Sign up</router-link
-            >
+            > -->
           </div>
         </div>
       </div>
