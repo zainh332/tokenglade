@@ -7,7 +7,9 @@
       </div>
     </div>
     <div class="">
-      <div class="mx-auto max-w-6xl z-10 relative pt-8 sm:pt-16 md:pt-24 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
+      <!-- <div class="mx-auto max-w-6xl z-10 relative pt-24 sm:pt-44 px-4 flex items-center justify-between sm:px-6 lg:px-8"> -->
+      <!-- <div class="mx-auto max-w-6xl z-10 relative pt-8 sm:pt-16 md:pt-24 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center"> -->
+        <div class="responsive-container">
         <div class="shrink-0">
           <div class="">
             <h1
@@ -84,16 +86,25 @@ import Footer from "@/components/Footer.vue";
 </script>
 
 <style lang="scss" scoped>
-@media screen and (max-width: 600px) { /* iPhone 12 Pro Max portrait width */
-  .max-w-6xl {
-    max-width: 100%; /* Adjust for smaller screens */
+.responsive-container {
+  /* Default styles for all screen sizes */
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 2rem; /* Adjust padding as needed */
+  
+  /* Responsive adjustments */
+  @media screen and (min-width: 640px) {
+    padding: 4rem; /* Adjust padding for medium screens and above */
   }
-  .pt-24 {
-    padding-top: 4rem; /* Adjust for smaller screens */
-  }
-
-  .table-container {
-    display: none; /* Hide on mobile screens */
+  
+  @media screen and (min-width: 1024px) {
+    padding: 6rem; /* Adjust padding for large screens and above */
   }
 }
+
+.table-container {
+    display: none; /* Hide on mobile screens */
+  }
+  
 </style>
