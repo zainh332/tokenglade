@@ -38,9 +38,8 @@
       </div>
 
       <!-- Table -->
-      <div class="table-container">
+      
         <Table />
-      </div>
 
       <div
         class="cards mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-6xl pt-40 sm:pt-64 px-4 sm:px-6 lg:px-8"
@@ -103,8 +102,4 @@ import Footer from "@/components/Footer.vue";
   }
 }
 
-.table-container {
-    display: none; /* Hide on mobile screens */
-  }
-  
 </style>
