@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-03cdeda7.css",
+    "file": "assets/app-44ec68c3.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
@@ -24,6 +24,10 @@
     "file": "assets/token-glade-logo-14ce1d6b.png",
     "src": "src/assets/token-glade-logo.png"
   },
+  "src/main.css": {
+    "file": "assets/main-0252e4cf.css",
+    "src": "src/main.css"
+  },
   "src/main.js": {
     "assets": [
       "assets/logo-85d8ef3c.png",
@@ -32,7 +36,10 @@
       "assets/footer-logo-47ce9443.png",
       "assets/lights-c425c569.png"
     ],
-    "file": "assets/main-93dbee71.js",
+    "css": [
+      "assets/main-0252e4cf.css"
+    ],
+    "file": "assets/main-212d69cb.js",
     "isEntry": true,
     "src": "src/main.js"
   }

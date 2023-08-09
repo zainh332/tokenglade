@@ -121,9 +121,9 @@ const open = ref(false);
 const schema = Yup.object({
 
   ticker: Yup.string()
-    .required('Ticker is a required field.')
-    .max(4, 'Ticker should not exceed 4 characters.')
-    .label('Ticker'),
+    .required('Symbol is a required field.')
+    .max(4, 'Symbol should not exceed 4 characters.')
+    .label('Symbol'),
 
   total_supply: Yup.string()
     .required('Total Supply is a required field.')

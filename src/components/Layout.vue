@@ -63,27 +63,68 @@
                 <nav class="flex flex-1 flex-col">
                   <ul role="list" class="flex flex-1 flex-col gap-y-7">
                     <li>
-                      <ul role="list" class="-mx-2 space-y-1">
-                        <li v-for="item in stellar_navigation" :key="item.name">
-                          <a
-                            :href="item.href"
-                            :class="[
-                              item.current
-                                ? 'bg-gray-800 text-white'
-                                : 'text-gray-400 hover:text-white hover:bg-gray-800',
-                              'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold',
-                            ]"
-                          >
-                            <component
-                              :is="item.icon"
-                              class="h-6 w-6 shrink-0"
-                              aria-hidden="true"
-                            />
-                            {{ item.name }}
-                          </a>
-                        </li>
-                      </ul>
-                    </li>
+              <ul role="list" class="-mx-2 space-y-3">
+                <li v-for="item in stellar_navigation" :key="item.name">
+                  <a
+                    v-if="!item.comingSoon"
+                    :href="item.href"
+                    :class="[
+                      item.current
+                        ? 'bg-gray-800 text-white'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-800',
+                      'group flex gap-x-3 rounded-md p-2 text-[14px] leading-6 font-normal',
+                    ]"
+                  >
+                    <component
+                      :is="item.icon"
+                      class="h-6 w-6 shrink-0"
+                      aria-hidden="true"
+                    />
+                    {{ item.name }}
+                  </a>
+                  <span v-else class="group flex gap-x-3 rounded-md p-2 text-[14px] leading-6 font-normal text-gray-400">
+                    <component
+                      :is="item.icon"
+                      class="h-6 w-6 shrink-0"
+                      aria-hidden="true"
+                    />
+                    {{ item.name }} (Coming Soon)
+                  </span>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <h1 class="text-gray-400">Soroban</h1>
+              <ul role="list" class="-mx-2 space-y-3">
+                <li v-for="item in soroban_navigation" :key="item.name">
+                  <a
+                    v-if="!item.comingSoon"
+                    :href="item.href"
+                    :class="[
+                      item.current
+                        ? 'bg-gray-800 text-white'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-800',
+                      'group flex gap-x-3 rounded-md p-2 text-[14px] leading-6 font-normal',
+                    ]"
+                  >
+                    <component
+                      :is="item.icon"
+                      class="h-6 w-6 shrink-0"
+                      aria-hidden="true"
+                    />
+                    {{ item.name }}
+                  </a>
+                  <span v-else class="group flex gap-x-3 rounded-md p-2 text-[14px] leading-6 font-normal text-gray-400">
+                    <component
+                      :is="item.icon"
+                      class="h-6 w-6 shrink-0"
+                      aria-hidden="true"
+                    />
+                    {{ item.name }} (Coming Soon)
+                  </span>
+                </li>
+              </ul>
+            </li>
 
                     <li>
                       <div class="flex flex-col gap-4">
@@ -118,8 +159,7 @@
     >
       <!-- Sidebar component, swap this element with another sidebar if you like -->
       <div
-        :class="
-          desktopSidebar
+        :class="desktopSidebar
             ? 'desk flex grow translate-x-[0%] items-center py-6  flex-col gap-y-5 overflow-y-auto bg-gray-900  px-0 '
             : 'desk items-center  -translate-x-[100%] flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-0 pb-4'
         "

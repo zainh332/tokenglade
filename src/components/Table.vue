@@ -14,6 +14,7 @@
     <div class="mt-4 flow-root">
       <div class="-mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="inline-block min-w-full py-2 align-middle">
+          <div class="table-container">
           <table class="min-w-full ">
             <thead>
               <tr class="sm:divide-x divide-gray-200 bg-white">
@@ -35,6 +36,7 @@
             </tbody>
           </table>
         </div>
+        </div>
       </div>
     </div>
   </div>
@@ -48,3 +50,14 @@ const people = [
   { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
 ]
 </script>
+
+<style lang="scss" scoped>
+@media screen and (max-width: 600px) {
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* For smoother scrolling on iOS */
+  }
+
+  /* Adjust other styles as needed */
+}
+</style>

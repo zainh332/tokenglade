@@ -7,14 +7,11 @@
       </div>
     </div>
     <div class="">
-      <div
-        class="mx-auto max-w-6xl z-10 relative pt-24 sm:pt-44 px-4 flex items-center justify-between sm:px-6 lg:px-8"
-      >
+      <div class="mx-auto max-w-6xl z-10 relative pt-8 sm:pt-16 md:pt-24 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
         <div class="shrink-0">
           <div class="">
             <h1
-              class="sm:text-[64px] text-[42px] font-normal sm:text-left text-center sm:leading-lh65"
-            >
+              class="sm:text-[64px] text-[42px] font-normal sm:text-left text-center sm:leading-lh65">
               Free Stellar
               <span class="font-semibold block">Token Generator</span>
             </h1>
@@ -23,9 +20,7 @@
               innovative potential.
             </p>
           </div>
-          <div
-            class="mt-6 flex items-center sm:gap-4 justify-around sm:justify-start max-w-xs ml-auto mr-auto sm:ml-0 sm:mr-0"
-          >
+          <div class="mt-6 flex items-center sm:gap-4 justify-around sm:justify-start max-w-xs ml-auto mr-auto sm:ml-0 sm:mr-0">
             <router-link
               to="/token-generator"
               class="btn-padding text-white rounded-full text-t14 bg-gradient"
@@ -39,8 +34,11 @@
           </div>
         </div>
       </div>
+
       <!-- Table -->
-      <Table />
+      <div class="table-container">
+        <Table />
+      </div>
 
       <div
         class="cards mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-6xl pt-40 sm:pt-64 px-4 sm:px-6 lg:px-8"
@@ -85,4 +83,17 @@ import Newsletter from "@/components/Newsletter.vue";
 import Footer from "@/components/Footer.vue";
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+@media screen and (max-width: 600px) { /* iPhone 12 Pro Max portrait width */
+  .max-w-6xl {
+    max-width: 100%; /* Adjust for smaller screens */
+  }
+  .pt-24 {
+    padding-top: 4rem; /* Adjust for smaller screens */
+  }
+
+  .table-container {
+    display: none; /* Hide on mobile screens */
+  }
+}
+</style>
