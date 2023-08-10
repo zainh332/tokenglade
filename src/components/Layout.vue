@@ -93,7 +93,7 @@
                 </li>
               </ul>
             </li>
-            <li>
+            <!-- <li>
               <h1 class="text-gray-400">Soroban</h1>
               <ul role="list" class="-mx-2 space-y-3">
                 <li v-for="item in soroban_navigation" :key="item.name">
@@ -124,7 +124,7 @@
                   </span>
                 </li>
               </ul>
-            </li>
+            </li> -->
 
                     <li>
                       <div class="flex flex-col gap-4">
@@ -170,7 +170,7 @@
           </router-link>
         </div>
         <nav class="flex mt-8 flex-1 flex-col">
-          <h1 class="text-gray-400">Stellar</h1>
+          <!-- <h1 class="text-gray-400">Stellar</h1> -->
           <ul role="list" class="flex justify-between flex-1 flex-col gap-y-7">
             <li>
               <ul role="list" class="-mx-2 space-y-3">
@@ -203,7 +203,7 @@
                 </li>
               </ul>
             </li>
-            <li>
+            <!-- <li>
               <h1 class="text-gray-400">Soroban</h1>
               <ul role="list" class="-mx-2 space-y-3">
                 <li v-for="item in soroban_navigation" :key="item.name">
@@ -234,7 +234,7 @@
                   </span>
                 </li>
               </ul>
-            </li>
+            </li> -->
 
             <li>
               <div class="flex items-center flex-col gap-2 mt-24 px-4 mb-4 justify-center md:justify-between">
@@ -366,14 +366,17 @@ const desktopSidebar = ref(true);
 const stellar_navigation = [
   { name: "Token Generator", href: "/token-generator", icon: generatorIcon, current: false },
   { name: "Claimable Balance", href: "/claimable-balance", icon: BalanceIIcon, current: false , },
+  { name: "Claim Claimable Balance", href: "/claimable-balance", icon: BalanceIIcon, current: false , comingSoon: true},
   { name: "Token Transfer", href: "/token-transfer", icon: transfer, current: false, comingSoon: true },
   { name: "Toml File Generator", href: "/toml-file-generator", icon: docIcon, current: false, comingSoon: true },
+  { name: "Liquidity Pool Deposit", href: "/toml-file-generator", icon: BalanceIIcon, current: false, comingSoon: true },
+  { name: "Liquidity Pool Withdraw", href: "/toml-file-generator", icon: BalanceIIcon, current: false, comingSoon: true },
 ];
 
-const soroban_navigation = [
-  { name: "Smart Contract", href: "/smart-contract", icon: generatorIcon, current: false, comingSoon: true},
-  { name: "Tokenization of Assets", href: "", icon: transfer, current: false, comingSoon: true},
-];
+// const soroban_navigation = [
+//   { name: "Smart Contract", href: "/smart-contract", icon: generatorIcon, current: false, comingSoon: true},
+//   { name: "Tokenization of Assets", href: "", icon: transfer, current: false, comingSoon: true},
+// ];
 
 const route = useRoute();
 stellar_navigation.forEach(item => {

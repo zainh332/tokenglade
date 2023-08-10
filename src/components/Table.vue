@@ -21,16 +21,16 @@
                 <th scope="col" class="pb-3.5 pl-4 text-left pr-4 text-[20px] font-semibold text-gray-900 sm:pl-6 lg:pl-20 ">Name</th>
                 <th scope="col" class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900">Symbol</th>
                 <th scope="col" class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900">Total Supply</th>
-                <th scope="col" class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900 whitespace-nowrap">Issuer Address</th>
+                <!-- <th scope="col" class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900 whitespace-nowrap">Issuer Address</th> -->
                  
               </tr>
             </thead>
             <tbody class="">
               <tr v-for="person in people" :key="person.email" class="sm:divide-x divide-gray-200 bg-white">
                 <td class="whitespace-nowrap py-4 pl-4 pr-4 text-t16  text-black sm:pl-6 lg:pl-20">{{ person.name }}</td>
-                <td class="whitespace-nowrap pl-4 sm:pl-6 lg:pl-20 pr-4 py-4 text-t16 text-black">{{ person.title }}</td>
-                <td class="whitespace-nowrap pl-4 sm:pl-6 lg:pl-20 pr-4 py-4 text-t16 text-black">{{ person.email }}</td>
-                <td class="whitespace-nowrap pl-4 sm:pl-6 lg:pl-20 pr-4 py-4 text-t16 text-black">{{ person.role }}</td>
+                <td class="whitespace-nowrap pl-4 sm:pl-6 lg:pl-20 pr-4 py-4 text-t16 text-black">{{ person.symbol }}</td>
+                <td class="whitespace-nowrap pl-4 sm:pl-6 lg:pl-20 pr-4 py-4 text-t16 text-black">{{ person.supply }}</td>
+                <!-- <td class="whitespace-nowrap pl-4 sm:pl-6 lg:pl-20 pr-4 py-4 text-t16 text-black">{{ person.role }}</td> -->
                  
               </tr>
             </tbody>
@@ -46,8 +46,10 @@
 <script setup>
 import flower from '@/assets/flower.png'
 const people = [
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
+  // { name: 'Lindsay Walton', symbol: 'Front-end Developer', supply: 'lindsay.walton@example.com', role: 'Member' },
+  { name: 'Falcon Token', symbol: 'FAL', supply: '1,000,000,000' },
+  { name: 'Walton Token', symbol: 'WLT', supply: '10,000,000,000'},
+  { name: 'Lulu Token', symbol: 'LUL', supply: '9,000,000,000'},
 ]
 </script>
 

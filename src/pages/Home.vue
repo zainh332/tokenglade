@@ -41,12 +41,25 @@
       
         <Table />
 
-      <div
-        class="cards mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-6xl pt-40 sm:pt-64 px-4 sm:px-6 lg:px-8"
-      >
-        <Card />
-        <Card />
-        <Card />
+      <div class="cards mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-6xl pt-40 sm:pt-64 px-4 sm:px-6 lg:px-8">
+          <div class="drop-shadow bg-white hover:transition-all cursor-pointer group-hover:transition-all transition-all group duration-200 card-gradient h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
+            <h1 class="group-hover:text-white  text-t34 font-semibold">300+</h1>
+            <p class="text-center group-hover:text-white text-[20px] font-normal">
+            Tokens created so far on TokenGlade
+            </p>
+          </div>
+          <div class="drop-shadow bg-white hover:transition-all cursor-pointer group-hover:transition-all transition-all group duration-200 card-gradient h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
+            <h1 class="group-hover:text-white  text-t34 font-semibold">1000+</h1>
+            <p class="text-center group-hover:text-white text-[20px] font-normal">
+            Tokens Transfer using TokenGlade
+            </p>
+          </div>
+          <div class="drop-shadow bg-white hover:transition-all cursor-pointer group-hover:transition-all transition-all group duration-200 card-gradient h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
+            <h1 class="group-hover:text-white  text-t34 font-semibold">1000+</h1>
+            <p class="text-center group-hover:text-white text-[20px] font-normal">
+              Claimable Balance to other wallets with TokenGlade
+            </p>
+          </div>
       </div>
 
       <div
