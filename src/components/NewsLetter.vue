@@ -11,7 +11,8 @@
         <form class="w-full max-w-md ml-auto">
           <div class="flex gap-x-4 items-center sm:justify-end">
             
-            <button type="submit" class="flex-none rounded-full bg-white btn-padding text-sm font-normal text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Join us on Twitter</button>
+            <a href="https://twitter.com/TokenGlade" target="_blank" rel="noopener noreferrer" class="flex-none rounded-full bg-white btn-padding text-sm font-normal text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Join us on Twitter</a>
+
           </div>
            
         </form>

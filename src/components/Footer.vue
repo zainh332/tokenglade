@@ -22,12 +22,10 @@
     </div>
 
     <!-- Logos -->
-    <div
-      class="max-w-sm mx-auto flex gap-4 items-center justify-center flex-wrap"
-    >
-      <div
-        class="h-12 relative w-12 rounded-full shadow drop-shadow-sm flex items-center justify-center"
-      >
+    <div class="max-w-sm mx-auto flex gap-4 items-center justify-center flex-wrap">
+
+    <!-- Telegram -->
+      <div class="h-12 relative w-12 rounded-full shadow drop-shadow-sm flex items-center justify-center">
         <router-link
           to="#"
           class="absolute w-full h-full top-0 left-0"
@@ -57,9 +55,10 @@
           </defs>
         </svg>
       </div>
-      <div
-        class="h-12 w-12 relative rounded-full shadow drop-shadow-sm flex items-center justify-center"
-      >
+      <!-- End Telegram -->
+
+      <!-- Medium -->
+      <div class="h-12 w-12 relative rounded-full shadow drop-shadow-sm flex items-center justify-center">
         <router-link
           to="#"
           class="absolute w-full h-full top-0 left-0"
@@ -90,13 +89,12 @@
           </defs>
         </svg>
       </div>
-      <div
-        class="h-12 w-12 relative rounded-full shadow drop-shadow-sm flex items-center justify-center"
-      >
-        <router-link
-          to="#"
-          class="absolute w-full h-full top-0 left-0"
-        ></router-link>
+      <!-- End Medium -->
+
+      <!-- Twitter -->
+      <div class="h-12 w-12 relative rounded-full shadow drop-shadow-sm flex items-center justify-center" >
+        <a href="https://twitter.com/TokenGlade" target="_blank" rel="noopener noreferrer" 
+        class="absolute w-full h-full top-0 left-0"></a>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -122,24 +120,18 @@
           </defs>
         </svg>
       </div>
+      <!-- End Twitter -->
     </div>
 
     <div class="flex items-center gap-6 mt-24 mb-8 justify-center flex-col md:flex-row md:justify-between">
-    <p class="text-t16 font-normal">© Copyright by 2023 - TokenGlade</p>
+      <p class="text-t16 font-normal">© Copyright by 2023 - TokenGlade</p>
+    
+      <div class=" flex items-center sm:flex-row flex-col gap-4 ">
+        <router-link class="text-t16 font-normal" to="#">Privacy Policy</router-link>
+        <router-link class="text-t16 font-normal" to="#">Cookies Policy</router-link>
+        <router-link class="text-t16 font-normal" to="#">Terms of Service</router-link>
+      </div>
 
-
-   
-     <div
-      class=" flex items-center sm:flex-row flex-col gap-4 "
-    >
-      <router-link class="text-t16 font-normal" to="#">Privacy Policy</router-link>
-      <router-link class="text-t16 font-normal" to="#">Cookies Policy</router-link>
-      <router-link class="text-t16 font-normal" to="#"
-        >Terms of Service</router-link
-      >
-     
-    </div>
-     
     </div>
   </div>
 </template>
