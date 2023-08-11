@@ -9,7 +9,7 @@
     <div class="">
       <!-- <div class="mx-auto max-w-6xl z-10 relative pt-24 sm:pt-44 px-4 flex items-center justify-between sm:px-6 lg:px-8"> -->
       <!-- <div class="mx-auto max-w-6xl z-10 relative pt-8 sm:pt-16 md:pt-24 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center"> -->
-        <div class="responsive-container">
+      <div class="responsive-container">
         <div class="shrink-0">
           <div class="">
             <h1

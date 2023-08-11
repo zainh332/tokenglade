@@ -4,7 +4,9 @@
       <div class="flex h-20 justify-between">
         <div class="flex">
           <div class="flex flex-shrink-0  items-center">
-            <img class="h-8 w-auto" :src="logo" alt="Your Company" />
+            <router-link to="/">
+              <img class="h-8 w-auto" :src="logo" alt="TokenGlade Logo" />
+            </router-link>
           </div>
           <div class="hidden sm:ml-6 lg:flex sm:space-x-6">
            

@@ -6,6 +6,7 @@ import TokenGenerator from "./pages/TokenGenerator.vue";
 import TokenTransfer from "./pages/TokenTransfer.vue";
 import ClaimableBalance from "./pages/ClaimableBalance.vue";
 import TomlFileGenerator from "./pages/TomlFileGenerator.vue";
+import aboutus from "./pages/about-us.vue";
 import SmartContract from "./pages/SmartContract.vue";
 
 const routes = [
@@ -14,7 +15,7 @@ const routes = [
     component: Home,
     meta: {
       title: "Home",
-      description: "Welcome to TokenGalde - Home Page",
+      description: "Explore the world of tokens with TokenGlade. Empower your journey into the Stellar universe and join the revolution in digital assets."
     },
   },
   {
@@ -22,7 +23,7 @@ const routes = [
     component: TokenGenerator,
     meta: {
       title: "Token Generator",
-      description: "Welcome to TokenGlade - Home Page",
+      description: "Create custom tokens effortlessly with TokenGlade's intuitive token generator. Make your mark in the token economy on the Stellar blockchain."
     },
   },
   {
@@ -30,7 +31,7 @@ const routes = [
     component: TokenTransfer,
     meta: {
       title: "Token Transfer",
-      description: "Welcome to TokenGlade - Home Page",
+      description: "Effortlessly transfer tokens across wallets on the Stellar blockchain with TokenGlade. Simplify token interactions and explore decentralized possibilities."
     },
   },
   {
@@ -38,7 +39,7 @@ const routes = [
     component: ClaimableBalance,
     meta: {
       title: "Claimable Balance",
-      description: "Welcome to TokenGlade - Home Page",
+      description: "Explore claimable balances on TokenGlade. Control token distributions, airdrops, and rewards with precision on the Stellar blockchain."
     },
     // beforeEnter: conditionalNext('isAdmin'),
   },
@@ -46,40 +47,22 @@ const routes = [
     path: "/toml-file-generator",
     component: TomlFileGenerator,
     meta: {
-      title: "Toml File Generator",
-      description: "Welcome to TokenGlade - Home Page",
-    },
-    // beforeEnter: conditionalNext('isAdmin'),
-  },
-  {
-    path: "/smart-contract",
-    component: SmartContract,
-    meta: {
-      title: "Smart Contract",
-      description: "Welcome to TokenGlade - Home Page",
-    },
-    // beforeEnter: conditionalNext('isAdmin'),
-  },
-  {
-    path: "/tokenization-assets",
-    component: TomlFileGenerator,
-    meta: {
-      title: "Tokenization of Assets",
-      description: "Welcome to TokenGlade - Home Page",
+      title: "TOML File Generator",
+      description: "Generate TOML files for your tokens with ease on TokenGlade. Enhance transparency, trust, and credibility for your token projects on the Stellar blockchain."
     },
     // beforeEnter: conditionalNext('isAdmin'),
   },
   {
     path: "/about-us",
-    component: TomlFileGenerator,
+    component: aboutus,
     meta: {
-      title: "About Us | TokenGlade",
-      description: "About Us | TokenGlade",
+      title: "About Us",
+      description: "Discover the mission of TokenGlade. We prioritize user-friendliness, transparency, and innovation in tokenization on the Stellar blockchain. Join the revolution!"
     },
     // beforeEnter: conditionalNext('isAdmin'),
   },
-  // Add more routes as needed
 ];
+
 
 const router = createRouter({
   history: createWebHistory(),
