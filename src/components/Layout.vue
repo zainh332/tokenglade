@@ -127,7 +127,7 @@
             </li> -->
 
                     <li>
-                      <div class="flex flex-col gap-4">
+                      <!-- <div class="flex flex-col gap-4">
                         <router-link
                           to="#"
                           class="btn-padding text-xs sm:text-t14 rounded-full border border-black/50 text-black/50 bg-white"
@@ -138,7 +138,7 @@
                           class="btn-padding text-xs sm:text-t14 rounded-full text-white bg-gradient"
                           >Connect Wallet
                         </router-link>
-                      </div>
+                      </div> -->
                     </li>
                   </ul>
                 </nav>
@@ -292,11 +292,11 @@
               class="btn-padding text-xs sm:text-t14 rounded-full border border-black/50 text-black/50 bg-white"
               >GA424GAVZIOMZ...
             </router-link> -->
-            <router-link
+            <!-- <router-link
               to="#"
               class="btn-padding text-xs sm:text-t14 rounded-full text-white bg-gradient"
               >Connect Wallet
-            </router-link>
+            </router-link> -->
 
             <!-- Separator -->
             <div
@@ -305,7 +305,7 @@
             />
 
             <!-- Profile dropdown -->
-            <Menu as="div" class="relative">
+            <!-- <Menu as="div" class="relative">
               <MenuButton class="-m-1.5 flex items-center p-1.5">
                 <span class="sr-only">Open user menu</span>
                 <img
@@ -314,7 +314,7 @@
                   alt=""
                 />
               </MenuButton>
-            </Menu>
+            </Menu> -->
           </div>
         </div>
       </div>
