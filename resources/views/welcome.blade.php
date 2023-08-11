@@ -9,5 +9,10 @@
     </head>
     <body class="antialiased">
        <div id="app"></div>
+       <script>
+        window.Laravel = {
+            csrfToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        };
+    </script>
     </body>
 </html>

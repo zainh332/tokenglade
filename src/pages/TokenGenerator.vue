@@ -81,16 +81,30 @@
                 </div>
               </div>
 
+              <!-- <div class="flex items-center justify-between">
+                <p class="text-t16 font-normal">Lock Issuer Wallet Address</p>
+                <Toggle v-model="toggleValue" />
+              </div> -->
+
               <div>
                 <button type="submit"
                   class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white">
                   Generate Token
                 </button>
               </div>
+
             </Form>
           </div>
         </div>
+
+        <div class="w-full px-2 py-2 rounded-md text-t14 text-white bg-yellow-500">
+          Please ensure that both wallets maintain a minimum balance of 5 XLM to successfully generate a token.
+        </div>
+
       </div>
+      <!-- <div class="w-full px-2 py-2 rounded-md text-t14 text-white bg-yellow-500">
+        Please be aware that locking the issuer address will result in the inability to perform any future transactions from the issuer wallet, as it will remain permanently locked.
+      </div> -->
     </div>
   </Layout>
 </template>
@@ -118,6 +132,8 @@ import * as Yup from "yup";
 
 const open = ref(false);
 
+// const toggleValue = ref(false);
+
 const schema = Yup.object({
 
   ticker: Yup.string()
@@ -131,30 +147,31 @@ const schema = Yup.object({
 
   issuer_wallet_private_key: Yup.string()
     .required('Issuer Wallet Private Key is a required field.')
-    .length(56, 'Issuer Wallet Private Key should be exactly 56 characters long.')
+    // .length(56, 'Issuer Wallet Private Key should be exactly 56 characters long.')
     .label('Issuer Wallet Private Key'),
 
   distributor_wallet_private_key: Yup.string()
     .required('Distributor Wallet Private Key is a required field.')
-    .length(56, 'Distributor Wallet Private Key should be exactly 56 characters long.')
+    // .length(56, 'Distributor Wallet Private Key should be exactly 56 characters long.')
     .label('Distributor Wallet Private Key'),
 
 });
 
 
 const submitForm = (values) =>{
-
-try {
-  // Show loading indicator
-  Swal.fire({
-    showConfirmButton: false,
-    title: 'Generating Token',
-    allowOutsideClick: false,
-    didOpen: () => {
-    Swal.showLoading()
-  },
-  });
-
+  
+  try {
+    // Show loading indicator
+    Swal.fire({
+        showConfirmButton: false,
+        title: 'Generating Token',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+          },
+        });
+        
+  // values.toggleValue = toggleValue.value;
 
   axios.post('api/generate_token', values, {
     headers: {

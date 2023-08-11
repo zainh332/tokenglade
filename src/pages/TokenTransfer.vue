@@ -109,9 +109,7 @@
                 </select>
               </div>
 
-              <div
-                class="w-full px-2 py-2 rounded-md text-t16 text-white bg-[#ED1C24]"
-              >
+              <div class="w-full px-2 py-2 rounded-md text-t16 text-white bg-[#ED1C24]">
                 Please note that the wallet must have established a trustline
                 for the specific token you are attempting to send.
               </div>
