@@ -138,21 +138,21 @@ const schema = Yup.object({
 
   ticker: Yup.string()
     .required('Symbol is a required field.')
-    .max(4, 'Symbol should not exceed 4 characters.')
+    .max(12, 'Symbol should not exceed 12 characters')
     .label('Symbol'),
 
   total_supply: Yup.string()
-    .required('Total Supply is a required field.')
+    .required('Total Supply is a required field')
     .label('Total Supply'),
 
   issuer_wallet_private_key: Yup.string()
-    .required('Issuer Wallet Private Key is a required field.')
-    // .length(56, 'Issuer Wallet Private Key should be exactly 56 characters long.')
+    .required('Issuer Wallet Private Key is a required field')
+    .length(56, 'Issuer Wallet Private Key should be exactly 56 characters long')
     .label('Issuer Wallet Private Key'),
 
   distributor_wallet_private_key: Yup.string()
-    .required('Distributor Wallet Private Key is a required field.')
-    // .length(56, 'Distributor Wallet Private Key should be exactly 56 characters long.')
+    .required('Distributor Wallet Private Key is a required field')
+    .length(56, 'Distributor Wallet Private Key should be exactly 56 characters long')
     .label('Distributor Wallet Private Key'),
 
 });
@@ -163,13 +163,13 @@ const submitForm = (values) =>{
   try {
     // Show loading indicator
     Swal.fire({
-        showConfirmButton: false,
-        title: 'Generating Token',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading()
-          },
-        });
+      showConfirmButton: false,
+      title: 'Generating Token',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+        },
+    });
         
   // values.toggleValue = toggleValue.value;
 
@@ -196,6 +196,7 @@ const submitForm = (values) =>{
         });
       });
     } else {
+      console.log(response);
       Swal.fire({
         icon: 'error',
         title: 'Error!',
@@ -204,7 +205,11 @@ const submitForm = (values) =>{
     }
   });
 } catch (error) {
-
+  Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'An error occurred while generating the token',
+      });
 }
 };
 

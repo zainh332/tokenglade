@@ -25,6 +25,8 @@ use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use InvalidArgumentException;
+use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
 
 class TokenController extends Controller
 {
@@ -37,52 +39,80 @@ class TokenController extends Controller
         $this->maxFee = 3000;
     }
 
-    public function check_wallet(Request $request, $walletType = 'issuer')
+    public function check_wallet(Request $request)
     {
-        if ($walletType === 'issuer') {
-            $walletAddress = $request->issuer_wallet_address;
-        } elseif ($walletType === 'distributor') {
-            $walletAddress = $request->distributor_wallet_address;
-        } else {
-            return response()->json(['status' => 0, 'msg' => 'Invalid wallet type provided']);
-        }
-
-        if (empty($walletAddress)) {
-            return response()->json(['status' => 0, 'msg' => 'Something went wrong!']);
-        }
-
-        $account = $this->sdk->requestAccount($walletAddress);
-        foreach ($account->getBalances() as $balance) {
-            if ($balance->getAssetType() === 'native') {
-                if ($balance->getBalance() < 10) {
-                    return response()->json(['status' => 0, 'msg' => 'Account does not have enough XLM. Please deposit at least 5 XLM!']);
-                } else {
-                    return response()->json(['status' => 1]);
-                }
+        $issuer_wallet_address_private_key = $request->input('issuer_wallet_private_key');
+        try 
+            {
+                $issuerKeyPair = KeyPair::fromSeed($issuer_wallet_address_private_key);
+            } 
+            catch (InvalidArgumentException $e) {
+                return response()->json(['status' => 'error', 'msg' => 'The issuer wallet private key is not valid"']);
             }
-        }
+        // if ($walletType === 'issuer') {
+        //     $walletAddress = $request->issuer_wallet_address;
+        // } elseif ($walletType === 'distributor') {
+        //     $walletAddress = $request->distributor_wallet_address;
+        // } else {
+        //     return response()->json(['status' => 0, 'msg' => 'Invalid wallet type provided']);
+        // }
+
+        // if (empty($walletAddress)) {
+        //     return response()->json(['status' => 0, 'msg' => 'Something went wrong!']);
+        // }
+
+        // $account = $this->sdk->requestAccount($walletAddress);
+        // foreach ($account->getBalances() as $balance) {
+        //     if ($balance->getAssetType() === 'native') {
+        //         if ($balance->getBalance() <= 5) {
+        //             return response()->json(['status' => 0, 'msg' => 'Account does not have enough XLM. Please deposit at least 5 XLM!']);
+        //         } else {
+        //             return response()->json(['status' => 1]);
+        //         }
+        //     }
+        // }
     }
 
     public function generate_token(Request $request)
     {
-        // dd($request->all());
         try {
             $ticker = $request->input('ticker');
             $total_supply = $request->input('total_supply');
             $issuer_wallet_address_private_key = $request->input('issuer_wallet_private_key');
             $distributor_wallet_address_private_key = $request->input('distributor_wallet_private_key');
 
-            // issuer account
-            $issuerKeyPair = KeyPair::fromSeed($issuer_wallet_address_private_key);
+            // check if issuer wallet private key is valid or not 
+            try 
+            {
+                $issuerKeyPair = KeyPair::fromSeed($issuer_wallet_address_private_key);
+            } 
+            catch (InvalidArgumentException $e) {
+                return response()->json(['status' => 'error', 'msg' => 'The issuer wallet private key is not valid"']);
+            }
             $issuerAccountId = $issuerKeyPair->getAccountId();
+            
 
-            // distributor account
-            $distributorKeyPair = KeyPair::fromSeed($distributor_wallet_address_private_key);
+            // check if distributor wallet private key is valid or not
+            try 
+            {
+                $distributorKeyPair = KeyPair::fromSeed($distributor_wallet_address_private_key);
+            } 
+            catch (InvalidArgumentException $e) {
+                return response()->json(['status' => 'error', 'msg' => 'The distributor wallet private key is not valid"']);
+            }
+
             $distributorAccountId = $distributorKeyPair->getAccountId();
             $distributorAccount = $this->sdk->requestAccount($distributorAccountId);
 
-            // Define the custom asset/token issued by the issuer account
-            $asset = new AssetTypeCreditAlphaNum4($ticker, $issuerAccountId);
+            // if ticker is less or equal to 4 characters 
+            if (strlen($ticker) <= 4) {
+                // Define the custom asset/token issued by the issuer account
+                $asset = new AssetTypeCreditAlphaNum4($ticker, $issuerAccountId);
+            }
+            else{
+                // Define the custom asset/token issued by the issuer account
+                $asset = new AssetTypeCreditAlphanum12($ticker, $issuerAccountId);
+            }
 
             // Prepare a change trust operation for the distributor account and trust limit
             $changeTrustOperation = (new ChangeTrustOperationBuilder($asset))->build();
@@ -91,8 +121,8 @@ class TokenController extends Controller
             $transactionBuilder = new TransactionBuilder($distributorAccount);
             $transactionBuilder
                 ->setMaxOperationFee($this->maxFee)
-                ->addOperation($changeTrustOperation);
-            // ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'by TokenGlade'));
+                ->addOperation($changeTrustOperation)
+                ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT,'Token created by TokenGlade'));
 
             $transaction = $transactionBuilder->build();
             // $transaction->sign($distributorKeyPair, Network::testnet());

@@ -205,7 +205,11 @@ axios.post('api/claimable_balance', values, {
 }
      
 catch (error) {
-
+  Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'An error occurred while createing claimable balance',
+      });
 }
 };
 
