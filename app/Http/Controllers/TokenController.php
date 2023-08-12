@@ -34,33 +34,35 @@ class TokenController extends Controller
 
     public function __construct()
     {
-        // $this->sdk = StellarSDK::getPublicNetInstance();
-        $this->sdk = StellarSDK::getTestNetInstance();
+        $this->sdk = StellarSDK::getPublicNetInstance();
+        // $this->sdk = StellarSDK::getTestNetInstance();
         $this->maxFee = 3000;
     }
 
     public function check_wallet(Request $request)
     {
         $private_key = $request->input('private_key');
-        if($private_key != null){
+
+        //Continue only if private_key is not null
+        if($private_key != null){            
             try {
-                $issuerKeyPair = KeyPair::fromSeed($private_key);
+                $private_key = KeyPair::fromSeed($private_key);
+                $privatekeyId = $private_key->getAccountId();
+                $privatekeyAccount = $this->sdk->requestAccount($privatekeyId);
+                foreach ($privatekeyAccount->getBalances() as $balance) {
+                    if ($balance->getAssetType() === 'native') {
+                        if ($balance->getBalance() < 5) {
+                            return response()->json(['status' => 'error', 'msg' => 'Account does not have enough XLM. Please deposit at least 5 XLM']);
+                        }
+                    }
+                }
             } 
+
+            //throw error if KeyPair::fromSeed($private_key) is invalid
             catch (InvalidArgumentException $e) {
                 return response()->json(['status' => 'error', 'msg' => 'The private key is not valid']);
             }
         }
-
-        // $account = $this->sdk->requestAccount($walletAddress);
-        // foreach ($account->getBalances() as $balance) {
-        //     if ($balance->getAssetType() === 'native') {
-        //         if ($balance->getBalance() <= 5) {
-        //             return response()->json(['status' => 0, 'msg' => 'Account does not have enough XLM. Please deposit at least 5 XLM!']);
-        //         } else {
-        //             return response()->json(['status' => 1]);
-        //         }
-        //     }
-        // }
     }
 
     public function generate_token(Request $request)

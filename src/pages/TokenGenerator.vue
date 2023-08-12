@@ -190,21 +190,21 @@ const open = ref(false);
 const schema = Yup.object({
 
   ticker: Yup.string()
-    .required('Symbol is a required field.')
+    .required('Symbol is required')
     .max(12, 'Symbol should not exceed 12 characters')
     .label('Symbol'),
 
   total_supply: Yup.string()
-    .required('Total Supply is a required field')
+    .required('Total Supply is required')
     .label('Total Supply'),
 
   issuer_wallet_private_key: Yup.string()
-    .required('Issuer Wallet Private Key is a required field')
+    .required('Issuer Wallet Private Key is required')
     .length(56, 'Issuer Wallet Private Key should be exactly 56 characters long')
     .label('Issuer Wallet Private Key'),
 
   distributor_wallet_private_key: Yup.string()
-    .required('Distributor Wallet Private Key is a required field')
+    .required('Distributor Wallet Private Key is required')
     .length(56, 'Distributor Wallet Private Key should be exactly 56 characters long')
     .label('Distributor Wallet Private Key'),
 
