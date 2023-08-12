@@ -34,15 +34,14 @@ class TokenController extends Controller
 
     public function __construct()
     {
-        // $this->sdk = StellarSDK::getPublicNetInstance();
-        $this->sdk = StellarSDK::getTestNetInstance();
+        $this->sdk = StellarSDK::getPublicNetInstance();
+        // $this->sdk = StellarSDK::getTestNetInstance();
         $this->maxFee = 3000;
     }
 
     public function check_wallet(Request $request)
     {
         $private_key = $request->input('private_key');
-        // dd($private_key);
         try 
             {
                 $issuerKeyPair = KeyPair::fromSeed($private_key);
@@ -108,8 +107,8 @@ class TokenController extends Controller
                 ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT,'Token created by TokenGlade'));
 
             $transaction = $transactionBuilder->build();
-            $transaction->sign($distributorKeyPair, Network::testnet());
-            // $transaction->sign($distributorKeyPair, Network::public());
+            // $transaction->sign($distributorKeyPair, Network::testnet());
+            $transaction->sign($distributorKeyPair, Network::public());
             $result = $this->sdk->submitTransaction($transaction);
 
 
@@ -121,8 +120,8 @@ class TokenController extends Controller
             $transaction = (new TransactionBuilder($issuerAccount))->addOperation($paymentOperation)->build();
 
             // The issuer signs the transaction.
-            $transaction->sign($issuerKeyPair, Network::testnet());
-            // $transaction->sign($issuerKeyPair, Network::public());
+            // $transaction->sign($issuerKeyPair, Network::testnet());
+            $transaction->sign($issuerKeyPair, Network::public());
 
             // Submit the transaction.
             $response = $this->sdk->submitTransaction($transaction);
