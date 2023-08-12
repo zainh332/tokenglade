@@ -66,8 +66,6 @@ class TokenController extends Controller
             } catch (\Exception $e) {
                 return response()->json(['status' => 'error', 'msg' => 'Wallet is not active']);
             }
-        } else {
-            return response()->json(['status' => 'error', 'msg' => 'Something went wrong!']);
         }
     }
 
