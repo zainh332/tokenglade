@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use DateTime;
 use Exception;
-use Soneso\StellarSDK\StellarSdk;
+use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Memo;
@@ -34,8 +34,8 @@ class TokenController extends Controller
 
     public function __construct()
     {
-        // $this->sdk = StellarSdk::getPublicNetInstance();
-        $this->sdk = StellarSdk::getTestNetInstance();
+        // $this->sdk = StellarSDK::getPublicNetInstance();
+        $this->sdk = StellarSDK::getTestNetInstance();
         $this->maxFee = 3000;
     }
 
