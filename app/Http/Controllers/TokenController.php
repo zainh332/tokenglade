@@ -34,8 +34,8 @@ class TokenController extends Controller
 
     public function __construct()
     {
-        $this->sdk = StellarSDK::getPublicNetInstance();
-        // $this->sdk = StellarSDK::getTestNetInstance();
+        // $this->sdk = StellarSDK::getPublicNetInstance();
+        $this->sdk = StellarSDK::getTestNetInstance();
         $this->maxFee = 3000;
     }
 
@@ -107,8 +107,8 @@ class TokenController extends Controller
                 ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT,'Token created by TokenGlade'));
 
             $transaction = $transactionBuilder->build();
-            // $transaction->sign($distributorKeyPair, Network::testnet());
-            $transaction->sign($distributorKeyPair, Network::public());
+            $transaction->sign($distributorKeyPair, Network::testnet());
+            // $transaction->sign($distributorKeyPair, Network::public());
             $result = $this->sdk->submitTransaction($transaction);
 
 
@@ -120,8 +120,8 @@ class TokenController extends Controller
             $transaction = (new TransactionBuilder($issuerAccount))->addOperation($paymentOperation)->build();
 
             // The issuer signs the transaction.
-            // $transaction->sign($issuerKeyPair, Network::testnet());
-            $transaction->sign($issuerKeyPair, Network::public());
+            $transaction->sign($issuerKeyPair, Network::testnet());
+            // $transaction->sign($issuerKeyPair, Network::public());
 
             // Submit the transaction.
             $response = $this->sdk->submitTransaction($transaction);
@@ -244,8 +244,8 @@ class TokenController extends Controller
                     }
 
                     $transaction = $transactionBuilder->build();
-                    // $transaction->sign($UserKeypair, Network::testnet());
-                    $transaction->sign($UserKeypair, Network::public());
+                    $transaction->sign($UserKeypair, Network::testnet());
+                    // $transaction->sign($UserKeypair, Network::public());
                     $result = $this->sdk->submitTransaction($transaction);
                     $transactionIds[$cleanedReceiver] = $result->getId();
                 }
