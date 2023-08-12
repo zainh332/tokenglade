@@ -34,21 +34,22 @@ class TokenController extends Controller
 
     public function __construct()
     {
-        $this->sdk = StellarSDK::getPublicNetInstance();
-        // $this->sdk = StellarSDK::getTestNetInstance();
+        // $this->sdk = StellarSDK::getPublicNetInstance();
+        $this->sdk = StellarSDK::getTestNetInstance();
         $this->maxFee = 3000;
     }
 
     public function check_wallet(Request $request)
     {
         $private_key = $request->input('private_key');
-        try 
-            {
+        if($private_key != null){
+            try {
                 $issuerKeyPair = KeyPair::fromSeed($private_key);
             } 
             catch (InvalidArgumentException $e) {
                 return response()->json(['status' => 'error', 'msg' => 'The private key is not valid']);
             }
+        }
 
         // $account = $this->sdk->requestAccount($walletAddress);
         // foreach ($account->getBalances() as $balance) {
