@@ -34,8 +34,8 @@ class TokenController extends Controller
 
     public function __construct()
     {
-        // $this->sdk = StellarSDK::getPublicNetInstance();
-        $this->sdk = StellarSDK::getTestNetInstance();
+        // $this->sdk = StellarSdk::getPublicNetInstance();
+        $this->sdk = StellarSdk::getTestNetInstance();
         $this->maxFee = 3000;
     }
 
