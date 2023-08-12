@@ -34,32 +34,22 @@ class TokenController extends Controller
 
     public function __construct()
     {
-        $this->sdk = StellarSDK::getPublicNetInstance();
-        // $this->sdk = StellarSDK::getTestNetInstance();
+        // $this->sdk = StellarSDK::getPublicNetInstance();
+        $this->sdk = StellarSDK::getTestNetInstance();
         $this->maxFee = 3000;
     }
 
     public function check_wallet(Request $request)
     {
-        $issuer_wallet_address_private_key = $request->input('issuer_wallet_private_key');
+        $private_key = $request->input('private_key');
+        // dd($private_key);
         try 
             {
-                $issuerKeyPair = KeyPair::fromSeed($issuer_wallet_address_private_key);
+                $issuerKeyPair = KeyPair::fromSeed($private_key);
             } 
             catch (InvalidArgumentException $e) {
-                return response()->json(['status' => 'error', 'msg' => 'The issuer wallet private key is not valid"']);
+                return response()->json(['status' => 'error', 'msg' => 'The private key is not valid']);
             }
-        // if ($walletType === 'issuer') {
-        //     $walletAddress = $request->issuer_wallet_address;
-        // } elseif ($walletType === 'distributor') {
-        //     $walletAddress = $request->distributor_wallet_address;
-        // } else {
-        //     return response()->json(['status' => 0, 'msg' => 'Invalid wallet type provided']);
-        // }
-
-        // if (empty($walletAddress)) {
-        //     return response()->json(['status' => 0, 'msg' => 'Something went wrong!']);
-        // }
 
         // $account = $this->sdk->requestAccount($walletAddress);
         // foreach ($account->getBalances() as $balance) {
@@ -82,25 +72,18 @@ class TokenController extends Controller
             $distributor_wallet_address_private_key = $request->input('distributor_wallet_private_key');
 
             // check if issuer wallet private key is valid or not 
-            try 
-            {
-                $issuerKeyPair = KeyPair::fromSeed($issuer_wallet_address_private_key);
-            } 
-            catch (InvalidArgumentException $e) {
-                return response()->json(['status' => 'error', 'msg' => 'The issuer wallet private key is not valid"']);
-            }
+            // try 
+            // {
+            //     $issuerKeyPair = KeyPair::fromSeed($issuer_wallet_address_private_key);
+            // } 
+            // catch (InvalidArgumentException $e) {
+            //     return response()->json(['status' => 'error', 'msg' => 'The issuer wallet private key is not valid"']);
+            // }
+            
+            $issuerKeyPair = KeyPair::fromSeed($issuer_wallet_address_private_key);
             $issuerAccountId = $issuerKeyPair->getAccountId();
             
-
-            // check if distributor wallet private key is valid or not
-            try 
-            {
-                $distributorKeyPair = KeyPair::fromSeed($distributor_wallet_address_private_key);
-            } 
-            catch (InvalidArgumentException $e) {
-                return response()->json(['status' => 'error', 'msg' => 'The distributor wallet private key is not valid"']);
-            }
-
+            $distributorKeyPair = KeyPair::fromSeed($distributor_wallet_address_private_key);
             $distributorAccountId = $distributorKeyPair->getAccountId();
             $distributorAccount = $this->sdk->requestAccount($distributorAccountId);
 
@@ -125,8 +108,8 @@ class TokenController extends Controller
                 ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT,'Token created by TokenGlade'));
 
             $transaction = $transactionBuilder->build();
-            // $transaction->sign($distributorKeyPair, Network::testnet());
-            $transaction->sign($distributorKeyPair, Network::public());
+            $transaction->sign($distributorKeyPair, Network::testnet());
+            // $transaction->sign($distributorKeyPair, Network::public());
             $result = $this->sdk->submitTransaction($transaction);
 
 
@@ -138,8 +121,8 @@ class TokenController extends Controller
             $transaction = (new TransactionBuilder($issuerAccount))->addOperation($paymentOperation)->build();
 
             // The issuer signs the transaction.
-            // $transaction->sign($issuerKeyPair, Network::testnet());
-            $transaction->sign($issuerKeyPair, Network::public());
+            $transaction->sign($issuerKeyPair, Network::testnet());
+            // $transaction->sign($issuerKeyPair, Network::public());
 
             // Submit the transaction.
             $response = $this->sdk->submitTransaction($transaction);

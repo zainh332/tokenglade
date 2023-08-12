@@ -58,12 +58,17 @@
                   id="issuer_wallet_private_key" 
                   name="issuer_wallet_private_key" 
                   type="password"
+                  v-model="values.issuer_wallet_private_key"
+                  @blur="handlePrivateKeyBlur('issuer_wallet_private_key')"
                   class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                   <ErrorMessage class="text-red-500 text-sm font-normal" name="issuer_wallet_private_key" />
+
+                  <!-- Display the server-side validation error while checking private key-->
+                  <p v-if="issuerPrivateKeyError" class="text-red-500 text-sm font-normal">{{ issuerPrivateKeyError }}</p>
                 </div>
               </div>
-
+              
               <div>
                 <div class="flex items-center justify-between">
                   <label for="distributor_wallet_private_key" class="block text-t16 font-normal leading-6 text-gray-900">Distributor Wallet Private Key
@@ -75,9 +80,14 @@
                   id="distributor_wallet_private_key" 
                   name="distributor_wallet_private_key" 
                   type="password"
+                  v-model="values.distributor_wallet_private_key"
+                  @blur="handlePrivateKeyBlur('distributor_wallet_private_key')"
                   class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                   <ErrorMessage class="text-red-500 text-sm font-normal" name="distributor_wallet_private_key" />
+
+                  <!-- Display the server-side validation error while checking private key-->
+                  <p v-if="distributorPrivateKeyError" class="text-red-500 text-sm font-normal">{{ distributorPrivateKeyError }}</p>
                 </div>
               </div>
 
@@ -113,24 +123,67 @@
 import Layout from "@/components/Layout.vue";
 import Modal from '@/components/Modal.vue';
 import Toggle from '@/components/Toggle.vue';
-
-//Importing ref function from vue
-import { ref , reactive} from "vue";
-
-//Used to submit the route
+import { ref , reactive, watch} from "vue";
 import axios from 'axios';
-
-//Importing class of sweetalert2 library for Alert Box
 import Swal from 'sweetalert2';
-
-//We have called these both functions Form and Field and used in Token Generator Form and ErrorMessage to display the errors
 import { Form , Field, ErrorMessage} from 'vee-validate';
-
-//Used for Validation
 import * as Yup from "yup";
 
 
+// Create separate serverError variables for issuer_wallet_private_key and distributor_wallet_private_key
+const issuerPrivateKeyError = ref('');
+const distributorPrivateKeyError = ref('');
+
+//checking valid private key
+const issuer_wallet_private_key = ref('');
+const distributor_wallet_private_key = ref('');
+
+const values = reactive({
+  ticker: "",
+  total_supply: "",
+  issuer_wallet_private_key, // Include it in the reactive values
+  distributor_wallet_private_key: "",
+});
+
+
+//@blur to used in the form field to check if the user losses focus from the field
+//Method to call checkWalletPrivatekey function when use moved to another filed (lose focus) 
+function handlePrivateKeyBlur(fieldName) {
+  if (fieldName === 'issuer_wallet_private_key' || fieldName === 'distributor_wallet_private_key') {
+    const privateKey = values[fieldName]; // Get the private key value from the reactive values
+    checkWalletPrivatekey(fieldName, privateKey); // Pass both the field name and the private key value
+  }
+}
+
+// Function to check the issuer wallet private key
+function checkWalletPrivatekey(fieldName, privateKey) {
+  // You can use this function to perform checks or make API calls related to the private key
+  
+  const requestData = {
+    private_key: privateKey, // Assuming the server expects the private key with the key name "private_key"
+  };
+
+
+  axios.post('api/check_wallet', requestData , {
+    headers: {
+      'X-CSRF-TOKEN': window.Laravel.csrfToken,
+    }
+  }).then((response) => {
+    // Hide loading indicator
+    if (fieldName === 'issuer_wallet_private_key') {
+      // Handle issuer wallet private key error
+      issuerPrivateKeyError.value = response.data.status === 'error' ? response.data.msg : '';
+    } else if (fieldName === 'distributor_wallet_private_key') {
+      // Handle distributor wallet private key error
+      distributorPrivateKeyError.value = response.data.status === 'error' ? response.data.msg : '';
+    }
+  });
+}
+
+//end checking private key
+
 const open = ref(false);
+
 
 // const toggleValue = ref(false);
 
@@ -160,7 +213,11 @@ const schema = Yup.object({
 
 const submitForm = (values) =>{
   
-  try {
+try {
+  // values.toggleValue = toggleValue.value;
+
+  // submit the form only if there are no distributorPrivateKeyError issuerPrivateKeyError 
+  if (issuerPrivateKeyError.value == "" && distributorPrivateKeyError.value == "") {
     // Show loading indicator
     Swal.fire({
       showConfirmButton: false,
@@ -171,7 +228,7 @@ const submitForm = (values) =>{
         },
     });
         
-  // values.toggleValue = toggleValue.value;
+    
 
   axios.post('api/generate_token', values, {
     headers: {
@@ -204,7 +261,9 @@ const submitForm = (values) =>{
       });
     }
   });
-} catch (error) {
+  } 
+}
+catch (error) {
   Swal.fire({
         icon: 'error',
         title: 'Error!',
