@@ -22,10 +22,15 @@
                 <Field 
                 id="wallet_address_private_key" 
                 name="wallet_address_private_key" 
-                type="text"
+                type="password"
+                v-model="values.wallet_address_private_key"
+                @blur="handlePrivateKeyBlur('wallet_address_private_key')"
                 class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
                 <ErrorMessage class="text-red-500 text-sm font-normal" name="wallet_address_private_key" />
+
+                <!-- Display the server-side validation error while checking private key-->
+                <p v-if="WalletPrivateKeyError" class="text-red-500 text-sm font-normal">{{ WalletPrivateKeyError }}</p>
               </div>
             </div>
               <div>
@@ -120,6 +125,49 @@ import { Form , Field, ErrorMessage} from 'vee-validate';
 
 //Used for Validation
 import * as Yup from "yup";
+
+// Create ariables for private_key
+const WalletPrivateKeyError = ref('');
+
+//checking valid private key
+const wallet_address_private_key = ref('');
+
+const values = reactive({
+  ticker: "",
+  wallet_address_private_key,
+});
+
+
+//@blur to used in the form field to check if the user losses focus from the field
+//Method to call checkWalletPrivatekey function when use moved to another filed (lose focus) 
+function handlePrivateKeyBlur(fieldName) {
+  if (fieldName === 'wallet_address_private_key') {
+    const privateKey = values[fieldName]; // Get the private key value from the reactive values
+    checkWalletPrivatekey(fieldName, privateKey); // Pass both the field name and the private key value
+  }
+}
+
+// Function to check the issuer wallet private key
+function checkWalletPrivatekey(fieldName, privateKey) {
+  // You can use this function to perform checks or make API calls related to the private key
+  
+  const requestData = {
+    private_key: privateKey, // Assuming the server expects the private key with the key name "private_key"
+  };
+
+
+  axios.post('api/check_wallet', requestData , {
+    headers: {
+      'X-CSRF-TOKEN': window.Laravel.csrfToken,
+    }
+  }).then((response) => {
+    // Hide loading indicator
+    if (fieldName === 'wallet_address_private_key') {
+      // Handle  wallet private key error
+      WalletPrivateKeyError.value = response.data.status === 'error' ? response.data.msg : '';
+    } 
+  });
+}
 
 const open = ref(false);
 

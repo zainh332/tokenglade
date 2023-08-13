@@ -78,15 +78,6 @@ class TokenController extends Controller
             $issuer_wallet_address_private_key = $request->input('issuer_wallet_private_key');
             $distributor_wallet_address_private_key = $request->input('distributor_wallet_private_key');
 
-            // check if issuer wallet private key is valid or not 
-            // try 
-            // {
-            //     $issuerKeyPair = KeyPair::fromSeed($issuer_wallet_address_private_key);
-            // } 
-            // catch (InvalidArgumentException $e) {
-            //     return response()->json(['status' => 'error', 'msg' => 'The issuer wallet private key is not valid"']);
-            // }
-
             $issuerKeyPair = KeyPair::fromSeed($issuer_wallet_address_private_key);
             $issuerAccountId = $issuerKeyPair->getAccountId();
 
@@ -191,9 +182,6 @@ class TokenController extends Controller
             $target_addresses_array = explode("\n", $target_addresses);
 
             $UserKeypair = KeyPair::fromSeed($user_wallet_address_private_key);
-            // if (!KeyPair::fromSeed($user_wallet_address_private_key)) {
-            //     throw new Exception("The distributor wallet address private key is not a valid seed.");
-            // }
             $user_public_key = $UserKeypair->getAccountId();
             $userAccount = $this->sdk->requestAccount($user_public_key);
 
