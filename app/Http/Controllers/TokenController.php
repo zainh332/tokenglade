@@ -35,8 +35,8 @@ class TokenController extends Controller
 
     public function __construct()
     {
-        // $this->sdk = StellarSDK::getPublicNetInstance();
-        $this->sdk = StellarSDK::getTestNetInstance();
+        $this->sdk = StellarSDK::getPublicNetInstance();
+        // $this->sdk = StellarSDK::getTestNetInstance();
         $this->maxFee = 3000;
     }
 
@@ -280,8 +280,8 @@ class TokenController extends Controller
                     }
 
                     $transaction = $transactionBuilder->build();
-                    $transaction->sign($UserKeypair, Network::testnet());
-                    // $transaction->sign($UserKeypair, Network::public());
+                    // $transaction->sign($UserKeypair, Network::testnet());
+                    $transaction->sign($UserKeypair, Network::public());
                     $result = $this->sdk->submitTransaction($transaction);
                     $transactionIds[$cleanedReceiver] = $result->getId();
                 }
