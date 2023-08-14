@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use DateTime;
 use Exception;
 use Soneso\StellarSDK\StellarSDK;
@@ -34,8 +35,8 @@ class TokenController extends Controller
 
     public function __construct()
     {
-        $this->sdk = StellarSDK::getPublicNetInstance();
-        // $this->sdk = StellarSDK::getTestNetInstance();
+        // $this->sdk = StellarSDK::getPublicNetInstance();
+        $this->sdk = StellarSDK::getTestNetInstance();
         $this->maxFee = 3000;
     }
 
@@ -60,6 +61,43 @@ class TokenController extends Controller
                             return response()->json(['status' => 'error', 'msg' => 'Account does not have enough XLM. Please deposit at least 5 XLM']);
                         }
                     }
+                }
+            } catch (\InvalidArgumentException $e) {
+                return response()->json(['status' => 'error', 'msg' => 'Invalid Private Key']);
+            } catch (\Exception $e) {
+                return response()->json(['status' => 'error', 'msg' => 'Wallet is not active']);
+            }
+        }
+    }
+
+
+    public function check_holding_tokens(Request $request){
+        $private_key = $request->input('private_key');
+        $token = $request->input('token');
+        
+        // Continue only if private_key is not null
+        if ($private_key !== null) {
+            try {
+                $private_key_pair = KeyPair::fromSeed($private_key);
+                // Fetch the public address of the wallet from the private key
+                $privatekeyId = $private_key_pair->getAccountId();
+                // Fetch details of the wallet from the public address
+                $privatekeyAccount = $this->sdk->requestAccount($privatekeyId);
+                // Fetch balance of the wallet
+
+                $holding_tokens = false; // Initialize a flag variable
+
+                foreach($privatekeyAccount->getBalances() as $balance){
+                    if($balance->getAssetType() != 'native' && $balance->getAssetCode() === $token){
+                        $holding_tokens = true;
+                        break;
+                    }
+                    else{
+                        $holding_tokens = false;
+                    }
+                }
+                if($holding_tokens ===false ){
+                    return response()->json(['status' => 'error', 'msg' => 'You dont hold '.$token .' tokens' ]);
                 }
             } catch (\InvalidArgumentException $e) {
                 return response()->json(['status' => 'error', 'msg' => 'Invalid Private Key']);
@@ -160,7 +198,8 @@ class TokenController extends Controller
             $memo = $request->input('memo');
 
 
-            $receiver_claim_time = $request->input('receiver_claim_time');
+            // $receiver_claim_time = $request->input('receiver_claim_time');
+            $receiver_claim_time = Carbon::now();
             if (!empty($receiver_claim_time)) {
                 $dateTime = new DateTime($receiver_claim_time);
                 $timestamp = $dateTime->getTimestamp();
@@ -206,7 +245,8 @@ class TokenController extends Controller
                 $balanceFloat = floatval($balance->getBalance());
                 $balanceInteger = number_format($balanceFloat, 0, '', '');
 
-                if ($balance->getAssetType() != 'native' && $balance->getAssetCode() == $assetCode && $balanceInteger >= $amount) {
+                // if ($balance->getAssetType() != 'native' && $balance->getAssetCode() == $assetCode && $balanceInteger >= $amount) {
+                if ($balanceInteger >= $amount) {
                     $issuer_id = $balance->getAssetIssuer();
                     $hasEnoughBalance = true; // Set the flag to true
                     break; // Exit the loop since we found a matching balance
@@ -221,6 +261,7 @@ class TokenController extends Controller
                 // Build the transaction for each receiver and sign it separately
                 $transactionIds = [];
                 foreach ($claimantsByReceiver as $receiver => $claimants) {
+
                     // Create the claimable balance operation
                     $claimableBalanceOperation = new CreateClaimableBalanceOperation($claimants, $asset, $amount);
                     $cleanedReceiver = trim($receiver);
@@ -233,14 +274,14 @@ class TokenController extends Controller
                         ->addOperation($claimableBalanceOperation);
 
                     if (!empty($memo)) {
-                        $transactionBuilder->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, $memo, 'by TokenGlade'));
+                        $transactionBuilder->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, $memo. ' (TokenGlade)'));
                     } else {
-                        $transactionBuilder->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'by TokenGlade'));
+                        $transactionBuilder->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'By TokenGlade'));
                     }
 
                     $transaction = $transactionBuilder->build();
-                    // $transaction->sign($UserKeypair, Network::testnet());
-                    $transaction->sign($UserKeypair, Network::public());
+                    $transaction->sign($UserKeypair, Network::testnet());
+                    // $transaction->sign($UserKeypair, Network::public());
                     $result = $this->sdk->submitTransaction($transaction);
                     $transactionIds[$cleanedReceiver] = $result->getId();
                 }

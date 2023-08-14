@@ -75,9 +75,14 @@
                     id="token"
                     name="token"
                     type="text"
+                    v-model="values.token"
+                    @blur="handleTokenBlur('token')"
                     class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                   <ErrorMessage class="text-red-500 text-sm font-normal" name="token" />
+
+                   <!-- Display the server-side validation error while checking private key-->
+                   <p v-if="TokenError" class="text-red-500 text-sm font-normal">{{ TokenError }}</p>
                 </div>
               </div>
 
@@ -128,12 +133,14 @@ import * as Yup from "yup";
 
 // Create ariables for private_key
 const WalletPrivateKeyError = ref('');
+const TokenError = ref('');
 
 //checking valid private key
 const wallet_address_private_key = ref('');
+const token = ref('');
 
 const values = reactive({
-  ticker: "",
+  token: "",
   wallet_address_private_key,
 });
 
@@ -147,6 +154,15 @@ function handlePrivateKeyBlur(fieldName) {
   }
 }
 
+//Method to call checkToken function when use moved to another filed (lose focus) 
+function handleTokenBlur(fieldName) {
+  if (fieldName === 'token') {
+    const token = values[fieldName]; // Get the private key value from the reactive values
+    const privateKey = values['wallet_address_private_key']; // Get the private key value from the reactive values
+    checkToken(fieldName, token, privateKey); // Pass both the field name and the private key value
+  }
+}
+
 // Function to check the issuer wallet private key
 function checkWalletPrivatekey(fieldName, privateKey) {
   // You can use this function to perform checks or make API calls related to the private key
@@ -155,16 +171,36 @@ function checkWalletPrivatekey(fieldName, privateKey) {
     private_key: privateKey, // Assuming the server expects the private key with the key name "private_key"
   };
 
-
   axios.post('api/check_wallet', requestData , {
     headers: {
       'X-CSRF-TOKEN': window.Laravel.csrfToken,
     }
   }).then((response) => {
-    // Hide loading indicator
+    
     if (fieldName === 'wallet_address_private_key') {
       // Handle  wallet private key error
       WalletPrivateKeyError.value = response.data.status === 'error' ? response.data.msg : '';
+    } 
+  });
+}
+
+// Function to check the wallet holding tokens 
+function checkToken(fieldName, token, privateKey) {
+  
+  const requestData = {
+    private_key: privateKey, // Assuming the server expects the private key with the key name "private_key"
+    token: token, // Assuming the server expects the private key with the key name "private_key"
+  };
+
+  axios.post('api/check_holding_tokens', requestData , {
+    headers: {
+      'X-CSRF-TOKEN': window.Laravel.csrfToken,
+    }
+  }).then((response) => {
+
+    if (fieldName === 'token') {
+      // Handle  wallet private key error
+      TokenError.value = response.data.status === 'error' ? response.data.msg : '';
     } 
   });
 }
@@ -173,11 +209,11 @@ const open = ref(false);
 
 const schema = Yup.object({
   wallet_address_private_key: Yup.string()
-    .required('Private Key is required.')
-    .length(56, 'Private Key should be exactly 56 characters long.')
+    .required('Private Key is required')
+    .length(56, 'Private Key should be exactly 56 characters long')
     .label('Private Key'),
   target_wallet_address: Yup.string()
-    .required('Receiver Wallet Address is required.')
+    .required('Receiver Wallet Address is required')
     .test('is-valid-addresses', 'Invalid wallet addresses', (value) => {
       // Custom validation logic for multiple wallet addresses with 56 characters each.
       const addresses = value.split('\n');
@@ -186,13 +222,13 @@ const schema = Yup.object({
     })
     .label('Receiver Wallet Address'),
   amount: Yup.string()
-    .required('Amount is required.')
+    .required('Amount is required')
     .label('Amount'),
   token: Yup.string()
-    .required('Token is required.')
+    .required('Token is required')
     .label('Token'),
   memo: Yup.string()
-    .max(15, 'Memo should not exceed 15 characters.')
+    .max(15, 'Memo should not exceed 15 characters')
     .label('Memo'),
 });
 
@@ -200,65 +236,67 @@ const schema = Yup.object({
 
 const submitForm = (values) =>{
 
-try {
-  // Show loading indicator
-    Swal.fire({
-      showConfirmButton: false,
-      title: 'Sending Payment',
-      allowOutsideClick: false,
-      didOpen: () => {
-      Swal.showLoading()
-    },
-    });
-
-
-axios.post('api/claimable_balance', values, {
-      headers: {
-        'X-CSRF-TOKEN': window.Laravel.csrfToken,
-      }
-    }).then((response) => {
-      // Hide loading indicator
-        Swal.close();
-
-        if (response.data.status === 'success') {
-          Swal.fire({
-            icon: 'success',
-            title: 'Success!',
-            text: response.data.message,
-          }).then(() => {
-            // Reset form values
-            const formData = reactive({
-            wallet_address_private_key: "",
-            amount: "",
-            token: "",
-            memo: "",
-            target_wallet_address: "",
-            });
-          });
-        } else if (response.data.status === 'error') {
+  if (TokenError.value == "" && WalletPrivateKeyError.value == "") {
+    try {
+      // Show loading indicator
         Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: response.data.message,
+          showConfirmButton: false,
+          title: 'Sending Payment',
+          allowOutsideClick: false,
+          didOpen: () => {
+          Swal.showLoading()
+        },
         });
-      } else {
-        // Handle other statuses here, if applicable
-        console.log('Unexpected status:', response.data.status);
-      }
-    })
-    .catch((error) => {
-    // Handle server request errors
-    console.error('Error:', error);
-  });
-}
-     
-catch (error) {
-  Swal.fire({
-        icon: 'error',
-        title: 'Error!',
-        text: 'An error occurred while createing claimable balance',
+
+
+    axios.post('api/claimable_balance', values, {
+          headers: {
+            'X-CSRF-TOKEN': window.Laravel.csrfToken,
+          }
+        }).then((response) => {
+          // Hide loading indicator
+            Swal.close();
+
+            if (response.data.status === 'success') {
+              Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: response.data.message,
+              }).then(() => {
+                // Reset form values
+                const formData = reactive({
+                wallet_address_private_key: "",
+                amount: "",
+                token: "",
+                memo: "",
+                target_wallet_address: "",
+                });
+              });
+            } else if (response.data.status === 'error') {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: response.data.message,
+            });
+          } else {
+            // Handle other statuses here, if applicable
+            console.log('Unexpected status:', response.data.status);
+          }
+        })
+        .catch((error) => {
+        // Handle server request errors
+        console.error('Error:', error);
       });
-}
+    }
+        
+    catch (error) {
+      Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'An error occurred while createing claimable balance',
+          });
+    }
+  }
 };
 
 </script>

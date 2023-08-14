@@ -22,6 +22,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('/check_wallet', 'TokenController@check_wallet')->name('check_wallet');
+Route::post('/check_holding_tokens', 'TokenController@check_holding_tokens')->name('check_holding_tokens');
 Route::post('/generate_token', 'TokenController@generate_token')->name('generate_token');
 Route::post('/claimable_balance', 'TokenController@claimable_balance')->name('claimable_balance');
 Route::post('/token_transfer', 'TokenController@token_transfer')->name('token_transfer');
