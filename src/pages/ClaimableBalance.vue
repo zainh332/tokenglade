@@ -241,7 +241,7 @@ const submitForm = (values) =>{
       // Show loading indicator
         Swal.fire({
           showConfirmButton: false,
-          title: 'Sending Payment',
+          title: 'Sending Claimable Balance',
           allowOutsideClick: false,
           didOpen: () => {
           Swal.showLoading()

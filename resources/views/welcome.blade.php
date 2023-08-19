@@ -10,9 +10,16 @@
     <body class="antialiased">
        <div id="app"></div>
        <script>
-        window.Laravel = {
-            csrfToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        };
+           window.Laravel = {
+               csrfToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            };
+            
+            // Google tag (gtag.js) 
+            async src="https://www.googletagmanager.com/gtag/js?id=G-FNY5NE54YN">
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-FNY5NE54YN');
     </script>
     </body>
 </html>

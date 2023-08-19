@@ -28,6 +28,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use InvalidArgumentException;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
+use Soneso\StellarSDK\ClaimClaimableBalanceOperation;
 
 class TokenController extends Controller
 {
@@ -312,5 +313,30 @@ class TokenController extends Controller
     public function token_transfer(Request $request)
     {
         return null;
+    }
+
+    public function calim_claimable_balance(Request $request)
+    {
+        // $asset_code;
+        // $issuer_wallet_address;
+        // $distributor_wallet_address;
+        // fetch('https://horizon.stellar.org/claimable_balances/?asset='.$asset_code.'%3A'.$issuer_wallet_address.'&claimant='.$distributor_wallet_address.'&limit=200&order=desc')
+        
+        // $distributor_wallet_address_private_key = $request->input('distributor_wallet_private_key');
+        // $distributorKeyPair = KeyPair::fromSeed($distributor_wallet_address_private_key);
+        // $distributorAccountId = $distributorKeyPair->getAccountId();
+        // $distributorAccount = $this->sdk->requestAccount($distributorAccountId);$transactionBuilder = new TransactionBuilder($distributorAccount);
+        
+        // $claim_claimable_Balance_Operation = new ClaimClaimableBalanceOperation($balance_id);
+
+        // $transactionBuilder
+        //     ->setMaxOperationFee($this->maxFee)
+        //     ->addOperation($changeTrustOperation)
+        //     ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Token created by TokenGlade'));
+
+        // $transaction = $transactionBuilder->build();
+        // // $transaction->sign($distributorKeyPair, Network::testnet());
+        // $transaction->sign($distributorKeyPair, Network::public());
+        // $result = $this->sdk->submitTransaction($transaction);
     }
 }
