@@ -15,12 +15,18 @@
                csrfToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             };
             
-            // Google tag (gtag.js) 
-            async src="https://www.googletagmanager.com/gtag/js?id=G-FNY5NE54YN">
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-FNY5NE54YN');
-    </script>
+            // Google tag (gtag.js)
+            (function() {
+                var script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-FNY5NE54YN';
+                document.getElementsByTagName('head')[0].appendChild(script);
+                
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'G-FNY5NE54YN');
+            })();
+            </script>
     </body>
 </html>
