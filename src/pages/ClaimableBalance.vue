@@ -261,8 +261,8 @@ const schema = Yup.object({
     .required('Amount is required')
     .label('Amount'),
   token: Yup.string()
-    .required('Token is required')
-    .label('Token'),
+    .required('Asset Code is required')
+    .label('Asset Code'),
   memo: Yup.string()
     .max(15, 'Memo should not exceed 15 characters')
     .label('Memo'),

@@ -224,9 +224,9 @@ const open = ref(false);
 const schema = Yup.object({
 
   ticker: Yup.string()
-    .required('Symbol is required')
-    .max(12, 'Symbol should not exceed 12 characters')
-    .label('Symbol'),
+    .required('Asset Code is required')
+    .max(12, 'Asset Code should not exceed 12 characters')
+    .label('Asset Code'),
 
   total_supply: Yup.string()
     .required('Total Supply is required')
