@@ -46,7 +46,7 @@
                 <div @mouseover="TargetWalletHovered = true" @mouseleave="TargetWalletHovered = false">
                     <button v-if="!TargetWalletHovered">?</button>
                     <div v-if="TargetWalletHovered" class="info-box">
-                     The Private Key of the Stellar Wallet from which you want to send claimable balance to other wallets
+                     Stellar Wallets on which you want to send claimable balance
                     </div>
                 </div>
                 <div class="mt-2">

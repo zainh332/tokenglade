@@ -39,12 +39,13 @@
                     users to explore the limitless possibilities of the Stellar blockchain.
                 </p>
             </div>
-
         </div>
+        <Footer />
     </Layout>
 </template>
 <script setup>
 import Header from "@/components/Header.vue";
+import Footer from "@/components/Footer.vue";
 </script>
 
 <style lang="scss" scoped>

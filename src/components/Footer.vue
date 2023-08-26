@@ -127,9 +127,9 @@
       <p class="text-t16 font-normal">© Copyright by 2023 - TokenGlade</p>
     
       <div class=" flex items-center sm:flex-row flex-col gap-4 ">
-        <router-link class="text-t16 font-normal" to="#">Privacy Policy</router-link>
-        <router-link class="text-t16 font-normal" to="#">Cookies Policy</router-link>
-        <router-link class="text-t16 font-normal" to="#">Terms of Service</router-link>
+        <router-link class="text-t16 font-normal" to="/privacy-policy">Privacy Policy</router-link>
+        <router-link class="text-t16 font-normal" to="/cookies-policy">Cookies Policy</router-link>
+        <router-link class="text-t16 font-normal" to="/terms-service">Terms of Service</router-link>
       </div>
 
     </div>
