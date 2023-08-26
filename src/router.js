@@ -8,7 +8,6 @@ import ClaimableBalance from "./pages/ClaimableBalance.vue";
 import TomlFileGenerator from "./pages/TomlFileGenerator.vue";
 import aboutus from "./pages/about-us.vue";
 import privacypolicy from "./pages/privacy-policy.vue";
-import cookiespolicy from "./pages/cookies-policy.vue";
 import termsofservice from "./pages/terms-of-service.vue";
 import SmartContract from "./pages/SmartContract.vue";
 
@@ -72,14 +71,6 @@ const routes = [
       description: "Explore TokenGlade's Privacy Policy to discover how we handle your personal information. From data collection and usage to your choices, our policy ensures transparency and protection. Learn more about your privacy rights while using our platform."
     },
     // beforeEnter: conditionalNext('isAdmin'),
-  },
-  {
-    path: "/cookies-policy",
-    component: cookiespolicy,
-    meta: {
-      title: "Cookies Policy",
-      description: "Our Cookies Policy explains how TokenGlade uses cookies and similar tracking technologies on our platform. Learn about the types of cookies we use, their purposes, and how you can manage your cookie preferences."
-    },
   },
   {
     path: "/terms-service",

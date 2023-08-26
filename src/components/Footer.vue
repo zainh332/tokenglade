@@ -26,46 +26,36 @@
 
     <!-- Telegram -->
       <div class="h-12 relative w-12 rounded-full shadow drop-shadow-sm flex items-center justify-center">
-        <router-link
-          to="#"
-          class="absolute w-full h-full top-0 left-0"
-        ></router-link>
+        <a href="https://t.me/tokenglade" target="_blank" rel="noopener noreferrer" 
+        class="absolute w-full h-full top-0 left-0"></a>
         <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="19"
-          height="16"
-          viewBox="0 0 19 16"
-          fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        width="19"
+        height="16"
+        viewBox="0 0 19 16"
+        fill="none"
         >
           <g clip-path="url(#clip0_131_377)">
             <path
               d="M17.1703 0.108255C17.1703 0.108255 18.8703 -0.591745 18.6703 1.00826C18.6703 1.70826 18.1703 4.00826 17.8703 6.50826L16.7703 13.9083C16.7703 13.9083 16.6703 15.0083 15.8703 15.2083C15.0703 15.4083 13.7703 14.5083 13.5703 14.4083C13.3703 14.3083 10.0703 12.1083 8.87033 11.1083C8.57033 10.8083 8.17033 10.3083 8.87033 9.60826L13.7703 4.90826C14.3703 4.30826 14.8703 3.00826 12.5703 4.60825L5.97033 9.00826C5.97033 9.00826 5.27033 9.50826 3.77033 9.00826L0.77033 8.10826C0.77033 8.10826 -0.32967 7.40825 1.57033 6.70825C6.27033 4.50826 12.0703 2.20825 17.1703 0.108255Z"
               fill="#28A8EA"
-            />
-          </g>
-          <defs>
-            <clipPath id="clip0_131_377">
-              <rect
-                width="18.2"
-                height="15.2"
-                fill="white"
-                transform="translate(0.470337 0.00830078)"
               />
-            </clipPath>
-          </defs>
+          </g>
         </svg>
       </div>
       <!-- End Telegram -->
-
+      
       <!-- Medium -->
       <div class="h-12 w-12 relative rounded-full shadow drop-shadow-sm flex items-center justify-center">
-        <router-link
-          to="#"
-          class="absolute w-full h-full top-0 left-0"
-        ></router-link>
-
+        <!-- <router-link
+        to="#"
+        class="absolute w-full h-full top-0 left-0"
+        ></router-link> -->
+        
+        <a href="https://medium.com/@tokenglade" target="_blank" rel="noopener noreferrer" 
+        class="absolute w-full h-full top-0 left-0"></a>
         <svg
-          xmlns="http://www.w3.org/2000/svg"
+        xmlns="http://www.w3.org/2000/svg"
           width="21"
           height="16"
           viewBox="0 0 21 16"
@@ -121,6 +111,7 @@
         </svg>
       </div>
       <!-- End Twitter -->
+
     </div>
 
     <div class="flex items-center gap-6 mt-24 mb-8 justify-center flex-col md:flex-row md:justify-between">
@@ -128,8 +119,8 @@
     
       <div class=" flex items-center sm:flex-row flex-col gap-4 ">
         <router-link class="text-t16 font-normal" to="/privacy-policy">Privacy Policy</router-link>
-        <router-link class="text-t16 font-normal" to="/cookies-policy">Cookies Policy</router-link>
         <router-link class="text-t16 font-normal" to="/terms-service">Terms of Service</router-link>
+        <router-link class="text-t16 font-normal" to="#">Contact Us</router-link>
       </div>
 
     </div>

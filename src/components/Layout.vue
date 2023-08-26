@@ -239,8 +239,7 @@
             <li>
               <div class="flex items-center flex-col gap-2 mt-24 px-4 mb-4 justify-center md:justify-between">
                 <div class=" flex items-center sm:flex-row divide-x flex-col flex-wrap gap-4 ">
-                  <router-link class="text-xs text-gray-300 text-center font-normal" to="#">Privacy Policy</router-link>
-                  <router-link class="text-xs text-gray-300 text-center pl-2 font-normal" to="#">Cookies</router-link>
+                  <router-link class="text-xs text-gray-300 text-center font-normal" to="/privacy-policy">Privacy Policy</router-link>
                   <router-link class="text-xs text-gray-300 text-center pl-2 font-normal" to="#">Contact us</router-link>
                 </div>
                 <p class="text-xs text-gray-300 font-normal">© Copyright by 2023 | TokenGlade</p>
