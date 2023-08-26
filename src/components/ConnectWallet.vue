@@ -28,10 +28,13 @@
                 leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 >
                     <DialogPanel class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-0 text-left shadow-xl transition-all sm:my-8 w-full sm:w-full sm:max-w-lg ">
-
+                        
                         <div :id="modalId" :data-bs-backdrop="backdrop" :data-bs-keyboard="keyboard"
                             tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
+                                <div class="sm:mx-auto sm:w-full sm:max-w-md">
+                                    <img class="mx-auto h-10 w-auto" :src="tokenGladeLogo" alt="Your Company"/>
+                                </div>
                                 <div class="modal-content modal-wallet">
                                     <div class="modal-body">
                                         <h1>Please Connect Your Wallet</h1>
@@ -98,6 +101,7 @@ import {
     TransitionRoot,
 } from "@headlessui/vue";
 import { CheckIcon } from "@heroicons/vue/24/outline";
+import tokenGladeLogo from '@/assets/token-glade-logo.png'
 
 import rabet from '@/assets/rabet.png'
 import frighter from '@/assets/frighter.png'
