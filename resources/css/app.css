@@ -30,22 +30,242 @@ background-size: cover;
   padding: 10px 30px;
 }
 
- .drop-shadow
- {
-  fill: #FFF;
-  filter: drop-shadow(0px 10px 20px #F2F2F2);
- }
+.drop-shadow
+{
+fill: #FFF;
+filter: drop-shadow(0px 10px 20px #F2F2F2);
+}
 
- .card-gradient:hover {
-  transition: o.3s ease;
-  
-background: linear-gradient(137deg, #00FEFE 0%, #859BFF 44.54%, #FB44FF 100%);
-
-/* Dropshadow */
-box-shadow: 0px 10px 20px 0px #F2F2F2;
- }
 
  .blur
  {
   backdrop-filter: blur(150px);
  }
+
+ .info-box {
+  font-size: 10px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+ }
+
+ 
+
+ /* connect wallet */
+.modal {
+  background-color: #242424f2 !important;
+}
+.modal-dialog {
+  margin: 4.75rem auto !important;
+  z-index: 1045;
+}
+.modal-header{
+  border-bottom: 0px;
+}
+.modal-content{
+  border-radius: 10px;
+}
+.modal-wallet {
+  padding: 70px 30px;
+}
+.modal-wallet h1 {
+  font-size: 22px;
+  text-align: center;
+  font-weight: 500;
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+}
+
+
+.drop {
+  width: 100%;
+  display: inline-block;
+  position: relative;
+  text-align: center;
+}
+.drop input[type=checkbox] {
+  display: none;
+}
+.drop input[type=checkbox]:checked ~ .drop-items {
+  opacity: 1;
+  max-height: 400px;
+  padding: 0.6rem 0;
+}
+.drop input[type=checkbox]:checked ~ .control {
+  z-index: 99;
+}
+.drop input[type=checkbox]:checked ~ .control:after {
+  transform: rotate(180deg);
+}
+.drop input[type=checkbox]:checked ~ .overlay-close {
+  transform: none;
+  pointer-events: initial;
+}
+.drop .control {
+  margin-top: 40px;
+  width: 100%;
+  max-width: 280px;
+  position: relative;
+  text-align: left;
+  color: #898989;
+  font-size: 14px;
+  font-weight: 3\500;
+  display: inline-block;
+  cursor: pointer;
+  padding: 0.6em 1.2em;
+  background: #fff;
+  border: 1px solid #cccccc;
+  border-radius: 50px;
+  box-shadow: 0px 3px 11px rgb(0 0 0 / 5%);
+}
+i.fas.fa-chevron-down.mt-1.drop-connect {
+  position: absolute;
+  right: 17px;
+  color: black;
+  font-size: 10px;
+  top: 30%;
+}
+.drop .drop-items {
+  position: absolute;
+  top: calc(100% + .4rem);
+  width: 100%;
+  left: 16%;
+  max-width: 280px;
+  padding: 0;
+  margin: 0;
+  transition: all 0.3s ease;
+  background: #fff;
+  box-shadow: 0 2px 6px 0px rgb(0 0 0 / 58%);
+  border-radius: 4px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  z-index: 99;
+}
+.drop .drop-items .item-drop {
+  list-style: none;
+}
+.drop .drop-items .item-drop img{
+  margin-right: 10px;
+}
+.drop .drop-items .item-drop a {
+  display: block;
+  text-align: left;
+  color: #555;
+  text-decoration: none;
+  padding: 0.6rem;
+  transition: all 0.3s ease;
+}
+.drop .overlay-close {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 9;
+  transform: translate(100%, 0);
+  pointer-events: none;
+}
+.walletconnect-btn {
+  background: linear-gradient(to left, #5747e5, #7d68fe);
+  padding: 0.9em 7.6em;
+  border-radius: 50px;
+  text-align: center;
+  color: #fff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  margin: auto;
+  width: 100%;
+  max-width: 280px;
+  display: flex;
+  justify-content: space-evenly;
+  margin-top: 10px;
+}
+.walletconnect-btn:hover{
+  color: white;
+}
+.drop .drop-items .item-drop:hover{
+  background-color: #f6f6f6;
+}
+.e-wallet {
+  background: linear-gradient(179deg, #7d70ff, #23d7ff);
+  padding: 2px;
+  border-radius: 5px;
+  margin-right: 50px;
+}
+span.e-wallInner {
+  display: flex;
+  align-items: center;
+  background: #21305d;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  padding: 10px;
+}
+span.e-wallInner p{
+  margin-bottom: 0px;
+  color: #7d70ff;
+}
+span#selectedWallet img{
+  margin-right: 10px;
+}
+input#walletPrivateKey {
+  margin-top: 10px !important;
+  width: 100%;
+  max-width: 280px;
+  margin: auto;
+  border-radius: 50px;
+}
+input#walletPrivateKey::placeholder{
+  font-weight: 300;
+}
+a.connectLoading-btn {
+  text-align: center;
+  width: 100%;
+  margin-top: 10px;
+}
+.e-wallInner img{
+  margin-right: 10px;
+}
+ul.dropdown-menu.show{
+  background-color: inherit;
+  border: 1px solid #23d7ff;
+  margin-top: 10px;
+}
+.dropdown-item{
+  color: white !important;
+}
+.dropdown-item:hover{
+  background-color: #7d70ff;
+  color: white !important;
+}
+.resevrd-mob{
+  display: none;
+}
+.loader-btn{
+  width: 100%;
+  max-width: 150px !important;
+  display: flex;
+  margin: auto;
+  justify-content: center;
+  border: 1px solid transparent;
+  background-color: transparent;
+  text-align: center;
+  position: relative;
+  color: white;
+  cursor:default !important;
+}
+.loader-btn .form-btn{
+  display: flex;
+  
+}
+.loader-btn .form-btn p{
+  font-size: 18px !important;
+  margin-left: 5px;
+}
+/* connect wallet */

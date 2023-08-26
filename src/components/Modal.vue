@@ -1,6 +1,7 @@
 <template>
   <TransitionRoot as="template" :show="open">
     <Dialog as="div" class="relative z-40" @close="open = false">
+      <!-- Backgound blur -->
       <TransitionChild
         as="template"
         enter="ease-out duration-300"
@@ -16,9 +17,7 @@
       </TransitionChild>
 
       <div class="fixed inset-0 z-40 overflow-y-auto">
-        <div
-          class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0"
-        >
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
           <TransitionChild
             as="template"
             enter="ease-out duration-300"
@@ -28,16 +27,12 @@
             leave-from="opacity-100 translate-y-0 sm:scale-100"
             leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
-            <DialogPanel
-              class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-0 text-left shadow-xl transition-all sm:my-8 w-full sm:w-full sm:max-w-lg "
-            >
+            <DialogPanel class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-0 text-left shadow-xl transition-all sm:my-8 w-full sm:w-full sm:max-w-lg ">
              
               <div class="flex min-h-full flex-1 flex-col justify-center py-6 sm:px-6 lg:px-8" >
                 <div class="sm:mx-auto sm:w-full sm:max-w-md">
                   <img class="mx-auto h-10 w-auto" :src="tokenGladeLogo" alt="Your Company"/>
-                  <h2 class="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900" >
-                    Sign in to your account
-                  </h2>
+                  <h2 class="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900" > Sign in to your account</h2>
                 </div>
 
                 <div class="mt-4 ">
@@ -46,9 +41,9 @@
                       <div>
                         <label
                           for="email"
-                          class="block text-sm font-medium leading-6 text-gray-900"
-                          >Email address</label
-                        >
+                          class="block text-sm font-medium leading-6 text-gray-900">
+                          Email address
+                        </label>
                         <div class="mt-2">
                           <input
                             id="email"
@@ -65,9 +60,9 @@
                       <div>
                         <label
                           for="password"
-                          class="block text-sm font-medium leading-6 text-gray-900"
-                          >Password</label
-                        >
+                          class="block text-sm font-medium leading-6 text-gray-900">
+                          Password
+                          </label>
                         <div class="mt-2">
                           <input
                             id="password"
@@ -90,9 +85,9 @@
                           />
                           <label
                             for="remember-me"
-                            class="ml-3 block text-sm leading-6 text-gray-900"
-                            >Remember me</label
-                          >
+                            class="ml-3 block text-sm leading-6 text-gray-900">
+                            Remember me
+                            </label>
                         </div>
 
                          
@@ -101,8 +96,7 @@
                       <div>
                         <button
                           type="submit"
-                          class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                        >
+                          class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                           Sign in
                         </button>
                       </div>
@@ -126,9 +120,9 @@
                               d="M6.29 18.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0020 3.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.073 4.073 0 01.8 7.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 010 16.407a11.616 11.616 0 006.29 1.84"
                             />
                           </svg>
-                          <span class="text-sm font-semibold leading-6"
-                            >Twitter</span
-                          >
+                          <span class="text-sm font-semibold leading-6">
+                            Twitter
+                            </span>
                         </a>
 
                         <a
@@ -147,9 +141,9 @@
                               clip-rule="evenodd"
                             />
                           </svg>
-                          <span class="text-sm font-semibold leading-6"
-                            >GitHub</span
-                          >
+                          <span class="text-sm font-semibold leading-6">
+                            GitHub
+                            </span>
                         </a>
                       </div>
                     </div>
@@ -182,7 +176,7 @@ const props = defineProps({
   open: Boolean
 });
 
-// console.log(props);
+
 const emits = defineEmits();
 
 // Create a local ref for the 'open' prop to be used in the component

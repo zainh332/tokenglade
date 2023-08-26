@@ -15,9 +15,15 @@
               <div>
                 <div class="flex items-center justify-between">
                   <label for="ticker" class="block text-t16 font-normal leading-6 text-gray-900">
-                    Symbol
+                    Asset Code
                     <span class="text-red-500">*</span>
                   </label>
+                  <div @mouseover="AssetCodeHovered = true" @mouseleave="AssetCodeHovered = false">
+                    <button v-if="!AssetCodeHovered">?</button>
+                    <div v-if="AssetCodeHovered" class="info-box">
+                      The asset code can be anything that the issuer wants it to be, but it is typically a short and memorable string of characters. For example, the asset code for the Stellar Lumens (XLM) native asset is "XLM"
+                    </div>
+                  </div>
                 </div>
                 <div class="mt-2">
                   <Field
@@ -35,6 +41,12 @@
                   <label for="total_supply" class="block text-t16 font-normal leading-6 text-gray-900">Total Supply
                     <span class="text-red-500">*</span>
                   </label>
+                  <div @mouseover="TotalSupplyHovered = true" @mouseleave="TotalSupplyHovered = false">
+                    <button v-if="!TotalSupplyHovered">?</button>
+                    <div v-if="TotalSupplyHovered" class="info-box">
+                      Total supply refers to the total number of coins or tokens that have been created or mined, that are in circulation, including those that are locked or reserved
+                    </div>
+                  </div>
                 </div>
                 <div class="mt-2">
                   <Field 
@@ -52,6 +64,16 @@
                   <label for="issuer_wallet_private_key" class="block text-t16 font-normal leading-6 text-gray-900">Issuer Wallet Private Key
                     <span class="text-red-500">*</span>
                   </label>
+                  <div @mouseover="IssuerKeyHovered = true" @mouseleave="IssuerKeyHovered = false">
+                    <button v-if="!IssuerKeyHovered">?</button>
+                    <div v-if="IssuerKeyHovered" class="info-box">
+                      issuer wallet is an account that is used to create and manage tokens. The issuer wallet is responsible for the following:
+                      Creating new tokens
+                      Destroying tokens
+                      Setting the properties of tokens, such as the supply and the redeemable asset
+                      Managing the trustlines for the tokens
+                    </div>
+                  </div>
                 </div>
                 <div class="mt-2">
                   <Field 
@@ -74,6 +96,12 @@
                   <label for="distributor_wallet_private_key" class="block text-t16 font-normal leading-6 text-gray-900">Distributor Wallet Private Key
                     <span class="text-red-500">*</span>
                   </label>
+                  <div @mouseover="DistributorHovered = true" @mouseleave="DistributorHovered = false">
+                    <button v-if="!DistributorHovered">?</button>
+                    <div v-if="DistributorHovered" class="info-box">
+                    The distributor wallet is used to distribute tokens in a variety of ways, such as airdrops, faucets, and rewards programs. It can also be used to sell tokens on exchanges. 
+                    </div>
+                  </div>
                 </div>
                 <div class="mt-2">
                   <Field 
@@ -90,7 +118,7 @@
                   <p v-if="distributorPrivateKeyError" class="text-red-500 text-sm font-normal">{{ distributorPrivateKeyError }}</p>
                 </div>
               </div>
-
+              
               <!-- <div class="flex items-center justify-between">
                 <p class="text-t16 font-normal">Lock Issuer Wallet Address</p>
                 <Toggle v-model="toggleValue" />
@@ -128,6 +156,12 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { Form , Field, ErrorMessage} from 'vee-validate';
 import * as Yup from "yup";
+
+const DistributorHovered = ref(false);
+const IssuerKeyHovered = ref(false);
+const TotalSupplyHovered = ref(false);
+const AssetCodeHovered = ref(false);
+
 
 
 // Create separate serverError variables for issuer_wallet_private_key and distributor_wallet_private_key

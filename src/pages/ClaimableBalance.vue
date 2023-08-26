@@ -17,6 +17,12 @@
                 <label for="wallet_address_private_key" class="block text-t16 font-normal leading-6 text-gray-900">Wallet Private Key
                   <span class="text-red-500">*</span>
                 </label>
+                <div @mouseover="PrivateKeyHovered = true" @mouseleave="PrivateKeyHovered = false">
+                    <button v-if="!PrivateKeyHovered">?</button>
+                    <div v-if="PrivateKeyHovered" class="info-box">
+                     The Private Key of the Stellar Wallet from which you want to send claimable balance to other wallets
+                    </div>
+                </div>
               </div>
               <div class="mt-2">
                 <Field 
@@ -37,6 +43,12 @@
                 <label for="target_wallet_address" class="block text-t16 font-normal leading-6 text-gray-900"> Bulk Stellar Wallet Address
                   <span class="text-red-500">*</span>
                 </label>
+                <div @mouseover="TargetWalletHovered = true" @mouseleave="TargetWalletHovered = false">
+                    <button v-if="!TargetWalletHovered">?</button>
+                    <div v-if="TargetWalletHovered" class="info-box">
+                     The Private Key of the Stellar Wallet from which you want to send claimable balance to other wallets
+                    </div>
+                </div>
                 <div class="mt-2">
                   <Field
                     id="target_wallet_address"
@@ -53,6 +65,12 @@
                   <label for="amount" class="block text-t16 font-normal leading-6 text-gray-900" >Amount
                     <span class="text-red-500">*</span>
                   </label>
+                  <div @mouseover="AmountHovered = true" @mouseleave="AmountHovered = false">
+                    <button v-if="!AmountHovered">?</button>
+                    <div v-if="AmountHovered" class="info-box">
+                     The amount of tokens which you want to send as claimable balance to each stellar wallet
+                    </div>
+                  </div>
                 </div>
                 <div class="mt-2">
                   <Field
@@ -66,29 +84,41 @@
               </div>
               <div>
                 <div class="flex items-center justify-between">
-                  <label for="token" class="block text-t16 font-normal leading-6 text-gray-900" >Token
+                  <label for="token" class="block text-t16 font-normal leading-6 text-gray-900" >Asset Code
                     <span class="text-red-500">*</span>
                   </label>
+                  <div @mouseover="AssetCodeHovered = true" @mouseleave="AssetCodeHovered = false">
+                    <button v-if="!AssetCodeHovered">?</button>
+                    <div v-if="AssetCodeHovered" class="info-box">
+                     Token Asset Code which you want to send as claimable balance to each stellar wallet
+                    </div>
+                  </div>
                 </div>
                 <div class="mt-2">
                   <Field
-                    id="token"
-                    name="token"
-                    type="text"
-                    v-model="values.token"
-                    @blur="handleTokenBlur('token')"
-                    class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  id="token"
+                  name="token"
+                  type="text"
+                  v-model="values.token"
+                  @blur="handleTokenBlur('token')"
+                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                   <ErrorMessage class="text-red-500 text-sm font-normal" name="token" />
-
-                   <!-- Display the server-side validation error while checking private key-->
-                   <p v-if="TokenError" class="text-red-500 text-sm font-normal">{{ TokenError }}</p>
+                  
+                  <!-- Display the server-side validation error while checking private key-->
+                  <p v-if="TokenError" class="text-red-500 text-sm font-normal">{{ TokenError }}</p>
                 </div>
               </div>
-
+              
               <div>
                 <div class="flex items-center justify-between">
-                  <label for="memo" class="block text-t16 font-normal leading-6 text-gray-900" >Memo</label>
+                  <label for="memo" class="block text-t16 font-normal leading-6 text-gray-900 " >Memo</label>
+                  <div @mouseover="MemoHovered = true" @mouseleave="MemoHovered = false">
+                    <button v-if="!MemoHovered">?</button>
+                    <div v-if="MemoHovered" class="info-box">
+                      Provide a message to the recipient: You can include a message in the memo to let the recipient know what the transaction is for
+                    </div>
+                  </div>
                 </div>
                 <div class="mt-2">
                   <Field
@@ -130,6 +160,12 @@ import { Form , Field, ErrorMessage} from 'vee-validate';
 
 //Used for Validation
 import * as Yup from "yup";
+
+const PrivateKeyHovered = ref(false);
+const TargetWalletHovered = ref(false);
+const AmountHovered = ref(false);
+const AssetCodeHovered = ref(false);
+const MemoHovered = ref(false);
 
 // Create ariables for private_key
 const WalletPrivateKeyError = ref('');
