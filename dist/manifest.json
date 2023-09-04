@@ -28,10 +28,6 @@
     "file": "assets/logo-85d8ef3c.png",
     "src": "src/assets/logo.png"
   },
-  "src/assets/privatekey.png": {
-    "file": "assets/privatekey-55709976.png",
-    "src": "src/assets/privatekey.png"
-  },
   "src/assets/rabet.png": {
     "file": "assets/rabet-b63626b7.png",
     "src": "src/assets/rabet.png"
@@ -56,7 +52,6 @@
       "assets/frighter-56128358.png",
       "assets/albeto-acc89022.png",
       "assets/xbull-0f319a8d.png",
-      "assets/privatekey-55709976.png",
       "assets/flower-9bebdb58.png",
       "assets/footer-logo-47ce9443.png",
       "assets/lights-c425c569.png"
@@ -64,7 +59,7 @@
     "css": [
       "assets/main-e90b9991.css"
     ],
-    "file": "assets/main-a6c8779b.js",
+    "file": "assets/main-f66a8ffa.js",
     "isEntry": true,
     "src": "src/main.js"
   }
