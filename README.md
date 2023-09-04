@@ -5,7 +5,7 @@
 
 # TokenGlade
 
-TokenGlade is a powerful platform designed to simplify and secure the process of creating, managing, and engaging with tokens and smart contracts on the Stellar and Soroban blockchains. Our mission is to address critical challenges in the blockchain ecosystem and make token management accessible to a wider audience.
+TokenGlade steps into this space with a clear mission: to simplify and secure the process of creating, managing, and engaging with tokens and smart contract on the Stellar and Soroban. Its goal is to enhance the features, making it more user-friendly and accessible to a wider audience.
 
 ## Features
 
