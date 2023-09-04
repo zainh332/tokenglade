@@ -1,6 +1,6 @@
-<!-- <p align="center"><a href="https://tokenglade.com" target="_blank"><img src="https://tokenglade.com/build/assets/lights-c425c569.png" width="400" alt="TokenGlade Logo"></a></p>
+<p align="center"><a href="https://tokenglade.com" target="_blank"><img src="https://tokenglade.com/build/assets/lights-c425c569.png" width="400" alt="TokenGlade Logo"></a></p>
 
--->
+
 
 
 # TokenGlade
