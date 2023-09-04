@@ -53,7 +53,7 @@ filter: drop-shadow(0px 10px 20px #F2F2F2);
 
  
 
- /* connect wallet */
+ /* Wallet Modal */
 .modal {
   background-color: #242424f2 !important;
 }
@@ -268,4 +268,4 @@ ul.dropdown-menu.show{
   font-size: 18px !important;
   margin-left: 5px;
 }
-/* connect wallet */
+/* Wallet Modal */

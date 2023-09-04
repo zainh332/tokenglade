@@ -14,33 +14,25 @@
             <Form class="space-y-6" @submit="submitForm" :validationSchema="schema">
               <div>
               <div class="flex items-center justify-between">
-                <label for="wallet_address_private_key" class="block text-t16 font-normal leading-6 text-gray-900">Wallet Private Key
+                <label for="wallet_address_private_key" class="block text-t16 font-normal leading-6 text-gray-900">Wallet Address
                   <span class="text-red-500">*</span>
                 </label>
-                <div @mouseover="PrivateKeyHovered = true" @mouseleave="PrivateKeyHovered = false">
-                    <button v-if="!PrivateKeyHovered">?</button>
-                    <div v-if="PrivateKeyHovered" class="info-box">
-                     The Private Key of the Stellar Wallet from which you want to send claimable balance to other wallets
+                <div @mouseover="WalletHovered = true" @mouseleave="WalletHovered = false">
+                    <button v-if="!WalletHovered">?</button>
+                    <div v-if="WalletHovered" class="info-box">
+                      Kindly establish a connection with your Stellar wallet from which you intend to initiate claimable balance transfers
                     </div>
                 </div>
               </div>
               <div class="mt-2">
-                <Field 
-                id="wallet_address_private_key" 
-                name="wallet_address_private_key" 
-                type="password"
-                v-model="values.wallet_address_private_key"
-                @blur="handlePrivateKeyBlur('wallet_address_private_key')"
-                class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-                <ErrorMessage class="text-red-500 text-sm font-normal" name="wallet_address_private_key" />
-
-                <!-- Display the server-side validation error while checking private key-->
-                <p v-if="WalletPrivateKeyError" class="text-red-500 text-sm font-normal">{{ WalletPrivateKeyError }}</p>
+                <button type="submit"
+                  class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white">
+                  Connect Issuer Wallet
+                 </button>
               </div>
             </div>
               <div>
-                <label for="target_wallet_address" class="block text-t16 font-normal leading-6 text-gray-900"> Bulk Stellar Wallet Address
+                <label for="target_wallet_address" class="block text-t16 font-normal leading-6 text-gray-900">Stellar Wallet Address
                   <span class="text-red-500">*</span>
                 </label>
                 <div @mouseover="TargetWalletHovered = true" @mouseleave="TargetWalletHovered = false">
@@ -109,6 +101,22 @@
                   <p v-if="TokenError" class="text-red-500 text-sm font-normal">{{ TokenError }}</p>
                 </div>
               </div>
+              <!-- <div>
+                  <label
+                      for="amount"
+                      class="block text-t16 font-normal leading-6 text-gray-900"
+                      >Select Asset</label
+                    >
+                  <select
+                    id="token"
+                    name="token"
+                    class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset px-3 ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  >
+                    <option></option>
+                    <option selected=""></option>
+                    <option></option>
+                  </select>
+               </div> -->
               
               <div>
                 <div class="flex items-center justify-between">
@@ -161,14 +169,12 @@ import { Form , Field, ErrorMessage} from 'vee-validate';
 //Used for Validation
 import * as Yup from "yup";
 
-const PrivateKeyHovered = ref(false);
+const WalletHovered = ref(false);
 const TargetWalletHovered = ref(false);
 const AmountHovered = ref(false);
 const AssetCodeHovered = ref(false);
 const MemoHovered = ref(false);
 
-// Create ariables for private_key
-const WalletPrivateKeyError = ref('');
 const TokenError = ref('');
 
 //checking valid private key

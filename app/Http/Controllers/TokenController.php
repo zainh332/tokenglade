@@ -19,9 +19,9 @@ use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrSigner;
 use Soneso\StellarSDK\TimeBounds;
-use GuzzleHttp\Client;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
+
 
 
 use Illuminate\Http\Request;

@@ -58,14 +58,14 @@
                                         </select>
                                     </div>
                                     <div class="mt-2">
-                                        <input 
+                                        <!-- <input 
                                         v-model="walletPrivateKey" 
                                         v-if="selectedWallet === 'privatekey'"
                                         type="text" 
                                         class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset px-3 ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                         required=""
                                         placeholder="Secret Key"
-                                        >
+                                        > -->
                                         <!-- @click="connectWallet"  -->
                                         <button 
                                         @click="" 
@@ -107,7 +107,7 @@ import rabet from '@/assets/rabet.png'
 import frighter from '@/assets/frighter.png'
 import albeto from '@/assets/albeto.png'
 import xbull from '@/assets/xbull.png'
-import privatekey from '@/assets/privatekey.png'
+// import privatekey from '@/assets/privatekey.png'
 
 
 const ConnectWalletModal = defineProps({ open: Boolean });
@@ -121,10 +121,10 @@ const wallets = [
     { name: "Frighter", key: "frighter", image: frighter },
     { name: "Albedo", key: "albeto", image: albeto },
     { name: "Xbull", key: "xbull", image: xbull },
-    { name: "Private Key", key: "privatekey", image: privatekey }
+    // { name: "Private Key", key: "privatekey", image: privatekey }
 ];
 const selectedWallet = ref("Choose your Wallet");
-const walletPrivateKey = ref("");
+// const walletPrivateKey = ref("");
 const isLoading = ref(false);
 
 const backdrop = computed(() => !isWalletConnected.value ? "static" : "");
@@ -133,9 +133,9 @@ const isWalletConnected = computed(() => !!selectedWallet.value && selectedWalle
 
 function selectWallet(walletKey) {
     selectedWallet.value = walletKey;
-    if (walletKey === "Private Key") {
-        walletPrivateKey.value = ""; // Clear the private key input when selecting Private Key
-    }
+    // if (walletKey === "Private Key") {
+    //     walletPrivateKey.value = ""; // Clear the private key input when selecting Private Key
+    // }
 }
 
 function connectWallet() {

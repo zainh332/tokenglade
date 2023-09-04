@@ -1,4 +1,3 @@
-// src/router.js
 
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "./pages/Home.vue";
@@ -78,6 +77,22 @@ const routes = [
     meta: {
       title: "Terms of Service",
       description: ""
+    },
+  },
+  {
+    path: "/smart-contract",
+    component: SmartContract,
+    meta: {
+      title: "Smart Contract Deployment",
+      description: "This feature guides users through the process of deploying a smart contract on the Stellar blockchain. This feature will simplify the deployment process and ensure users follow the correct sequence of steps."
+    },
+  },
+  {
+    path: "/ledger-entry",
+    component: SmartContract,
+    meta: {
+      title: "Ledger Entry Inspector",
+      description: "This feature allows users to inspect the current state of ledger entries directly on the Stellar blockchain. This feature empowers users to view contract details, contract code, and other ledger entry information in a user-friendly interface."
     },
   },
 ];

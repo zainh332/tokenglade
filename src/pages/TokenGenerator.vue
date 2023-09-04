@@ -12,6 +12,81 @@
         <div class="flex min-h-full flex-1 flex-col justify-center py-8">
           <div class="w-full">
             <Form class="space-y-6" @submit="submitForm" :validationSchema="schema">
+              <!-- Issuer Wallet Button -->
+              <div>
+                <div class="flex items-center justify-between">
+                  <label for="issuer_wallet_private_key" class="block text-t16 font-normal leading-6 text-gray-900">Issuer Wallet
+                    <span class="text-red-500">*</span>
+                  </label>
+                  <div @mouseover="IssuerKeyHovered = true" @mouseleave="IssuerKeyHovered = false">
+                    <button v-if="!IssuerKeyHovered">?</button>
+                    <div v-if="IssuerKeyHovered" class="info-box">
+                      Issuer wallet is used to create tokens. The issuer wallet is responsible for the following:
+                      Creating new tokens
+                      Destroying tokens
+                      Setting the properties of tokens, such as the supply and the redeemable asset
+                      Managing the trustlines for the tokens
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <button type="submit"
+                  class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white">
+                  Connect Issuer Wallet
+                 </button>
+                  <!-- <Field 
+                  id="issuer_wallet_private_key" 
+                  name="issuer_wallet_private_key" 
+                  type="password"
+                  v-model="values.issuer_wallet_private_key"
+                  @blur="handlePrivateKeyBlur('issuer_wallet_private_key')"
+                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  />
+                  <ErrorMessage class="text-red-500 text-sm font-normal" name="issuer_wallet_private_key" />
+
+                  
+                  <p v-if="issuerPrivateKeyError" class="text-red-500 text-sm font-normal">{{ issuerPrivateKeyError }}</p> -->
+                </div>
+              </div>
+               <!-- Issuer Wallet Button -->
+
+                <!-- Distributor Wallet -->
+              <div>
+                <div class="flex items-center justify-between">
+                  <label for="distributor_wallet_private_key" class="block text-t16 font-normal leading-6 text-gray-900">Distributor Wallet
+                    <span class="text-red-500">*</span>
+                  </label>
+                  <div @mouseover="DistributorHovered = true" @mouseleave="DistributorHovered = false">
+                    <button v-if="!DistributorHovered">?</button>
+                    <div v-if="DistributorHovered" class="info-box">
+                      The distributor wallet is used to distribute tokens in a variety of ways, such as airdrops, faucets, and rewards programs. It can also be used to sell tokens on exchanges. 
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <button type="submit"
+                  class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white">
+                  Connect Distributor Wallet
+                </button>
+
+                  <!-- <Field 
+                    id="distributor_wallet_private_key" 
+                    name="distributor_wallet_private_key" 
+                    type="password"
+                    v-model="values.distributor_wallet_private_key"
+                    @blur="handlePrivateKeyBlur('distributor_wallet_private_key')"
+                    class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    />
+                    <ErrorMessage class="text-red-500 text-sm font-normal" name="distributor_wallet_private_key" /> -->
+                    
+                  <!-- Display the server-side validation error while checking private key-->
+                  <!-- <p v-if="distributorPrivateKeyError" class="text-red-500 text-sm font-normal">{{ distributorPrivateKeyError }}</p> -->
+                </div>
+              </div>
+              <!-- Distributor Wallet -->
+
+
+               <!-- Asset Code -->
               <div>
                 <div class="flex items-center justify-between">
                   <label for="ticker" class="block text-t16 font-normal leading-6 text-gray-900">
@@ -35,7 +110,10 @@
                   <ErrorMessage class="text-red-500 text-sm font-normal" name="ticker" />
                 </div>
               </div>
+              <!-- Asset Code -->
 
+
+              <!-- Total Supply -->
               <div>
                 <div class="flex items-center justify-between">
                   <label for="total_supply" class="block text-t16 font-normal leading-6 text-gray-900">Total Supply
@@ -58,72 +136,16 @@
                   <ErrorMessage class="text-red-500 text-sm font-normal" name="total_supply" />
                 </div>
               </div>
+              <!-- Total Supply -->
 
-              <div>
-                <div class="flex items-center justify-between">
-                  <label for="issuer_wallet_private_key" class="block text-t16 font-normal leading-6 text-gray-900">Issuer Wallet Private Key
-                    <span class="text-red-500">*</span>
-                  </label>
-                  <div @mouseover="IssuerKeyHovered = true" @mouseleave="IssuerKeyHovered = false">
-                    <button v-if="!IssuerKeyHovered">?</button>
-                    <div v-if="IssuerKeyHovered" class="info-box">
-                      issuer wallet is an account that is used to create and manage tokens. The issuer wallet is responsible for the following:
-                      Creating new tokens
-                      Destroying tokens
-                      Setting the properties of tokens, such as the supply and the redeemable asset
-                      Managing the trustlines for the tokens
-                    </div>
-                  </div>
-                </div>
-                <div class="mt-2">
-                  <Field 
-                  id="issuer_wallet_private_key" 
-                  name="issuer_wallet_private_key" 
-                  type="password"
-                  v-model="values.issuer_wallet_private_key"
-                  @blur="handlePrivateKeyBlur('issuer_wallet_private_key')"
-                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  />
-                  <ErrorMessage class="text-red-500 text-sm font-normal" name="issuer_wallet_private_key" />
-
-                  <!-- Display the server-side validation error while checking private key-->
-                  <p v-if="issuerPrivateKeyError" class="text-red-500 text-sm font-normal">{{ issuerPrivateKeyError }}</p>
-                </div>
-              </div>
               
-              <div>
-                <div class="flex items-center justify-between">
-                  <label for="distributor_wallet_private_key" class="block text-t16 font-normal leading-6 text-gray-900">Distributor Wallet Private Key
-                    <span class="text-red-500">*</span>
-                  </label>
-                  <div @mouseover="DistributorHovered = true" @mouseleave="DistributorHovered = false">
-                    <button v-if="!DistributorHovered">?</button>
-                    <div v-if="DistributorHovered" class="info-box">
-                    The distributor wallet is used to distribute tokens in a variety of ways, such as airdrops, faucets, and rewards programs. It can also be used to sell tokens on exchanges. 
-                    </div>
-                  </div>
-                </div>
-                <div class="mt-2">
-                  <Field 
-                  id="distributor_wallet_private_key" 
-                  name="distributor_wallet_private_key" 
-                  type="password"
-                  v-model="values.distributor_wallet_private_key"
-                  @blur="handlePrivateKeyBlur('distributor_wallet_private_key')"
-                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  />
-                  <ErrorMessage class="text-red-500 text-sm font-normal" name="distributor_wallet_private_key" />
-
-                  <!-- Display the server-side validation error while checking private key-->
-                  <p v-if="distributorPrivateKeyError" class="text-red-500 text-sm font-normal">{{ distributorPrivateKeyError }}</p>
-                </div>
-              </div>
-              
-              <!-- <div class="flex items-center justify-between">
+              <!-- Lock Issuer Wallet Address Toggle -->
+              <div class="flex items-center justify-between">
                 <p class="text-t16 font-normal">Lock Issuer Wallet Address</p>
                 <Toggle v-model="toggleValue" />
-              </div> -->
-
+              </div>
+              <!-- Lock Issuer Wallet Address Toggle -->
+              
               <div>
                 <button type="submit"
                   class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white">
@@ -140,9 +162,9 @@
         </div>
 
       </div>
-      <!-- <div class="w-full px-2 py-2 rounded-md text-t14 text-white bg-yellow-500">
+      <div class="w-full px-2 py-2 rounded-md text-t14 text-white bg-yellow-500">
         Please be aware that locking the issuer address will result in the inability to perform any future transactions from the issuer wallet, as it will remain permanently locked.
-      </div> -->
+      </div>
     </div>
   </Layout>
 </template>
@@ -163,58 +185,10 @@ const TotalSupplyHovered = ref(false);
 const AssetCodeHovered = ref(false);
 
 
-
-// Create separate serverError variables for issuer_wallet_private_key and distributor_wallet_private_key
-const issuerPrivateKeyError = ref('');
-const distributorPrivateKeyError = ref('');
-
-//checking valid private key
-const issuer_wallet_private_key = ref('');
-const distributor_wallet_private_key = ref('');
-
 const values = reactive({
   ticker: "",
   total_supply: "",
-  issuer_wallet_private_key, // Include it in the reactive values
-  distributor_wallet_private_key: "",
 });
-
-
-//@blur to used in the form field to check if the user losses focus from the field
-//Method to call checkWalletPrivatekey function when use moved to another filed (lose focus) 
-function handlePrivateKeyBlur(fieldName) {
-  if (fieldName === 'issuer_wallet_private_key' || fieldName === 'distributor_wallet_private_key') {
-    const privateKey = values[fieldName]; // Get the private key value from the reactive values
-    checkWalletPrivatekey(fieldName, privateKey); // Pass both the field name and the private key value
-  }
-}
-
-// Function to check the issuer wallet private key
-function checkWalletPrivatekey(fieldName, privateKey) {
-  // You can use this function to perform checks or make API calls related to the private key
-  
-  const requestData = {
-    private_key: privateKey, // Assuming the server expects the private key with the key name "private_key"
-  };
-
-
-  axios.post('api/check_wallet', requestData , {
-    headers: {
-      'X-CSRF-TOKEN': window.Laravel.csrfToken,
-    }
-  }).then((response) => {
-    // Hide loading indicator
-    if (fieldName === 'issuer_wallet_private_key') {
-      // Handle issuer wallet private key error
-      issuerPrivateKeyError.value = response.data.status === 'error' ? response.data.msg : '';
-    } else if (fieldName === 'distributor_wallet_private_key') {
-      // Handle distributor wallet private key error
-      distributorPrivateKeyError.value = response.data.status === 'error' ? response.data.msg : '';
-    }
-  });
-}
-
-//end checking private key
 
 const open = ref(false);
 
@@ -232,16 +206,6 @@ const schema = Yup.object({
     .required('Total Supply is required')
     .label('Total Supply'),
 
-  issuer_wallet_private_key: Yup.string()
-    .required('Issuer Wallet Private Key is required')
-    .length(56, 'Issuer Wallet Private Key should be exactly 56 characters long')
-    .label('Issuer Wallet Private Key'),
-
-  distributor_wallet_private_key: Yup.string()
-    .required('Distributor Wallet Private Key is required')
-    .length(56, 'Distributor Wallet Private Key should be exactly 56 characters long')
-    .label('Distributor Wallet Private Key'),
-
 });
 
 
@@ -250,8 +214,6 @@ const submitForm = (values) =>{
 try {
   // values.toggleValue = toggleValue.value;
 
-  // submit the form only if there are no distributorPrivateKeyError issuerPrivateKeyError 
-  if (issuerPrivateKeyError.value == "" && distributorPrivateKeyError.value == "") {
     // Show loading indicator
     Swal.fire({
       showConfirmButton: false,
@@ -287,7 +249,6 @@ try {
         });
       });
     } else {
-      console.log(response);
       Swal.fire({
         icon: 'error',
         title: 'Error!',
@@ -295,7 +256,6 @@ try {
       });
     }
   });
-  } 
 }
 catch (error) {
   Swal.fire({

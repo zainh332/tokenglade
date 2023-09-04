@@ -4,13 +4,13 @@
         class="max-w-2xl px-4 sm:px-16 mx-auto flex items-center flex-col space-y-4"
       >
         <div class="space-y-2 py-8">
-          <h1 class="text-t34 text-center font-semibold">Smart Contract</h1>
+          <h1 class="text-t34 text-center font-semibold">Smart Contract Deployment</h1>
           <p class="text-t16 text-center font-normal">
-            Effortlessly transfer tokens between multiple wallets
+            Develop a step-by-step wizard feature within TokenGlade that guides users through the process of deploying a smart contract on the Stellar blockchain
           </p>
         </div>
         <!-- Tabs here -->
-        <div>
+        <!-- <div>
           <div class="block">
             <nav
               class="space-x-8 rounded-full shadow px-4 items-center h-16 inline-flex drop-shadow"
@@ -31,7 +31,7 @@
               >
             </nav>
           </div>
-        </div>
+        </div> -->
   
         <div class="w-full">
           <div class="flex min-h-full flex-1 flex-col justify-center py-8">
@@ -58,7 +58,7 @@
                     for="comment"
                     class="block text-t16 font-normal leading-6 text-gray-900"
                   >
-                    Stellar Wallet Address
+                    Upload Your Contract Code
                   </label>
                   <div class="mt-2">
                     <input
@@ -72,49 +72,10 @@
                   </div>
                 </div>
   
-                <div>
-                  <div class="flex items-center justify-between">
-                    <label
-                      for="amount"
-                      class="block text-t16 font-normal leading-6 text-gray-900"
-                      >Amount</label
-                    >
-                  </div>
-                  <div class="mt-2">
-                    <input
-                      id="amount"
-                      name="amount"
-                      type="text"
-                      autocomplete="amount"
-                      required=""
-                      class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    />
-                  </div>
-                </div>
-  
-                <div>
-                  <label
-                      for="amount"
-                      class="block text-t16 font-normal leading-6 text-gray-900"
-                      >Select Token</label
-                    >
-                  <select
-                    id="location"
-                    name="location"
-                    class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset px-3 ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  >
-                    <option>United States</option>
-                    <option selected="">Canada</option>
-                    <option>Mexico</option>
-                  </select>
-                </div>
-  
-                <div
-                  class="w-full px-2 py-2 rounded-md text-t16 text-white bg-[#ED1C24]"
-                >
+                <!-- <div class="w-full px-2 py-2 rounded-md text-t16 text-white bg-[#ED1C24]">
                   Please note that the wallet must have established a trustline
                   for the specific token you are attempting to send.
-                </div>
+                </div> -->
   
                 <div>
                   <button
@@ -122,7 +83,7 @@
                     type="submit"
                     class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white"
                   >
-                    Send Token
+                    Deploy Contract
                   </button>
                 </div>
               </form>

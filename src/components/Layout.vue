@@ -52,12 +52,10 @@
                 </div>
               </TransitionChild>
               <!-- Sidebar component, swap this element with another sidebar if you like -->
-              <div
-                class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4 ring-1 ring-white/10"
-              >
+              <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4 ring-1 ring-white/10">
                 <div class="flex h-16 shrink-0 items-center">
                   <router-link to="/">
-                  <img class="h-8 w-auto" :src="light" alt="Your Company" />
+                  <img class="h-8 w-auto" :src="logo" alt="Your Company" />
                   </router-link>
                 </div>
                 <nav class="flex flex-1 flex-col">
@@ -93,7 +91,7 @@
                 </li>
               </ul>
             </li>
-            <!-- <li>
+            <li>
               <h1 class="text-gray-400">Soroban</h1>
               <ul role="list" class="-mx-2 space-y-3">
                 <li v-for="item in soroban_navigation" :key="item.name">
@@ -124,21 +122,22 @@
                   </span>
                 </li>
               </ul>
-            </li> -->
+            </li>
 
                     <li>
-                      <!-- <div class="flex flex-col gap-4">
-                        <router-link
+                      <div class="flex flex-col gap-4">
+                        <!-- <router-link
                           to="#"
                           class="btn-padding text-xs sm:text-t14 rounded-full border border-black/50 text-black/50 bg-white"
                           >GA424GAVZIOMZ...
-                        </router-link>
-                        <router-link
-                          to="#"
-                          class="btn-padding text-xs sm:text-t14 rounded-full text-white bg-gradient"
-                          >Connect Wallet
-                        </router-link>
-                      </div> -->
+                        </router-link> -->
+                        <button
+                          @click="OpenWalletModal"
+                          type="submit"
+                          class="btn-padding text-xs sm:text-t14 rounded-full text-white bg-gradient">
+                          Connect Wallet
+                        </button>
+                      </div>
                     </li>
                   </ul>
                 </nav>
@@ -166,7 +165,7 @@
       >
         <div class="flex h-16 shrink-0 items-center">
           <router-link to="/">
-          <img class="h-10 w-auto" :src="light" alt="Your Company" />
+          <img class="h-10 w-auto" :src="logo" alt="Your Company" />
           </router-link>
         </div>
         <nav class="flex mt-8 flex-1 flex-col">
@@ -203,7 +202,8 @@
                 </li>
               </ul>
             </li>
-            <!-- <li>
+
+            <li>
               <h1 class="text-gray-400">Soroban</h1>
               <ul role="list" class="-mx-2 space-y-3">
                 <li v-for="item in soroban_navigation" :key="item.name">
@@ -234,7 +234,7 @@
                   </span>
                 </li>
               </ul>
-            </li> -->
+            </li>
 
             <li>
               <div class="flex items-center flex-col gap-2 mt-24 px-4 mb-4 justify-center md:justify-between">
@@ -264,6 +264,7 @@
         <!-- Separator -->
         <div class="h-6 w-px bg-gray-900/10 lg:hidden" aria-hidden="true" />
 
+        
         <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
           <div class="relative flex flex-1 items-center"  action="#" method="GET" >
             <svg
@@ -291,11 +292,12 @@
               class="btn-padding text-xs sm:text-t14 rounded-full border border-black/50 text-black/50 bg-white"
               >GA424GAVZIOMZ...
             </router-link> -->
-            <!-- <router-link
-              to="#"
-              class="btn-padding text-xs sm:text-t14 rounded-full text-white bg-gradient"
-              >Connect Wallet
-            </router-link> -->
+            <button
+              @click="OpenWalletModal"
+              type="submit"
+              class="btn-padding text-xs sm:text-t14 rounded-full text-white bg-gradient">
+              Connect Wallet
+            </button>
 
             <!-- Separator -->
             <div
@@ -304,7 +306,7 @@
             />
 
             <!-- Profile dropdown -->
-            <!-- <Menu as="div" class="relative">
+            <Menu as="div" class="relative">
               <MenuButton class="-m-1.5 flex items-center p-1.5">
                 <span class="sr-only">Open user menu</span>
                 <img
@@ -313,7 +315,7 @@
                   alt=""
                 />
               </MenuButton>
-            </Menu> -->
+            </Menu>
           </div>
         </div>
       </div>
@@ -325,6 +327,7 @@
       </main>
     </div>
   </div>
+  <ConnectWalletModal :open="ConnectWalletModals"  />
 </template>
 
 <script setup>
@@ -352,15 +355,22 @@ import {
   XMarkIcon,
 } from "@heroicons/vue/24/outline";
 import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
-import light from "@/assets/lights.png";
+import logo from "@/assets/lights.png";
 import generatorIcon from "@/components/icons/generatorIcon.vue";
 import transfer from "@/components/icons/transfer.vue";
 import BalanceIIcon from "@/components/icons/BalanceIIcon.vue";
 import docIcon from "@/components/icons/docIcon.vue";
 import Tabs from "@/components/Tabs.vue";
 import { useRoute } from "vue-router";
+import ConnectWalletModal from '@/components/ConnectWallet.vue';
 
 const desktopSidebar = ref(true);
+const ConnectWalletModals  = ref(false);
+
+const OpenWalletModal = (e) => {
+  e.preventDefault();
+  ConnectWalletModals.value = !ConnectWalletModals.value;
+};
 
 const stellar_navigation = [
   { name: "Token Generator", href: "/token-generator", icon: generatorIcon, current: false },
@@ -372,10 +382,11 @@ const stellar_navigation = [
   { name: "Liquidity Pool Withdraw", href: "/toml-file-generator", icon: BalanceIIcon, current: false, comingSoon: true },
 ];
 
-// const soroban_navigation = [
-//   { name: "Smart Contract", href: "/smart-contract", icon: generatorIcon, current: false, comingSoon: true},
-//   { name: "Tokenization of Assets", href: "", icon: transfer, current: false, comingSoon: true},
-// ];
+const soroban_navigation = [
+  { name: "Smart Contract Deployment", href: "/smart-contract", icon: generatorIcon, current: false, comingSoon: true},
+  { name: "Ledger Entry Inspector", href: "", icon: docIcon, current: false, comingSoon: true},
+  { name: "Contract Event Viewer", href: "", icon: docIcon, current: false, comingSoon: true},
+];
 
 const route = useRoute();
 stellar_navigation.forEach(item => {
