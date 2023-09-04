@@ -30,10 +30,12 @@
                   </div>
                 </div>
                 <div class="mt-2">
-                  <button type="submit"
+                 <button
+                  @click="OpenWalletModal"
+                  type="submit"
                   class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white">
                   Connect Issuer Wallet
-                 </button>
+                </button>
                   <!-- <Field 
                   id="issuer_wallet_private_key" 
                   name="issuer_wallet_private_key" 
@@ -64,11 +66,12 @@
                   </div>
                 </div>
                 <div class="mt-2">
-                  <button type="submit"
+                  <button
+                  @click="OpenWalletModal"
+                  type="submit"
                   class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white">
                   Connect Distributor Wallet
                 </button>
-
                   <!-- <Field 
                     id="distributor_wallet_private_key" 
                     name="distributor_wallet_private_key" 
@@ -167,6 +170,7 @@
       </div>
     </div>
   </Layout>
+  <ConnectWalletModal :open="ConnectWalletModals" />
 </template>
 
 <script setup>
@@ -178,12 +182,21 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { Form , Field, ErrorMessage} from 'vee-validate';
 import * as Yup from "yup";
+import ConnectWalletModal from '@/components/ConnectWallet.vue';
 
 const DistributorHovered = ref(false);
 const IssuerKeyHovered = ref(false);
 const TotalSupplyHovered = ref(false);
 const AssetCodeHovered = ref(false);
 
+
+const desktopSidebar = ref(true);
+const ConnectWalletModals  = ref(false);
+
+const OpenWalletModal = (e) => {
+  e.preventDefault();
+  ConnectWalletModals.value = !ConnectWalletModals.value;
+};
 
 const values = reactive({
   ticker: "",
@@ -193,7 +206,7 @@ const values = reactive({
 const open = ref(false);
 
 
-// const toggleValue = ref(false);
+const toggleValue = ref(false);
 
 const schema = Yup.object({
 
