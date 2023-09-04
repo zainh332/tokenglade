@@ -25,10 +25,12 @@
                 </div>
               </div>
               <div class="mt-2">
-                <button type="submit"
+                <button
+                  @click="OpenWalletModal"
+                  type="submit"
                   class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white">
-                  Connect Issuer Wallet
-                 </button>
+                  Connect Wallet
+                </button>
               </div>
             </div>
               <div>
@@ -151,6 +153,7 @@
       </div>
     </div>
   </Layout>
+  <ConnectWalletModal :open="ConnectWalletModals" />
 </template>
 
 <script setup>
@@ -169,6 +172,8 @@ import { Form , Field, ErrorMessage} from 'vee-validate';
 //Used for Validation
 import * as Yup from "yup";
 
+import ConnectWalletModal from '@/components/ConnectWallet.vue';
+
 const WalletHovered = ref(false);
 const TargetWalletHovered = ref(false);
 const AmountHovered = ref(false);
@@ -185,6 +190,13 @@ const values = reactive({
   token: "",
   wallet_address_private_key,
 });
+
+const ConnectWalletModals  = ref(false);
+
+const OpenWalletModal = (e) => {
+  e.preventDefault();
+  ConnectWalletModals.value = !ConnectWalletModals.value;
+};
 
 
 //@blur to used in the form field to check if the user losses focus from the field
