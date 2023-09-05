@@ -1,47 +1,48 @@
 <template>
     <Header />
     <Layout>
-        <div class="responsive-container">
-            <div class="max-w-2xl px-4 sm:px-16 mx-auto flex items-center flex-col space-y-4">
-                <div class="space-y-2 py-8">
-                    <h1 class="text-t34 text-center font-semibold">About TokenGlade</h1>
-                    <p class="text-t16 text-center font-normal">
-                        Empowering Your Journey into the Stellar Universe
-                    </p>
-                </div>
-            </div>
-            <div class="py-4">
-                <h2 class="text-t24 font-semibold">Our Mission</h2>
-                <p class="text-t16">
-                    At TokenGlade, our mission is to make tokenization on the Stellar blockchain accessible to everyone. We
-                    believe in simplifying the process, fostering transparency, and driving innovation in the digital asset
-                    space.
-                </p>
-            </div>
-            <div class="py-4">
-                <h2 class="text-t24 font-semibold">User-Centric Approach</h2>
-                <p class="text-t16">
-                    We prioritize user-friendliness and aim to create a seamless experience for individuals and businesses
-                    looking to harness the power of tokens. TokenGlade is designed with you in mind.
-                </p>
-            </div>
-            <div class="py-4">
-                <h2 class="text-t24 font-semibold">Transparency Matters</h2>
-                <p class="text-t16">
-                    We value transparency, which is why TokenGlade generates TOML files to enhance token credibility. We
-                    believe that a transparent ecosystem benefits everyone involved.
-                </p>
-            </div>
-            <div class="py-4">
-                <h2 class="text-t24 font-semibold">Join the Revolution</h2>
-                <p class="text-t16">
-                    Be part of the TokenGlade revolution! Join us as we reshape tokenization, drive innovation, and empower
-                    users to explore the limitless possibilities of the Stellar blockchain.
+    <div class="responsive-container">
+        <div class="max-w-2xl px-4 sm:px-16 mx-auto flex items-center flex-col space-y-4">
+            <div class="space-y-2 py-8">
+                <h1 class="text-t34 text-center font-semibold">About TokenGlade</h1>
+                <p class="text-t16 text-center font-normal">
+                    Empowering Your Journey into the Stellar Universe
                 </p>
             </div>
         </div>
-        <Footer />
-    </Layout>
+        <div class="py-4">
+            <h2 class="text-t24 font-semibold">Our Mission</h2>
+            <p class="text-t16">
+                At TokenGlade, we are driven by a singular mission - to make blockchain technology accessible and user-friendly for everyone. We believe in the transformative power of blockchain, especially in the Stellar ecosystem, and we are committed to harnessing this power to simplify complex processes.
+            </p>
+        </div>
+        <div class="py-4">
+            <h2 class="text-t24 font-semibold">Our Vision</h2>
+            <p class="text-t16">
+                Our vision is to create a platform that empowers individuals and businesses to unlock the full potential of the Stellar blockchain. We aspire to be the go-to destination for anyone looking to harness the advantages of blockchain technology, whether it's token creation, smart contract deployment, or exploring the richness of the Stellar network.
+            </p>
+        </div>
+        <div class="py-4">
+            <h2 class="text-t24 font-semibold">Our Values</h2>
+            <p class="text-t16">
+                Integrity, innovation, and inclusivity are the cornerstones of our values. We are committed to maintaining the highest ethical standards in everything we do. We constantly innovate to bring you cutting-edge solutions. Above all, we embrace inclusivity, ensuring that blockchain's benefits are accessible to individuals and organizations worldwide.
+            </p>
+        </div>
+        <div class="py-4">
+            <h2 class="text-t24 font-semibold">Why TokenGlade?</h2>
+            <p class="text-t16">
+                With years of experience in blockchain technology, a passion for innovation, and a commitment to open-source principles, TokenGlade is uniquely positioned to simplify your journey into the Stellar universe. Our team comprises experts in software development, blockchain, and customer service, all dedicated to providing you with the best possible experience.
+            </p>
+        </div>
+        <div class="py-4">
+            <h2 class="text-t24 font-semibold">Join Us</h2>
+            <p class="text-t16">
+                We invite you to join us on this exciting journey into the world of Stellar blockchain. Whether you're a developer, a business owner, or simply someone curious about blockchain, TokenGlade is here to empower you. Together, we can shape the future of blockchain technology.
+            </p>
+        </div>
+    </div>
+    <Footer />
+</Layout>
 </template>
 <script setup>
 import Header from "@/components/Header.vue";
