@@ -108,7 +108,7 @@ const OpenWalletModal = (e) => {
 
 const Links = [
   {
-    name:'Generator',
+    name:'Dashboard',
     to:'/token-generator'
   },
   {

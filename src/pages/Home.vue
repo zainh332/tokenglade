@@ -14,19 +14,18 @@
           <div class="">
             <h1
               class="sm:text-[64px] text-[42px] font-normal sm:text-left text-center sm:leading-lh65">
-              Free Stellar
-              <span class="font-semibold block">Token Generator</span>
+              Gateway to Stellar & Soroban
+              <span class="font-semibold block">Solutions</span>
             </h1>
             <p class="max-w-lg text-[20px] text-center sm:text-left mt-4">
-              Empowering users to generate free Stellar tokens and unleash their
-              innovative potential.
+              Empowering users with a suite of Stellar & Soroban features to unleash their innovative potential.
             </p>
           </div>
           <div class="mt-6 flex items-center sm:gap-4 justify-around sm:justify-start max-w-xs ml-auto mr-auto sm:ml-0 sm:mr-0">
             <router-link
               to="/token-generator"
               class="btn-padding text-white rounded-full text-t14 bg-gradient"
-              >Create Token</router-link
+              >Dashboard</router-link
             >
             <!-- <router-link
               to="#"
