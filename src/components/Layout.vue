@@ -242,7 +242,7 @@
                   <router-link class="text-xs font-normal text-center text-gray-300" to="/privacy-policy">Privacy Policy</router-link>
                   <router-link class="pl-2 text-xs font-normal text-center text-gray-300" to="#">Contact us</router-link>
                 </div>
-                <p class="text-xs font-normal text-gray-300">© Copyright by 2023 | TokenGlade</p>
+                <p class="text-xs font-normal text-gray-300">© Copyright by 2024 | TokenGlade</p>
               </div>
             </li>
           </ul>
@@ -375,11 +375,11 @@ const OpenWalletModal = (e) => {
 const stellar_navigation = [
   { name: "Token Generator", href: "/token-generator", icon: generatorIcon, current: false },
   { name: "Claimable Balance", href: "/claimable-balance", icon: BalanceIIcon, current: false , },
-  { name: "Claim Claimable Balance", href: "/claimable-balance", icon: BalanceIIcon, current: false , comingSoon: true},
-  { name: "Token Transfer", href: "/token-transfer", icon: transfer, current: false, comingSoon: true },
-  { name: "Toml File Generator", href: "/toml-file-generator", icon: docIcon, current: false, comingSoon: true },
-  { name: "Liquidity Pool Deposit", href: "/toml-file-generator", icon: BalanceIIcon, current: false, comingSoon: true },
-  { name: "Liquidity Pool Withdraw", href: "/toml-file-generator", icon: BalanceIIcon, current: false, comingSoon: true },
+  // { name: "Claim Claimable Balance", href: "/claimable-balance", icon: BalanceIIcon, current: false , comingSoon: true},
+  // { name: "Token Transfer", href: "/token-transfer", icon: transfer, current: false, comingSoon: true },
+  // { name: "Toml File Generator", href: "/toml-file-generator", icon: docIcon, current: false, comingSoon: true },
+  // { name: "Liquidity Pool Deposit", href: "/toml-file-generator", icon: BalanceIIcon, current: false, comingSoon: true },
+  // { name: "Liquidity Pool Withdraw", href: "/toml-file-generator", icon: BalanceIIcon, current: false, comingSoon: true },
 ];
 
 // const soroban_navigation = [

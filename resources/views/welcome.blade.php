@@ -9,7 +9,9 @@
         <meta name="google-site-verification" content="efg2XUb3x3NC7DsUUkEtjtQ2k5ewYAMGt-rkqAjlQDM" />
     </head>
     <body class="antialiased">
-       <div id="app"></div>
+       <div id="app">
+        <beta-ribbon></beta-ribbon>
+       </div>
        <script>
            window.Laravel = {
                csrfToken: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
