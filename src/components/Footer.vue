@@ -1,32 +1,32 @@
 <template>
-  <div class="mx-auto max-w-6xl pt-40 sm:pt-64 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-6xl px-4 pt-40 mx-auto sm:pt-64 sm:px-6 lg:px-8">
     <!-- Footer -->
-    <div class="max-w-xs flex items-center mx-auto justify-center">
+    <div class="flex items-center justify-center max-w-xs mx-auto">
       <img :src="footerLogo" alt="" />
     </div>
 
     <!-- Footer Links -->
 
     <div
-      class="max-w-sm mx-auto flex my-8 justify-center flex-wrap items-center gap-6"
+      class="flex flex-wrap items-center justify-center max-w-sm gap-6 mx-auto my-8"
     >
-      <router-link class="text-t14 font-normal" to="/">Home</router-link>
-      <router-link class="text-t14 font-normal" to="/about-us">About us</router-link>
-      <router-link class="text-t14 font-normal" to="/token-generator">Dashboard</router-link
+      <router-link class="font-normal text-t14" to="/">Home</router-link>
+      <router-link class="font-normal text-t14" to="/about-us">About us</router-link>
+      <router-link class="font-normal text-t14" to="/token-generator">Dashboard</router-link
       >
-      <!-- <router-link class="text-t14 font-normal" to="#"
+      <!-- <router-link class="font-normal text-t14" to="#"
         >Dashboard</router-link
       > -->
-      <!-- <router-link class="text-t14 font-normal" to="#">Docs</router-link> -->
+      <!-- <router-link class="font-normal text-t14" to="#">Docs</router-link> -->
     </div>
 
     <!-- Logos -->
-    <div class="max-w-sm mx-auto flex gap-4 items-center justify-center flex-wrap">
+    <div class="flex flex-wrap items-center justify-center max-w-sm gap-4 mx-auto">
 
     <!-- Telegram -->
-      <div class="h-12 relative w-12 rounded-full shadow drop-shadow-sm flex items-center justify-center">
+      <div class="relative flex items-center justify-center w-12 h-12 rounded-full shadow drop-shadow-sm">
         <a href="https://t.me/tokenglade" target="_blank" rel="noopener noreferrer" 
-        class="absolute w-full h-full top-0 left-0"></a>
+        class="absolute top-0 left-0 w-full h-full"></a>
         <svg
         xmlns="http://www.w3.org/2000/svg"
         width="19"
@@ -45,14 +45,14 @@
       <!-- End Telegram -->
       
       <!-- Medium -->
-      <div class="h-12 w-12 relative rounded-full shadow drop-shadow-sm flex items-center justify-center">
+      <div class="relative flex items-center justify-center w-12 h-12 rounded-full shadow drop-shadow-sm">
         <!-- <router-link
         to="#"
-        class="absolute w-full h-full top-0 left-0"
+        class="absolute top-0 left-0 w-full h-full"
         ></router-link> -->
         
         <a href="https://medium.com/@tokenglade" target="_blank" rel="noopener noreferrer" 
-        class="absolute w-full h-full top-0 left-0"></a>
+        class="absolute top-0 left-0 w-full h-full"></a>
         <svg
         xmlns="http://www.w3.org/2000/svg"
           width="21"
@@ -81,9 +81,9 @@
       <!-- End Medium -->
 
       <!-- Twitter -->
-      <div class="h-12 w-12 relative rounded-full shadow drop-shadow-sm flex items-center justify-center" >
+      <div class="relative flex items-center justify-center w-12 h-12 rounded-full shadow drop-shadow-sm" >
         <a href="https://twitter.com/TokenGlade" target="_blank" rel="noopener noreferrer" 
-        class="absolute w-full h-full top-0 left-0"></a>
+        class="absolute top-0 left-0 w-full h-full"></a>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -113,13 +113,13 @@
 
     </div>
 
-    <div class="flex items-center gap-6 mt-24 mb-8 justify-center flex-col md:flex-row md:justify-between">
-      <p class="text-t16 font-normal">© Copyright by 2023 - TokenGlade</p>
+    <div class="flex flex-col items-center justify-center gap-6 mt-24 mb-8 md:flex-row md:justify-between">
+      <p class="font-normal text-t16">© Copyright by 2024 - TokenGlade</p>
     
-      <div class=" flex items-center sm:flex-row flex-col gap-4 ">
-        <router-link class="text-t16 font-normal" to="/privacy-policy">Privacy Policy</router-link>
-        <router-link class="text-t16 font-normal" to="/terms-service">Terms of Service</router-link>
-        <router-link class="text-t16 font-normal" to="#">Contact Us</router-link>
+      <div class="flex flex-col items-center gap-4 sm:flex-row">
+        <router-link class="font-normal text-t16" to="/privacy-policy">Privacy Policy</router-link>
+        <router-link class="font-normal text-t16" to="/terms-service">Terms of Service</router-link>
+        <router-link class="font-normal text-t16" to="#">Contact Us</router-link>
       </div>
 
     </div>

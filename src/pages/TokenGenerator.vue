@@ -1,21 +1,21 @@
 <template>
   <Layout>
-    <div class="max-w-2xl px-4 sm:px-16 mx-auto flex items-center flex-col space-y-4">
-      <div class="space-y-2 py-8">
-        <h1 class="text-t34 text-center font-semibold">Token Generator</h1>
-        <p class="text-t16 text-center font-normal">
+    <div class="flex flex-col items-center max-w-2xl px-4 mx-auto space-y-4 sm:px-16">
+      <div class="py-8 space-y-2">
+        <h1 class="font-semibold text-center text-t34">Token Generator</h1>
+        <p class="font-normal text-center text-t16">
           Create and manage your own tokens on the Stellar blockchain with ease using TokenGlade's Token Generator
         </p>
       </div>
 
       <div class="w-full">
-        <div class="flex min-h-full flex-1 flex-col justify-center py-8">
+        <div class="flex flex-col justify-center flex-1 min-h-full py-8">
           <div class="w-full">
             <Form class="space-y-6" @submit="submitForm" :validationSchema="schema">
               <!-- Issuer Wallet Button -->
               <div>
                 <div class="flex items-center justify-between">
-                  <label for="issuer_wallet_private_key" class="block text-t16 font-normal leading-6 text-gray-900">Issuer Wallet
+                  <label for="issuer_wallet_private_key" class="block font-normal leading-6 text-gray-900 text-t16">Issuer Wallet
                     <span class="text-red-500">*</span>
                   </label>
                   <div @mouseover="IssuerKeyHovered = true" @mouseleave="IssuerKeyHovered = false">
@@ -33,7 +33,7 @@
                  <button
                   @click="OpenWalletModal"
                   type="submit"
-                  class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white">
+                  class="inline-flex justify-center text-sm font-semibold leading-6 text-white rounded-full bg-gradient btn-padding">
                   Connect Issuer Wallet
                 </button>
                   <!-- <Field 
@@ -44,10 +44,10 @@
                   @blur="handlePrivateKeyBlur('issuer_wallet_private_key')"
                   class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
-                  <ErrorMessage class="text-red-500 text-sm font-normal" name="issuer_wallet_private_key" />
+                  <ErrorMessage class="text-sm font-normal text-red-500" name="issuer_wallet_private_key" />
 
                   
-                  <p v-if="issuerPrivateKeyError" class="text-red-500 text-sm font-normal">{{ issuerPrivateKeyError }}</p> -->
+                  <p v-if="issuerPrivateKeyError" class="text-sm font-normal text-red-500">{{ issuerPrivateKeyError }}</p> -->
                 </div>
               </div>
                <!-- Issuer Wallet Button -->
@@ -55,7 +55,7 @@
                 <!-- Distributor Wallet -->
               <div>
                 <div class="flex items-center justify-between">
-                  <label for="distributor_wallet_private_key" class="block text-t16 font-normal leading-6 text-gray-900">Distributor Wallet
+                  <label for="distributor_wallet_private_key" class="block font-normal leading-6 text-gray-900 text-t16">Distributor Wallet
                     <span class="text-red-500">*</span>
                   </label>
                   <div @mouseover="DistributorHovered = true" @mouseleave="DistributorHovered = false">
@@ -69,7 +69,7 @@
                   <button
                   @click="OpenWalletModal"
                   type="submit"
-                  class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white">
+                  class="inline-flex justify-center text-sm font-semibold leading-6 text-white rounded-full bg-gradient btn-padding">
                   Connect Distributor Wallet
                 </button>
                   <!-- <Field 
@@ -80,10 +80,10 @@
                     @blur="handlePrivateKeyBlur('distributor_wallet_private_key')"
                     class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     />
-                    <ErrorMessage class="text-red-500 text-sm font-normal" name="distributor_wallet_private_key" /> -->
+                    <ErrorMessage class="text-sm font-normal text-red-500" name="distributor_wallet_private_key" /> -->
                     
                   <!-- Display the server-side validation error while checking private key-->
-                  <!-- <p v-if="distributorPrivateKeyError" class="text-red-500 text-sm font-normal">{{ distributorPrivateKeyError }}</p> -->
+                  <!-- <p v-if="distributorPrivateKeyError" class="text-sm font-normal text-red-500">{{ distributorPrivateKeyError }}</p> -->
                 </div>
               </div>
               <!-- Distributor Wallet -->
@@ -92,7 +92,7 @@
                <!-- Asset Code -->
               <div>
                 <div class="flex items-center justify-between">
-                  <label for="ticker" class="block text-t16 font-normal leading-6 text-gray-900">
+                  <label for="ticker" class="block font-normal leading-6 text-gray-900 text-t16">
                     Asset Code
                     <span class="text-red-500">*</span>
                   </label>
@@ -110,7 +110,7 @@
                    type="text" 
                    class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
-                  <ErrorMessage class="text-red-500 text-sm font-normal" name="ticker" />
+                  <ErrorMessage class="text-sm font-normal text-red-500" name="ticker" />
                 </div>
               </div>
               <!-- Asset Code -->
@@ -119,7 +119,7 @@
               <!-- Total Supply -->
               <div>
                 <div class="flex items-center justify-between">
-                  <label for="total_supply" class="block text-t16 font-normal leading-6 text-gray-900">Total Supply
+                  <label for="total_supply" class="block font-normal leading-6 text-gray-900 text-t16">Total Supply
                     <span class="text-red-500">*</span>
                   </label>
                   <div @mouseover="TotalSupplyHovered = true" @mouseleave="TotalSupplyHovered = false">
@@ -136,7 +136,7 @@
                   type="text"
                   class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
-                  <ErrorMessage class="text-red-500 text-sm font-normal" name="total_supply" />
+                  <ErrorMessage class="text-sm font-normal text-red-500" name="total_supply" />
                 </div>
               </div>
               <!-- Total Supply -->
@@ -144,14 +144,14 @@
               
               <!-- Lock Issuer Wallet Address Toggle -->
               <div class="flex items-center justify-between">
-                <p class="text-t16 font-normal">Lock Issuer Wallet Address</p>
+                <p class="font-normal text-t16">Lock Issuer Wallet Address</p>
                 <Toggle v-model="toggleValue" />
               </div>
               <!-- Lock Issuer Wallet Address Toggle -->
               
               <div>
                 <button type="submit"
-                  class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white">
+                  class="inline-flex justify-center text-sm font-semibold leading-6 text-white rounded-full bg-gradient btn-padding">
                   Generate Token
                 </button>
               </div>
@@ -160,12 +160,12 @@
           </div>
         </div>
 
-        <div class="w-full px-2 py-2 rounded-md text-t14 text-white bg-yellow-500">
+        <div class="w-full px-2 py-2 text-white bg-yellow-500 rounded-md text-t14">
           Please ensure that both wallets maintain a minimum balance of 5 XLM to successfully generate a token.
         </div>
 
       </div>
-      <div class="w-full px-2 py-2 rounded-md text-t14 text-white bg-yellow-500">
+      <div class="w-full px-2 py-2 text-white bg-yellow-500 rounded-md text-t14">
         Please be aware that locking the issuer address will result in the inability to perform any future transactions from the issuer wallet, as it will remain permanently locked.
       </div>
     </div>

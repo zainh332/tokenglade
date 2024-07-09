@@ -27,6 +27,6 @@
                 gtag('js', new Date());
                 gtag('config', 'G-FNY5NE54YN');
             })();
-            </script>
+        </script>
     </body>
 </html>

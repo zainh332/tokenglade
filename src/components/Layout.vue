@@ -28,7 +28,7 @@
             leave-from="translate-x-0"
             leave-to="-translate-x-full"
           >
-            <DialogPanel class="relative mr-16 flex w-full max-w-xs flex-1">
+            <DialogPanel class="relative flex flex-1 w-full max-w-xs mr-16">
               <TransitionChild
                 as="template"
                 enter="ease-in-out duration-300"
@@ -39,7 +39,7 @@
                 leave-to="opacity-0"
               >
                 <div
-                  class="absolute left-full top-0 flex w-16 justify-center pt-5"
+                  class="absolute top-0 flex justify-center w-16 pt-5 left-full"
                 >
                   <button
                     type="button"
@@ -47,19 +47,19 @@
                     @click="sidebarOpen = false"
                   >
                     <span class="sr-only">Close sidebar</span>
-                    <XMarkIcon class="h-6 w-6 text-white" aria-hidden="true" />
+                    <XMarkIcon class="w-6 h-6 text-white" aria-hidden="true" />
                   </button>
                 </div>
               </TransitionChild>
               <!-- Sidebar component, swap this element with another sidebar if you like -->
-              <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4 ring-1 ring-white/10">
-                <div class="flex h-16 shrink-0 items-center">
+              <div class="flex flex-col px-6 pb-4 overflow-y-auto bg-gray-900 grow gap-y-5 ring-1 ring-white/10">
+                <div class="flex items-center h-16 shrink-0">
                   <router-link to="/">
-                  <img class="h-8 w-auto" :src="logo" alt="Your Company" />
+                  <img class="w-auto h-8" :src="logo" alt="Your Company" />
                   </router-link>
                 </div>
-                <nav class="flex flex-1 flex-col">
-                  <ul role="list" class="flex flex-1 flex-col gap-y-7">
+                <nav class="flex flex-col flex-1">
+                  <ul role="list" class="flex flex-col flex-1 gap-y-7">
                     <li>
               <ul role="list" class="-mx-2 space-y-3">
                 <li v-for="item in stellar_navigation" :key="item.name">
@@ -75,7 +75,7 @@
                   >
                     <component
                       :is="item.icon"
-                      class="h-6 w-6 shrink-0"
+                      class="w-6 h-6 shrink-0"
                       aria-hidden="true"
                     />
                     {{ item.name }}
@@ -83,7 +83,7 @@
                   <span v-else class="group flex gap-x-3 rounded-md p-2 text-[14px] leading-6 font-normal text-gray-400">
                     <component
                       :is="item.icon"
-                      class="h-6 w-6 shrink-0"
+                      class="w-6 h-6 shrink-0"
                       aria-hidden="true"
                     />
                     {{ item.name }} (Coming Soon)
@@ -91,7 +91,7 @@
                 </li>
               </ul>
             </li>
-            <li>
+            <!-- <li>
               <h1 class="text-gray-400">Soroban</h1>
               <ul role="list" class="-mx-2 space-y-3">
                 <li v-for="item in soroban_navigation" :key="item.name">
@@ -107,7 +107,7 @@
                   >
                     <component
                       :is="item.icon"
-                      class="h-6 w-6 shrink-0"
+                      class="w-6 h-6 shrink-0"
                       aria-hidden="true"
                     />
                     {{ item.name }}
@@ -115,26 +115,26 @@
                   <span v-else class="group flex gap-x-3 rounded-md p-2 text-[14px] leading-6 font-normal text-gray-400">
                     <component
                       :is="item.icon"
-                      class="h-6 w-6 shrink-0"
+                      class="w-6 h-6 shrink-0"
                       aria-hidden="true"
                     />
                     {{ item.name }} (Coming Soon)
                   </span>
                 </li>
               </ul>
-            </li>
+            </li> -->
 
                     <li>
                       <div class="flex flex-col gap-4">
                         <!-- <router-link
                           to="#"
-                          class="btn-padding text-xs sm:text-t14 rounded-full border border-black/50 text-black/50 bg-white"
+                          class="text-xs bg-white border rounded-full btn-padding sm:text-t14 border-black/50 text-black/50"
                           >GA424GAVZIOMZ...
                         </router-link> -->
                         <button
                           @click="OpenWalletModal"
                           type="submit"
-                          class="btn-padding text-xs sm:text-t14 rounded-full text-white bg-gradient">
+                          class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
                           Connect Wallet
                         </button>
                       </div>
@@ -163,14 +163,14 @@
             : 'desk items-center  -translate-x-[100%] flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-0 pb-4'
         "
       >
-        <div class="flex h-16 shrink-0 items-center">
+        <div class="flex items-center h-16 shrink-0">
           <router-link to="/">
-          <img class="h-10 w-auto" :src="logo" alt="Your Company" />
+          <img class="w-auto h-10" :src="logo" alt="Your Company" />
           </router-link>
         </div>
-        <nav class="flex mt-8 flex-1 flex-col">
+        <nav class="flex flex-col flex-1 mt-8">
           <!-- <h1 class="text-gray-400">Stellar</h1> -->
-          <ul role="list" class="flex justify-between flex-1 flex-col gap-y-7">
+          <ul role="list" class="flex flex-col justify-between flex-1 gap-y-7">
             <li>
               <ul role="list" class="-mx-2 space-y-3">
                 <li v-for="item in stellar_navigation" :key="item.name">
@@ -186,7 +186,7 @@
                   >
                     <component
                       :is="item.icon"
-                      class="h-6 w-6 shrink-0"
+                      class="w-6 h-6 shrink-0"
                       aria-hidden="true"
                     />
                     {{ item.name }}
@@ -194,7 +194,7 @@
                   <span v-else class="group flex gap-x-3 rounded-md p-2 text-[14px] leading-6 font-normal text-gray-400">
                     <component
                       :is="item.icon"
-                      class="h-6 w-6 shrink-0"
+                      class="w-6 h-6 shrink-0"
                       aria-hidden="true"
                     />
                     {{ item.name }} (Coming Soon)
@@ -203,7 +203,7 @@
               </ul>
             </li>
 
-            <li>
+            <!-- <li>
               <h1 class="text-gray-400">Soroban</h1>
               <ul role="list" class="-mx-2 space-y-3">
                 <li v-for="item in soroban_navigation" :key="item.name">
@@ -219,7 +219,7 @@
                   >
                     <component
                       :is="item.icon"
-                      class="h-6 w-6 shrink-0"
+                      class="w-6 h-6 shrink-0"
                       aria-hidden="true"
                     />
                     {{ item.name }}
@@ -227,22 +227,22 @@
                   <span v-else class="group flex gap-x-3 rounded-md p-2 text-[14px] leading-6 font-normal text-gray-400">
                     <component
                       :is="item.icon"
-                      class="h-6 w-6 shrink-0"
+                      class="w-6 h-6 shrink-0"
                       aria-hidden="true"
                     />
                     {{ item.name }} (Coming Soon)
                   </span>
                 </li>
               </ul>
-            </li>
+            </li> -->
 
             <li>
-              <div class="flex items-center flex-col gap-2 mt-24 px-4 mb-4 justify-center md:justify-between">
-                <div class=" flex items-center sm:flex-row divide-x flex-col flex-wrap gap-4 ">
-                  <router-link class="text-xs text-gray-300 text-center font-normal" to="/privacy-policy">Privacy Policy</router-link>
-                  <router-link class="text-xs text-gray-300 text-center pl-2 font-normal" to="#">Contact us</router-link>
+              <div class="flex flex-col items-center justify-center gap-2 px-4 mt-24 mb-4 md:justify-between">
+                <div class="flex flex-col flex-wrap items-center gap-4 divide-x sm:flex-row">
+                  <router-link class="text-xs font-normal text-center text-gray-300" to="/privacy-policy">Privacy Policy</router-link>
+                  <router-link class="pl-2 text-xs font-normal text-center text-gray-300" to="#">Contact us</router-link>
                 </div>
-                <p class="text-xs text-gray-300 font-normal">© Copyright by 2023 | TokenGlade</p>
+                <p class="text-xs font-normal text-gray-300">© Copyright by 2023 | TokenGlade</p>
               </div>
             </li>
           </ul>
@@ -251,27 +251,27 @@
     </div>
 
     <div :class="desktopSidebar ? 'lg:pl-72' : 'lg:pl-0'">
-      <div class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+      <div class="sticky top-0 z-40 flex items-center h-16 px-4 bg-white border-b border-gray-200 shadow-sm shrink-0 gap-x-4 sm:gap-x-6 sm:px-6 lg:px-8">
         <button
           type="button"
           class="-m-2.5 p-2.5 text-gray-700 lg:hidden"
           @click="sidebarOpen = true"
         >
           <span class="sr-only">Open sidebar</span>
-          <Bars3Icon class="h-6 w-6" aria-hidden="true" />
+          <Bars3Icon class="w-6 h-6" aria-hidden="true" />
         </button>
 
         <!-- Separator -->
-        <div class="h-6 w-px bg-gray-900/10 lg:hidden" aria-hidden="true" />
+        <div class="w-px h-6 bg-gray-900/10 lg:hidden" aria-hidden="true" />
 
         
-        <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-          <div class="relative flex flex-1 items-center"  action="#" method="GET" >
+        <div class="flex self-stretch flex-1 gap-x-4 lg:gap-x-6">
+          <div class="relative flex items-center flex-1"  action="#" method="GET" >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="26"
               height="14"
-              class="lg:block hidden cursor-pointer"
+              class="hidden cursor-pointer lg:block"
               viewBox="0 0 26 14"
               fill="none"
               @click="setDesktop"
@@ -286,16 +286,16 @@
             </svg>
             <p class="sm:pl-6" @click="sidebarOpen = true">Dashboard</p>
           </div>
-          <div class="sm:flex hidden items-center gap-x-4 lg:gap-x-6">
+          <div class="items-center hidden sm:flex gap-x-4 lg:gap-x-6">
             <!-- <router-link
               to="#"
-              class="btn-padding text-xs sm:text-t14 rounded-full border border-black/50 text-black/50 bg-white"
+              class="text-xs bg-white border rounded-full btn-padding sm:text-t14 border-black/50 text-black/50"
               >GA424GAVZIOMZ...
             </router-link> -->
             <button
               @click="OpenWalletModal"
               type="submit"
-              class="btn-padding text-xs sm:text-t14 rounded-full text-white bg-gradient">
+              class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
               Connect Wallet
             </button>
 
@@ -310,7 +310,7 @@
               <MenuButton class="-m-1.5 flex items-center p-1.5">
                 <span class="sr-only">Open user menu</span>
                 <img
-                  class="h-8 w-8 rounded-full bg-gray-50"
+                  class="w-8 h-8 rounded-full bg-gray-50"
                   src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                   alt=""
                 />
@@ -382,11 +382,11 @@ const stellar_navigation = [
   { name: "Liquidity Pool Withdraw", href: "/toml-file-generator", icon: BalanceIIcon, current: false, comingSoon: true },
 ];
 
-const soroban_navigation = [
-  { name: "Smart Contract Deployment", href: "/smart-contract", icon: generatorIcon, current: false, comingSoon: true},
-  { name: "Ledger Entry Inspector", href: "", icon: docIcon, current: false, comingSoon: true},
-  { name: "Contract Event Viewer", href: "", icon: docIcon, current: false, comingSoon: true},
-];
+// const soroban_navigation = [
+//   { name: "Smart Contract Deployment", href: "/smart-contract", icon: generatorIcon, current: false, comingSoon: true},
+//   { name: "Ledger Entry Inspector", href: "", icon: docIcon, current: false, comingSoon: true},
+//   { name: "Contract Event Viewer", href: "", icon: docIcon, current: false, comingSoon: true},
+// ];
 
 const route = useRoute();
 stellar_navigation.forEach(item => {
