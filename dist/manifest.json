@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-7bb49128.css",
+    "file": "assets/app-44b408cc.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
@@ -41,25 +41,21 @@
     "src": "src/assets/xbull.png"
   },
   "src/main.css": {
-    "file": "assets/main-48c8eaf0.css",
+    "file": "assets/main-d79d6a1c.css",
     "src": "src/main.css"
   },
   "src/main.js": {
     "assets": [
       "assets/logo-85d8ef3c.png",
       "assets/token-glade-logo-14ce1d6b.png",
-      "assets/rabet-b63626b7.png",
-      "assets/frighter-56128358.png",
-      "assets/albeto-acc89022.png",
-      "assets/xbull-0f319a8d.png",
       "assets/flower-9bebdb58.png",
       "assets/footer-logo-47ce9443.png",
       "assets/lights-c425c569.png"
     ],
     "css": [
-      "assets/main-48c8eaf0.css"
+      "assets/main-d79d6a1c.css"
     ],
-    "file": "assets/main-800071d4.js",
+    "file": "assets/main-f2c81cb0.js",
     "isEntry": true,
     "src": "src/main.js"
   }

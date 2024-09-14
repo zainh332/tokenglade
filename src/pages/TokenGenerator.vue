@@ -12,109 +12,53 @@
         <div class="flex flex-col justify-center flex-1 min-h-full py-8">
           <div class="w-full">
             <Form class="space-y-6" @submit="submitForm" :validationSchema="schema">
-              <!-- Issuer Wallet Button -->
+              <!-- <Form class="space-y-6" @submit="createAirdrops" :validationSchema="schema"> -->
+              <!-- Distributor Wallet -->
               <div>
                 <div class="flex items-center justify-between">
-                  <label for="issuer_wallet_private_key" class="block font-normal leading-6 text-gray-900 text-t16">Issuer Wallet
-                    <span class="text-red-500">*</span>
-                  </label>
-                  <div @mouseover="IssuerKeyHovered = true" @mouseleave="IssuerKeyHovered = false">
-                    <button v-if="!IssuerKeyHovered">?</button>
-                    <div v-if="IssuerKeyHovered" class="info-box">
-                      Issuer wallet is used to create tokens. The issuer wallet is responsible for the following:
-                      Creating new tokens
-                      Destroying tokens
-                      Setting the properties of tokens, such as the supply and the redeemable asset
-                      Managing the trustlines for the tokens
-                    </div>
-                  </div>
-                </div>
-                <div class="mt-2">
-                 <button
-                  @click="OpenWalletModal"
-                  type="submit"
-                  class="inline-flex justify-center text-sm font-semibold leading-6 text-white rounded-full bg-gradient btn-padding">
-                  Connect Issuer Wallet
-                </button>
-                  <!-- <Field 
-                  id="issuer_wallet_private_key" 
-                  name="issuer_wallet_private_key" 
-                  type="password"
-                  v-model="values.issuer_wallet_private_key"
-                  @blur="handlePrivateKeyBlur('issuer_wallet_private_key')"
-                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  />
-                  <ErrorMessage class="text-sm font-normal text-red-500" name="issuer_wallet_private_key" />
-
-                  
-                  <p v-if="issuerPrivateKeyError" class="text-sm font-normal text-red-500">{{ issuerPrivateKeyError }}</p> -->
-                </div>
-              </div>
-               <!-- Issuer Wallet Button -->
-
-                <!-- Distributor Wallet -->
-              <div>
-                <div class="flex items-center justify-between">
-                  <label for="distributor_wallet_private_key" class="block font-normal leading-6 text-gray-900 text-t16">Distributor Wallet
+                  <label for="distributor_wallet_private_key"
+                    class="block font-normal leading-6 text-gray-900 text-t16">Distributor Wallet
                     <span class="text-red-500">*</span>
                   </label>
                   <div @mouseover="DistributorHovered = true" @mouseleave="DistributorHovered = false">
                     <button v-if="!DistributorHovered">?</button>
                     <div v-if="DistributorHovered" class="info-box">
-                      The distributor wallet is used to distribute tokens in a variety of ways, such as airdrops, faucets, and rewards programs. It can also be used to sell tokens on exchanges. 
+                      This wallet will receive your tokens once the transaction is successfully processed
                     </div>
                   </div>
                 </div>
                 <div class="mt-2">
-                  <button
-                  @click="OpenWalletModal"
-                  type="submit"
-                  class="inline-flex justify-center text-sm font-semibold leading-6 text-white rounded-full bg-gradient btn-padding">
-                  Connect Distributor Wallet
-                </button>
-                  <!-- <Field 
-                    id="distributor_wallet_private_key" 
-                    name="distributor_wallet_private_key" 
-                    type="password"
-                    v-model="values.distributor_wallet_private_key"
-                    @blur="handlePrivateKeyBlur('distributor_wallet_private_key')"
-                    class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    />
-                    <ErrorMessage class="text-sm font-normal text-red-500" name="distributor_wallet_private_key" /> -->
-                    
-                  <!-- Display the server-side validation error while checking private key-->
-                  <!-- <p v-if="distributorPrivateKeyError" class="text-sm font-normal text-red-500">{{ distributorPrivateKeyError }}</p> -->
+                  <button id="distributor_wallet_connected" @click="OpenWalletModal" type="submit"
+                    class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
+                    Connect Wallet
+                  </button>
                 </div>
               </div>
               <!-- Distributor Wallet -->
 
-
-               <!-- Asset Code -->
+              <!-- Asset Code -->
               <div>
                 <div class="flex items-center justify-between">
-                  <label for="ticker" class="block font-normal leading-6 text-gray-900 text-t16">
+                  <label for="asset_code" class="block font-normal leading-6 text-gray-900 text-t16">
                     Asset Code
                     <span class="text-red-500">*</span>
                   </label>
                   <div @mouseover="AssetCodeHovered = true" @mouseleave="AssetCodeHovered = false">
                     <button v-if="!AssetCodeHovered">?</button>
                     <div v-if="AssetCodeHovered" class="info-box">
-                      The asset code can be anything that the issuer wants it to be, but it is typically a short and memorable string of characters. For example, the asset code for the Stellar Lumens (XLM) native asset is "XLM"
+                      The asset code can be anything that the issuer wants it to be, but it is typically a short and
+                      memorable string of characters. For example, the asset code for the Stellar Lumens (XLM) native
+                      asset is "XLM"
                     </div>
                   </div>
                 </div>
                 <div class="mt-2">
-                  <Field
-                   id="ticker" 
-                   name="ticker" 
-                   type="text" 
-                   class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  />
-                  <ErrorMessage class="text-sm font-normal text-red-500" name="ticker" />
+                  <Field id="asset_code" name="asset_code" v-model="form_details.asset_code" type="text"
+                    class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                  <ErrorMessage class="text-sm font-normal text-red-500" name="asset_code" />
                 </div>
               </div>
               <!-- Asset Code -->
-
 
               <!-- Total Supply -->
               <div>
@@ -125,30 +69,26 @@
                   <div @mouseover="TotalSupplyHovered = true" @mouseleave="TotalSupplyHovered = false">
                     <button v-if="!TotalSupplyHovered">?</button>
                     <div v-if="TotalSupplyHovered" class="info-box">
-                      Total supply refers to the total number of coins or tokens that have been created or mined, that are in circulation, including those that are locked or reserved
+                      Total supply refers to the total number of coins or tokens that have been created or mined, that
+                      are in circulation, including those that are locked or reserved
                     </div>
                   </div>
                 </div>
                 <div class="mt-2">
-                  <Field 
-                  id="total_supply" 
+                  <Field id="total_supply" 
                   name="total_supply" 
-                  type="text"
-                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  />
+                  v-model="form_details.total_supply" 
+                  type="text" 
+                  @input="onlyNumberInput"
+                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
                   <ErrorMessage class="text-sm font-normal text-red-500" name="total_supply" />
+                  <p v-if="maxValueExceeded" class="text-sm font-normal text-red-500">
+                    Total supply cannot exceed 922,337,203,685 in Stellar blockchain
+                  </p>
                 </div>
               </div>
               <!-- Total Supply -->
 
-              
-              <!-- Lock Issuer Wallet Address Toggle -->
-              <div class="flex items-center justify-between">
-                <p class="font-normal text-t16">Lock Issuer Wallet Address</p>
-                <Toggle v-model="toggleValue" />
-              </div>
-              <!-- Lock Issuer Wallet Address Toggle -->
-              
               <div>
                 <button type="submit"
                   class="inline-flex justify-center text-sm font-semibold leading-6 text-white rounded-full bg-gradient btn-padding">
@@ -161,12 +101,8 @@
         </div>
 
         <div class="w-full px-2 py-2 text-white bg-yellow-500 rounded-md text-t14">
-          Please ensure that both wallets maintain a minimum balance of 5 XLM to successfully generate a token.
+          Please ensure that distributor wallet maintain a minimum balance of 10 XLM to successfully generate a token.
         </div>
-
-      </div>
-      <div class="w-full px-2 py-2 text-white bg-yellow-500 rounded-md text-t14">
-        Please be aware that locking the issuer address will result in the inability to perform any future transactions from the issuer wallet, as it will remain permanently locked.
       </div>
     </div>
   </Layout>
@@ -174,110 +110,185 @@
 </template>
 
 <script setup>
-import Layout from "@/components/Layout.vue";
+import Layout from "@/components/Dashboard_header.vue";
 import Modal from '@/components/Modal.vue';
 import Toggle from '@/components/Toggle.vue';
-import { ref , reactive, watch} from "vue";
+import { ref, reactive, watch, onMounted } from "vue";
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { Form , Field, ErrorMessage} from 'vee-validate';
+import { Form, Field, ErrorMessage } from 'vee-validate';
 import * as Yup from "yup";
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
+import { E, getCookie, hasLogin, saveToken, getWallet, authLogin, isURL, onRender } from "../utils/utils.js";
+import { getPublicKey, signTransaction, isConnected, requestAccess, getNetwork } from "@stellar/freighter-api";
 
 const DistributorHovered = ref(false);
-const IssuerKeyHovered = ref(false);
 const TotalSupplyHovered = ref(false);
 const AssetCodeHovered = ref(false);
 
-
-const desktopSidebar = ref(true);
-const ConnectWalletModals  = ref(false);
+const ConnectWalletModals = ref(false);
 
 const OpenWalletModal = (e) => {
   e.preventDefault();
   ConnectWalletModals.value = !ConnectWalletModals.value;
 };
 
-const values = reactive({
-  ticker: "",
+//create listener to listen for connected changes
+hear('connected', async (status) => {
+  if (status) {
+    //has been connected, do the needfull
+    if (E('walletConnected')) {
+      const walletKey = await getPublicKey()
+      E('distributor_wallet_connected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
+    }
+  }
+  else {
+    //has disconnected
+    E('distributor_wallet_connected').innerText = "Connect Wallet"
+  }
+})
+
+const form_details = reactive({
+  asset_code: "",
   total_supply: "",
 });
 
+const maxValue = 922337203685; // The maximum allowed value
+const maxValueExceeded = ref(false); // Tracks if the value exceeds the max
+
+// Function to allow only numeric input and enforce the maximum value
+const onlyNumberInput = (event) => {
+  // Replace non-numeric characters
+  let input = event.target.value.replace(/\D/g, '');
+
+  // Convert the input into an integer and check if it exceeds the max value
+  const value = parseInt(input, 10);
+
+  if (value > maxValue) {
+    maxValueExceeded.value = true;
+    input = maxValue.toString(); // Set input to the maximum allowed value
+  } else {
+    maxValueExceeded.value = false;
+  }
+
+  // Update the input field and the reactive form data
+  event.target.value = input;
+  form_details.total_supply = input;
+};
+
 const open = ref(false);
-
-
-const toggleValue = ref(false);
+const distributor_wallet_keys = ref(null);
 
 const schema = Yup.object({
-
-  ticker: Yup.string()
+  asset_code: Yup.string()
     .required('Asset Code is required')
     .max(12, 'Asset Code should not exceed 12 characters')
     .label('Asset Code'),
 
-  total_supply: Yup.string()
+    total_supply: Yup.number()
+    .typeError('Total Supply must be a number')
     .required('Total Supply is required')
-    .label('Total Supply'),
-
+    .positive('Total Supply must be a positive number')
+    .integer('Total Supply must be an integer')
+    .label('Total Supply'), 
 });
 
-
-const submitForm = (values) =>{
-  
-try {
-  // values.toggleValue = toggleValue.value;
-
+const submitForm = async (form_details) => {
+  try {
     // Show loading indicator
     Swal.fire({
       showConfirmButton: false,
       title: 'Generating Token',
       allowOutsideClick: false,
       didOpen: () => {
-        Swal.showLoading()
-        },
+        Swal.showLoading();
+      },
     });
-        
-    
 
-  axios.post('api/generate_token', values, {
-    headers: {
-      'X-CSRF-TOKEN': window.Laravel.csrfToken,
+    const connected = await isConnected();
+    if (!connected) {
+      console.log('not connected');
+      // If not connected, request access
+      await requestAccess();
     }
-  }).then((response) => {
+
+    // Get the distributor's public key from Freighter
+    const distributor_wallet_key = await getPublicKey();
+
+    // Prepare the payload for generating the unsigned transaction
+    const payload = {
+      ...form_details,
+      distributor_wallet_key, // Attach distributor's wallet public key here
+    };
+
+    // Step 1: Request the unsigned transaction from the backend
+    const generateResponse = await axios.post('api/generate_token', payload, {
+      headers: {
+        'X-CSRF-TOKEN': window.Laravel.csrfToken,
+      },
+    });
+
+    // Extract the unsigned transaction (XDR) and other variables from the response
+    const unsignedXdr = generateResponse.data.unsigned_trustline_transaction;
+    const issuerPublicKey = generateResponse.data.issuerPublicKey;
+    const issuerSecretkey = generateResponse.data.issuerSecretkey;
+    const total_supply = generateResponse.data.total_supply;
+    const distributorPublicKey = generateResponse.data.distributorPublicKey;
+    const asset_code = generateResponse.data.asset_code;
+    
+    //Use Freighter to sign the transaction
+    const transactionToSubmit = await signTransaction(unsignedXdr, 'TESTNET');
+    
+    //Submit the signed transaction to the backend for submission to Stellar
+    const submitResponse = await axios.post('api/submit_transaction', { transactionToSubmit,
+    issuerPublicKey,
+    issuerSecretkey,
+    total_supply,
+    distributorPublicKey,
+    asset_code }, 
+    {
+      headers: {
+        'X-CSRF-TOKEN': window.Laravel.csrfToken,
+      },
+    });
+
     // Hide loading indicator
     Swal.close();
 
-    if (response.data.status === 'success') {
+    // Handle the success response
+    if (submitResponse.data.message) {
       Swal.fire({
         icon: 'success',
         title: 'Success!',
-        text: response.data.msg,
+        text: submitResponse.data.message || 'Transaction was successfully submitted to the Stellar network.',
       }).then(() => {
         // Reset form values
-        const formData = reactive({
-          ticker: "",
-          total_supply: "",
-          issuer_wallet_private_key: "",
-          distributor_wallet_private_key: "",
-        });
+        form_details.asset_code = "";
+        form_details.total_supply = "";
+      });
+    } else if (submitResponse.data.result_codes) {
+      // Transaction failed but we received result_codes from Stellar
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: `Transaction failed with result codes: ${submitResponse.data.result_codes.transaction}`,
       });
     } else {
       Swal.fire({
         icon: 'error',
         title: 'Error!',
-        text: response.data.msg,
+        text: submitResponse.data.error || 'Transaction submission failed.',
       });
     }
-  });
-}
-catch (error) {
-  Swal.fire({
-        icon: 'error',
-        title: 'Error!',
-        text: 'An error occurred while generating the token',
-      });
-}
-};
 
+  } catch (error) {
+    // Handle any errors that occur during submission
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: error.response?.data?.error || 'An error occurred while processing the transaction.',
+    });
+  }
+};
 </script>
 <style lang="scss" scoped></style>

@@ -1,38 +1,27 @@
 <template>
   <div>
     <Header />
-    <div class="bg-red-500 relative">
+    <div class="relative bg-red-500">
       <div class="absolute md:w-[500px] md:h-[800px]  lg:w-[600px] lg:h-[800px] xl:w-[860px] xl:h-[955px] z-10 hidden lg:block right-0 top-32">
-        <img class="left-0 -z-10 top-0" :src="flower" alt="" />
+        <img class="top-0 left-0 -z-10" :src="flower" alt="" />
       </div>
     </div>
     <div class="">
-      <!-- <div class="mx-auto max-w-6xl z-10 relative pt-24 sm:pt-44 px-4 flex items-center justify-between sm:px-6 lg:px-8"> -->
-      <!-- <div class="mx-auto max-w-6xl z-10 relative pt-8 sm:pt-16 md:pt-24 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center"> -->
+      <!-- <div class="relative z-10 flex items-center justify-between max-w-6xl px-4 pt-24 mx-auto sm:pt-44 sm:px-6 lg:px-8"> -->
+      <!-- <div class="relative z-10 flex flex-col items-center justify-center max-w-6xl px-4 pt-8 mx-auto sm:pt-16 md:pt-24 sm:px-6 lg:px-8"> -->
       <div class="responsive-container">
         <div class="shrink-0">
           <div class="">
             <h1
               class="sm:text-[64px] text-[42px] font-normal sm:text-left text-center sm:leading-lh65">
-              Gateway to Stellar & Soroban
-              <span class="font-semibold block">Solutions</span>
+              Gateway to Stellar
+              <span class="block font-semibold">Solutions</span>
             </h1>
             <p class="max-w-lg text-[20px] text-center sm:text-left mt-4">
-              Empowering users with a suite of Stellar & Soroban features to unleash their innovative potential.
+              Empowering users with a suite of Stellar features to unleash their innovative potential.
             </p>
           </div>
-          <div class="mt-6 flex items-center sm:gap-4 justify-around sm:justify-start max-w-xs ml-auto mr-auto sm:ml-0 sm:mr-0">
-            <router-link
-              to="/token-generator"
-              class="btn-padding text-white rounded-full text-t14 bg-gradient"
-              >Dashboard</router-link
-            >
-            <!-- <router-link
-              to="#"
-              class="btn-padding text-black/50 text-t14s border border-black/50 rounded-full"
-              >Sign up</router-link
-            > -->
-          </div>
+          
         </div>
       </div>
 
@@ -40,21 +29,21 @@
       
         <Table />
 
-      <div class="cards mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-6xl pt-40 sm:pt-64 px-4 sm:px-6 lg:px-8">
+      <div class="grid max-w-6xl grid-cols-1 gap-12 px-4 pt-40 mx-auto cards md:grid-cols-2 lg:grid-cols-3 sm:pt-64 sm:px-6 lg:px-8">
           <div class="drop-shadow bg-white hover:transition-all cursor-pointer group-hover:transition-all transition-all group duration-200 card-gradient h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
-            <h1 class="group-hover:text-white  text-t34 font-semibold">300+</h1>
+            <h1 class="font-semibold group-hover:text-white text-t34">300+</h1>
             <p class="text-center group-hover:text-white text-[20px] font-normal">
             Tokens created so far on TokenGlade
             </p>
           </div>
           <div class="drop-shadow bg-white hover:transition-all cursor-pointer group-hover:transition-all transition-all group duration-200 card-gradient h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
-            <h1 class="group-hover:text-white  text-t34 font-semibold">1000+</h1>
+            <h1 class="font-semibold group-hover:text-white text-t34">1000+</h1>
             <p class="text-center group-hover:text-white text-[20px] font-normal">
             Tokens Transfer using TokenGlade
             </p>
           </div>
           <div class="drop-shadow bg-white hover:transition-all cursor-pointer group-hover:transition-all transition-all group duration-200 card-gradient h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
-            <h1 class="group-hover:text-white  text-t34 font-semibold">1000+</h1>
+            <h1 class="font-semibold group-hover:text-white text-t34">1000+</h1>
             <p class="text-center group-hover:text-white text-[20px] font-normal">
               Claimable Balance to other wallets with TokenGlade
             </p>
@@ -62,13 +51,13 @@
       </div>
 
       <div
-        class="cards mx-auto gap-12 max-w-6xl pt-40 sm:pt-64 px-4 sm:px-6 lg:px-8"
+        class="max-w-6xl gap-12 px-4 pt-40 mx-auto cards sm:pt-64 sm:px-6 lg:px-8"
       >
         <div class="sm:flex sm:items-center">
           <div class="sm:flex-auto">
-            <div class="bg-gradient px-8 h-1 w-32 mx-auto rounded-full"></div>
+            <div class="w-32 h-1 px-8 mx-auto rounded-full bg-gradient"></div>
             <h1
-              class="mt-2 text-black text-center font-semibold text-t34 leading-relaxed sm:leading-lh65"
+              class="mt-2 font-semibold leading-relaxed text-center text-black text-t34 sm:leading-lh65"
             >
               Frequent questions
             </h1>

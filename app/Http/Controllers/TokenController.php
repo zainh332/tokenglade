@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use DateTime;
 use Exception;
 use Soneso\StellarSDK\StellarSDK;
+use Soneso\StellarSDK\Server;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Memo;
@@ -27,8 +28,15 @@ use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use InvalidArgumentException;
+use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
 use Soneso\StellarSDK\ClaimClaimableBalanceOperation;
+use Soneso\StellarSDK\CreateAccountOperationBuilder;
+use Soneso\StellarSDK\Exceptions\HorizonRequestException;
+use Soneso\StellarSDK\SetOptionsOperationBuilder;
+use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\TransactionEnvelope;
 
 class TokenController extends Controller
 {
@@ -36,8 +44,8 @@ class TokenController extends Controller
 
     public function __construct()
     {
-        $this->sdk = StellarSDK::getPublicNetInstance();
-        // $this->sdk = StellarSDK::getTestNetInstance();
+        // $this->sdk = StellarSDK::getPublicNetInstance();
+        $this->sdk = StellarSDK::getTestNetInstance();
         $this->maxFee = 3000;
     }
 
@@ -72,10 +80,11 @@ class TokenController extends Controller
     }
 
 
-    public function check_holding_tokens(Request $request){
+    public function check_holding_tokens(Request $request)
+    {
         $private_key = $request->input('private_key');
         $token = $request->input('token');
-        
+
         // Continue only if private_key is not null
         if ($private_key !== null) {
             try {
@@ -88,17 +97,16 @@ class TokenController extends Controller
 
                 $holding_tokens = false; // Initialize a flag variable
 
-                foreach($privatekeyAccount->getBalances() as $balance){
-                    if($balance->getAssetType() != 'native' && $balance->getAssetCode() === $token){
+                foreach ($privatekeyAccount->getBalances() as $balance) {
+                    if ($balance->getAssetType() != 'native' && $balance->getAssetCode() === $token) {
                         $holding_tokens = true;
                         break;
-                    }
-                    else{
+                    } else {
                         $holding_tokens = false;
                     }
                 }
-                if($holding_tokens ===false ){
-                    return response()->json(['status' => 'error', 'msg' => 'You dont hold '.$token .' tokens' ]);
+                if ($holding_tokens === false) {
+                    return response()->json(['status' => 'error', 'msg' => 'You dont hold ' . $token . ' tokens']);
                 }
             } catch (\InvalidArgumentException $e) {
                 return response()->json(['status' => 'error', 'msg' => 'Invalid Private Key']);
@@ -108,84 +116,139 @@ class TokenController extends Controller
         }
     }
 
-
     public function generate_token(Request $request)
     {
+        // try {
+        // Get input data from the request
+        $asset_code = $request->input('asset_code');
+        $total_supply = $request->input('total_supply');
+        $distributor_wallet_key = $request->input('distributor_wallet_key'); // Use distributor's secret key (private key)
+
+        // Generate a new keypair for the issuer
+        $issuerKeyPair = KeyPair::random();
+        $issuerPublicKey = $issuerKeyPair->getAccountId();
+        $issuerSecretkey = $issuerKeyPair->getSecretSeed();
+
+        // Fund the issuer account on the testnet using Friendbot (for testnet only)
+        file_get_contents("https://friendbot.stellar.org/?addr=" . $issuerPublicKey);
+
+        // Load the distributor account using its private key
+        $distributorAccount = $this->sdk->requestAccount($distributor_wallet_key);
+
+        if (strlen($asset_code) <= 4) {
+            $asset = new AssetTypeCreditAlphaNum4($asset_code, $issuerPublicKey);
+        } else {
+            $asset = new AssetTypeCreditAlphanum12($asset_code, $issuerPublicKey);
+        }
+
+        // Create a trustline between distributor and the asset
+        $trustlineOperation = (new ChangeTrustOperationBuilder($asset))->build();
+
+        // Build the trustline transaction
+        $trustlineTransaction = (new TransactionBuilder($distributorAccount, Network::testnet()))
+            ->addOperation($trustlineOperation)
+            ->build();
+
+        // Return the XDR string to the frontend
+        return response()->json([
+            'unsigned_trustline_transaction' => $trustlineTransaction->toEnvelopeXdrBase64(),
+            'issuerPublicKey' => $issuerPublicKey,
+            'issuerSecretkey' => $issuerSecretkey,
+            'total_supply' => $total_supply,
+            'distributorPublicKey' => $distributor_wallet_key,
+            'asset_code' => $asset_code
+        ]);
+    }
+
+    public function submit_transaction(Request $request)
+    {
         try {
-            $ticker = $request->input('ticker');
+            // Get the signed XDR string from the request
+            $signedXdr = $request->input('transactionToSubmit');
+            $issuerPublicKey = $request->input('issuerPublicKey');
+            $issuerSecretkey = $request->input('issuerSecretkey');
             $total_supply = $request->input('total_supply');
-            $issuer_wallet_address_private_key = $request->input('issuer_wallet_private_key');
-            $distributor_wallet_address_private_key = $request->input('distributor_wallet_private_key');
+            $distributorPublicKey = $request->input('distributorPublicKey');
+            $asset_code = $request->input('asset_code');
 
-            $issuerKeyPair = KeyPair::fromSeed($issuer_wallet_address_private_key);
-            $issuerAccountId = $issuerKeyPair->getAccountId();
+            // Convert the XDR string into a Transaction object using fromEnvelopeBase64XdrString
+            $transactionEnvelope = AbstractTransaction::fromEnvelopeBase64XdrString($signedXdr);
 
-            $distributorKeyPair = KeyPair::fromSeed($distributor_wallet_address_private_key);
-            $distributorAccountId = $distributorKeyPair->getAccountId();
-            $distributorAccount = $this->sdk->requestAccount($distributorAccountId);
+            // Submit the transaction to the Stellar network using the SDK
+            $response = $this->sdk->submitTransaction($transactionEnvelope);
 
-            // if ticker is less or equal to 4 characters 
-            if (strlen($ticker) <= 4) {
-                // Define the custom asset/token issued by the issuer account
-                $asset = new AssetTypeCreditAlphaNum4($ticker, $issuerAccountId);
-            } else {
-                // Define the custom asset/token issued by the issuer account
-                $asset = new AssetTypeCreditAlphanum12($ticker, $issuerAccountId);
-            }
-
-            // Prepare a change trust operation for the distributor account and trust limit
-            $changeTrustOperation = (new ChangeTrustOperationBuilder($asset))->build();
-
-            // Build the transaction
-            $transactionBuilder = new TransactionBuilder($distributorAccount);
-            $transactionBuilder
-                ->setMaxOperationFee($this->maxFee)
-                ->addOperation($changeTrustOperation)
-                ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Token created by TokenGlade'));
-
-            $transaction = $transactionBuilder->build();
-            // $transaction->sign($distributorKeyPair, Network::testnet());
-            $transaction->sign($distributorKeyPair, Network::public());
-            $result = $this->sdk->submitTransaction($transaction);
-
-
-            // Load the issuer account data from the Stellar network
-            $issuerAccount = $this->sdk->requestAccount($issuerAccountId);
-
-            // Build the transaction for the payment operation from the issuer to the distributor
-            $paymentOperation = (new PaymentOperationBuilder($distributorAccountId, $asset, $total_supply))->build();
-            $transaction = (new TransactionBuilder($issuerAccount))->addOperation($paymentOperation)->build();
-
-            // The issuer signs the transaction.
-            // $transaction->sign($issuerKeyPair, Network::testnet());
-            $transaction->sign($issuerKeyPair, Network::public());
-
-            // Submit the transaction.
-            $response = $this->sdk->submitTransaction($transaction);
+            // Check if the transaction was successful
             if ($response) {
-                // Sleep for a few seconds to allow the transaction to be confirmed (not recommended in production)
-                sleep(5);
 
-                // Load the distributor account data from the Stellar network again to get updated balances
-                $distributorAccount = $this->sdk->requestAccount($distributorAccountId);
-                $paymentReceived = false;
-                // Check that the payment was successfully received by the distributor
-                foreach ($distributorAccount->getBalances() as $balance) {
-                    $balanceFloat = floatval($balance->getBalance());
-                    $balanceInteger = number_format($balanceFloat, 0, '', '');
-                    if ($balance->getAssetType() != 'native' && $balance->getAssetCode() == $ticker && $balanceInteger == $total_supply) {
-                        $paymentReceived = true;
-                        break;
-                    }
-                }
-                if ($paymentReceived) {
-                    return response()->json(['status' => 'success', 'msg' => 'Token has Created Successfully. Please Check Your Wallet']);
+                // Load the issuer account
+                $issuerKeyPair = KeyPair::fromSeed($issuerSecretkey);
+                $issuerAccountId = $issuerKeyPair->getAccountId();
+                $issuerAccount = $this->sdk->requestAccount($issuerAccountId);
+                $distributorAccount = $this->sdk->requestAccount($distributorPublicKey);
+                $distributorAccountid = $distributorAccount->getAccountId();
+
+                // Define the asset
+                if (strlen($asset_code) <= 4) {
+                    $asset = new AssetTypeCreditAlphaNum4($asset_code, $issuerPublicKey);
                 } else {
-                    return response()->json(['status' => 'error', 'msg' => 'Something Went Wrong']);
+                    $asset = new AssetTypeCreditAlphanum12($asset_code, $issuerPublicKey);
+                }
+
+                // Send the total supply from issuer to distributor
+                $paymentOperation = (new PaymentOperationBuilder($distributorAccountid, $asset, $total_supply))->build();
+
+                // Build the payment transaction
+                $paymentTransaction = (new TransactionBuilder($issuerAccount))
+                    ->addOperation($paymentOperation)
+                    ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Token created by TokenGlade'))
+                    ->build();
+
+
+                // Sign the payment transaction with the issuer's private key
+                $paymentTransaction->sign($issuerKeyPair, Network::testnet());
+
+                // Submit the payment transaction
+                $response = $this->sdk->submitTransaction($paymentTransaction);
+                if ($response) {
+                    // Lock the issuer account by setting master weight to 0
+                    $lockOperation = (new SetOptionsOperationBuilder())
+                        ->setMasterKeyWeight(0) // Set master weight to 0 to lock the account
+                        ->build();
+
+                    // Build the lock transaction
+                    $lockTransaction = (new TransactionBuilder($issuerAccount))
+                        ->addOperation($lockOperation)
+                        ->build();
+
+                    // Sign the lock transaction with the issuer's private key
+                    $lockTransaction->sign($issuerKeyPair, Network::testnet());
+
+                    // Submit the lock transaction to lock the issuer account
+                    $this->sdk->submitTransaction($lockTransaction);
+
+                    // Return the success message and issuer account details
+                    return response()->json([
+                        'message' => 'Token created, issued to distributor, and issuer account locked',
+                        'issuer_public_key' => $issuerPublicKey,
+                    ]);
+                } else {
+                    // Log and return the failure response including extras.result_codes
+                    $resultCodes = $response->getExtras()->getResultCodes();
+                    return response()->json([
+                        'error' => 'Transaction failed',
+                        'result_codes' => $resultCodes,
+                        'details' => $response->getExtras()->getResultXdr() // Include detailed XDR for further debugging
+                    ], 400);
                 }
             }
-        } catch (\Throwable $th) {
-            return  "Something Went Wrong";
+
+            // If transaction fails, return error
+            return response()->json(['error' => 'Trustline transaction failed'], 400);
+        } catch (HorizonRequestException $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        } catch (\Exception $e) {
+            // Catch and return any errors
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -275,14 +338,14 @@ class TokenController extends Controller
                         ->addOperation($claimableBalanceOperation);
 
                     if (!empty($memo)) {
-                        $transactionBuilder->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, $memo. ' (TokenGlade)'));
+                        $transactionBuilder->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, $memo . ' (TokenGlade)'));
                     } else {
                         $transactionBuilder->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'By TokenGlade'));
                     }
 
                     $transaction = $transactionBuilder->build();
-                    // $transaction->sign($UserKeypair, Network::testnet());
-                    $transaction->sign($UserKeypair, Network::public());
+                    $transaction->sign($UserKeypair, Network::testnet());
+                    // $transaction->sign($UserKeypair, Network::public());
                     $result = $this->sdk->submitTransaction($transaction);
                     $transactionIds[$cleanedReceiver] = $result->getId();
                 }
@@ -310,23 +373,18 @@ class TokenController extends Controller
         }
     }
 
-    public function token_transfer(Request $request)
-    {
-        return null;
-    }
-
     public function calim_claimable_balance(Request $request)
     {
         // $asset_code;
         // $issuer_wallet_address;
         // $distributor_wallet_address;
         // fetch('https://horizon.stellar.org/claimable_balances/?asset='.$asset_code.'%3A'.$issuer_wallet_address.'&claimant='.$distributor_wallet_address.'&limit=200&order=desc')
-        
+
         // $distributor_wallet_address_private_key = $request->input('distributor_wallet_private_key');
         // $distributorKeyPair = KeyPair::fromSeed($distributor_wallet_address_private_key);
         // $distributorAccountId = $distributorKeyPair->getAccountId();
         // $distributorAccount = $this->sdk->requestAccount($distributorAccountId);$transactionBuilder = new TransactionBuilder($distributorAccount);
-        
+
         // $claim_claimable_Balance_Operation = new ClaimClaimableBalanceOperation($balance_id);
 
         // $transactionBuilder

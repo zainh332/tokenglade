@@ -133,7 +133,7 @@
 </template>
 
 <script setup>
-import Layout from "@/components/Layout.vue";
+import Layout from "@/components/Dashboard_header.vue";
 import { ref } from "vue";
 import Modal from '@/components/Modal.vue';
 const open  = ref(false);

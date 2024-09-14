@@ -8,7 +8,6 @@ import TomlFileGenerator from "./pages/TomlFileGenerator.vue";
 import aboutus from "./pages/about-us.vue";
 import privacypolicy from "./pages/privacy-policy.vue";
 import termsofservice from "./pages/terms-of-service.vue";
-import SmartContract from "./pages/SmartContract.vue";
 
 const routes = [
   {
@@ -27,32 +26,32 @@ const routes = [
       description: "Create custom tokens effortlessly with TokenGlade's intuitive token generator. Make your mark in the token economy on the Stellar blockchain."
     },
   },
-  {
-    path: "/token-transfer",
-    component: TokenTransfer,
-    meta: {
-      title: "Token Transfer",
-      description: "Effortlessly transfer tokens across wallets on the Stellar blockchain with TokenGlade. Simplify token interactions and explore decentralized possibilities."
-    },
-  },
-  {
-    path: "/claimable-balance",
-    component: ClaimableBalance,
-    meta: {
-      title: "Claimable Balance",
-      description: "Explore claimable balances on TokenGlade. Control token distributions, airdrops, and rewards with precision on the Stellar blockchain."
-    },
-    // beforeEnter: conditionalNext('isAdmin'),
-  },
-  {
-    path: "/toml-file-generator",
-    component: TomlFileGenerator,
-    meta: {
-      title: "TOML File Generator",
-      description: "Generate TOML files for your tokens with ease on TokenGlade. Enhance transparency, trust, and credibility for your token projects on the Stellar blockchain."
-    },
-    // beforeEnter: conditionalNext('isAdmin'),
-  },
+  // {
+  //   path: "/token-transfer",
+  //   component: TokenTransfer,
+  //   meta: {
+  //     title: "Token Transfer",
+  //     description: "Effortlessly transfer tokens across wallets on the Stellar blockchain with TokenGlade. Simplify token interactions and explore decentralized possibilities."
+  //   },
+  // },
+  // {
+  //   path: "/claimable-balance",
+  //   component: ClaimableBalance,
+  //   meta: {
+  //     title: "Claimable Balance",
+  //     description: "Explore claimable balances on TokenGlade. Control token distributions, airdrops, and rewards with precision on the Stellar blockchain."
+  //   },
+  //   // beforeEnter: conditionalNext('isAdmin'),
+  // },
+  // {
+  //   path: "/toml-file-generator",
+  //   component: TomlFileGenerator,
+  //   meta: {
+  //     title: "TOML File Generator",
+  //     description: "Generate TOML files for your tokens with ease on TokenGlade. Enhance transparency, trust, and credibility for your token projects on the Stellar blockchain."
+  //   },
+  //   // beforeEnter: conditionalNext('isAdmin'),
+  // },
   {
     path: "/about-us",
     component: aboutus,
@@ -77,22 +76,6 @@ const routes = [
     meta: {
       title: "Terms of Service",
       description: ""
-    },
-  },
-  {
-    path: "/smart-contract",
-    component: SmartContract,
-    meta: {
-      title: "Smart Contract Deployment",
-      description: "This feature guides users through the process of deploying a smart contract on the Stellar blockchain. This feature will simplify the deployment process and ensure users follow the correct sequence of steps."
-    },
-  },
-  {
-    path: "/ledger-entry",
-    component: SmartContract,
-    meta: {
-      title: "Ledger Entry Inspector",
-      description: "This feature allows users to inspect the current state of ledger entries directly on the Stellar blockchain. This feature empowers users to view contract details, contract code, and other ledger entry information in a user-friendly interface."
     },
   },
 ];

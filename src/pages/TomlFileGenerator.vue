@@ -1,22 +1,22 @@
 <template>
     <Layout>
       <div
-        class="max-w-2xl px-4 sm:px-16 mx-auto flex items-center flex-col space-y-4"
+        class="flex flex-col items-center max-w-2xl px-4 mx-auto space-y-4 sm:px-16"
       >
-        <div class="space-y-2 py-8">
-          <h1 class="text-t34 text-center font-semibold">Toml File Generator</h1>
-          <p class="text-t16 text-center font-normal">
+        <div class="py-8 space-y-2">
+          <h1 class="font-semibold text-center text-t34">Toml File Generator</h1>
+          <p class="font-normal text-center text-t16">
             Generate comprehensive and informative TOML files effortlessly
           </p>
         </div>
   
         <div class="w-full">
-          <div class="flex min-h-full flex-1 flex-col justify-center py-8">
+          <div class="flex flex-col justify-center flex-1 min-h-full py-8">
             <div class="w-full">
               <form class="space-y-6" action="#" method="POST">
                 <div>
                   <div class="flex items-center justify-between">
-                    <label for="wallet_address_private_key" class="block text-t16 font-normal leading-6 text-gray-900">Wallet Private Key</label>
+                    <label for="wallet_address_private_key" class="block font-normal leading-6 text-gray-900 text-t16">Wallet Private Key</label>
                   </div>
                   <div class="mt-2">
                     <input
@@ -30,7 +30,7 @@
                   </div>
                 </div>
                 <div>
-                  <label for="target_wallet_address" class="block text-t16 font-normal leading-6 text-gray-900"> Bulk Stellar Wallet Address</label>
+                  <label for="target_wallet_address" class="block font-normal leading-6 text-gray-900 text-t16"> Bulk Stellar Wallet Address</label>
                   <div class="mt-2">
                     <textarea
                       rows="4"
@@ -42,7 +42,7 @@
                 </div>
                 <div>
                   <div class="flex items-center justify-between">
-                    <label for="amount" class="block text-t16 font-normal leading-6 text-gray-900" >Amount</label>
+                    <label for="amount" class="block font-normal leading-6 text-gray-900 text-t16" >Amount</label>
                   </div>
                   <div class="mt-2">
                     <input
@@ -57,7 +57,7 @@
                 </div>
                 <div>
                   <div class="flex items-center justify-between">
-                    <label for="token" class="block text-t16 font-normal leading-6 text-gray-900" >Token</label>
+                    <label for="token" class="block font-normal leading-6 text-gray-900 text-t16" >Token</label>
                   </div>
                   <div class="mt-2">
                     <input
@@ -73,7 +73,7 @@
   
                 <div>
                   <div class="flex items-center justify-between">
-                    <label for="memo" class="block text-t16 font-normal leading-6 text-gray-900" >Memo</label>
+                    <label for="memo" class="block font-normal leading-6 text-gray-900 text-t16" >Memo</label>
                   </div>
                   <div class="mt-2">
                     <input
@@ -91,7 +91,7 @@
                   <button
                   @click="setOpen"
                     type="submit"
-                    class="inline-flex bg-gradient justify-center rounded-full btn-padding text-sm font-semibold leading-6 text-white"
+                    class="inline-flex justify-center text-sm font-semibold leading-6 text-white rounded-full bg-gradient btn-padding"
                   >
                     Send Token
                   </button>
@@ -106,7 +106,7 @@
   </template>
   
   <script setup>
-  import Layout from "@/components/Layout.vue";
+  import Layout from "@/components/Dashboard_header.vue";
   import { ref } from "vue";
   import Modal from '@/components/Modal.vue';
   const open  = ref(false);

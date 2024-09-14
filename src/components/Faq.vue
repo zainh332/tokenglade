@@ -1,20 +1,20 @@
 <template>
   <div class="bg-white">
-    <div class="mx-auto max-w-7xl px-2   lg:px-8 ">
-      <div class="mx-auto max-w-6xl ">
+    <div class="px-2 mx-auto max-w-7xl lg:px-8 ">
+      <div class="max-w-6xl mx-auto ">
         
         <dl class="mt-10 space-y-6">
           <Disclosure as="div" v-for="faq in faqs" :key="faq.question" class="py-6 px-4 bg-white drop-shadow rounded-[8px]" v-slot="{ open }">
             <dt>
-              <DisclosureButton class="flex w-full items-start justify-between text-left text-gray-900">
+              <DisclosureButton class="flex items-start justify-between w-full text-left text-gray-900">
                 <span class="text-[20px] font-normal leading-7">{{ faq.question }}</span>
-                <span class="ml-6 justify-center shrink-0 flex h-7 w-7 bg-gray-300 rounded-full items-center">
-                  <PlusSmallIcon v-if="!open" class="h-6 w-6" aria-hidden="true" />
-                  <MinusSmallIcon v-else class="h-6 w-6" aria-hidden="true" />
+                <span class="flex items-center justify-center ml-6 bg-gray-300 rounded-full shrink-0 h-7 w-7">
+                  <PlusSmallIcon v-if="!open" class="w-6 h-6" aria-hidden="true" />
+                  <MinusSmallIcon v-else class="w-6 h-6" aria-hidden="true" />
                 </span>
               </DisclosureButton>
             </dt>
-            <DisclosurePanel as="dd" class="mt-2 pr-12">
+            <DisclosurePanel as="dd" class="pr-12 mt-2">
               <p class="text-base leading-7 text-gray-600">{{ faq.answer }}</p>
             </DisclosurePanel>
           </Disclosure>
@@ -32,12 +32,12 @@ const faqs = [
   {
     question: "What is TokenGlade, and what does it offer?",
     answer:
-      "TokenGlade is a platform designed to empower individuals and organizations to create, manage, and interact with tokens and Soroban Smart Contracts on the Stellar blockchain. It streamlines the token creation process, offers simplified claimable balance management, and enhances the usability of Stellar and Soroban features.",
+      "TokenGlade is a platform designed to empower individuals and organizations to create, manage, and interact with tokens on the Stellar blockchain. It streamlines the token creation process, offers simplified claimable balance management, and enhances the usability of Stellar operations.",
   },
   {
     question: " Is TokenGlade secure to use?",
     answer:
-      "Yes, TokenGlade places a strong emphasis on security. We have integrated external wallet extensions like Rabet, Frighter, Xbull, and Albedo to allow users to securely connect their issuer and distributor wallets without exposing private keys. Your assets and information are safeguarded throughout your token-related activities.",
+      "Yes, TokenGlade places a strong emphasis on security. We have integrated external wallet extensions like Frighter to allow users to securely connect their issuer and distributor wallets without exposing private keys. Your assets and information are safeguarded throughout your token-related activities.",
   },
   {
     question: "How does TokenGlade simplify claimable balances?",
