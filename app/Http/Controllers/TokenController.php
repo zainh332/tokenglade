@@ -188,12 +188,12 @@ class TokenController extends Controller
             // Convert the XDR string into a Transaction object using fromEnvelopeBase64XdrString
             $transactionEnvelope = Transaction::fromEnvelopeBase64XdrString($signedXdr);
             
-            // Submit the transaction to the Stellar network using the SDK
-            $response = $this->sdk->submitTransaction($transactionEnvelope);
             return response()->json([
                 'message' => 'Token created, issued to distributor, and issuer account locked',
-                'issuer_public_key' => $response,
+                'issuer_public_key' => $transactionEnvelope,
             ]);
+            // Submit the transaction to the Stellar network using the SDK
+            $response = $this->sdk->submitTransaction($transactionEnvelope);
 
             // Check if the transaction was successful
             if ($response) {
