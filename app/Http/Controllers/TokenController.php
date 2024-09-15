@@ -162,7 +162,7 @@ class TokenController extends Controller
 
     public function submit_transaction(Request $request)
     {
-        try {
+        // try {
             // Get the signed XDR string from the request
             $signedXdr = $request->input('transactionToSubmit');
             $issuerPublicKey = $request->input('issuerPublicKey');
@@ -244,12 +244,12 @@ class TokenController extends Controller
 
             // If transaction fails, return error
             return response()->json(['error' => 'Trustline transaction failed'], 400);
-        } catch (HorizonRequestException $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
-        } catch (\Exception $e) {
-            // Catch and return any errors
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        // } catch (HorizonRequestException $e) {
+        //     return response()->json(['error' => $e->getMessage()], 400);
+        // } catch (\Exception $e) {
+        //     // Catch and return any errors
+        //     return response()->json(['error' => $e->getMessage()], 500);
+        // }
     }
 
     public function claimable_balance(Request $request)
