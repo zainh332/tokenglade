@@ -170,11 +170,7 @@ class TokenController extends Controller
             $distributorPublicKey = $request->input('distributorPublicKey');
             $asset_code = $request->input('asset_code');
 
-            return response()->json([
-                'message' => 'Token created, issued to distributor, and issuer account locked',
-                'issuer_public_key' => $issuerPublicKey,
-            ]);
-
+            
             // Validate input lengths and types
             if (strlen($issuerPublicKey) !== 56) {
                 throw new \Exception('Invalid issuer public key length.');
@@ -188,12 +184,16 @@ class TokenController extends Controller
             if (strlen($asset_code) > 12) {
                 throw new \Exception('Asset code cannot exceed 12 characters.');
             }
-
+            
             // Convert the XDR string into a Transaction object using fromEnvelopeBase64XdrString
             $transactionEnvelope = AbstractTransaction::fromEnvelopeBase64XdrString($signedXdr);
-
+            
             // Submit the transaction to the Stellar network using the SDK
             $response = $this->sdk->submitTransaction($transactionEnvelope);
+            return response()->json([
+                'message' => 'Token created, issued to distributor, and issuer account locked',
+                'issuer_public_key' => $response,
+            ]);
 
             // Check if the transaction was successful
             if ($response) {
