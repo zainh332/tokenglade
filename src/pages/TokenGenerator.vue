@@ -270,13 +270,13 @@ const submitForm = async (form_details) => {
       // Transaction failed but we received result_codes from Stellar
       Swal.fire({
         icon: 'error',
-        title: 'Error!',
+        title: 'Error!1',
         text: `Transaction failed with result codes: ${submitResponse.data.result_codes.transaction}`,
       });
     } else {
       Swal.fire({
         icon: 'error',
-        title: 'Error!',
+        title: 'Error!2',
         text: submitResponse.data.error || 'Transaction submission failed.',
       });
     }
@@ -285,7 +285,7 @@ const submitForm = async (form_details) => {
     // Handle any errors that occur during submission
     Swal.fire({
       icon: 'error',
-      title: 'Error!',
+      title: 'Error!3',
       text: error.response?.data?.error || 'An error occurred while processing the transaction.',
     });
   }

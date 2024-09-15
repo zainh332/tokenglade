@@ -162,7 +162,7 @@ class TokenController extends Controller
 
     public function submit_transaction(Request $request)
     {
-        // try {
+        try {
             // Get the signed XDR string from the request
             $signedXdr = $request->input('transactionToSubmit');
             $issuerPublicKey = $request->input('issuerPublicKey');
@@ -179,13 +179,14 @@ class TokenController extends Controller
 
             // Check if the transaction was successful
             if ($response) {
-                dd(1);
+
                 // Load the issuer account
                 $issuerKeyPair = KeyPair::fromSeed($issuerSecretkey);
                 $issuerAccountId = $issuerKeyPair->getAccountId();
                 $issuerAccount = $this->sdk->requestAccount($issuerAccountId);
                 $distributorAccount = $this->sdk->requestAccount($distributorPublicKey);
                 $distributorAccountid = $distributorAccount->getAccountId();
+
                 // Define the asset
                 if (strlen($asset_code) <= 4) {
                     $asset = new AssetTypeCreditAlphaNum4($asset_code, $issuerPublicKey);
@@ -195,43 +196,43 @@ class TokenController extends Controller
 
                 // Send the total supply from issuer to distributor
                 $paymentOperation = (new PaymentOperationBuilder($distributorAccountid, $asset, $total_supply))->build();
-                
+
                 // Build the payment transaction
                 $paymentTransaction = (new TransactionBuilder($issuerAccount))
                     ->addOperation($paymentOperation)
                     ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Token created by TokenGlade'))
                     ->build();
-                    
-                    
-                    // Sign the payment transaction with the issuer's private key
-                    $paymentTransaction->sign($issuerKeyPair, Network::testnet());
-                    
-                    // Submit the payment transaction
-                    $response = $this->sdk->submitTransaction($paymentTransaction);
-                    if ($response) {
-                        // Lock the issuer account by setting master weight to 0
-                        $lockOperation = (new SetOptionsOperationBuilder())
+
+
+                // Sign the payment transaction with the issuer's private key
+                $paymentTransaction->sign($issuerKeyPair, Network::testnet());
+
+                // Submit the payment transaction
+                $response = $this->sdk->submitTransaction($paymentTransaction);
+                if ($response) {
+                    // Lock the issuer account by setting master weight to 0
+                    $lockOperation = (new SetOptionsOperationBuilder())
                         ->setMasterKeyWeight(0) // Set master weight to 0 to lock the account
                         ->build();
-                        
-                        // Build the lock transaction
-                        $lockTransaction = (new TransactionBuilder($issuerAccount))
+
+                    // Build the lock transaction
+                    $lockTransaction = (new TransactionBuilder($issuerAccount))
                         ->addOperation($lockOperation)
                         ->build();
-                        
-                        // Sign the lock transaction with the issuer's private key
-                        $lockTransaction->sign($issuerKeyPair, Network::testnet());
-                        
-                        // Submit the lock transaction to lock the issuer account
-                        $this->sdk->submitTransaction($lockTransaction);
-                        
-                        // Return the success message and issuer account details
-                        return response()->json([
-                            'message' => 'Token created, issued to distributor, and issuer account locked',
-                            'issuer_public_key' => $issuerPublicKey,
-                        ]);
-                    } else {
-                        // Log and return the failure response including extras.result_codes
+
+                    // Sign the lock transaction with the issuer's private key
+                    $lockTransaction->sign($issuerKeyPair, Network::testnet());
+
+                    // Submit the lock transaction to lock the issuer account
+                    $this->sdk->submitTransaction($lockTransaction);
+
+                    // Return the success message and issuer account details
+                    return response()->json([
+                        'message' => 'Token created, issued to distributor, and issuer account locked',
+                        'issuer_public_key' => $issuerPublicKey,
+                    ]);
+                } else {
+                    // Log and return the failure response including extras.result_codes
                     $resultCodes = $response->getExtras()->getResultCodes();
                     return response()->json([
                         'error' => 'Transaction failed',
@@ -241,15 +242,14 @@ class TokenController extends Controller
                 }
             }
 
-            dd(2);
             // If transaction fails, return error
             return response()->json(['error' => 'Trustline transaction failed'], 400);
-            // } catch (HorizonRequestException $e) {
-        //     return response()->json(['error' => $e->getMessage()], 400);
-        // } catch (\Exception $e) {
-        //     // Catch and return any errors
-        //     return response()->json(['error' => $e->getMessage()], 500);
-        // }
+        } catch (HorizonRequestException $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        } catch (\Exception $e) {
+            // Catch and return any errors
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function claimable_balance(Request $request)
