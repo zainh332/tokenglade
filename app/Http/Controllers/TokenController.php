@@ -171,6 +171,20 @@ class TokenController extends Controller
             $distributorPublicKey = $request->input('distributorPublicKey');
             $asset_code = $request->input('asset_code');
 
+            // Validate input lengths and types
+            if (strlen($issuerPublicKey) !== 56) {
+                throw new \Exception('Invalid issuer public key length.');
+            }
+            if (strlen($issuerSecretkey) !== 56) {
+                throw new \Exception('Invalid issuer secret key length.');
+            }
+            if (strlen($distributorPublicKey) !== 56) {
+                throw new \Exception('Invalid distributor public key length.');
+            }
+            if (strlen($asset_code) > 12) {
+                throw new \Exception('Asset code cannot exceed 12 characters.');
+            }
+
             // Convert the XDR string into a Transaction object using fromEnvelopeBase64XdrString
             $transactionEnvelope = AbstractTransaction::fromEnvelopeBase64XdrString($signedXdr);
 
@@ -184,69 +198,59 @@ class TokenController extends Controller
                 $issuerKeyPair = KeyPair::fromSeed($issuerSecretkey);
                 $issuerAccountId = $issuerKeyPair->getAccountId();
                 $issuerAccount = $this->sdk->requestAccount($issuerAccountId);
-                // $distributorAccount = $this->sdk->requestAccount($distributorPublicKey);
-                // $distributorAccountid = $distributorAccount->getAccountId();
-                // dd($distributorAccountid);
-                // if($distributorAccountid)
-                // {
-                    // Define the asset
-                    if (strlen($asset_code) <= 4) {
-                        $asset = new AssetTypeCreditAlphaNum4($asset_code, $issuerPublicKey);
-                    } else {
-                        $asset = new AssetTypeCreditAlphanum12($asset_code, $issuerPublicKey);
-                    }
-    
-                    // Send the total supply from issuer to distributor
-                    $paymentOperation = (new PaymentOperationBuilder($distributorPublicKey, $asset, $total_supply))->build();
-    
-                    // Build the payment transaction
-                    $paymentTransaction = (new TransactionBuilder($issuerAccount))
-                        ->addOperation($paymentOperation)
-                        ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Token created by TokenGlade'))
-                        ->build();
-    
-    
-                    // Sign the payment transaction with the issuer's private key
-                    $paymentTransaction->sign($issuerKeyPair, Network::testnet());
-    
-                    // Submit the payment transaction
-                    $response = $this->sdk->submitTransaction($paymentTransaction);
-                    if ($response) {
-                        // Lock the issuer account by setting master weight to 0
-                        $lockOperation = (new SetOptionsOperationBuilder())
-                            ->setMasterKeyWeight(0) // Set master weight to 0 to lock the account
-                            ->build();
-    
-                        // Build the lock transaction
-                        $lockTransaction = (new TransactionBuilder($issuerAccount))
-                            ->addOperation($lockOperation)
-                            ->build();
-    
-                        // Sign the lock transaction with the issuer's private key
-                        $lockTransaction->sign($issuerKeyPair, Network::testnet());
-    
-                        // Submit the lock transaction to lock the issuer account
-                        $this->sdk->submitTransaction($lockTransaction);
-    
-                        // Return the success message and issuer account details
-                        return response()->json([
-                            'message' => 'Token created, issued to distributor, and issuer account locked',
-                            'issuer_public_key' => $issuerPublicKey,
-                        ]);
-                    } else {
-                        // Log and return the failure response including extras.result_codes
-                        $resultCodes = $response->getExtras()->getResultCodes();
-                        return response()->json([
-                            'error' => 'Transaction failed',
-                            'result_codes' => $resultCodes,
-                            'details' => $response->getExtras()->getResultXdr() // Include detailed XDR for further debugging
-                        ], 400);
-                    }
-                // }
-                // else{
-                //     return response()->json(['error' => 'Distributor account id not found'], 400);
-                // }
+                // Define the asset
+                if (strlen($asset_code) <= 4) {
+                    $asset = new AssetTypeCreditAlphaNum4($asset_code, $issuerPublicKey);
+                } else {
+                    $asset = new AssetTypeCreditAlphanum12($asset_code, $issuerPublicKey);
+                }
 
+                // Send the total supply from issuer to distributor
+                $paymentOperation = (new PaymentOperationBuilder($distributorPublicKey, $asset, $total_supply))->build();
+
+                // Build the payment transaction
+                $paymentTransaction = (new TransactionBuilder($issuerAccount))
+                    ->addOperation($paymentOperation)
+                    ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Token created by TokenGlade'))
+                    ->build();
+
+
+                // Sign the payment transaction with the issuer's private key
+                $paymentTransaction->sign($issuerKeyPair, Network::testnet());
+
+                // Submit the payment transaction
+                $response = $this->sdk->submitTransaction($paymentTransaction);
+                if ($response) {
+                    // Lock the issuer account by setting master weight to 0
+                    $lockOperation = (new SetOptionsOperationBuilder())
+                        ->setMasterKeyWeight(0) // Set master weight to 0 to lock the account
+                        ->build();
+
+                    // Build the lock transaction
+                    $lockTransaction = (new TransactionBuilder($issuerAccount))
+                        ->addOperation($lockOperation)
+                        ->build();
+
+                    // Sign the lock transaction with the issuer's private key
+                    $lockTransaction->sign($issuerKeyPair, Network::testnet());
+
+                    // Submit the lock transaction to lock the issuer account
+                    $this->sdk->submitTransaction($lockTransaction);
+
+                    // Return the success message and issuer account details
+                    return response()->json([
+                        'message' => 'Token created, issued to distributor, and issuer account locked',
+                        'issuer_public_key' => $issuerPublicKey,
+                    ]);
+                } else {
+                    // Log and return the failure response including extras.result_codes
+                    $resultCodes = $response->getExtras()->getResultCodes();
+                    return response()->json([
+                        'error' => 'Transaction failed',
+                        'result_codes' => $resultCodes,
+                        'details' => $response->getExtras()->getResultXdr() // Include detailed XDR for further debugging
+                    ], 400);
+                }
             }
 
             // If transaction fails, return error

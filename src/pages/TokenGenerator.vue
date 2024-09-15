@@ -233,7 +233,7 @@ const submitForm = async (form_details) => {
     const issuerPublicKey = generateResponse.data.issuerPublicKey;
     const issuerSecretkey = generateResponse.data.issuerSecretkey;
     const total_supply = generateResponse.data.total_supply;
-    const distributorPublicKey = generateResponse.data.distributorPublicKey;
+    const distributorPublicKey = distributor_wallet_key;
     const asset_code = generateResponse.data.asset_code;
     
     //Use Freighter to sign the transaction
