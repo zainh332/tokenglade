@@ -155,7 +155,6 @@ class TokenController extends Controller
             'issuerPublicKey' => $issuerPublicKey,
             'issuerSecretkey' => $issuerSecretkey,
             'total_supply' => $total_supply,
-            'distributorPublicKey' => $distributor_wallet_key,
             'asset_code' => $asset_code
         ]);
     }
@@ -170,6 +169,11 @@ class TokenController extends Controller
             $total_supply = $request->input('total_supply');
             $distributorPublicKey = $request->input('distributorPublicKey');
             $asset_code = $request->input('asset_code');
+
+            return response()->json([
+                'message' => 'Token created, issued to distributor, and issuer account locked',
+                'issuer_public_key' => $issuerPublicKey,
+            ]);
 
             // Validate input lengths and types
             if (strlen($issuerPublicKey) !== 56) {

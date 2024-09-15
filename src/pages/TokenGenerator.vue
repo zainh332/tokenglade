@@ -194,7 +194,7 @@ const schema = Yup.object({
 });
 
 const submitForm = async (form_details) => {
-  // try {
+  try {
     // Show loading indicator
     Swal.fire({
       showConfirmButton: false,
@@ -260,7 +260,7 @@ const submitForm = async (form_details) => {
       Swal.fire({
         icon: 'success',
         title: 'Success!',
-        text: submitResponse.data.message || 'Transaction was successfully submitted to the Stellar network.',
+        text: `${submitResponse.data.message} And your issuer ID is ${submitResponse.data.issuer_public_key}`
       }).then(() => {
         // Reset form values
         form_details.asset_code = "";
@@ -281,14 +281,14 @@ const submitForm = async (form_details) => {
       });
     }
 
-  // } catch (error) {
-  //   // Handle any errors that occur during submission
-  //   Swal.fire({
-  //     icon: 'error',
-  //     title: 'Error!3',
-  //     text: error.response?.data?.error || 'An error occurred while processing the transaction.',
-  //   });
-  // }
+  } catch (error) {
+    // Handle any errors that occur during submission
+    Swal.fire({
+      icon: 'error',
+      title: 'Error!3',
+      text: error.response?.data?.error || 'An error occurred while processing the transaction.',
+    });
+  }
 };
 </script>
 <style lang="scss" scoped></style>
