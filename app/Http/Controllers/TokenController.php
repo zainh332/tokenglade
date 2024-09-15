@@ -46,7 +46,7 @@ class TokenController extends Controller
     {
         // $this->sdk = StellarSDK::getPublicNetInstance();
         $this->sdk = StellarSDK::getTestNetInstance();
-        $this->maxFee = 3000;
+        $this->maxFee = 30000;
     }
 
     public function check_wallet(Request $request)
@@ -170,7 +170,7 @@ class TokenController extends Controller
             $distributorPublicKey = $request->input('distributorPublicKey');
             $asset_code = $request->input('asset_code');
 
-            
+
             // Validate input lengths and types
             if (strlen($issuerPublicKey) !== 56) {
                 throw new \Exception('Invalid issuer public key length.');
@@ -186,12 +186,8 @@ class TokenController extends Controller
             }
             
             // Convert the XDR string into a Transaction object using fromEnvelopeBase64XdrString
-            $transactionEnvelope = Transaction::fromEnvelopeBase64XdrString($signedXdr);
-            
-            return response()->json([
-                'message' => 'Token created, issued to distributor, and issuer account locked',
-                'issuer_public_key' => $transactionEnvelope,
-            ]);
+            $transactionEnvelope = AbstractTransaction::fromEnvelopeBase64XdrString($signedXdr);
+
             // Submit the transaction to the Stellar network using the SDK
             $response = $this->sdk->submitTransaction($transactionEnvelope);
 
