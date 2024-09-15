@@ -186,7 +186,7 @@ class TokenController extends Controller
                 $issuerAccount = $this->sdk->requestAccount($issuerAccountId);
                 $distributorAccount = $this->sdk->requestAccount($distributorPublicKey);
                 $distributorAccountid = $distributorAccount->getAccountId();
-
+                dd($issuerKeyPair,$issuerAccountId, $issuerAccount,$distributorAccount, $distributorAccountid );
                 // Define the asset
                 if (strlen($asset_code) <= 4) {
                     $asset = new AssetTypeCreditAlphaNum4($asset_code, $issuerPublicKey);
