@@ -162,17 +162,17 @@
             </button>
 
             <!-- Separator -->
-            <div class="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-900/10" aria-hidden="true" />
+            <!-- <div class="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-900/10" aria-hidden="true" /> -->
 
             <!-- Profile dropdown -->
-            <Menu as="div" class="relative">
+            <!-- <Menu as="div" class="relative">
               <MenuButton class="-m-1.5 flex items-center p-1.5">
                 <span class="sr-only">Open user menu</span>
                 <img class="w-8 h-8 rounded-full bg-gray-50"
                   src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                   alt="" />
               </MenuButton>
-            </Menu>
+            </Menu> -->
           </div>
         </div>
       </div>
@@ -234,7 +234,7 @@ const OpenWalletModal = (e) => {
 
 const stellar_navigation = [
   { name: "Token Generator", href: "/token-generator", icon: generatorIcon, current: false },
-  // { name: "Claimable Balance", href: "/claimable-balance", icon: BalanceIIcon, current: false }
+  { name: "Claimable Balance", href: "/claimable-balance", icon: BalanceIIcon, current: false }
 ];
 
 //create listener to listen for connected changes

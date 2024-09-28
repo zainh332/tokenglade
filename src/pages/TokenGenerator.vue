@@ -110,7 +110,7 @@
 </template>
 
 <script setup>
-import Layout from "@/components/Dashboard_header.vue";
+import Layout from "@/components/Dashboard_header_siderbar.vue";
 import Modal from '@/components/Modal.vue';
 import Toggle from '@/components/Toggle.vue';
 import { ref, reactive, watch, onMounted } from "vue";

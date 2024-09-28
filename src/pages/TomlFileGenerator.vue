@@ -106,7 +106,7 @@
   </template>
   
   <script setup>
-  import Layout from "@/components/Dashboard_header.vue";
+  import Layout from "@/components/Dashboard_header_siderbar.vue";
   import { ref } from "vue";
   import Modal from '@/components/Modal.vue';
   const open  = ref(false);

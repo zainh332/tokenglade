@@ -118,45 +118,50 @@ class TokenController extends Controller
 
     public function generate_token(Request $request)
     {
-        // try {
-        // Get input data from the request
-        $asset_code = $request->input('asset_code');
-        $total_supply = $request->input('total_supply');
-        $distributor_wallet_key = $request->input('distributor_wallet_key'); // Use distributor's secret key (private key)
+        try {
+            // Get input data from the request
+            $asset_code = $request->input('asset_code');
+            $total_supply = $request->input('total_supply');
+            $distributor_wallet_key = $request->input('distributor_wallet_key'); // Use distributor's secret key (private key)
 
-        // Generate a new keypair for the issuer
-        $issuerKeyPair = KeyPair::random();
-        $issuerPublicKey = $issuerKeyPair->getAccountId();
-        $issuerSecretkey = $issuerKeyPair->getSecretSeed();
+            // Generate a new keypair for the issuer
+            $issuerKeyPair = KeyPair::random();
+            $issuerPublicKey = $issuerKeyPair->getAccountId();
+            $issuerSecretkey = $issuerKeyPair->getSecretSeed();
 
-        // Fund the issuer account on the testnet using Friendbot (for testnet only)
-        file_get_contents("https://friendbot.stellar.org/?addr=" . $issuerPublicKey);
+            // Fund the issuer account on the testnet using Friendbot (for testnet only)
+            file_get_contents("https://friendbot.stellar.org/?addr=" . $issuerPublicKey);
 
-        // Load the distributor account using its private key
-        $distributorAccount = $this->sdk->requestAccount($distributor_wallet_key);
+            // Load the distributor account using its private key
+            $distributorAccount = $this->sdk->requestAccount($distributor_wallet_key);
 
-        if (strlen($asset_code) <= 4) {
-            $asset = new AssetTypeCreditAlphaNum4($asset_code, $issuerPublicKey);
-        } else {
-            $asset = new AssetTypeCreditAlphanum12($asset_code, $issuerPublicKey);
+            if (strlen($asset_code) <= 4) {
+                $asset = new AssetTypeCreditAlphaNum4($asset_code, $issuerPublicKey);
+            } else {
+                $asset = new AssetTypeCreditAlphanum12($asset_code, $issuerPublicKey);
+            }
+
+            // Create a trustline between distributor and the asset
+            $trustlineOperation = (new ChangeTrustOperationBuilder($asset))->build();
+
+            // Build the trustline transaction
+            $trustlineTransaction = (new TransactionBuilder($distributorAccount, Network::testnet()))
+                ->addOperation($trustlineOperation)
+                ->build();
+
+            // Return the XDR string to the frontend
+            return response()->json([
+                'unsigned_trustline_transaction' => $trustlineTransaction->toEnvelopeXdrBase64(),
+                'issuerPublicKey' => $issuerPublicKey,
+                'issuerSecretkey' => $issuerSecretkey,
+                'total_supply' => $total_supply,
+                'asset_code' => $asset_code
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['status' => 'error', 'msg' => 'Error while generating token']);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'msg' => 'Something went wrong']);
         }
-
-        // Create a trustline between distributor and the asset
-        $trustlineOperation = (new ChangeTrustOperationBuilder($asset))->build();
-
-        // Build the trustline transaction
-        $trustlineTransaction = (new TransactionBuilder($distributorAccount, Network::testnet()))
-            ->addOperation($trustlineOperation)
-            ->build();
-
-        // Return the XDR string to the frontend
-        return response()->json([
-            'unsigned_trustline_transaction' => $trustlineTransaction->toEnvelopeXdrBase64(),
-            'issuerPublicKey' => $issuerPublicKey,
-            'issuerSecretkey' => $issuerSecretkey,
-            'total_supply' => $total_supply,
-            'asset_code' => $asset_code
-        ]);
     }
 
     public function submit_transaction(Request $request)
@@ -184,7 +189,7 @@ class TokenController extends Controller
             if (strlen($asset_code) > 12) {
                 throw new \Exception('Asset code cannot exceed 12 characters.');
             }
-            
+
             // Convert the XDR string into a Transaction object using fromEnvelopeBase64XdrString
             $transactionEnvelope = AbstractTransaction::fromEnvelopeBase64XdrString($signedXdr);
 

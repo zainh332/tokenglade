@@ -25,24 +25,25 @@
                 </div>
               </div>
               <div class="mt-2">
-                <button
-                  @click="OpenWalletModal"
-                  type="submit"
-                  class="inline-flex justify-center text-sm font-semibold leading-6 text-white rounded-full bg-gradient btn-padding">
-                  Connect Wallet
-                </button>
-              </div>
+                  <button id="distributor_wallet_connected" @click="OpenWalletModal" type="submit"
+                    class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
+                    Connect Wallet
+                  </button>
+                </div>
             </div>
               <div>
-                <label for="target_wallet_address" class="block font-normal leading-6 text-gray-900 text-t16">Stellar Wallet Address
-                  <span class="text-red-500">*</span>
-                </label>
-                <div @mouseover="TargetWalletHovered = true" @mouseleave="TargetWalletHovered = false">
-                    <button v-if="!TargetWalletHovered">?</button>
-                    <div v-if="TargetWalletHovered" class="info-box">
-                     Stellar Wallets on which you want to send claimable balance
-                    </div>
+                <div class="flex items-center justify-between">
+                  <label for="target_wallet_address" class="block font-normal leading-6 text-gray-900 text-t16">Stellar Address
+                    <span class="text-red-500">*</span>
+                  </label>
+                  <div @mouseover="TargetWalletHovered = true" @mouseleave="TargetWalletHovered = false">
+                      <button v-if="!TargetWalletHovered">?</button>
+                      <div v-if="TargetWalletHovered" class="info-box">
+                       Stellar Wallets on which you want to send claimable balance
+                      </div>
+                  </div>
                 </div>
+                
                 <div class="mt-2">
                   <Field
                     id="target_wallet_address"
@@ -157,22 +158,16 @@
 </template>
 
 <script setup>
-import Layout from "@/components/Dashboard_header.vue";
+import Layout from "@/components/Dashboard_header_siderbar.vue";
 import { ref , reactive} from "vue";
-
-//Used to submit the route
 import axios from 'axios';
-
-//Importing class of sweetalert2 library for Alert Box
 import Swal from 'sweetalert2';
-
-//We have called these both functions Form and Field and used in Token Generator Form
 import { Form , Field, ErrorMessage} from 'vee-validate';
-
-//Used for Validation
 import * as Yup from "yup";
-
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
+import { E, getCookie, hasLogin, saveToken, getWallet, authLogin, isURL, onRender } from "../utils/utils.js";
+import { getPublicKey, signTransaction, isConnected, requestAccess, getNetwork } from "@stellar/freighter-api";
+
 
 const WalletHovered = ref(false);
 const TargetWalletHovered = ref(false);
@@ -197,6 +192,21 @@ const OpenWalletModal = (e) => {
   e.preventDefault();
   ConnectWalletModals.value = !ConnectWalletModals.value;
 };
+
+//create listener to listen for connected changes
+hear('connected', async (status) => {
+  if (status) {
+    //has been connected, do the needfull
+    if (E('walletConnected')) {
+      const walletKey = await getPublicKey()
+      E('distributor_wallet_connected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
+    }
+  }
+  else {
+    //has disconnected
+    E('distributor_wallet_connected').innerText = "Connect Wallet"
+  }
+})
 
 
 //@blur to used in the form field to check if the user losses focus from the field
