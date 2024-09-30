@@ -107,36 +107,6 @@
                   <ErrorMessage class="text-sm font-normal text-red-500" name="amount" />
                 </div>
               </div>
-              <div>
-
-                
-                <!-- <div class="flex items-center justify-between">
-                  <label for="token" class="block font-normal leading-6 text-gray-900 text-t16" >Asset Code
-                    <span class="text-red-500">*</span>
-                  </label>
-                  <div @mouseover="AssetCodeHovered = true" @mouseleave="AssetCodeHovered = false">
-                    <button v-if="!AssetCodeHovered">?</button>
-                    <div v-if="AssetCodeHovered" class="info-box">
-                     Token Asset Code which you want to send as claimable balance to each stellar wallet
-                    </div>
-                  </div>
-                </div>
-
-                <div class="mt-2">
-                  <Field
-                  id="token"
-                  name="token"
-                  type="text"
-                  v-model="values.token"
-                  @blur="handleTokenBlur('token')"
-                  class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  />
-                  <ErrorMessage class="text-sm font-normal text-red-500" name="token" />
-                  
-                  Display the server-side validation error while checking private key
-                  <p v-if="TokenError" class="text-sm font-normal text-red-500">{{ TokenError }}</p>
-                </div>-->
-              </div> 
 
                <div>
                 <div class="flex items-center justify-between">
@@ -215,36 +185,35 @@ const values = reactive({
 });
 
 // Fetch wallet public key and tokens held in the wallet
-const fetchWalletTokens = async () => {
-  try {
-    const walletPublicKey = await getPublicKey();
-    console.log(walletPublicKey)
-    values.wallet_address = walletPublicKey;
+// const fetchWalletTokens = async () => {
+//   try {
+//     const walletPublicKey = await getPublicKey();
+//     values.wallet_address = walletPublicKey;
 
-    // Fetch the tokens held by the wallet
-    const response = await axios.post('/api/check_holding_tokens', {
-      wallet_address: walletPublicKey,
-    });
+//     // Fetch the tokens held by the wallet
+//     const response = await axios.post('/api/fetch_holding_tokens', {
+//       wallet_address: walletPublicKey,
+//     });
 
-    // Assuming the API returns tokens in the format: { code: "ASSET_CODE", balance: "TOKEN_BALANCE" }
-    if (response.data.status === "success") {
-      availableTokens.value = response.data.tokens;
-    } else {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: response.data.message,
-      });
-    }
-  } catch (error) {
-    console.error("Error fetching wallet tokens:", error);
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "Failed to fetch wallet tokens.",
-    });
-  }
-};
+//     // Assuming the API returns tokens in the format: { code: "ASSET_CODE", balance: "TOKEN_BALANCE" }
+//     if (response.data.status === "success") {
+//       availableTokens.value = response.data.tokens;
+//     } else {
+//       Swal.fire({
+//         icon: "error",
+//         title: "Error",
+//         text: response.data.message,
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error fetching wallet tokens:", error);
+//     Swal.fire({
+//       icon: "error",
+//       title: "Error",
+//       text: "Failed to fetch wallet tokens.",
+//     });
+//   }
+// };
 
 // Computed property to track the memo character count
 const memoCharacterCount = computed(() => values.memo.length);
@@ -255,7 +224,7 @@ const OpenWalletModal = async (e) => {
   e.preventDefault();
   ConnectWalletModals.value = !ConnectWalletModals.value;
   if (ConnectWalletModals.value) {
-    await fetchWalletTokens(); // Fetch tokens after connecting the wallet
+    // await fetchWalletTokens(); // Fetch tokens after connecting the wallet
   }
 };
 
@@ -264,7 +233,7 @@ hear('connected', async (status) => {
   if (status) {
     //has been connected, do the needfull
     if (E('walletConnected')) {
-      const walletKey = await getPublicKey()
+      wallet_address.value = await getPublicKey()
       E('distributor_wallet_connected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
     }
   }
@@ -279,31 +248,50 @@ hear('connected', async (status) => {
 function handleTokenBlur(fieldName) {
   if (fieldName === 'token') {
     const token = values[fieldName]; // Get the private key value from the reactive values
-    const walletKey = values['wallet_address']; // Get the private key value from the reactive values
-    checkToken(fieldName, token, walletKey); // Pass both the field name and the private key value
+    const walletKey = wallet_address.value; // Get the private key value from the reactive values
+    checkToken(fieldName, walletKey); // Pass both the field name and the private key value
   }
 }
 
-// Function to check the wallet holding tokens 
-function checkToken(fieldName, token, walletKey) {
-  
-  const requestData = {
-    private_key: walletKey, // Assuming the server expects the private key with the key name "private_key"
-    token: token, // Assuming the server expects the private key with the key name "private_key"
-  };
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-  axios.post('api/check_holding_tokens', requestData , {
+// Function to check the wallet holding tokens 
+function checkToken(fieldName, walletKey) {
+  if (!walletKey) {
+    Swal.fire({
+      icon: "error",
+      title: "Wallet Disconnected",
+      text: "Please connect your wallet to proceed.",
+    });
+    return;
+  }
+
+  axios.post('/api/fetch_holding_tokens', {
+    wallet_key: walletKey  
+  }, {
     headers: {
-      'X-CSRF-TOKEN': window.Laravel.csrfToken,
+      'X-CSRF-TOKEN': csrfToken
     }
   }).then((response) => {
-
-    if (fieldName === 'token') {
-      // Handle  wallet private key error
-      TokenError.value = response.data.status === 'error' ? response.data.msg : '';
-    } 
+    if (response.data.status === "success") {
+      availableTokens.value = response.data.tokens;
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: response.data.message || "An unexpected error occurred.",
+      });
+    }
+  }).catch((error) => {
+    console.error("Error:", error);
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: error.response?.data?.message || "Failed to fetch tokens. Please try again later.",
+    });
   });
 }
+
 
 const open = ref(false);
 

@@ -82,7 +82,9 @@ class TokenController extends Controller
 
     public function fetch_holding_tokens(Request $request)
     {
-        $wallet_address = $request->input('wallet_address');
+        // dd($request->all());
+        $wallet_address = $request->json('wallet_key');
+        // $wallet_address = $request->wallet_address;
 
         // Continue only if wallet_address is not null
         if ($wallet_address !== null) {
