@@ -80,41 +80,44 @@ class TokenController extends Controller
     }
 
 
-    public function check_holding_tokens(Request $request)
+    public function fetch_holding_tokens(Request $request)
     {
-        $private_key = $request->input('private_key');
-        $token = $request->input('token');
+        $wallet_address = $request->input('wallet_address');
 
-        // Continue only if private_key is not null
-        if ($private_key !== null) {
+        // Continue only if wallet_address is not null
+        if ($wallet_address !== null) {
             try {
-                $private_key_pair = KeyPair::fromSeed($private_key);
-                // Fetch the public address of the wallet from the private key
-                $privatekeyId = $private_key_pair->getAccountId();
                 // Fetch details of the wallet from the public address
-                $privatekeyAccount = $this->sdk->requestAccount($privatekeyId);
-                // Fetch balance of the wallet
+                $WalletAccount = $this->sdk->requestAccount($wallet_address);
 
-                $holding_tokens = false; // Initialize a flag variable
+                $tokens = []; // Initialize an array to hold non-native assets
 
-                foreach ($privatekeyAccount->getBalances() as $balance) {
-                    if ($balance->getAssetType() != 'native' && $balance->getAssetCode() === $token) {
-                        $holding_tokens = true;
-                        break;
-                    } else {
-                        $holding_tokens = false;
+                // Loop through the balances and fetch non-native assets
+                foreach ($WalletAccount->getBalances() as $balance) {
+                    if ($balance->getAssetType() != 'native') { // Check if the asset is non-native
+                        $tokens[] = [
+                            'code' => $balance->getAssetCode(), // Asset code
+                            'issuer' => $balance->getAssetIssuer(), // Asset issuer
+                            'balance' => $balance->getBalance(), // Asset balance
+                        ];
                     }
                 }
-                if ($holding_tokens === false) {
-                    return response()->json(['status' => 'error', 'msg' => 'You dont hold ' . $token . ' tokens']);
+
+                if (count($tokens) > 0) {
+                    return response()->json(['status' => 'success', 'tokens' => $tokens]);
+                } else {
+                    return response()->json(['status' => 'error', 'msg' => 'No non-native tokens found']);
                 }
             } catch (\InvalidArgumentException $e) {
-                return response()->json(['status' => 'error', 'msg' => 'Invalid Private Key']);
+                return response()->json(['status' => 'error', 'msg' => 'Invalid Wallet Address']);
             } catch (\Exception $e) {
                 return response()->json(['status' => 'error', 'msg' => 'Wallet is not active']);
             }
+        } else {
+            return response()->json(['status' => 'error', 'msg' => 'Wallet address is required']);
         }
     }
+
 
     public function generate_token(Request $request)
     {

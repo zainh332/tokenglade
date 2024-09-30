@@ -14,7 +14,8 @@
             <Form class="space-y-6" @submit="submitForm" :validationSchema="schema">
               <div>
               <div class="flex items-center justify-between">
-                <label for="wallet_address_private_key" class="block font-normal leading-6 text-gray-900 text-t16">Wallet Address
+                <label for="wallet_address" class="block font-normal leading-6 text-gray-900 text-t16">
+                  Wallet Address
                   <span class="text-red-500">*</span>
                 </label>
                 <div @mouseover="WalletHovered = true" @mouseleave="WalletHovered = false">
@@ -31,7 +32,36 @@
                   </button>
                 </div>
             </div>
+            <!-- Select Asset-->
+            <div class="flex items-center justify-between">
+                  <label for="token" class="block font-normal leading-6 text-gray-900 text-t16" >
+                    Select Asset
+                    <span class="text-red-500">*</span>
+                  </label>
+                  <div @mouseover="AssetCodeHovered = true" @mouseleave="AssetCodeHovered = false">
+                    <button v-if="!AssetCodeHovered">?</button>
+                    <div v-if="AssetCodeHovered" class="info-box">
+                     Token Asset Code which you want to send as claimable balance to each stellar wallet
+                    </div>
+                  </div>
+                </div>
+              
+                <select
+                  id="token"
+                  name="token"
+                  v-model="values.token"
+                  @blur="handleTokenBlur('token')"
+                  class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset px-3 ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                >
+                <option value="" disabled>Select Token</option>
+                <option v-for="token in availableTokens" :key="token.code" :value="token.code">
+                  {{ token.code }} ({{ token.balance }})
+                </option>
+                </select>
+                <!-- <ErrorMessage class="text-sm font-normal text-red-500" name="token" />
+                <p v-if="TokenError" class="text-sm font-normal text-red-500">{{ TokenError }}</p> -->
               <div>
+              <!-- Select Asset-->
                 <div class="flex items-center justify-between">
                   <label for="target_wallet_address" class="block font-normal leading-6 text-gray-900 text-t16">Stellar Address
                     <span class="text-red-500">*</span>
@@ -78,7 +108,9 @@
                 </div>
               </div>
               <div>
-                <div class="flex items-center justify-between">
+
+                
+                <!-- <div class="flex items-center justify-between">
                   <label for="token" class="block font-normal leading-6 text-gray-900 text-t16" >Asset Code
                     <span class="text-red-500">*</span>
                   </label>
@@ -89,6 +121,7 @@
                     </div>
                   </div>
                 </div>
+
                 <div class="mt-2">
                   <Field
                   id="token"
@@ -100,45 +133,37 @@
                   />
                   <ErrorMessage class="text-sm font-normal text-red-500" name="token" />
                   
-                  <!-- Display the server-side validation error while checking private key-->
+                  Display the server-side validation error while checking private key
                   <p v-if="TokenError" class="text-sm font-normal text-red-500">{{ TokenError }}</p>
-                </div>
-              </div>
-              <!-- <div>
-                  <label
-                      for="amount"
-                      class="block font-normal leading-6 text-gray-900 text-t16"
-                      >Select Asset</label
-                    >
-                  <select
-                    id="token"
-                    name="token"
-                    class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset px-3 ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  >
-                    <option></option>
-                    <option selected=""></option>
-                    <option></option>
-                  </select>
-               </div> -->
-              
-              <div>
+                </div>-->
+              </div> 
+
+               <div>
                 <div class="flex items-center justify-between">
-                  <label for="memo" class="block font-normal leading-6 text-gray-900 text-t16 " >Memo</label>
+                  <label for="memo" class="block font-normal leading-6 text-gray-900 text-t16">Memo</label>
                   <div @mouseover="MemoHovered = true" @mouseleave="MemoHovered = false">
                     <button v-if="!MemoHovered">?</button>
                     <div v-if="MemoHovered" class="info-box">
-                      Provide a message to the recipient: You can include a message in the memo to let the recipient know what the transaction is for
+                      Provide a message to the recipient: You can include a message in the memo to let the recipient know what the transaction is for.
                     </div>
                   </div>
                 </div>
+
                 <div class="mt-2">
                   <Field
                     id="memo"
                     name="memo"
                     type="text"
+                    v-model="values.memo"
+                    maxlength="15"
                     class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                   <ErrorMessage class="text-sm font-normal text-red-500" name="memo" />
+
+                  <!-- Memo character counter -->
+                  <p class="text-sm" :class="{ 'text-red-500': memoCharacterCount > 15 }">
+                    {{ memoCharacterCount }}/15 characters
+                  </p>
                 </div>
               </div>
 
@@ -159,7 +184,7 @@
 
 <script setup>
 import Layout from "@/components/Dashboard_header_siderbar.vue";
-import { ref , reactive} from "vue";
+import { ref , reactive, computed } from "vue";
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { Form , Field, ErrorMessage} from 'vee-validate';
@@ -178,19 +203,60 @@ const MemoHovered = ref(false);
 const TokenError = ref('');
 
 //checking valid private key
-const wallet_address_private_key = ref('');
+const wallet_address = ref('');
 const token = ref('');
-
+const availableTokens = ref([]);
 const values = reactive({
   token: "",
-  wallet_address_private_key,
+  wallet_address: "",
+  memo: "",
+  amount: "",
+  target_wallet_address: "",
 });
 
-const ConnectWalletModals  = ref(false);
+// Fetch wallet public key and tokens held in the wallet
+const fetchWalletTokens = async () => {
+  try {
+    const walletPublicKey = await getPublicKey();
+    console.log(walletPublicKey)
+    values.wallet_address = walletPublicKey;
 
-const OpenWalletModal = (e) => {
+    // Fetch the tokens held by the wallet
+    const response = await axios.post('/api/check_holding_tokens', {
+      wallet_address: walletPublicKey,
+    });
+
+    // Assuming the API returns tokens in the format: { code: "ASSET_CODE", balance: "TOKEN_BALANCE" }
+    if (response.data.status === "success") {
+      availableTokens.value = response.data.tokens;
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: response.data.message,
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching wallet tokens:", error);
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Failed to fetch wallet tokens.",
+    });
+  }
+};
+
+// Computed property to track the memo character count
+const memoCharacterCount = computed(() => values.memo.length);
+
+// Open the wallet modal and fetch tokens when the wallet is connected
+const ConnectWalletModals = ref(false);
+const OpenWalletModal = async (e) => {
   e.preventDefault();
   ConnectWalletModals.value = !ConnectWalletModals.value;
+  if (ConnectWalletModals.value) {
+    await fetchWalletTokens(); // Fetch tokens after connecting the wallet
+  }
 };
 
 //create listener to listen for connected changes
@@ -209,50 +275,20 @@ hear('connected', async (status) => {
 })
 
 
-//@blur to used in the form field to check if the user losses focus from the field
-//Method to call checkWalletPrivatekey function when use moved to another filed (lose focus) 
-function handlePrivateKeyBlur(fieldName) {
-  if (fieldName === 'wallet_address_private_key') {
-    const privateKey = values[fieldName]; // Get the private key value from the reactive values
-    checkWalletPrivatekey(fieldName, privateKey); // Pass both the field name and the private key value
-  }
-}
-
 //Method to call checkToken function when use moved to another filed (lose focus) 
 function handleTokenBlur(fieldName) {
   if (fieldName === 'token') {
     const token = values[fieldName]; // Get the private key value from the reactive values
-    const privateKey = values['wallet_address_private_key']; // Get the private key value from the reactive values
-    checkToken(fieldName, token, privateKey); // Pass both the field name and the private key value
+    const walletKey = values['wallet_address']; // Get the private key value from the reactive values
+    checkToken(fieldName, token, walletKey); // Pass both the field name and the private key value
   }
 }
 
-// Function to check the issuer wallet private key
-function checkWalletPrivatekey(fieldName, privateKey) {
-  // You can use this function to perform checks or make API calls related to the private key
-  
-  const requestData = {
-    private_key: privateKey, // Assuming the server expects the private key with the key name "private_key"
-  };
-
-  axios.post('api/check_wallet', requestData , {
-    headers: {
-      'X-CSRF-TOKEN': window.Laravel.csrfToken,
-    }
-  }).then((response) => {
-    
-    if (fieldName === 'wallet_address_private_key') {
-      // Handle  wallet private key error
-      WalletPrivateKeyError.value = response.data.status === 'error' ? response.data.msg : '';
-    } 
-  });
-}
-
 // Function to check the wallet holding tokens 
-function checkToken(fieldName, token, privateKey) {
+function checkToken(fieldName, token, walletKey) {
   
   const requestData = {
-    private_key: privateKey, // Assuming the server expects the private key with the key name "private_key"
+    private_key: walletKey, // Assuming the server expects the private key with the key name "private_key"
     token: token, // Assuming the server expects the private key with the key name "private_key"
   };
 
@@ -272,7 +308,7 @@ function checkToken(fieldName, token, privateKey) {
 const open = ref(false);
 
 const schema = Yup.object({
-  wallet_address_private_key: Yup.string()
+  wallet_address: Yup.string()
     .required('Private Key is required')
     .length(56, 'Private Key should be exactly 56 characters long')
     .label('Private Key'),
@@ -329,7 +365,7 @@ const submitForm = (values) =>{
               }).then(() => {
                 // Reset form values
                 const formData = reactive({
-                wallet_address_private_key: "",
+                wallet_address: "",
                 amount: "",
                 token: "",
                 memo: "",
