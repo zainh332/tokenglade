@@ -50,7 +50,7 @@
                   id="token"
                   name="token"
                   v-model="values.token"
-                  @blur="handleTokenBlur('token')"
+                  @click="handleTokenBlur('token')"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset px-3 ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 >
                 <option value="" disabled>Select Token</option>
@@ -149,7 +149,7 @@
       </div>
     </div>
   </Layout>
-  <ConnectWalletModal :open="ConnectWalletModals" />
+  <ConnectWalletModal :open="isModalOpen" @close="isModalOpen = false" />
 </template>
 
 <script setup>
@@ -184,48 +184,16 @@ const values = reactive({
   target_wallet_address: "",
 });
 
-// Fetch wallet public key and tokens held in the wallet
-// const fetchWalletTokens = async () => {
-//   try {
-//     const walletPublicKey = await getPublicKey();
-//     values.wallet_address = walletPublicKey;
-
-//     // Fetch the tokens held by the wallet
-//     const response = await axios.post('/api/fetch_holding_tokens', {
-//       wallet_address: walletPublicKey,
-//     });
-
-//     // Assuming the API returns tokens in the format: { code: "ASSET_CODE", balance: "TOKEN_BALANCE" }
-//     if (response.data.status === "success") {
-//       availableTokens.value = response.data.tokens;
-//     } else {
-//       Swal.fire({
-//         icon: "error",
-//         title: "Error",
-//         text: response.data.message,
-//       });
-//     }
-//   } catch (error) {
-//     console.error("Error fetching wallet tokens:", error);
-//     Swal.fire({
-//       icon: "error",
-//       title: "Error",
-//       text: "Failed to fetch wallet tokens.",
-//     });
-//   }
-// };
-
 // Computed property to track the memo character count
 const memoCharacterCount = computed(() => values.memo.length);
 
-// Open the wallet modal and fetch tokens when the wallet is connected
-const ConnectWalletModals = ref(false);
-const OpenWalletModal = async (e) => {
-  e.preventDefault();
-  ConnectWalletModals.value = !ConnectWalletModals.value;
-  if (ConnectWalletModals.value) {
-    // await fetchWalletTokens(); // Fetch tokens after connecting the wallet
-  }
+
+const isModalOpen = ref(false);
+
+// Function to toggle the wallet modal open/close state
+const OpenWalletModal = (e) => {
+  e.preventDefault(); // Prevent default behavior if this is called from a button or form event
+  isModalOpen.value = !isModalOpen.value;  // Toggle the modal's state
 };
 
 //create listener to listen for connected changes
@@ -233,30 +201,24 @@ hear('connected', async (status) => {
   if (status) {
     //has been connected, do the needfull
     if (E('walletConnected')) {
-      wallet_address.value = await getPublicKey()
+      const walletKey = await getPublicKey()
+      values.wallet_address = walletKey;  // Store the walletKey in wallet_address
       E('distributor_wallet_connected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
     }
   }
   else {
     //has disconnected
     E('distributor_wallet_connected').innerText = "Connect Wallet"
+    resetTokens();
+    values.wallet_address = null; //set walletaddress to null when disconnected
   }
 })
 
+const tokensFetched = ref(false);
 
-//Method to call checkToken function when use moved to another filed (lose focus) 
 function handleTokenBlur(fieldName) {
-  if (fieldName === 'token') {
-    const token = values[fieldName]; // Get the private key value from the reactive values
-    const walletKey = wallet_address.value; // Get the private key value from the reactive values
-    checkToken(fieldName, walletKey); // Pass both the field name and the private key value
-  }
-}
-
-const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-// Function to check the wallet holding tokens 
-function checkToken(fieldName, walletKey) {
+  const walletKey = values.wallet_address;
+  
   if (!walletKey) {
     Swal.fire({
       icon: "error",
@@ -266,15 +228,37 @@ function checkToken(fieldName, walletKey) {
     return;
   }
 
+  // Check if tokens have already been fetched to prevent re-fetching
+  if (!tokensFetched.value) {
+    checkToken(walletKey);  // Only fetch tokens if they haven't been fetched yet
+  }
+}
+
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+// Function to check the wallet holding tokens 
+function checkToken(walletKey) {
+  Swal.fire({
+    title: 'Fetching Tokens...',
+    html: 'Please wait while we fetch the tokens.',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();  // Start loading indicator when modal is shown
+    }
+  });
+
   axios.post('/api/fetch_holding_tokens', {
     wallet_key: walletKey  
   }, {
     headers: {
       'X-CSRF-TOKEN': csrfToken
     }
-  }).then((response) => {
+  })
+  .then((response) => {
     if (response.data.status === "success") {
-      availableTokens.value = response.data.tokens;
+      Swal.close();  // Close loading modal after successful fetch
+      availableTokens.value = response.data.tokens; // Set the available tokens in the dropdown
+      tokensFetched.value = true;  // Mark tokens as fetched
     } else {
       Swal.fire({
         icon: "error",
@@ -282,7 +266,8 @@ function checkToken(fieldName, walletKey) {
         text: response.data.message || "An unexpected error occurred.",
       });
     }
-  }).catch((error) => {
+  })
+  .catch((error) => {
     console.error("Error:", error);
     Swal.fire({
       icon: "error",
@@ -290,6 +275,11 @@ function checkToken(fieldName, walletKey) {
       text: error.response?.data?.message || "Failed to fetch tokens. Please try again later.",
     });
   });
+}
+
+function resetTokens() {
+  tokensFetched.value = false;
+  availableTokens.value = [];  // Clear available tokens
 }
 
 
@@ -328,14 +318,13 @@ const submitForm = (values) =>{
     try {
       // Show loading indicator
         Swal.fire({
-          showConfirmButton: false,
-          title: 'Sending Claimable Balance',
-          allowOutsideClick: false,
-          didOpen: () => {
-          Swal.showLoading()
-        },
+            showConfirmButton: false,
+            title: 'Sending Claimable Balance',
+            allowOutsideClick: false,
+            didOpen: () => {
+            Swal.showLoading()
+          },
         });
-
 
     axios.post('api/claimable_balance', values, {
           headers: {

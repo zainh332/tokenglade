@@ -106,7 +106,7 @@
       </div>
     </div>
   </Layout>
-  <ConnectWalletModal :open="ConnectWalletModals" />
+  <ConnectWalletModal :open="isModalOpen" @close="isModalOpen = false" />
 </template>
 
 <script setup>
@@ -126,11 +126,12 @@ const DistributorHovered = ref(false);
 const TotalSupplyHovered = ref(false);
 const AssetCodeHovered = ref(false);
 
-const ConnectWalletModals = ref(false);
+const isModalOpen = ref(false);
 
+// Function to toggle the wallet modal open/close state
 const OpenWalletModal = (e) => {
-  e.preventDefault();
-  ConnectWalletModals.value = !ConnectWalletModals.value;
+  e.preventDefault(); // Prevent default behavior if this is called from a button or form event
+  isModalOpen.value = !isModalOpen.value;  // Toggle the modal's state
 };
 
 //create listener to listen for connected changes

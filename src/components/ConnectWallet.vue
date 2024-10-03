@@ -1,6 +1,6 @@
 <template>
     <TransitionRoot as="template" :show="open">
-        <Dialog id="connectWalletParent" as="div" class="relative z-10" @close="open = false">
+        <Dialog id="connectWalletParent" as="div" class="relative z-10" @close="closeModal">
             <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
                 leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
                 <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" />
@@ -78,6 +78,10 @@ import Swal from 'sweetalert2';
 
 const ConnectWalletModal = defineProps({ open: Boolean });
 
+const emit = defineEmits(["close"]);
+function closeModal() {
+    emit("close");
+}
 const modalId = "ConnectWallet";
 const wallets = [
     { name: "Rabet", key: "rabet", image: rabet },
