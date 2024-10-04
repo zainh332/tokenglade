@@ -275,6 +275,7 @@ class TokenController extends Controller
 
     public function claimable_balance(Request $request)
     {
+        dd($request->all());
         try {
             $user_wallet_address_private_key = $request->wallet_address_private_key;
             $assetCode = $request->input('token');
