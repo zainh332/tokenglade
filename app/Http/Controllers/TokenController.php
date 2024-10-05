@@ -275,16 +275,21 @@ class TokenController extends Controller
 
     public function claimable_balance(Request $request)
     {
-        dd($request->all());
-        try {
-            $user_wallet_address_private_key = $request->wallet_address_private_key;
+        $validatedData = $request->validate([
+            'distributor_wallet_address' => 'required|string', // Distributor wallet private key
+            'token' => 'required|string',                      // Asset token
+            'amount' => 'required|numeric|min:1',              // Amount must be a number and greater than 0
+            'target_wallet_address' => 'required|string',      // Target wallet addresses in string format
+        ]);
+
+        // try {
+            $user_distributor_wallet_address = $request->distributor_wallet_address;
             $assetCode = $request->input('token');
             $amount = $request->input('amount');
             $target_addresses = $request->input('target_wallet_address');
             $memo = $request->input('memo');
 
 
-            // $receiver_claim_time = $request->input('receiver_claim_time');
             $receiver_claim_time = Carbon::now();
             if (!empty($receiver_claim_time)) {
                 $dateTime = new DateTime($receiver_claim_time);
@@ -306,9 +311,10 @@ class TokenController extends Controller
             // Split the $target_addresses string into an array of individual addresses
             $target_addresses_array = explode("\n", $target_addresses);
 
-            $UserKeypair = KeyPair::fromSeed($user_wallet_address_private_key);
-            $user_public_key = $UserKeypair->getAccountId();
-            $userAccount = $this->sdk->requestAccount($user_public_key);
+            // $UserKeypair = KeyPair::fromSeed($user_distributor_wallet_address);
+            // $user_public_key = $UserKeypair->getAccountId();
+            $userAccount = $this->sdk->requestAccount($user_distributor_wallet_address);
+            dd($userAccount);
 
             $claimantsByReceiver = [];
 
@@ -319,7 +325,7 @@ class TokenController extends Controller
                 if ($ReceiverCanClaim !== null) {
                     $claimants[] = new Claimant($receiver, $ReceiverCanClaim);
                 }
-                $claimants[] = new Claimant($user_public_key, $UserCanReclaim);
+                $claimants[] = new Claimant($user_distributor_wallet_address, $UserCanReclaim);
                 $claimantsByReceiver[$receiver] = $claimants;
             }
 
@@ -379,7 +385,7 @@ class TokenController extends Controller
                         'status' => 'success',
                         'message' => 'Claimable balance created successfully',
                         'data' => [
-                            'wallet_address' => $user_public_key,
+                            'wallet_address' => $user_distributor_wallet_address,
                             'transaction_ids' => $transactionIds,
                         ],
                     ],
@@ -389,10 +395,10 @@ class TokenController extends Controller
             } else {
                 return response()->json(['status' => 'error', 'msg' => 'Insufficient balance for the specified asset and amount'], Response::HTTP_BAD_REQUEST);
             }
-        } catch (\Throwable $th) {
-            // Return error response for any unexpected errors
-            return response()->json(['status' => 'error', 'message' => 'Something went wrong. Please try again later.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
+        // } catch (\Throwable $th) {
+        //     // Return error response for any unexpected errors
+        //     return response()->json(['status' => 'error', 'message' => 'Something went wrong. Please try again later.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        // }
     }
 
     public function calim_claimable_balance(Request $request)

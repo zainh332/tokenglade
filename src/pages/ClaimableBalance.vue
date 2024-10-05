@@ -11,7 +11,7 @@
       <div class="w-full">
         <div class="flex flex-col justify-center flex-1 min-h-full py-8">
           <div class="w-full">
-            <Form class="space-y-6" @submit="submitForm" :validationSchema="schema">
+            <Form class="space-y-6" @submit="submitForm(values)" :validationSchema="schema">
               <!-- Connect Wallet-->
                 <div class="flex items-center justify-between">
                   <label for="distributor_wallet_address" class="block font-normal leading-6 text-gray-900 text-t16">
@@ -52,7 +52,7 @@
                   id="token"
                   name="token"
                   v-model="values.token"
-                  @click="handleTokenBlur('token')"
+                  @click="checkToken()"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset px-3 ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 >
                 <option value="" disabled>Select Token</option>
@@ -284,8 +284,10 @@ watch([() => values.amount, () => values.target_wallet_address, () => values.tok
     });
   }
 });
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-function handleTokenBlur(fieldName) {
+// Function to check the wallet holding tokens
+function checkToken() {
   const walletKey = values.distributor_wallet_address;
   
   if (!walletKey) {
@@ -297,16 +299,10 @@ function handleTokenBlur(fieldName) {
     return;
   }
 
-  // Check if tokens have already been fetched to prevent re-fetching
-  if (!tokensFetched.value) {
-    checkToken(walletKey);  // Only fetch tokens if they haven't been fetched yet
+  if (tokensFetched.value) {
+    return;
   }
-}
-
-const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-// Function to check the wallet holding tokens
-function checkToken(walletKey) {
+  
   Swal.fire({
     title: 'Fetching Tokens...',
     html: 'Please wait while we fetch the tokens.',
@@ -346,15 +342,7 @@ function checkToken(walletKey) {
   });
 }
 
-const submitForm = async () => {
-  console.log("Form submitted");
-
-// Log reactive values directly from the reactive object
-console.log("Distributor Wallet Address:", values.distributor_wallet_address);  // Should log the wallet address
-console.log("Selected Token:", values.token);  // Should log the selected token (e.g., "aaaaaa")
-console.log("Amount:", values.amount);  // Should log the entered amount
-console.log("Memo:", values.memo);  // Should log the entered memo
-console.log("Target Wallet Address:", values.target_wallet_address);  // Should log the target wallet address
+const submitForm = async (values) => {
   if (TokenError.value == "") {
     try {
       // Show loading indicator
