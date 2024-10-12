@@ -180,8 +180,12 @@ const MemoHovered = ref(false);
 const tokensFetched = ref(false);
 const TokenError = ref('');
 const availableTokens = ref([]);
+const totalXLM = ref([]);
 
 const isModalOpen = ref(false);
+
+const XLM_RESERVE_PER_BALANCE = 1;
+const TRANSACTION_FEE = 0.00001;
 
 // Function to toggle the wallet modal open/close state
 const OpenWalletModal = (e) => {
@@ -231,6 +235,7 @@ const schema = Yup.object({
 function resetTokens() {
   tokensFetched.value = false;
   availableTokens.value = [];  // Clear available tokens
+  totalXLM.value = [];  // Clear total xlm
 }
 
 // Computed property to track the memo character count
@@ -276,10 +281,27 @@ const calculateTotalAmountToSend = () => {
 // Watch 'amount', 'target_wallet_address', and 'token' fields
 watch([() => values.amount, () => values.target_wallet_address, () => values.token], () => {
   const totalAmountToSend = calculateTotalAmountToSend();
+  const targetWalletCount = values.target_wallet_address.split("\n")
+    .filter(address => address.length === 56).length;
+
+  // Calculate the required XLM for reserves and transaction fee
+  const requiredXLM = targetWalletCount * XLM_RESERVE_PER_BALANCE + TRANSACTION_FEE * targetWalletCount + 4;
+
+  // Check if the available XLM balance is sufficient
+  if (totalXLM.value < requiredXLM) {
+    Swal.fire({
+      icon: "error",
+      title: "Insufficient XLM Balance",
+      text: `You need at least ${requiredXLM} XLM to cover the reserves and transaction fees for creating claimable balances for ${targetWalletCount} wallet addresses.`,
+    });
+    return;
+  }
+
+  // Check if the selected token balance is sufficient for the transfer
   if (totalAmountToSend > selectedTokenBalance.value) {
     Swal.fire({
       icon: "error",
-      title: "Insufficient Balance",
+      title: "Insufficient Token Balance",
       text: `You are trying to send ${totalAmountToSend} tokens, but you only have ${selectedTokenBalance.value} tokens available.`,
     });
   }
@@ -312,7 +334,7 @@ function checkToken() {
     }
   });
 
-  axios.post('/api/fetch_holding_tokens', {
+  axios.post('/api/fetch_holding_tokens_total_xlm', {
     wallet_key: walletKey
   }, {
     headers: {
@@ -323,6 +345,7 @@ function checkToken() {
     if (response.data.status === "success") {
       Swal.close();  // Close loading modal after successful fetch
       availableTokens.value = response.data.tokens; // Set the available tokens in the dropdown
+      totalXLM.value = response.data.total_xlm; 
       tokensFetched.value = true;  // Mark tokens as fetched
     } else {
       Swal.fire({
@@ -346,64 +369,78 @@ const submitForm = async (values) => {
   if (TokenError.value == "") {
     try {
       // Show loading indicator
+      Swal.fire({
+        showConfirmButton: false,
+        title: 'Sending Claimable Balance',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      // Make API call to create claimable balance
+      const response = await axios.post('api/claimable_balance', values, {
+        headers: {
+          'X-CSRF-TOKEN': window.Laravel.csrfToken,
+        },
+      });
+
+      // Hide loading indicator
+      Swal.close();
+      if (response.data.status === 'success') {
+        
+        // Extract the unsigned XDR from the response
+        const unsignedXdr = response.data.data.unsigned_transactions;
+        const transactionToSubmit = await signTransaction(unsignedXdr, 'TESTNET');
+
         Swal.fire({
-            showConfirmButton: false,
-            title: 'Sending Claimable Balance',
-            allowOutsideClick: false,
-            didOpen: () => {
-            Swal.showLoading()
+          showConfirmButton: false,
+          title: 'Sending Claimable Balance',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
           },
         });
-
-    axios.post('api/claimable_balance', values, {
+        
+        // Submit the signed transaction to the backend for submission to Stellar
+        const submitResponse = await axios.post('api/submit_claimable_transaction', { transactionToSubmit }, {
           headers: {
             'X-CSRF-TOKEN': window.Laravel.csrfToken,
-          }
-        }).then((response) => {
-          // Hide loading indicator
-            Swal.close();
-
-            if (response.data.status === 'success') {
-              Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: response.data.message,
-              }).then(() => {
-                // Reset form values
-                const formData = reactive({
-                wallet_address: "",
-                amount: "",
-                token: "",
-                memo: "",
-                target_wallet_address: "",
-                });
-              });
-            } else if (response.data.status === 'error') {
-            Swal.fire({
-              icon: 'error',
-              title: 'Error!',
-              text: response.data.message,
-            });
-          } else {
-            // Handle other statuses here, if applicable
-            console.log('Unexpected status:', response.data.status);
-          }
-        })
-        .catch((error) => {
-        // Handle server request errors
-        console.error('Error:', error);
-      });
-    }
-
-    catch (error) {
-      Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: 'An error occurred while createing claimable balance',
+          },
+        });
+       
+        Swal.close(); //close lodaing swal
+        if(submitResponse.data.status == 'success'){
+          // Show success alert transaction submitted succesfully
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: submitResponse.data.message,
           });
+        }
+      } else if (response.data.status === 'error') {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: response.data.message,
+        });
+      } else {
+        // Handle unexpected statuses
+        console.log('Unexpected status:', response.data.status);
+      }
+
+    } catch (error) {
+      // Handle server or submission errors
+      console.error('Error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: error.response?.data?.message || 'An error occurred while creating the claimable balance',
+      });
     }
   }
 };
+
 
 </script>
 
