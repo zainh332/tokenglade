@@ -287,30 +287,49 @@ class TokenController extends Controller
             'token' => 'required|string',                      // Asset token
             'amount' => 'required|numeric|min:1',              // Amount must be a number and greater than 0
             'target_wallet_address' => 'required|string',      // Target wallet addresses in string format
+            'claimable_after' => 'required|integer|min:1',     // Time (in minutes) after which the balance can be claimed
         ]);
 
-        // try {
         $user_distributor_wallet_address = $request->distributor_wallet_address;
         $assetCode = $request->input('token');
         $amount = $request->input('amount');
         $target_addresses = $request->input('target_wallet_address');
         $memo = $request->input('memo');
+        $claimable_after = $request->input('claimable_after'); // Time in minutes after which balance is claimable
+        $usercanclaimUnit = $request->input('user_can_claim_unit');
 
 
-        $receiver_claim_time = Carbon::now();
-        if (!empty($receiver_claim_time)) {
-            $dateTime = new DateTime($receiver_claim_time);
-            $timestamp = $dateTime->getTimestamp();
-
-            //when the funds can be claimed by receivers
-            $ReceiverCanClaim = Claimant::predicateBeforeRelativeTime($timestamp);
-        } else {
-            // Set $ReceiverCanClaim to null, indicating that the claimants can claim the funds immediately
-            $ReceiverCanClaim = null;
+        // Convert reclaim time to seconds based on the unit provided by the user
+        switch ($usercanclaimUnit) {
+            case 'minutes':
+                $canclaimTimeInSeconds = $claimable_after * 60;
+                break;
+            case 'hours':
+                $canclaimTimeInSeconds = $claimable_after * 3600;
+                break;
+            case 'days':
+                $canclaimTimeInSeconds = $claimable_after * 86400;
+                break;
+            default:
+                $canclaimTimeInSeconds = 86400; // Default to 1 day
+                break;
         }
 
-        $soon = time() + 60;
-        //The funds can only be reclaimed within a specific timeframe
+        // Calculate the time after which the recipient can claim (relative time)
+        // $timestampForClaim = time() + ($claimableAfterMinutes * 60);
+
+        // // The balance can only be claimed after this time
+        // $ReceiverCanClaim = Claimant::predicateNot(
+        //     Claimant::predicateBeforeAbsoluteTime(strval($timestampForClaim))
+        // );
+
+        $ReceiverCanClaim = Claimant::predicateNot(
+            Claimant::predicateBeforeAbsoluteTime(strval(time() + $canclaimTimeInSeconds))
+        );
+        
+        $soon = time() + 60; // Example reclaim time, set to 1 minute after creation
+
+        // The funds can only be reclaimed within a specific timeframe
         $DistributorCanReclaim = Claimant::predicateNot(
             Claimant::predicateBeforeAbsoluteTime(strval($soon))
         );
@@ -320,20 +339,7 @@ class TokenController extends Controller
 
         $number_of_addresses = count($target_addresses_array);
         $distributorAccount = $this->sdk->requestAccount($user_distributor_wallet_address);
-
-        $claimantsByReceiver = [];
-
-        // Add claimants for each receiver to the $claimants array
-        foreach ($target_addresses_array as $receiver) {
-            $claimants = [];
-
-            if ($ReceiverCanClaim !== null) {
-                $claimants[] = new Claimant($receiver, $ReceiverCanClaim);
-            }
-            $claimants[] = new Claimant($user_distributor_wallet_address, $DistributorCanReclaim);
-            $claimantsByReceiver[$receiver] = $claimants;
-        }
-
+        
         // Initialize variables for balance checks
         $issuer_id = null;
         $hasEnoughTokens = false;
@@ -408,10 +414,6 @@ class TokenController extends Controller
             ],
             Response::HTTP_OK
         );
-        // } catch (\Throwable $th) {
-        //     // Return error response for any unexpected errors
-        //     return response()->json(['status' => 'error', 'message' => 'Something went wrong. Please try again later.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-        // }
     }
 
     public function submit_transaction(Request $request)
