@@ -31,6 +31,8 @@
               Connect Wallet
             </button>
 
+            <ConnectWalletModal :open="ConnectWalletModals" @close="ConnectWalletModals = false" />
+
             <!-- <button @click="setOpen" type="submit"
               class="px-5 py-1.5 rounded-full text-t14 overflow-hidden leading-[20px] text-white bg-gradient  bg-cover">
               Sign In
@@ -100,11 +102,16 @@ const setOpen = (e) => {
 
 const OpenWalletModal = (e) => {
   e.preventDefault();
-  if (ConnectWalletModals.value) { ConnectWalletModals.value = false }
-  setTimeout(() => {
-    ConnectWalletModals.value = !ConnectWalletModals.value;
-  }, 100)
+  ConnectWalletModals.value = true;
 };
+
+// const OpenWalletModal = (e) => {
+//   e.preventDefault();
+//   if (ConnectWalletModals.value) { ConnectWalletModals.value = false }
+//   setTimeout(() => {
+//     ConnectWalletModals.value = !ConnectWalletModals.value;
+//   }, 100)
+// };
 
 const Links = [
   {

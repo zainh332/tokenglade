@@ -19,7 +19,7 @@
 
 
                             <div :id="modalId" :data-bs-backdrop="backdrop" :data-bs-keyboard="keyboard" tabindex="-1"
-                                aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                aria-labelledby="exampleModalLabel" :inert="!open">
                                 <div class="modal-dialog">
                                     <div class="sm:mx-auto sm:w-full sm:max-w-md">
                                         <img class="w-auto h-20 mx-auto" :src="Logo" alt="Your Company" />
