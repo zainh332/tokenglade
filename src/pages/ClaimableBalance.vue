@@ -161,7 +161,7 @@
 </template>
 
 <script setup>
-import Layout from "@/components/Dashboard_header_siderbar.vue";
+import Layout from "@/components/Dashboard_header_sidebar.vue";
 import { ref , reactive, computed, watch } from "vue";
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -403,7 +403,7 @@ const submitForm = async (values) => {
         });
         
         // Submit the signed transaction to the backend for submission to Stellar
-        const submitResponse = await axios.post('api/submit_claimable_transaction', { transactionToSubmit }, {
+        const submitResponse = await axios.post('api/submit_transaction', { transactionToSubmit }, {
           headers: {
             'X-CSRF-TOKEN': window.Laravel.csrfToken,
           },
@@ -415,7 +415,7 @@ const submitForm = async (values) => {
           Swal.fire({
             icon: 'success',
             title: 'Success!',
-            text: submitResponse.data.message,
+            text: 'Claimable Balance sent succeffully',
           });
         }
       } else if (response.data.status === 'error') {

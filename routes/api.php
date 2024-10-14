@@ -27,5 +27,5 @@ Route::post('/generate_token', 'TokenController@generate_token')->name('generate
 Route::post('/claimable_balance', 'TokenController@claimable_balance')->name('claimable_balance');
 Route::post('/calim_claimable_balance', 'TokenController@calim_claimable_balance')->name('calim_claimable_balance');
 Route::post('/token_transfer', 'TokenController@token_transfer')->name('token_transfer');
+Route::post('/token_generating_transaction', 'TokenController@token_generating_transaction')->name('token_generating_transaction');
 Route::post('/submit_transaction', 'TokenController@submit_transaction')->name('submit_transaction');
-Route::post('/submit_claimable_transaction', 'TokenController@submit_claimable_transaction')->name('submit_claimable_transaction');

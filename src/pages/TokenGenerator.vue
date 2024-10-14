@@ -110,7 +110,7 @@
 </template>
 
 <script setup>
-import Layout from "@/components/Dashboard_header_siderbar.vue";
+import Layout from "@/components/Dashboard_header_sidebar.vue";
 import Modal from '@/components/Modal.vue';
 import Toggle from '@/components/Toggle.vue';
 import { ref, reactive, watch, onMounted } from "vue";
@@ -241,7 +241,7 @@ const submitForm = async (form_details) => {
     const transactionToSubmit = await signTransaction(unsignedXdr, 'TESTNET');
     
     //Submit the signed transaction to the backend for submission to Stellar
-    const submitResponse = await axios.post('api/submit_transaction', { transactionToSubmit,
+    const submitResponse = await axios.post('api/token_generating_transaction', { transactionToSubmit,
     issuerPublicKey,
     issuerSecretkey,
     total_supply,
