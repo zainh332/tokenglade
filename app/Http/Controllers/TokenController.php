@@ -287,7 +287,6 @@ class TokenController extends Controller
             'token' => 'required|string',                      // Asset token
             'amount' => 'required|numeric|min:1',              // Amount must be a number and greater than 0
             'target_wallet_address' => 'required|string',      // Target wallet addresses in string format
-            'claimable_after' => 'required|integer|min:1',     // Time (in minutes) after which the balance can be claimed
         ]);
 
         $user_distributor_wallet_address = $request->distributor_wallet_address;
@@ -296,37 +295,38 @@ class TokenController extends Controller
         $target_addresses = $request->input('target_wallet_address');
         $memo = $request->input('memo');
         $claimable_after = $request->input('claimable_after'); // Time in minutes after which balance is claimable
-        $usercanclaimUnit = $request->input('user_can_claim_unit');
+
+        if ($claimable_after) {
+            $usercanclaimUnit = $request->input('user_can_claim_unit');
 
 
-        // Convert reclaim time to seconds based on the unit provided by the user
-        switch ($usercanclaimUnit) {
-            case 'minutes':
-                $canclaimTimeInSeconds = $claimable_after * 60;
-                break;
-            case 'hours':
-                $canclaimTimeInSeconds = $claimable_after * 3600;
-                break;
-            case 'days':
-                $canclaimTimeInSeconds = $claimable_after * 86400;
-                break;
-            default:
-                $canclaimTimeInSeconds = 86400; // Default to 1 day
-                break;
+            // Convert reclaim time to seconds based on the unit provided by the user
+            switch ($usercanclaimUnit) {
+                case 'minutes':
+                    $canclaimTimeInSeconds = $claimable_after * 60;
+                    break;
+                case 'hours':
+                    $canclaimTimeInSeconds = $claimable_after * 3600;
+                    break;
+                case 'days':
+                    $canclaimTimeInSeconds = $claimable_after * 86400;
+                    break;
+                default:
+                    $canclaimTimeInSeconds = 86400; // Default to 1 day
+                    break;
+            }
+
+            $ReceiverCanClaim = Claimant::predicateNot(
+                Claimant::predicateBeforeAbsoluteTime(strval(time() + $canclaimTimeInSeconds))
+            );
         }
 
-        // Calculate the time after which the recipient can claim (relative time)
-        // $timestampForClaim = time() + ($claimableAfterMinutes * 60);
+        else{
+            $ReceiverCanClaim = Claimant::predicateNot(
+                Claimant::predicateBeforeAbsoluteTime(strval(time()))
+            );
+        }
 
-        // // The balance can only be claimed after this time
-        // $ReceiverCanClaim = Claimant::predicateNot(
-        //     Claimant::predicateBeforeAbsoluteTime(strval($timestampForClaim))
-        // );
-
-        $ReceiverCanClaim = Claimant::predicateNot(
-            Claimant::predicateBeforeAbsoluteTime(strval(time() + $canclaimTimeInSeconds))
-        );
-        
         $soon = time() + 60; // Example reclaim time, set to 1 minute after creation
 
         // The funds can only be reclaimed within a specific timeframe
@@ -339,7 +339,7 @@ class TokenController extends Controller
 
         $number_of_addresses = count($target_addresses_array);
         $distributorAccount = $this->sdk->requestAccount($user_distributor_wallet_address);
-        
+
         // Initialize variables for balance checks
         $issuer_id = null;
         $hasEnoughTokens = false;

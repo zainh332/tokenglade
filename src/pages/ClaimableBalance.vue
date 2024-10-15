@@ -180,7 +180,7 @@
               <!-- Claimable After Field -->
               <div class="flex items-center justify-between">
                 <label for="claimable_after" class="block font-normal leading-6 text-gray-900 text-t16">Reclaim Time
-                  <span class="text-red-500">*</span>
+                  <!-- <span class="text-red-500">*</span> -->
                 </label>
                 <div @mouseover="ClaimableAfterHovered  = true" @mouseleave="ClaimableAfterHovered  = false">
                   <button v-if="!ClaimableAfterHovered ">?</button>
