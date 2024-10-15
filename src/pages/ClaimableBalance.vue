@@ -107,8 +107,10 @@
                   <Field
                     id="amount"
                     name="amount"
-                    type="text"
+                    type="number"
+                    @input="preventNegativeInput"
                     v-model="values.amount"
+                    min="1"
                     class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                   <ErrorMessage class="text-sm font-normal text-red-500" name="amount" />
@@ -146,15 +148,15 @@
               </div>
               <!-- Memo character counter -->
 
-              <!-- New Field for Reclaim Time -->
-              <!-- <div class="flex items-center justify-between">
+              <!-- Reclaim Time -->
+              <div class="flex items-center justify-between">
                 <label for="reclaim_time" class="block font-normal leading-6 text-gray-900 text-t16">Reclaim Time
                   <span class="text-red-500">*</span>
                 </label>
                 <div @mouseover="ReclaimTimeHovered = true" @mouseleave="ReclaimTimeHovered = false">
                   <button v-if="!ReclaimTimeHovered">?</button>
                   <div v-if="ReclaimTimeHovered" class="info-box">
-                    Specify how long after the claimable balance is created the unclaimed balance should be returned to your account.
+                    Set the time after how long you can claim the unclaimable balance.
                   </div>
                 </div>
               </div>
@@ -164,22 +166,24 @@
                   name="reclaim_time"
                   type="number"
                   v-model="values.reclaim_time"
+                  min="1"
+                  @input="preventNegativeInput"
                   class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
                 <ErrorMessage class="text-sm font-normal text-red-500" name="reclaim_time" />
               </div>
                 
               <div class="mt-2">
-                <select v-model="values.user_can_claim_unit" class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset px-3 ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                <select v-model="values.sender_can_claim_unit" class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset px-3 ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
                   <option value="minutes">Minutes</option>
                   <option value="hours">Hours</option>
                   <option value="days">Days</option>
                 </select>
-              </div> -->
+              </div>
 
               <!-- Claimable After Field -->
               <div class="flex items-center justify-between">
-                <label for="claimable_after" class="block font-normal leading-6 text-gray-900 text-t16">Reclaim Time
+                <label for="claimable_after" class="block font-normal leading-6 text-gray-900 text-t16">User Claim Time
                   <!-- <span class="text-red-500">*</span> -->
                 </label>
                 <div @mouseover="ClaimableAfterHovered  = true" @mouseleave="ClaimableAfterHovered  = false">
@@ -243,6 +247,7 @@ const TargetWalletHovered = ref(false);
 const AmountHovered = ref(false);
 const AssetCodeHovered = ref(false);
 const MemoHovered = ref(false);
+const ReclaimTimeHovered  = ref(false);
 const ClaimableAfterHovered  = ref(false);
 const tokensFetched = ref(false);
 const TokenError = ref('');
@@ -267,8 +272,10 @@ const values = reactive({
   memo: "",
   amount: "",
   target_wallet_address: "",
-  claimable_after: "",  // New field for reclaim time
-  user_can_claim_unit: 'days'  // time unit (minutes, hours, or days)
+  reclaim_time: "",  
+  sender_can_claim_unit: 'days',  
+  claimable_after: "",  
+  user_can_claim_unit: 'days'  
 });
 
 const open = ref(false);
@@ -300,9 +307,9 @@ const schema = Yup.object({
     .max(15, 'Memo should not exceed 15 characters')
     .label('Memo'),
 
-  // reclaim_time: Yup.number()
-  // .required('Reclaim Time is required')
-  // .min(1, 'Reclaim Time is required'),
+  reclaim_time: Yup.number()
+  .required('Reclaim Time is required')
+  .min(1, 'Reclaim Time is required'),
   
   // claimable_after: Yup.number()
   // .required('Claim Time is required')
@@ -477,6 +484,7 @@ const submitForm = async (values) => {
         
         // Extract the unsigned XDR from the response
         const unsignedXdr = response.data.data.unsigned_transactions;
+        const claimableBalanceId = response.data.data.claimable_balance_id;
         const transactionToSubmit = await signTransaction(unsignedXdr, 'TESTNET');
 
         Swal.fire({
@@ -489,7 +497,10 @@ const submitForm = async (values) => {
         });
         
         // Submit the signed transaction to the backend for submission to Stellar
-        const submitResponse = await axios.post('api/submit_transaction', { transactionToSubmit }, {
+        const submitResponse = await axios.post('api/submit_transaction', { 
+          transactionToSubmit,
+          claimable_balance_id: claimableBalanceId
+         }, {
           headers: {
             'X-CSRF-TOKEN': window.Laravel.csrfToken,
           },

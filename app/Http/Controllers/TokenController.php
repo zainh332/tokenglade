@@ -27,6 +27,7 @@ use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
@@ -286,15 +287,19 @@ class TokenController extends Controller
             'distributor_wallet_address' => 'required|string', // Distributor wallet private key
             'token' => 'required|string',                      // Asset token
             'amount' => 'required|numeric|min:1',              // Amount must be a number and greater than 0
+            'reclaim_time' => 'required|numeric|min:1',      // Target wallet addresses in string format
+            'sender_can_claim_unit' => 'required',      // Target wallet addresses in string format
             'target_wallet_address' => 'required|string',      // Target wallet addresses in string format
         ]);
 
         $user_distributor_wallet_address = $request->distributor_wallet_address;
         $assetCode = $request->input('token');
         $amount = $request->input('amount');
-        $target_addresses = $request->input('target_wallet_address');
+        $receiver_addresses = $request->input('target_wallet_address');
         $memo = $request->input('memo');
         $claimable_after = $request->input('claimable_after'); // Time in minutes after which balance is claimable
+        $reclaim_time = $request->input('reclaim_time'); 
+        $sendercanclaimUnit = $request->input('sender_can_claim_unit');
 
         if ($claimable_after) {
             $usercanclaimUnit = $request->input('user_can_claim_unit');
@@ -327,17 +332,33 @@ class TokenController extends Controller
             );
         }
 
-        $soon = time() + 60; // Example reclaim time, set to 1 minute after creation
+        // Convert reclaim time to seconds based on the unit provided by the user
+        switch ($sendercanclaimUnit) {
+            case 'minutes':
+                $sendercanclaimTimeInSeconds = $reclaim_time * 60;
+                break;
+            case 'hours':
+                $sendercanclaimTimeInSeconds = $reclaim_time * 3600;
+                break;
+            case 'days':
+                $sendercanclaimTimeInSeconds = $reclaim_time * 86400;
+                break;
+            default:
+                $sendercanclaimTimeInSeconds = 86400; // Default to 1 day
+                break;
+        }
+
+        // $soon = time() + 60; // Example reclaim time, set to 1 minute after creation
 
         // The funds can only be reclaimed within a specific timeframe
         $DistributorCanReclaim = Claimant::predicateNot(
-            Claimant::predicateBeforeAbsoluteTime(strval($soon))
+            Claimant::predicateBeforeAbsoluteTime(strval(time() +$sendercanclaimTimeInSeconds))
         );
 
-        // Split the $target_addresses string into an array of individual addresses
-        $target_addresses_array = explode("\n", $target_addresses);
+        // Split the $receiver_addresses string into an array of individual addresses
+        $receiver_addresses_array = explode("\n", $receiver_addresses);
 
-        $number_of_addresses = count($target_addresses_array);
+        $number_of_addresses = count($receiver_addresses_array);
         $distributorAccount = $this->sdk->requestAccount($user_distributor_wallet_address);
 
         // Initialize variables for balance checks
@@ -381,10 +402,28 @@ class TokenController extends Controller
             $asset = new AssetTypeCreditAlphanum12($assetCode, $issuer_id);
         }
 
+        // Insert data into `claimable_balances` table
+        $claimableBalanceId = DB::table('claimable_balances')->insertGetId([
+            'distributor_wallet_key' => $user_distributor_wallet_address,
+            'asset_code' => $assetCode,
+            'amount' => $amount,
+            'memo' => $memo ?? 'By TokenGlade',
+            'status' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         // Build the transaction for each receiver and sign it separately
         $claimants = [];
-        foreach ($target_addresses_array as $receiver) {
+        foreach ($receiver_addresses_array as $receiver) {
             $claimants[] = new Claimant($receiver, $ReceiverCanClaim); // Each receiver
+            DB::table('claimable_balance_receivers')->insert([
+                'claimable_balance_id' => $claimableBalanceId,
+                'receiver_wallet_address' => $receiver,
+                'status' => 1, // Assuming 1 means active
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
         $claimants[] = new Claimant($user_distributor_wallet_address, $DistributorCanReclaim);
 
@@ -410,6 +449,7 @@ class TokenController extends Controller
                 'data' => [
                     'unsigned_transactions' => $transaction->toEnvelopeXdrBase64(),
                     'wallet_address' => $user_distributor_wallet_address,
+                    'claimable_balance_id' => $claimableBalanceId,
                 ],
             ],
             Response::HTTP_OK
@@ -429,7 +469,22 @@ class TokenController extends Controller
             $response = $this->sdk->submitTransaction($transactionEnvelope);
 
             // Check if the transaction was successful
-            if ($response) {
+            if ($response && $response->isSuccessful()) 
+            {
+                DB::transaction(function () use ($request) {
+                    // Assuming you get the claimable_balance_id from the request
+                    $claimableBalanceId = $request->input('claimable_balance_id');
+    
+                    // Update status in claimable_balances table
+                    DB::table('claimable_balances')
+                        ->where('id', $claimableBalanceId)
+                        ->update(['status' => 1, 'updated_at' => now()]);
+    
+                    // Update status in claimable_balance_receivers table for all receivers
+                    DB::table('claimable_balance_receivers')
+                        ->where('claimable_balance_id', $claimableBalanceId)
+                        ->update(['status' => 1, 'updated_at' => now()]);
+                });
 
                 return response()->json([
                     'status' => 'success',
