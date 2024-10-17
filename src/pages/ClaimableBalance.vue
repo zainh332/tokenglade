@@ -83,6 +83,7 @@
                     as="textarea"
                     rows="4"
                     v-model="values.target_wallet_address"
+                    :disabled="!isTokenSelected"
                     class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     />
                   <ErrorMessage class="text-sm font-normal text-red-500" name="target_wallet_address" />
@@ -110,6 +111,7 @@
                     type="number"
                     @input="preventNegativeInput"
                     v-model="values.amount"
+                    :disabled="!isTokenSelected"
                     min="1"
                     class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
@@ -136,6 +138,7 @@
                     type="text"
                     v-model="values.memo"
                     maxlength="15"
+                    :disabled="!isTokenSelected"
                     class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                   <ErrorMessage class="text-sm font-normal text-red-500" name="memo" />
@@ -168,6 +171,7 @@
                   v-model="values.reclaim_time"
                   min="1"
                   @input="preventNegativeInput"
+                  :disabled="!isTokenSelected"
                   class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
                 <ErrorMessage class="text-sm font-normal text-red-500" name="reclaim_time" />
@@ -202,6 +206,7 @@
                   min="1"
                   v-model="values.claimable_after"
                   @input="preventNegativeInput"
+                  :disabled="!isTokenSelected"
                   class="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
                 <ErrorMessage class="text-sm font-normal text-red-500" name="claimable_after" />
@@ -286,14 +291,37 @@ const schema = Yup.object({
   //   .label('Public Key'),
     
   target_wallet_address: Yup.string()
-    .required('Receiver Wallet Address is required')
-    .test('is-valid-addresses', 'Invalid wallet addresses', (value) => {
-      // Custom validation logic for multiple wallet addresses with 56 characters each.
-      const addresses = value.split('\n');
-      const addressRegex = /^.{56}$/;
-      return addresses.every((address) => addressRegex.test(address));
-    })
-    .label('Receiver Wallet Address'),
+  .required('Receiver Wallet Address is required')
+  .test('is-valid-addresses', 'Invalid wallet addresses', (value) => {
+    
+    // Split the input into multiple addresses by new line
+    const addresses = value.split('\n');
+
+    // Regular expression to match exactly 56 characters, only letters (A-Z, a-z) and numbers (0-9)
+    const addressRegex = /^[A-Za-z0-9]{56}$/;
+
+    // Collect invalid addresses with their line number (1-based index)
+    const invalidAddresses = addresses
+      .map((address, index) => {
+        const trimmedAddress = address.trim(); // Remove leading/trailing spaces
+        return !trimmedAddress || addressRegex.test(trimmedAddress)
+          ? null // Valid address or empty line, no issue
+          : index + 1; // Return line number of the invalid address
+      })
+      .filter((line) => line !== null); // Filter out null values (valid addresses)
+
+    // If there are invalid addresses, return an error message listing the invalid line numbers
+    if (invalidAddresses.length > 0) {
+      return new Yup.ValidationError(
+        `Invalid wallet addresses at line(s): ${invalidAddresses.join(', ')}`,
+        null,
+        'target_wallet_address'
+      );
+    }
+
+    return true; // All addresses are valid
+  })
+  .label('Receiver Wallet Address'),
     
   amount: Yup.string()
     .required('Amount is required')
@@ -307,7 +335,7 @@ const schema = Yup.object({
     .max(15, 'Memo should not exceed 15 characters')
     .label('Memo'),
 
-  reclaim_time: Yup.number()
+  reclaim_time: Yup.string()
   .required('Reclaim Time is required')
   .min(1, 'Reclaim Time is required'),
   
@@ -359,6 +387,11 @@ const selectedTokenBalance = computed(() => {
     (token) => token.code === values.token
   );
   return selectedToken ? selectedToken.balance : 0;
+});
+
+// Enable only if a token is selected and its balance is greater than 0
+const isTokenSelected = computed(() => {
+  return values.token !== "" && selectedTokenBalance.value > 0;
 });
 
 // Function to calculate total amount to send based on the number of target addresses
