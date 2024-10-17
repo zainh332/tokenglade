@@ -310,10 +310,34 @@ const schema = Yup.object({
       })
       .filter((line) => line !== null); // Filter out null values (valid addresses)
 
-    // If there are invalid addresses, return an error message listing the invalid line numbers
+    // Check for duplicates
+    const duplicates = addresses
+      .map((address) => address.trim())
+      .filter((address, index, self) => address && self.indexOf(address) !== index);
+
+    // Collect line numbers of duplicate addresses
+    const duplicateLineNumbers = addresses
+      .map((address, index) => {
+        const trimmedAddress = address.trim();
+        return trimmedAddress && duplicates.includes(trimmedAddress) ? index + 1 : null;
+      })
+      .filter((line) => line !== null); // Filter out null values (non-duplicates)
+
+    // Prepare error messages
+    const errorMessages = [];
+
     if (invalidAddresses.length > 0) {
+      errorMessages.push(`Invalid wallet addresses at line(s): ${invalidAddresses.join(', ')}`);
+    }
+
+    if (duplicateLineNumbers.length > 0) {
+      errorMessages.push(`Duplicate wallet addresses at line(s): ${duplicateLineNumbers.join(', ')}`);
+    }
+
+    // If there are error messages, return a validation error
+    if (errorMessages.length > 0) {
       return new Yup.ValidationError(
-        `Invalid wallet addresses at line(s): ${invalidAddresses.join(', ')}`,
+        errorMessages.join(' | '), // Join error messages with a separator
         null,
         'target_wallet_address'
       );
