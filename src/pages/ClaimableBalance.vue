@@ -476,8 +476,8 @@ function checkToken() {
   }
   
   Swal.fire({
-    title: 'Fetching Tokens...',
-    html: 'Please wait while we fetch the tokens.',
+    title: 'Checking Tokens...',
+    html: 'Please wait while we check the holding tokens.',
     allowOutsideClick: false,
     didOpen: () => {
       Swal.showLoading();  // Start loading indicator when modal is shown

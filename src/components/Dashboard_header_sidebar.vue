@@ -184,7 +184,7 @@
       </main>
     </div>
   </div>
-  <ConnectWalletModal :open="ConnectWalletModals" />
+  <ConnectWalletModal :open="isModalOpen" @close="isModalOpen = false" />
 </template>
 
 <script setup>
@@ -222,14 +222,16 @@ import { useRoute } from "vue-router";
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
 
 const desktopSidebar = ref(true);
-const ConnectWalletModals = ref(false);
 
 import { E, getCookie, hasLogin, saveToken } from "../utils/utils.js";
 import { getPublicKey } from "@stellar/freighter-api";
 
+const isModalOpen = ref(false);
+
+// Function to toggle the wallet modal open/close state
 const OpenWalletModal = (e) => {
-  e.preventDefault();
-  ConnectWalletModals.value = !ConnectWalletModals.value;
+  e.preventDefault(); // Prevent default behavior if this is called from a button or form event
+  isModalOpen.value = !isModalOpen.value;  // Toggle the modal's state
 };
 
 const stellar_navigation = [

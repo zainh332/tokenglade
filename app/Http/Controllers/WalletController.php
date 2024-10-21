@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Exception;
@@ -21,7 +22,17 @@ class WalletController extends Controller
     //Storing wallets connecting from extensions like rabet etc
     public function store(Request $request)
     {
-        if (empty($request->public) || empty($request->wallet)) {
+        dd($request->all());
+        $validatedData = $request->validate([
+            'public_key' => 'required|string',
+            'wallet_type_id' => 'required|integer'
+        ]);
+        $wallet = new User();
+        $wallet->public_key = $request->public_key;
+        $wallet->wallet_type_id = $request->wallet_type_id;
+        $wallet->save();
+        
+        if (empty($request->public_key) || empty($request->wallet_type_id)) {
             return response()->json(['status' => 0, 'msg' => 'Something went wrong!']);
         }
 

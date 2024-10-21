@@ -50,85 +50,6 @@ class TokenController extends Controller
         $this->maxFee = 30000;
     }
 
-    public function check_wallet(Request $request)
-    {
-        $private_key = $request->input('private_key');
-
-        // Continue only if private_key is not null
-        if ($private_key !== null) {
-            try {
-                $private_key_pair = KeyPair::fromSeed($private_key);
-                // Fetch the public address of the wallet from the private key
-                $privatekeyId = $private_key_pair->getAccountId();
-                // Fetch details of the wallet from the public address
-                $privatekeyAccount = $this->sdk->requestAccount($privatekeyId);
-                // Fetch balance of the wallet
-                foreach ($privatekeyAccount->getBalances() as $balance) {
-                    // Fetch XLM (native) balance of the wallet
-                    if ($balance->getAssetType() === 'native') {
-                        // Checking if the XLM balance is less than 5 
-                        if ($balance->getBalance() < 5) {
-                            return response()->json(['status' => 'error', 'msg' => 'Account does not have enough XLM. Please deposit at least 5 XLM']);
-                        }
-                    }
-                }
-            } catch (\InvalidArgumentException $e) {
-                return response()->json(['status' => 'error', 'msg' => 'Invalid Private Key']);
-            } catch (\Exception $e) {
-                return response()->json(['status' => 'error', 'msg' => 'Wallet is not active']);
-            }
-        }
-    }
-
-
-    public function fetch_holding_tokens_total_xlm(Request $request)
-    {
-        $wallet_address = $request->json('wallet_key');
-
-        // Continue only if wallet_address is not null
-        if ($wallet_address !== null) {
-            try {
-                // Fetch details of the wallet from the public address
-                $WalletAccount = $this->sdk->requestAccount($wallet_address);
-
-                $tokens = []; // Initialize an array to hold non-native assets
-                $totalXLM = 0;
-
-                // Loop through the balances and fetch non-native assets
-                foreach ($WalletAccount->getBalances() as $balance) {
-                    if ($balance->getAssetType() === 'native') {
-                        // Store the XLM balance if the asset type is 'native'
-                        $totalXLM = $balance->getBalance();
-                    } else {
-                        // Store non-native assets
-                        $tokens[] = [
-                            'code' => $balance->getAssetCode(), // Asset code
-                            'issuer' => $balance->getAssetIssuer(), // Asset issuer
-                            'balance' => $balance->getBalance(), // Asset balance
-                        ];
-                    }
-                }
-
-                if (count($tokens) > 0) {
-                    return response()->json([
-                        'status' => 'success',
-                        'tokens' => $tokens,
-                        'total_xlm' => $totalXLM, // Include the total XLM balance in the response
-                    ]);
-                } else {
-                    return response()->json(['status' => 'error', 'message' => 'No Tokens Found in Connected Wallet']);
-                }
-            } catch (\InvalidArgumentException $e) {
-                return response()->json(['status' => 'error', 'message' => 'Invalid Wallet Address']);
-            } catch (\Exception $e) {
-                return response()->json(['status' => 'error', 'message' => 'Wallet is not active']);
-            }
-        } else {
-            return response()->json(['status' => 'error', 'message' => 'Wallet address is required']);
-        }
-    }
-
-
     public function generate_token(Request $request)
     {
         try {
@@ -283,23 +204,23 @@ class TokenController extends Controller
 
     public function claimable_balance(Request $request)
     {
-        $validatedData = $request->validate([
-            'distributor_wallet_address' => 'required|string', // Distributor wallet private key
-            'token' => 'required|string',                      // Asset token
-            'amount' => 'required|numeric|min:1',              // Amount must be a number and greater than 0
-            'reclaim_time' => 'required|numeric|min:1',      // Target wallet addresses in string format
-            'sender_can_claim_unit' => 'required',      // Target wallet addresses in string format
-            'target_wallet_address' => 'required|string',      // Target wallet addresses in string format
-        ]);
+            $validatedData = $request->validate([
+                'distributor_wallet_address' => 'required|string', // Distributor wallet private key
+                'token' => 'required|string',                      // Asset token
+                'amount' => 'required|numeric|min:1',              // Amount must be a number and greater than 0
+                'reclaim_time' => 'required|numeric|min:1',      // Target wallet addresses in string format
+                'sender_can_claim_unit' => 'required',      // Target wallet addresses in string format
+                'target_wallet_address' => 'required|string',      // Target wallet addresses in string format
+            ]);
 
-        $user_distributor_wallet_address = $request->distributor_wallet_address;
-        $assetCode = $request->input('token');
-        $amount = $request->input('amount');
-        $receiver_addresses = $request->input('target_wallet_address');
-        $memo = $request->input('memo');
-        $claimable_after = $request->input('claimable_after'); // Time in minutes after which balance is claimable
-        $reclaim_time = $request->input('reclaim_time'); 
-        $sendercanclaimUnit = $request->input('sender_can_claim_unit');
+            $user_distributor_wallet_address = $request->distributor_wallet_address;
+            $assetCode = $request->input('token');
+            $amount = $request->input('amount');
+            $receiver_addresses = $request->input('target_wallet_address');
+            $memo = $request->input('memo');
+            $claimable_after = $request->input('claimable_after'); // Time in minutes after which balance is claimable
+            $reclaim_time = $request->input('reclaim_time'); 
+            $sendercanclaimUnit = $request->input('sender_can_claim_unit');
 
         if ($claimable_after) {
             $usercanclaimUnit = $request->input('user_can_claim_unit');
