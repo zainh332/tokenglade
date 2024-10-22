@@ -25,6 +25,7 @@
                                         <img class="w-auto h-20 mx-auto" :src="Logo" alt="Your Company" />
                                     </div>
                                     <div class="modal-content modal-wallet">
+                                        <!-- v-if="!isWalletConnected", show the dropdown -->
                                         <div id='connectWalletModal' class="modal-body" v-if="!isWalletConnected">
                                             <h1>Please Connect Your Wallet</h1>
                                             <select 
@@ -39,14 +40,15 @@
                                                 <option 
                                                 v-for="wallet in walletOptions" 
                                                 :key="wallet.key" 
-                                                :value="wallet.key">
+                                                :value="wallet.id">
                                                 {{ wallet.name }} <!-- Display the wallet name -->
                                                 </option>
                                             </select>
                                         </div>
 
-                                        <div class="modal-body" style="max-width:300px; word-break: break-all; " v-else>
-                                            <h1 id="walletKey" style="font-size: 14px;">{{ selectedWallet }}</h1>
+                                         <!-- v-else, show the UserData.public_key(public key) -->
+                                        <div class="modal-body" style="max-width:300px; word-break: break-all;" v-else>
+                                            <h1 id="public_key" style="font-size: 14px;">{{ UserData.walletKey }}</h1> <!-- Show the public key -->
                                         </div>
 
                                         <div class="mt-2">
@@ -70,7 +72,7 @@
 </template>
 
 <script setup>
-import { ref, computed, defineProps } from "vue";
+import { ref, computed, defineProps,onMounted } from "vue";
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import Logo from '@/assets/token-glade-logo.png'
 import rabet from '@/assets/rabet.png'
@@ -96,6 +98,11 @@ const emit = defineEmits(["close"]);
 function closeModal() {
     emit("close");
 }
+
+const UserData = ref({
+walletKey: '',
+wallet_type_id: '',
+})
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 // Fetch available wallets from the server
@@ -125,34 +132,50 @@ async function fetchWallets() {
     }
 }
 
-async function selectWallet(walletKey) {
-    if (walletKey) {
-        selectedWallet.value = walletKey;
-        
+async function selectWallet(publicKey, walletTypeId) {
+    if (publicKey && walletTypeId) {
+  
+        // Save public key and wallet type in UserData
+        UserData.value.public_key = publicKey;  // Set the public key in UserData
+        UserData.value.wallet_type_id = walletTypeId;  // Set the selected wallet type ID in UserData
+
         try {
-            const publicKey = await getPublicKey();
-            const response = await axios.post('/api/store_wallet', {
-                public_key: publicKey,
-                wallet_type_id: walletKey // Assuming this is what you want to send
-            }, {
+            const response = await axios.post('/api/store_wallet', UserData.value, {
                 headers: {
                     'X-CSRF-TOKEN': csrfToken
                 }
             });
             if (response.data.status === "success") {
+
+                // Set the 'isWalletConnected' flag to true for the different if conditions
                 isWalletConnected.value = true;
+
+                // Save wallet connection status in localStorage
                 localStorage.setItem('wallet_connect', 'true');
+
+                // Notify the user of successful connection
                 speak('connected', true);
+            }
+            else {
+                // Handle a failure response from the server (optional)
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Failed to connect wallet.',
+                });
             }
         } catch (error) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error!',
-                text: error.response?.data?.message || "Failed to store wallet information.",
+                text: error.response?.data?.message || "Failed to connect wallet.",
             });
         }
     } else {
+        // Trigger the 'speak' function with a disconnected status
         speak('connected', false);
+
+        // Show an error if no wallet is selected
         Swal.fire({
             icon: 'error',
             title: 'Wallet Error!',
@@ -161,23 +184,34 @@ async function selectWallet(walletKey) {
     }
 }
 
+
 //handles wallet connection
 async function connectWallet() {
     if (!isWalletConnected.value) {
-        // try{
-            //check if user has freighter installed
-            const flg = await isConnected()
+        //check if user has freighter installed
+        const flg = await isConnected()
         if (flg) {
             // Perform wallet connection logic here
             isLoading.value = true;
-            if ((await setAllowed())) {
-                //has connected
-                
-                selectWallet((await getPublicKey()))
-                isLoading.value = false
-            }
-            else {
-                isLoading.value = false
+            if (await setAllowed()) {
+                // If allowed, get the public key and proceed with wallet connection
+                const publicKey = await getPublicKey();
+
+                // Ensure the selected wallet type is set
+                if (selectedWallet.value) {
+                    // Call selectWallet with both public key and selected wallet type
+                    await selectWallet(publicKey, selectedWallet.value);  // Pass publicKey and wallet type id
+                    isLoading.value = false;
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Wallet Error!',
+                        text: 'Please select a wallet type before connecting.',
+                    });
+                    isLoading.value = false;
+                }
+            } else {
+                isLoading.value = false;
             }
         }
         else {
@@ -190,29 +224,48 @@ async function connectWallet() {
             //open link to freighter wallet
             window.open("https://www.freighter.app/", "_blank")
         }
-        // }
-        // catch(e) {
-            //     isLoading.value = false
-            // }
-        }
-        else {
+    }
+    else {
         //to disconnect
         localStorage.setItem('wallet_connect', 'false')
         isWalletConnected.value = false
         speak('connected', false)
     }
 }
+
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
 async function checkConnection() {
     let conn = ((await isConnected()) && (await isAllowed()) && (localStorage.getItem('wallet_connect') || 'false') == 'true')
     isWalletConnected.value = conn
     if (conn) {
-        selectWallet((await getPublicKey()))
-        speak('connected', true)
+        const publicKey = getCookie('public_key');  // Assumes you have a function getCookie(name)
+        const walletTypeId = getCookie('wallet_type_id');
+        
+        if (publicKey && walletTypeId) {
+            // If both are found, set UserData and mark connection as successful
+            UserData.value.walletKey = publicKey;
+            UserData.value.wallet_type_id = walletTypeId;
+            speak('connected', true);  // Call speak function with the connected status
+        } else {
+            // If either of them is missing, consider the connection incomplete or invalid
+            isWalletConnected.value = false;
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Wallet data missing or incomplete. Please reconnect your wallet.'
+            });
+        }
     }
-
 }
 
+onMounted(() => {
 checkConnection()
 fetchWallets()
+})
 
 </script>

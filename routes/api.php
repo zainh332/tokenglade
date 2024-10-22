@@ -29,5 +29,5 @@ Route::post('/token_generating_transaction', 'TokenController@token_generating_t
 Route::post('/submit_transaction', 'TokenController@submit_transaction')->name('submit_transaction');
 Route::get('/fetch_wallet_types', 'GlobalController@fetch_wallet_types')->name('fetch_wallet_types');
 Route::post('/check_wallet', 'GlobalController@check_wallet')->name('check_wallet');
-Route::get('/fetch_holding_tokens_total_xlm', 'GlobalController@fetch_holding_tokens_total_xlm')->name('fetch_holding_tokens_total_xlm');
-Route::get('/store_wallet', 'WalletController@store')->name('store_wallet');
+Route::post('/fetch_holding_tokens_total_xlm', 'GlobalController@fetch_holding_tokens_total_xlm')->name('fetch_holding_tokens_total_xlm');
+Route::post('/store_wallet', 'WalletController@store')->name('store_wallet');

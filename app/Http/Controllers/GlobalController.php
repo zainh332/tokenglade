@@ -53,7 +53,7 @@ class GlobalController extends Controller
     public function fetch_wallet_types()
     {
         $wallets = WalletType::where('status', 1) 
-            ->select('name', 'key')
+            ->select('id','name', 'key')
             ->get();
 
         // Return the response

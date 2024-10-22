@@ -29,9 +29,9 @@
                 </div>
                 <div class="mt-2">
                   <button id="distributor_wallet_connected" @click="OpenWalletModal" type="submit"
-                    class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
-                    Connect Wallet
-                  </button>
+                  class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
+              Connect Wallet
+            </button>
                 </div>
               </div>
               <!-- Distributor Wallet -->
@@ -134,18 +134,26 @@ const OpenWalletModal = (e) => {
   isModalOpen.value = !isModalOpen.value;  // Toggle the modal's state
 };
 
+function getCookies(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
 //create listener to listen for connected changes
 hear('connected', async (status) => {
   if (status) {
     //has been connected, do the needfull
-    if (E('walletConnected')) {
-      const walletKey = await getPublicKey()
+    //E return return document.getElementById(id)
+    if (E('distributor_wallet_connected')) {
+      const walletKey = getCookies('public_key');
       E('distributor_wallet_connected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
     }
   }
   else {
-    //has disconnected
-    E('distributor_wallet_connected').innerText = "Connect Wallet"
+    if (distributorElement) {
+      distributorElement.innerText = "Connect Wallet";
+    }
   }
 })
 
@@ -208,7 +216,6 @@ const submitForm = async (form_details) => {
 
     const connected = await isConnected();
     if (!connected) {
-      console.log('not connected');
       // If not connected, request access
       await requestAccess();
     }
