@@ -153,6 +153,9 @@ async function selectWallet(publicKey, walletTypeId) {
                 // Save wallet connection status in localStorage
                 localStorage.setItem('wallet_connect', 'true');
 
+                // Set the token
+                localStorage.setItem('token', response.data.token);
+
                 // Notify the user of successful connection
                 speak('connected', true);
             }

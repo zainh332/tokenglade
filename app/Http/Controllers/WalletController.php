@@ -36,13 +36,18 @@ class WalletController extends Controller
             ['wallet_type_id' => $request->wallet_type_id]  // Fields to update or insert
         );
 
+        // Create a new token for the user
+        $token = $wallet->createToken('tokenglade')->plainTextToken;
+
         
         setcookie('public_key', $request->public_key, time() + (86400 * 30), "/");
         setcookie('wallet_type_id', $request->wallet_type_id, time() + (86400 * 30), "/");
+        setcookie('accessToken', $token, time() + (86400 * 30), "/");
         
         return response()->json([
             'status' => 'success',
-            'public' => $request->public_key
+            'public' => $request->public_key,
+            'token' => $token
         ]);
     }
 

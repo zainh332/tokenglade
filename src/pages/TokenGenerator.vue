@@ -151,9 +151,7 @@ hear('connected', async (status) => {
     }
   }
   else {
-    if (distributorElement) {
-      distributorElement.innerText = "Connect Wallet";
-    }
+    E('distributor_wallet_connected').innerText = "Connect Wallet";
   }
 })
 
@@ -233,6 +231,7 @@ const submitForm = async (form_details) => {
     const generateResponse = await axios.post('api/generate_token', payload, {
       headers: {
         'X-CSRF-TOKEN': window.Laravel.csrfToken,
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
       },
     });
 
@@ -257,6 +256,7 @@ const submitForm = async (form_details) => {
     {
       headers: {
         'X-CSRF-TOKEN': window.Laravel.csrfToken,
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
       },
     });
 

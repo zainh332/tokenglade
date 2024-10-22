@@ -485,59 +485,60 @@ const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute
 
 // Function to check the wallet holding tokens
 function checkToken() {
-  const walletKey = values.distributor_wallet_address;
-  
-  if (!walletKey) {
+    const walletKey = values.distributor_wallet_address;
+    
+    if (!walletKey) {
+      Swal.fire({
+        icon: "error",
+        title: "Wallet Disconnected",
+        text: "Please connect your wallet to proceed.",
+      });
+      return;
+    }
+
+    if (tokensFetched.value) {
+      return;
+    }
+    
     Swal.fire({
-      icon: "error",
-      title: "Wallet Disconnected",
-      text: "Please connect your wallet to proceed.",
+      title: 'Checking Tokens...',
+      html: 'Please wait while we check the holding tokens.',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();  // Start loading indicator when modal is shown
+      }
     });
-    return;
-  }
-
-  if (tokensFetched.value) {
-    return;
-  }
-  
-  Swal.fire({
-    title: 'Checking Tokens...',
-    html: 'Please wait while we check the holding tokens.',
-    allowOutsideClick: false,
-    didOpen: () => {
-      Swal.showLoading();  // Start loading indicator when modal is shown
-    }
-  });
-
-  axios.post('/api/fetch_holding_tokens_total_xlm', {
-    wallet_key: walletKey
-  }, {
-    headers: {
-      'X-CSRF-TOKEN': csrfToken
-    }
-  })
-  .then((response) => {
-    if (response.data.status === "success") {
-      Swal.close();  // Close loading modal after successful fetch
-      availableTokens.value = response.data.tokens; // Set the available tokens in the dropdown
-      totalXLM.value = response.data.total_xlm; 
-      tokensFetched.value = true;  // Mark tokens as fetched
-    } else {
+    
+    axios.post('/api/fetch_holding_tokens_total_xlm', {
+      wallet_key: walletKey
+    }, {
+      headers: {
+        'X-CSRF-TOKEN': csrfToken,
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      }
+    })
+    .then((response) => {
+      if (response.data.status === "success") {
+        Swal.close();  // Close loading modal after successful fetch
+        availableTokens.value = response.data.tokens; // Set the available tokens in the dropdown
+        totalXLM.value = response.data.total_xlm; 
+        tokensFetched.value = true;  // Mark tokens as fetched
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: response.data.message || "An unexpected error occurred.",
+        });
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: response.data.message || "An unexpected error occurred.",
+        text: error.response?.data?.message || "Failed to fetch tokens. Please try again later.",
       });
-    }
-  })
-  .catch((error) => {
-    console.error("Error:", error);
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: error.response?.data?.message || "Failed to fetch tokens. Please try again later.",
     });
-  });
 }
 
 const submitForm = async (values) => {
@@ -557,6 +558,7 @@ const submitForm = async (values) => {
       const response = await axios.post('api/claimable_balance', values, {
         headers: {
           'X-CSRF-TOKEN': window.Laravel.csrfToken,
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
       });
 
@@ -585,6 +587,7 @@ const submitForm = async (values) => {
          }, {
           headers: {
             'X-CSRF-TOKEN': window.Laravel.csrfToken,
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
           },
         });
        
