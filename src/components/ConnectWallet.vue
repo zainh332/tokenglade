@@ -6,25 +6,37 @@
                 <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" />
             </TransitionChild>
 
-            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-                <div class="flex items-end justify-center min-h-full p-4 text-center sm:items-center sm:p-0">
+            <div class="fixed inset-0 z-50 w-screen overflow-y-auto">
+                <div class="flex items-end justify-center min-h-full p-2 text-center sm:items-center sm:p-0">
                     <TransitionChild as="template" enter="ease-out duration-300"
                         enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
                         leave-from="opacity-100 translate-y-0 sm:scale-100"
                         leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
                         
-                        <DialogPanel
-                            class="relative overflow-hidden text-left transition-all transform bg-white rounded-lg shadow-xl pt-15 px-14">
-
-                            
+                        <DialogPanel class="relative px-8 pt-2 overflow-hidden text-left transition-all transform bg-white rounded-lg shadow-xl">
                             <div :id="modalId" :data-bs-backdrop="backdrop" :data-bs-keyboard="keyboard" tabindex="-1"
                                 aria-labelledby="exampleModalLabel" :inert="!open">
                                 <div class="modal-dialog">
                                     <div class="sm:mx-auto sm:w-full sm:max-w-md">
-                                        <img class="w-auto h-20 mx-auto" :src="Logo" alt="Your Company" />
+                                        <img class="w-auto h-16 mx-auto" :src="Logo" alt="Your Company" />
                                     </div>
                                     <div class="modal-content modal-wallet">
+                                        <!-- Close Button (X) -->
+                                        <button
+                                        @click="closeModal"
+                                        class="absolute text-gray-500 top-2 right-2 hover:text-gray-800 focus:outline-none"
+                                        aria-label="Close Modal"
+                                        >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                                            <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12"
+                                            />
+                                        </svg>
+                                        </button>
                                         <!-- v-if="!isWalletConnected", show the dropdown -->
                                         <div id='connectWalletModal' class="modal-body" v-if="!isWalletConnected">
                                             <h1>Please Connect Your Wallet</h1>
@@ -264,7 +276,6 @@ async function checkConnection() {
         const publicKey = await getPublicKey();
         const cookie_public_key = getCookie("public_key"); // Assumes you have a function getCookie(name)
         const walletTypeId = getCookie("wallet_type_id");
-        // console.log(publicKey, cookie_public_key,walletTypeId )
 
         //it mean user have updated its wallet from frieghter wallet
         if(publicKey != cookie_public_key){
@@ -384,9 +395,6 @@ async function watchWalletChanges() {
             const previous_public_key = getCookie("public_key");
             const wallet_type_id = getCookie("wallet_type_id");
 
-            console.log('debuging',current_public_key,previous_public_key,wallet_type_id )
-
-            
             if (previous_public_key !== current_public_key) {
                 
                 UserData.value.current_public_key = current_public_key; // Set the public key in UserData
@@ -415,7 +423,7 @@ async function watchWalletChanges() {
                 // }
             }
             else{
-                console.log("same wallets connected");
+                // console.log("same wallets connected");
             }
         } else {
             // Pass the stored public key to disconnect if no longer connected

@@ -132,7 +132,7 @@
 
     <div :class="desktopSidebar ? 'lg:pl-72' : 'lg:pl-0'">
       <div
-        class="sticky top-0 z-40 flex items-center h-16 px-4 bg-white border-b border-gray-200 shadow-sm shrink-0 gap-x-4 sm:gap-x-6 sm:px-6 lg:px-8">
+        class="sticky top-0 z-10 flex items-center h-16 px-4 bg-white border-b border-gray-200 shadow-sm shrink-0 gap-x-4 sm:gap-x-6 sm:px-6 lg:px-8">
         <button type="button" class="-m-2.5 p-2.5 text-gray-700 lg:hidden" @click="sidebarOpen = true">
           <span class="sr-only">Open sidebar</span>
           <Bars3Icon class="w-6 h-6" aria-hidden="true" />
