@@ -384,6 +384,8 @@ async function watchWalletChanges() {
             const previous_public_key = getCookie("public_key");
             const wallet_type_id = getCookie("wallet_type_id");
 
+            console.log('debuging',current_public_key,previous_public_key,wallet_type_id )
+
             
             if (previous_public_key !== current_public_key) {
                 
