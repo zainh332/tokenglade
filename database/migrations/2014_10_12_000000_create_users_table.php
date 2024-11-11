@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('public_key', 60)->unique();
             $table->integer('wallet_type_id');
-            $table->tinyInteger('status')->default(1);
+            $table->tinyInteger('status')->default(0);
             $table->rememberToken();
             $table->timestamps();
         });

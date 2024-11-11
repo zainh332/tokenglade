@@ -597,7 +597,7 @@ const submitForm = async (values) => {
           Swal.fire({
             icon: 'success',
             title: 'Success!',
-            text: 'Claimable Balance sent succeffully',
+            text: 'Claimable balance has been successfully sent',
           });
         }
       } else if (response.data.status === 'error') {

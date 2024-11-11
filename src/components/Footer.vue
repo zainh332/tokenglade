@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-6xl px-4 pt-40 mx-auto sm:pt-64 sm:px-6 lg:px-8">
+  <div class="max-w-6xl px-4 pt-40 mx-auto sm:pt-24 sm:px-6 lg:px-8">
     <!-- Footer -->
     <div class="flex items-center justify-center max-w-xs mx-auto">
       <img :src="footerLogo" alt="" />

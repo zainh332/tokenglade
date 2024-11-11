@@ -15,12 +15,14 @@ return new class extends Migration
             $table->id();
             $table->string('asset_code', 12);
             $table->string('total_supply', 12);
-            $table->string('distributor_wallet_key', 60);
+            $table->string('user_wallet_address', 60);
             $table->string('issuerPublicKey', 60);
             $table->string('issuerSecretkey', 60);
+            $table->string('unsigned_transaction');
+            $table->longText('signed_transaction')->nullable();
             $table->string('memo', 40)->nullable();
-            $table->tinyInteger('lock_status')->nullable();
-            $table->tinyInteger('status');
+            $table->boolean('lock_status')->default(false);
+            $table->tinyInteger('status')->default(0);
             $table->timestamps();
         });
     }

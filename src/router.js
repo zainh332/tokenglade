@@ -9,6 +9,19 @@ import aboutus from "./pages/about-us.vue";
 import privacypolicy from "./pages/privacy-policy.vue";
 import termsofservice from "./pages/terms-of-service.vue";
 
+function hasRequiredCookies() {
+    const public_key = getCookie('public_key');
+    const accessToken = getCookie('accessToken');
+    return public_key && accessToken;
+}
+
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+
 const routes = [
     {
         path: "/",
@@ -25,16 +38,28 @@ const routes = [
             title: "Token Generator",
             description: "Create custom tokens effortlessly with TokenGlade's intuitive token generator. Make your mark in the token economy on the Stellar blockchain."
         },
+        beforeEnter: (to, from, next) => {
+            if (hasRequiredCookies()) {
+                next(); // allow access if cookies exist
+            } else {
+                next('/'); // redirect to home page if cookies are missing
+            }
+        }
     },
     {
         path: "/claimable-balance",
         component: ClaimableBalance,
         meta: {
             title: "Claimable Balance",
-            description:
-                "Explore claimable balances on TokenGlade. Control token distributions, airdrops, and rewards with precision on the Stellar blockchain.",
+            description: "Explore claimable balances on TokenGlade. Control token distributions, airdrops, and rewards with precision on the Stellar blockchain.",
         },
-        // beforeEnter: conditionalNext('isAdmin'),
+        beforeEnter: (to, from, next) => {
+            if (hasRequiredCookies()) {
+                next(); // allow access if cookies exist
+            } else {
+                next('/'); // redirect to home page if cookies are missing
+            }
+        }
     },
     // {
     //   path: "/token-transfer",

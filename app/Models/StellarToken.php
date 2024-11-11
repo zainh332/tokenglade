@@ -12,9 +12,11 @@ class StellarToken extends Model
     protected $fillable = [
         'asset_code', 
         'total_supply', 
-        'distributor_wallet_key', 
+        'user_wallet_address', 
         'issuerPublicKey', 
         'issuerSecretkey',
+        'unsigned_transaction',
+        'signed_transaction',
         'memo', 
         'lock_status',
         'status'

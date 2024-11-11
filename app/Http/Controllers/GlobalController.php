@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ClaimableBalance;
+use App\Models\ClaimableBalanceReceiver;
+use App\Models\StellarToken;
 use App\Models\WalletType;
 use Illuminate\Http\Request;
 
@@ -139,5 +142,25 @@ class GlobalController extends Controller
                 return response()->json(['status' => 'error', 'msg' => 'Wallet is not active']);
             }
         }
+    }
+
+    public function fetch_wallet_tokens (){
+        $get_wallets_tokens = StellarToken::limit(4)->orderBy('id', 'desc')->get();
+        return response()->json([
+            'status' => 'success',
+            'tokens' => $get_wallets_tokens,
+        ]);
+    }
+
+    public function count_data(){
+        $total_tokens = StellarToken::count();
+        $total_claimablebalance_users = ClaimableBalance::count();
+        $total_claimablebalance = ClaimableBalanceReceiver::count();
+        return response()->json([
+            'status' => 'success',
+            'total_tokens' => $total_tokens,
+            'total_claimablebalance_users' => $total_claimablebalance_users,
+            'total_claimablebalance' => $total_claimablebalance,
+        ]);
     }
 }

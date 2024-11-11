@@ -90,6 +90,24 @@
               <!-- Total Supply -->
 
               <div>
+                <div class="flex items-center justify-between">
+                  <label for="lock_issuer_wallet" class="block font-normal leading-6 text-gray-900 text-t16">
+                    Lock Issuer Wallet
+                    <span class="text-red-500">*</span>
+                  </label>
+                  <div @mouseover="LockIssuerHovered = true" @mouseleave="LockIssuerHovered = false">
+                    <button v-if="!LockIssuerHovered">?</button>
+                    <div v-if="LockIssuerHovered" class="info-box">
+                      Select whether to lock the issuer's wallet to prevent further transactions.
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <Toggle v-model="toggleValue" />
+                </div>
+              </div>
+
+              <div>
                 <button type="submit"
                   class="inline-flex justify-center text-sm font-semibold leading-6 text-white rounded-full bg-gradient btn-padding">
                   Generate Token
@@ -125,8 +143,10 @@ import { getPublicKey, signTransaction, isConnected, requestAccess, getNetwork }
 const DistributorHovered = ref(false);
 const TotalSupplyHovered = ref(false);
 const AssetCodeHovered = ref(false);
+const LockIssuerHovered = ref(false);
 
 const isModalOpen = ref(false);
+const toggleValue = ref(false);
 
 // Function to toggle the wallet modal open/close state
 const OpenWalletModal = (e) => {
@@ -134,19 +154,13 @@ const OpenWalletModal = (e) => {
   isModalOpen.value = !isModalOpen.value;  // Toggle the modal's state
 };
 
-function getCookies(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-}
-
 //create listener to listen for connected changes
 hear('connected', async (status) => {
   if (status) {
     //has been connected, do the needfull
     //E return return document.getElementById(id)
     if (E('distributor_wallet_connected')) {
-      const walletKey = getCookies('public_key');
+      const walletKey = await getPublicKey();
       E('distributor_wallet_connected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
     }
   }
@@ -158,6 +172,7 @@ hear('connected', async (status) => {
 const form_details = reactive({
   asset_code: "",
   total_supply: "",
+  lock_issuer_wallet: false,
 });
 
 const maxValue = 922337203685; // The maximum allowed value
@@ -203,6 +218,7 @@ const schema = Yup.object({
 const submitForm = async (form_details) => {
   try {
     // Show loading indicator
+    form_details.toggleValue = toggleValue.value;
     Swal.fire({
       showConfirmButton: false,
       title: 'Generating Token',
@@ -242,6 +258,7 @@ const submitForm = async (form_details) => {
     const total_supply = generateResponse.data.total_supply;
     const distributorPublicKey = distributor_wallet_key;
     const asset_code = generateResponse.data.asset_code;
+    const lock_status = toggleValue.value;
     
     //Use Freighter to sign the transaction
     const transactionToSubmit = await signTransaction(unsignedXdr, 'TESTNET');
@@ -252,6 +269,7 @@ const submitForm = async (form_details) => {
     issuerSecretkey,
     total_supply,
     distributorPublicKey,
+    lock_status,
     asset_code }, 
     {
       headers: {

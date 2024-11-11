@@ -22,20 +22,24 @@
                 <th scope="col" class="pb-3.5 pl-4 text-left pr-4 text-[20px] font-semibold text-gray-900 sm:pl-6 lg:pl-20 ">Issuer Address</th>
                 <th scope="col" class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900">Symbol</th>
                 <th scope="col" class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900">Total Supply</th>
-                <!-- <th scope="col" class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900 whitespace-nowrap">Issuer Address</th> -->
-                 
               </tr>
             </thead>
-            <tbody class="">
-              <tr v-for="person in people" :key="person.email" class="bg-white divide-gray-200 sm:divide-x">
-                <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap text-t16 sm:pl-6 lg:pl-20">{{ person.name }}</td>
-                <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap text-t16 sm:pl-6 lg:pl-20">{{ person.name }}</td>
-                <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap sm:pl-6 lg:pl-20 text-t16">{{ person.symbol }}</td>
-                <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap sm:pl-6 lg:pl-20 text-t16">{{ person.supply }}</td>
-                <!-- <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap sm:pl-6 lg:pl-20 text-t16">{{ person.role }}</td> -->
-                 
-              </tr>
-            </tbody>
+            <tbody>
+                  <tr v-for="token in people" :key="token.id" class="bg-white divide-gray-200 sm:divide-x">
+                    <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap text-t16 sm:pl-6 lg:pl-20">
+                      <a :href="`https://stellar.expert/explorer/testnet/account/${token.user_wallet_address}`" target="_blank" class="text-blue-500 underline">
+                        {{ formatAddress(token.user_wallet_address) }}
+                      </a>
+                    </td>
+                    <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap text-t16 sm:pl-6 lg:pl-20">
+                      <a :href="`https://stellar.expert/explorer/testnet/account/${token.issuerPublicKey}`" target="_blank" class="text-blue-500 underline">
+                        {{ formatAddress(token.issuerPublicKey) }}
+                      </a>
+                    </td>
+                    <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap sm:pl-6 lg:pl-20 text-t16">{{ token.asset_code }}</td>
+                    <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap sm:pl-6 lg:pl-20 text-t16">{{ token.total_supply }}</td>
+                  </tr>
+                </tbody>
           </table>
         </div>
         </div>
@@ -47,11 +51,50 @@
 
 <script setup>
 import flower from '@/assets/flower.png'
-const people = [
-  { name: 'Falcon Token', symbol: 'FAL', supply: '1,000,000,000' },
-  { name: 'Walton Token', symbol: 'WLT', supply: '10,000,000,000'},
-  { name: 'Lulu Token', symbol: 'LUL', supply: '9,000,000,000'},
-]
+import axios from 'axios'
+import { ref, computed, defineProps, onMounted, watch } from "vue";
+import Swal from 'sweetalert2';
+
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+const people = ref([]);
+
+function formatAddress(address) {
+    if (address.length > 9) {
+        return `${address.slice(0, 3)}...${address.slice(6, 9)}..${address.slice(-3)}`;
+    }
+    return address; // return as-is if the address is too short
+}
+
+async function fetchWallets() {
+    try {
+        const response = await axios.get('/api/fetch_wallet_tokens', {
+            headers: {
+                'X-CSRF-TOKEN': csrfToken
+            }
+        });
+        if (response.data.status === "success") {
+          people.value = response.data.tokens;
+        } else {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: response.data.message || "An unexpected error occurred.",
+            });
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: error.response?.data?.message || "Failed to fetch wallet types. Please try again later.",
+        });
+    }
+}
+
+onMounted(() => {
+  fetchWallets()
+})
 </script>
 
 <style lang="scss" scoped>

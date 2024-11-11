@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\StellarToken;
 use Carbon\Carbon;
 use DateTime;
 use Exception;
@@ -83,6 +84,15 @@ class TokenController extends Controller
                 ->addOperation($trustlineOperation)
                 ->build();
 
+                $token_generated = new StellarToken();
+                $token_generated->asset_code = $asset_code;
+                $token_generated->total_supply = $total_supply;
+                $token_generated->user_wallet_address = $distributor_wallet_key;
+                $token_generated->issuerPublicKey = $issuerPublicKey;
+                $token_generated->issuerSecretkey = $issuerSecretkey;
+                $token_generated->unsigned_transaction = $trustlineTransaction->toEnvelopeXdrBase64();
+                $token_generated->save();
+
             // Return the XDR string to the frontend
             return response()->json([
                 'unsigned_trustline_transaction' => $trustlineTransaction->toEnvelopeXdrBase64(),
@@ -108,6 +118,7 @@ class TokenController extends Controller
             $total_supply = $request->input('total_supply');
             $distributorPublicKey = $request->input('distributorPublicKey');
             $asset_code = $request->input('asset_code');
+            $lock_status = $request->input('lock_status');
 
 
             // Validate input lengths and types
@@ -159,28 +170,62 @@ class TokenController extends Controller
 
                 // Submit the payment transaction
                 $response = $this->sdk->submitTransaction($paymentTransaction);
-                if ($response) {
-                    // Lock the issuer account by setting master weight to 0
-                    $lockOperation = (new SetOptionsOperationBuilder())
+                if ($response ) {
+
+                    if($lock_status != true){
+                        $token_generated = StellarToken::where('asset_code', $asset_code)
+                        ->where('total_supply', $total_supply)
+                        ->where('user_wallet_address', $distributorPublicKey)
+                        ->where('issuerPublicKey', $issuerPublicKey)
+                        ->first();
+
+                        $token_generated->signed_transaction = $signedXdr;
+                        $token_generated->memo = 'Token created by TokenGlade';
+                        $token_generated->lock_status = $lock_status;
+                        $token_generated->status = 1;
+                        $token_generated->save();
+
+                        return response()->json([
+                            'message' => 'Token created, issued to distributor, & issuer account remains unlocked',
+                            'issuer_public_key' => $issuerPublicKey,
+                        ]);
+                    }
+
+                    else{
+                        // Lock the issuer account by setting master weight to 0
+                        $lockOperation = (new SetOptionsOperationBuilder())
                         ->setMasterKeyWeight(0) // Set master weight to 0 to lock the account
                         ->build();
 
-                    // Build the lock transaction
-                    $lockTransaction = (new TransactionBuilder($issuerAccount))
-                        ->addOperation($lockOperation)
-                        ->build();
+                        // Build the lock transaction
+                        $lockTransaction = (new TransactionBuilder($issuerAccount))
+                            ->addOperation($lockOperation)
+                            ->build();
 
-                    // Sign the lock transaction with the issuer's private key
-                    $lockTransaction->sign($issuerKeyPair, Network::testnet());
+                        // Sign the lock transaction with the issuer's private key
+                        $lockTransaction->sign($issuerKeyPair, Network::testnet());
 
-                    // Submit the lock transaction to lock the issuer account
-                    $this->sdk->submitTransaction($lockTransaction);
+                        // Submit the lock transaction to lock the issuer account
+                        $this->sdk->submitTransaction($lockTransaction);
 
-                    // Return the success message and issuer account details
-                    return response()->json([
-                        'message' => 'Token created, issued to distributor, and issuer account locked',
-                        'issuer_public_key' => $issuerPublicKey,
-                    ]);
+                        $token_generated = StellarToken::where('asset_code', $asset_code)
+                        ->where('total_supply', $total_supply)
+                        ->where('user_wallet_address', $distributorPublicKey)
+                        ->where('issuerPublicKey', $issuerPublicKey)
+                        ->first();
+
+                        $token_generated->signed_transaction = $signedXdr;
+                        $token_generated->memo = 'Token created by TokenGlade';
+                        $token_generated->lock_status = $lock_status;
+                        $token_generated->status = 1;
+                        $token_generated->save();
+
+                        // Return the success message and issuer account details
+                        return response()->json([
+                            'message' => 'Token created, issued to distributor, and issuer account locked',
+                            'issuer_public_key' => $issuerPublicKey,
+                        ]);
+                    }
                 } else {
                     // Log and return the failure response including extras.result_codes
                     $resultCodes = $response->getExtras()->getResultCodes();
