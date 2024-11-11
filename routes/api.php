@@ -20,6 +20,7 @@ Route::get('/fetch_wallet_types', 'GlobalController@fetch_wallet_types')->name('
 Route::get('/fetch_wallet_tokens', 'GlobalController@fetch_wallet_tokens')->name('fetch_wallet_tokens');
 Route::get('/count_data', 'GlobalController@count_data')->name('count_data');
 Route::post('/store_wallet', 'WalletController@store_wallet')->name('store_wallet');
+Route::post('/disconnect_wallet', 'WalletController@disconnect_wallet')->name('disconnect_wallet');
 
 Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
     Route::post('/update_wallet', 'WalletController@update_wallet')->name('update_wallet');
@@ -29,7 +30,6 @@ Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
     Route::post('/token_transfer', 'TokenController@token_transfer')->name('token_transfer');
     Route::post('/token_generating_transaction', 'TokenController@token_generating_transaction')->name('token_generating_transaction');
     Route::post('/submit_transaction', 'TokenController@submit_transaction')->name('submit_transaction');
-    Route::post('/disconnect_wallet', 'WalletController@disconnect_wallet')->name('disconnect_wallet');
     
     Route::post('/check_wallet', 'GlobalController@check_wallet')->name('check_wallet');
     Route::post('/fetch_holding_tokens_total_xlm', 'GlobalController@fetch_holding_tokens_total_xlm')->name('fetch_holding_tokens_total_xlm');
