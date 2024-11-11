@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-62f2768c.css",
+    "file": "assets/app-673f4184.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
@@ -41,7 +41,7 @@
     "src": "src/assets/xbull.png"
   },
   "src/main.css": {
-    "file": "assets/main-405d1412.css",
+    "file": "assets/main-a5921422.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -53,9 +53,9 @@
       "assets/lights-c425c569.png"
     ],
     "css": [
-      "assets/main-405d1412.css"
+      "assets/main-a5921422.css"
     ],
-    "file": "assets/main-8a2a4d15.js",
+    "file": "assets/main-b86cecb5.js",
     "isEntry": true,
     "src": "src/main.js"
   }
