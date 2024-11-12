@@ -113,6 +113,55 @@ class GlobalController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Wallet address is required']);
         }
     }
+    public function fetch_holding_tokens_claim_claimable_balance(Request $request)
+    {
+        $wallet_address = $request->json('wallet_key');
+
+        // Continue only if wallet_address is not null
+        if ($wallet_address !== null) {
+            try {
+                // Fetch details of the wallet from the public address
+                $WalletAccount = $this->sdk->requestAccount($wallet_address);
+
+                $tokens = []; // Initialize an array to hold non-native assets
+                $totalXLM = 0;
+
+                // Loop through the balances and fetch non-native assets
+                foreach ($WalletAccount->getBalances() as $balance) {
+                    if ($balance->getAssetType() === 'native') {
+                        // Store the XLM balance if the asset type is 'native'
+                        $totalXLM = $balance->getBalance();
+                    } else {
+                       // Only store non-native assets with a balance greater than 0
+                        $asset_balance = $balance->getBalance();
+                        if ($asset_balance > 0) {
+                            $tokens[] = [
+                                'code' => $balance->getAssetCode(), // Asset code
+                                'issuer' => $balance->getAssetIssuer(), // Asset issuer
+                                'balance' => $asset_balance, // Asset balance
+                            ];
+                        }
+                    }
+                }
+
+                if (count($tokens) > 0) {
+                    return response()->json([
+                        'status' => 'success',
+                        'tokens' => $tokens,
+                        'total_xlm' => $totalXLM, // Include the total XLM balance in the response
+                    ]);
+                } else {
+                    return response()->json(['status' => 'error', 'message' => 'No Tokens Found in Connected Wallet']);
+                }
+            } catch (\InvalidArgumentException $e) {
+                return response()->json(['status' => 'error', 'message' => 'Invalid Wallet Address']);
+            } catch (\Exception $e) {
+                return response()->json(['status' => 'error', 'message' => 'Wallet is not active']);
+            }
+        } else {
+            return response()->json(['status' => 'error', 'message' => 'Wallet address is required']);
+        }
+    }
 
     public function check_wallet(Request $request)
     {

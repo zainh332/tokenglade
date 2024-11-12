@@ -34,6 +34,7 @@ Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
     
     Route::post('/check_wallet', 'GlobalController@check_wallet')->name('check_wallet');
     Route::post('/fetch_holding_tokens_total_xlm', 'GlobalController@fetch_holding_tokens_total_xlm')->name('fetch_holding_tokens_total_xlm');
+    Route::post('/fetch_holding_tokens_claim_claimable_balance', 'GlobalController@fetch_holding_tokens_claim_claimable_balance')->name('fetch_holding_tokens_claim_claimable_balance');
     // Route::post('/fetch_claimable_balance', 'GlobalController@fetch_claimable_balance')->name('fetch_claimable_balance');
 });
 

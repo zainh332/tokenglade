@@ -193,7 +193,7 @@
         }
       });
       
-      axios.post('/api/fetch_holding_tokens_total_xlm', {
+      axios.post('/api/fetch_holding_tokens_claim_claimable_balance', {
         wallet_key: walletKey
       }, {
         headers: {

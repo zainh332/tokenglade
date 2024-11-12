@@ -497,28 +497,75 @@ class TokenController extends Controller
             $response_data = json_decode($response, true); // Decode as associative array
 
             // Check for records and parse balance IDs
-            if (isset($response_data['_embedded']['records'])) {
+            if (isset($response_data['_embedded']['records']) && !empty($response_data['_embedded']['records'])) {
                 $balance_ids = [];
-                $wallet_ids = [];
-
+                $wallets_claiming_times = [];
+                $wallets_not_eligible = [];
+                $eligible_wallet_ids = [];
+                $eligible_balance_ids = [];
+            
                 foreach ($response_data['_embedded']['records'] as $record) {
                     if (isset($record['id'])) {
-                        $balance_ids[] = $record['id'];
+                        $current_balance_id = $record['id'];
+                        $balance_ids[] = $current_balance_id;
                     }
+            
                     if (isset($record['claimants'])) {
-                        foreach ($record['claimants'] as $claimant) {
-                            if (isset($claimant['destination'])) {
-                                $wallet_ids[] = $claimant['destination'];
+                        $claimants = $record['claimants'];
+                        $last_claimant_key = count($claimants) - 1;
+                        $distributor_claiming_time = null;
+                        $current_balance_wallet_ids = [];
+            
+                        foreach ($claimants as $key => $claimant) {
+                            if ($key === $last_claimant_key) {
+                                // Set distributor_claiming_time for this balance
+                                if (isset($claimant['predicate']['not']['abs_before'])) {
+                                    $distributor_claiming_time = $claimant['predicate']['not']['abs_before'];
+                                }
+                                continue; // Skip adding the last claimant's wallet
                             }
+            
+                            // Add the wallet ID if it's not the last one (i.e., non-distributor)
+                            if (isset($claimant['destination'])) {
+                                $current_balance_wallet_ids[] = $claimant['destination'];
+                            }
+            
+                            // Access 'abs_before' and add to claiming times if needed
+                            if (isset($claimant['predicate']['not']['abs_before'])) {
+                                $wallets_claiming_times[] = $claimant['predicate']['not']['abs_before'];
+                            }
+                        }
+            
+                        // Check if the distributor can claim the tokens based on current time
+                        $can_claim = true;
+                        $claim_time  = true;
+                        if ($distributor_claiming_time) {
+                            $distributor_datetime = Carbon::parse($distributor_claiming_time, 'UTC');
+                            $current_time = Carbon::now('UTC');
+                            $claim_time = $distributor_datetime->format('Y-m-d H:i:s');
+                            if ($current_time->lt($distributor_datetime)) {
+                                $can_claim = false;
+                            }
+                        }
+            
+                        if ($can_claim) {
+                            $eligible_wallet_ids = array_merge($eligible_wallet_ids, $current_balance_wallet_ids);
+                            // $eligible_balance_ids = array_merge($eligible_balance_ids, [$current_balance_id]); // Wrap $current_balance_id in an array
+                            $eligible_balance_ids[] = $current_balance_id; //$current_balance_id can be single or array thats why we aren't using array_merge
+                        } else {
+                            // Otherwise, mark these wallets as not eligible
+                            $wallets_not_eligible = array_merge($wallets_not_eligible, $current_balance_wallet_ids);
                         }
                     }
                 }
 
-                if (!empty($balance_ids)) {
+                if (!empty($eligible_balance_ids) && !empty($eligible_wallet_ids)) {
 
+                    // Proceed only for eligible claimable balances
                     $claimClaimableBalanceTransaction = (new TransactionBuilder($distributorAccount, Network::testnet()))
                         ->setMaxOperationFee($this->maxFee);
 
+                    // Create claimable balance entry
                     $claim_claimable_balance = new ClaimClaimableBalance();
                     $claim_claimable_balance->distributor_wallet_key = $distributor_wallet_address;
                     $claim_claimable_balance->issuer_address = $issuer_wallet_address;
@@ -527,22 +574,25 @@ class TokenController extends Controller
 
 
                     // Loop through each balance ID to create and add a ClaimClaimableBalanceOperation
-                    foreach ($balance_ids as $balance_id) {
-                        $claim_claimable_balance_operation = (new ClaimClaimableBalanceOperation($balance_id));
+                    foreach ($eligible_balance_ids as $balance_id) {
+                        $claim_claimable_balance_operation = new ClaimClaimableBalanceOperation($balance_id);
                         $claimClaimableBalanceTransaction->addOperation($claim_claimable_balance_operation);
 
-                        // Create a new ClaimClaimableBalanceId entry for each balance
+                        // Save the balance ID in the database
                         $claim_claimable_balance_id = new ClaimClaimableBalanceId();
                         $claim_claimable_balance_id->claim_claimable_balance_id = $claim_claimable_balance->id;
                         $claim_claimable_balance_id->balance_id = $balance_id;
                         $claim_claimable_balance_id->save();
                     }
 
-                    foreach ($wallet_ids as $wallet_id) {
-                        $claim_claimable_balance_claimant = new ClaimClaimableClaimant();
-                        $claim_claimable_balance_claimant->claim_claimable_balance_id = $claim_claimable_balance_id->id;
-                        $claim_claimable_balance_claimant->claimants_wallet_address = $wallet_id;
-                        $claim_claimable_balance_claimant->save();
+                    // Add wallet ids for claimants that are eligible
+                    foreach ($eligible_wallet_ids as $wallet_key => $wallet_id) {
+                        if (!in_array($wallet_id, $wallets_not_eligible)) {
+                            $claim_claimable_balance_claimant = new ClaimClaimableClaimant();
+                            $claim_claimable_balance_claimant->claim_claimable_balance_id = $claim_claimable_balance_id->id;
+                            $claim_claimable_balance_claimant->claimants_wallet_address = $wallet_id;
+                            $claim_claimable_balance_claimant->save();
+                        }
                     }
 
                     $builtTransaction = $claimClaimableBalanceTransaction->build();
@@ -551,20 +601,21 @@ class TokenController extends Controller
                         'status' => 'success',
                         'unsigned_transactions' => $builtTransaction->toEnvelopeXdrBase64(),
                         'asset_code' => $asset_code,
-                        'claim_claimable_balance_id' => $balance_ids,
-                        'wallet_ids' => $wallet_ids,
+                        'claim_claimable_balance_id' => $eligible_balance_ids,
+                        'wallet_ids' => $eligible_wallet_ids,
+                        'wallets_not_eligible' => $wallets_not_eligible
                     ]);
                 } else {
                     return response()->json([
                         'status' => 'error',
-                        'message' => 'No claimable balance found for Asset: ' . $asset_code,
+                        'message' => "Claim not available for the asset: ".$asset_code.". The specified claim time has not yet passed. You can claim after ".$claim_time." UTC.",
                         'data' => $response_data
                     ]);
                 }
             } else {
                 return response()->json([
-                    'status' => false,
-                    'message' => 'No claimable balance found or invalid response for' . $asset_code,
+                    'status' => 'error',
+                    'message' => 'No claimable balance found for ' .$asset_code,
                     'data' => $response_data
                 ]);
             }
@@ -617,7 +668,7 @@ class TokenController extends Controller
                         return response()->json(['status' => 'error', 'message' => 'No matching balance ID found'], 404);
                     }
                     DB::table('claim_claimable_balances')
-                    ->where('id', $abc->claim_claimable_balance_id) // Cast to integer
+                        ->where('id', $abc->claim_claimable_balance_id) // Cast to integer
                         ->update(['status' => 1]);
                     DB::commit();
                 } catch (\Exception $e) {
