@@ -26,13 +26,15 @@ Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
     Route::post('/update_wallet', 'WalletController@update_wallet')->name('update_wallet');
     Route::post('/generate_token', 'TokenController@generate_token')->name('generate_token');
     Route::post('/claimable_balance', 'TokenController@claimable_balance')->name('claimable_balance');
-    Route::post('/calim_claimable_balance', 'TokenController@calim_claimable_balance')->name('calim_claimable_balance');
+    Route::post('/claim_claimable_balance', 'TokenController@claim_claimable_balance')->name('claim_claimable_balance');
+    Route::post('/submit_claim_claimable_balance_transaction', 'TokenController@submit_claim_claimable_balance_transaction')->name('submit_claim_claimable_balance_transaction');
     Route::post('/token_transfer', 'TokenController@token_transfer')->name('token_transfer');
     Route::post('/token_generating_transaction', 'TokenController@token_generating_transaction')->name('token_generating_transaction');
     Route::post('/submit_transaction', 'TokenController@submit_transaction')->name('submit_transaction');
     
     Route::post('/check_wallet', 'GlobalController@check_wallet')->name('check_wallet');
     Route::post('/fetch_holding_tokens_total_xlm', 'GlobalController@fetch_holding_tokens_total_xlm')->name('fetch_holding_tokens_total_xlm');
+    // Route::post('/fetch_claimable_balance', 'GlobalController@fetch_claimable_balance')->name('fetch_claimable_balance');
 });
 
 

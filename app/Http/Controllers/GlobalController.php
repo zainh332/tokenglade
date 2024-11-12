@@ -163,4 +163,80 @@ class GlobalController extends Controller
             'total_claimablebalance' => $total_claimablebalance,
         ]);
     }
+    
+    // public function fetch_claimable_balance(Request $request)
+    // {
+    //     $wallet_address = $request->json('wallet_key');
+
+    //     // Continue only if wallet_address is not null
+    //     if ($wallet_address !== null) {
+    //         try {
+    //             $client = new \GuzzleHttp\Client();
+    //             $response = $client->request('GET', 'https://horizon-testnet.stellar.org/accounts/'.$wallet_address.'/claimable_balances');
+    //             dd($response);
+    //             // Check status code
+    //             $status_code = $response->getStatusCode();
+    //             $data = json_decode($response->getBody(), true);
+
+    //             if ($status_code == 200) {
+    //                 dd($data); // Successfully fetched claimable balances
+    //             } else {
+    //                 dd('Error:', $status_code, $data); // Error in fetching data
+    //             }
+    //             // Fetch details of the wallet from the public address
+    //             $WalletAccount = $this->sdk->requestAccount($wallet_address);
+    //             $claimableBalance = $this->sdk->claimableBalances($wallet_address);
+    //             dd($claimableBalance);
+    //             // If there are claimable balances, process them
+    //             if (count($claimableBalance) > 0) {
+    //                 $claimable = []; // Initialize an array to hold claimable balances
+                    
+    //                 // Loop through claimable balances and extract necessary information
+    //                 foreach ($claimableBalances as $balance) {
+    //                     $claimable[] = [
+    //                         'id' => $balance->getId(), // Claimable balance ID
+    //                         'amount' => $balance->getAmount(), // Amount of the claimable balance
+    //                         'asset_code' => $balance->getAssetCode(), // Asset code (this is the code you want)
+    //                         'asset_issuer' => $balance->getAssetIssuer(), // Asset issuer
+    //                         'claimants' => $balance->getClaimants() // List of claimants
+    //                     ];
+    //                 }
+    //             }
+
+    //             $tokens = []; // Initialize an array to hold non-native assets
+    //             $totalXLM = 0;
+
+    //             // Loop through the balances and fetch non-native assets
+    //             foreach ($WalletAccount->getBalances() as $balance) {
+    //                 if ($balance->getAssetType() === 'native') {
+    //                     // Store the XLM balance if the asset type is 'native'
+    //                     $totalXLM = $balance->getBalance();
+    //                 } else {
+    //                     // Store non-native assets
+    //                     $tokens[] = [
+    //                         'code' => $balance->getAssetCode(), // Asset code
+    //                         'issuer' => $balance->getAssetIssuer(), // Asset issuer
+    //                         'balance' => $balance->getBalance(), // Asset balance
+    //                     ];
+    //                 }
+    //             }
+
+    //             if (count($tokens) > 0) {
+    //                 return response()->json([
+    //                     'status' => 'success',
+    //                     'tokens' => $tokens,
+    //                     'total_xlm' => $totalXLM, // Include the total XLM balance in the response
+    //                 ]);
+    //             } else {
+    //                 return response()->json(['status' => 'error', 'message' => 'No Claimable Balance in Connected Wallet']);
+    //             }
+    //         } catch (\InvalidArgumentException $e) {
+    //             return response()->json(['status' => 'error', 'message' => 'Invalid Wallet Address']);
+    //         } catch (\Exception $e) {
+    //             return response()->json(['status' => 'error', 'message' => 'Wallet is not active']);
+    //         }
+    //     } else {
+    //         return response()->json(['status' => 'error', 'message' => 'Wallet address is required']);
+    //     }
+    // }
 }

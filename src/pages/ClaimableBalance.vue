@@ -159,7 +159,7 @@
                 <div @mouseover="ReclaimTimeHovered = true" @mouseleave="ReclaimTimeHovered = false">
                   <button v-if="!ReclaimTimeHovered">?</button>
                   <div v-if="ReclaimTimeHovered" class="info-box">
-                    Set the time after how long you can claim the unclaimable balance.
+                    Set the time after how long distributor (connected wallet) can claim the unclaimable balance
                   </div>
                 </div>
               </div>
@@ -187,13 +187,12 @@
 
               <!-- Claimable After Field -->
               <div class="flex items-center justify-between">
-                <label for="claimable_after" class="block font-normal leading-6 text-gray-900 text-t16">User Claim Time
-                  <!-- <span class="text-red-500">*</span> -->
+                <label for="claimable_after" class="block font-normal leading-6 text-gray-900 text-t16">Receiver Claim Time
                 </label>
                 <div @mouseover="ClaimableAfterHovered  = true" @mouseleave="ClaimableAfterHovered  = false">
                   <button v-if="!ClaimableAfterHovered ">?</button>
                   <div v-if="ClaimableAfterHovered " class="info-box">
-                    Specify after how long users can claim the Claimable Balance.
+                    Set the time after how long receivers must wait before they can claim the balance
                   </div>
                 </div>
               </div>
@@ -394,24 +393,24 @@ function getCookies(name) {
 }
 
 
-hear('connected', async (status) => {
-  if (status) {
+// hear('connected', async (status) => {
+//   if (status) {
 
     
-    //has been connected, do the needfull
-    if (E('walletConnected')) {
-      const walletKey = getCookies('public_key');
-      values.distributor_wallet_address = walletKey; 
-      E('distributor_wallet_connected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
-    }
-  }
-  else {
-    //has disconnected
-    E('distributor_wallet_connected').innerText = "Connect Wallet"
-    resetTokens();
-    values.distributor_wallet_address = null; //set walletaddress to null when disconnected
-  }
-})
+//     //has been connected, do the needfull
+//     if (E('walletConnected')) {
+//       const walletKey = getCookies('public_key');
+//       values.distributor_wallet_address = walletKey; 
+//       E('distributor_wallet_connected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
+//     }
+//   }
+//   else {
+//     //has disconnected
+//     E('distributor_wallet_connected').innerText = "Connect Wallet"
+//     resetTokens();
+//     values.distributor_wallet_address = null; //set walletaddress to null when disconnected
+//   }
+// })
 
 //create listener to listen for connected changes
 hear('connected', async (status) => {
@@ -426,7 +425,8 @@ hear('connected', async (status) => {
   else {
     //has disconnected
     E('distributor_wallet_connected').innerText = "Connect Wallet"
-    
+    resetTokens();
+    values.distributor_wallet_address = null; //set walletaddress to null when disconnected
   }
 })
 

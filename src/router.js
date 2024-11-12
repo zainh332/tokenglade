@@ -4,6 +4,7 @@ import Home from "./pages/Home.vue";
 import TokenGenerator from "./pages/TokenGenerator.vue";
 import TokenTransfer from "./pages/TokenTransfer.vue";
 import ClaimableBalance from "./pages/ClaimableBalance.vue";
+import ClaimClaimableBalance from "./pages/ClaimClaimableBalance.vue";
 import TomlFileGenerator from "./pages/TomlFileGenerator.vue";
 import aboutus from "./pages/about-us.vue";
 import privacypolicy from "./pages/privacy-policy.vue";
@@ -52,6 +53,21 @@ const routes = [
         meta: {
             title: "Claimable Balance",
             description: "Explore claimable balances on TokenGlade. Control token distributions, airdrops, and rewards with precision on the Stellar blockchain.",
+        },
+        beforeEnter: (to, from, next) => {
+            if (hasRequiredCookies()) {
+                next(); // allow access if cookies exist
+            } else {
+                next('/'); // redirect to home page if cookies are missing
+            }
+        }
+    },
+    {
+        path: "/claim-claimable-balance",
+        component: ClaimClaimableBalance,
+        meta: {
+            title: "Claim Claimable Balance",
+            description: "Easily claim your claimable balances in bulk for specific assets on the Stellar network. Streamline the process with our simple and efficient claim feature.",
         },
         beforeEnter: (to, from, next) => {
             if (hasRequiredCookies()) {
