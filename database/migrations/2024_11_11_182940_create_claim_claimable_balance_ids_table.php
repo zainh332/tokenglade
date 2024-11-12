@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('claim_claimable_balance_ids', function (Blueprint $table) {
             $table->id();
             $table->integer('claim_claimable_balance_id')->index();
+            $table->float('token_amount');
             $table->string('balance_id');
             $table->tinyInteger('status')->default(0);
             $table->timestamps();

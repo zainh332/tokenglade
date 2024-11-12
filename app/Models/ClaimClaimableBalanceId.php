@@ -10,6 +10,7 @@ class ClaimClaimableBalanceId extends Model
     use HasFactory;
     protected $fillable = [
         'claim_claimable_balance_id', 
+        'token_amount',
         'balance_id',
         'status'
     ];

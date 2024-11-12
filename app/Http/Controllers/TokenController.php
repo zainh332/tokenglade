@@ -503,11 +503,16 @@ class TokenController extends Controller
                 $wallets_not_eligible = [];
                 $eligible_wallet_ids = [];
                 $eligible_balance_ids = [];
+                $eligible_balance_id_amounts = [];
+                $eligible_wallets_by_balance_id = []; 
             
                 foreach ($response_data['_embedded']['records'] as $record) {
                     if (isset($record['id'])) {
                         $current_balance_id = $record['id'];
                         $balance_ids[] = $current_balance_id;
+                    }
+                    if (isset($record['amount'])) {
+                        $current_amount = $record['amount'];
                     }
             
                     if (isset($record['claimants'])) {
@@ -552,45 +557,47 @@ class TokenController extends Controller
                             $eligible_wallet_ids = array_merge($eligible_wallet_ids, $current_balance_wallet_ids);
                             // $eligible_balance_ids = array_merge($eligible_balance_ids, [$current_balance_id]); // Wrap $current_balance_id in an array
                             $eligible_balance_ids[] = $current_balance_id; //$current_balance_id can be single or array thats why we aren't using array_merge
+                            $eligible_balance_id_amounts[] = $current_amount; //$current_amount can be single or array
+                            $eligible_wallets_by_balance_id[$current_balance_id] = $current_balance_wallet_ids;
                         } else {
                             // Otherwise, mark these wallets as not eligible
                             $wallets_not_eligible = array_merge($wallets_not_eligible, $current_balance_wallet_ids);
                         }
                     }
                 }
+                if (!empty($eligible_balance_ids) && !empty($eligible_wallets_by_balance_id)) {
 
-                if (!empty($eligible_balance_ids) && !empty($eligible_wallet_ids)) {
-
-                    // Proceed only for eligible claimable balances
+                    // Initiate the transaction for eligible claimable balances
                     $claimClaimableBalanceTransaction = (new TransactionBuilder($distributorAccount, Network::testnet()))
                         ->setMaxOperationFee($this->maxFee);
-
-                    // Create claimable balance entry
+                
+                    // Create a main entry for the claimable balance
                     $claim_claimable_balance = new ClaimClaimableBalance();
                     $claim_claimable_balance->distributor_wallet_key = $distributor_wallet_address;
                     $claim_claimable_balance->issuer_address = $issuer_wallet_address;
                     $claim_claimable_balance->asset_code = $asset_code;
-                    $claim_claimable_balance->save();
-
-
-                    // Loop through each balance ID to create and add a ClaimClaimableBalanceOperation
-                    foreach ($eligible_balance_ids as $balance_id) {
+                    $claim_claimable_balance->save(); // Save to get the ID
+                
+                    // Loop through each eligible balance ID and its wallet addresses
+                    foreach ($eligible_wallets_by_balance_id as $balance_id => $wallet_addresses) {
+                        
+                        // Add an operation for each balance ID
                         $claim_claimable_balance_operation = new ClaimClaimableBalanceOperation($balance_id);
                         $claimClaimableBalanceTransaction->addOperation($claim_claimable_balance_operation);
-
-                        // Save the balance ID in the database
+                
+                        // Save the balance ID and amount
+                        $amount = $eligible_balance_id_amounts[array_search($balance_id, $eligible_balance_ids)]; // Ensure correct amount
                         $claim_claimable_balance_id = new ClaimClaimableBalanceId();
                         $claim_claimable_balance_id->claim_claimable_balance_id = $claim_claimable_balance->id;
+                        $claim_claimable_balance_id->token_amount = $amount;
                         $claim_claimable_balance_id->balance_id = $balance_id;
                         $claim_claimable_balance_id->save();
-                    }
-
-                    // Add wallet ids for claimants that are eligible
-                    foreach ($eligible_wallet_ids as $wallet_key => $wallet_id) {
-                        if (!in_array($wallet_id, $wallets_not_eligible)) {
+                
+                        // Loop through each wallet address for the current balance ID and save it
+                        foreach ($wallet_addresses as $wallet_address) {
                             $claim_claimable_balance_claimant = new ClaimClaimableClaimant();
                             $claim_claimable_balance_claimant->claim_claimable_balance_id = $claim_claimable_balance_id->id;
-                            $claim_claimable_balance_claimant->claimants_wallet_address = $wallet_id;
+                            $claim_claimable_balance_claimant->claimants_wallet_address = $wallet_address;
                             $claim_claimable_balance_claimant->save();
                         }
                     }
