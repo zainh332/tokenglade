@@ -55,9 +55,12 @@
                     class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset px-3 ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   >
                   <option value="" disabled>Select Asset</option>
-                  <option v-for="token in availableTokens" :key="token.code" :value="token.code">
-                    {{ token.code }} ({{ token.balance }})
-                  </option>
+                  <template v-if="availableTokens.length > 0">
+                    <option v-for="token in availableTokens" :key="token.code" :value="token.code">
+                      {{ token.code }} ({{ token.balance }})
+                    </option>
+                  </template>
+                  <option v-else disabled>No assets found in connected wallet</option>
                   </select>
                 <!-- Select Asset--> 
       
@@ -207,11 +210,14 @@
           holdingTokenIssuerAddress.value = response.data.tokens.map(token => token.issuer); 
           tokensFetched.value = true;  // Mark tokens as fetched
         } else {
-          Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: response.data.message || "An unexpected error occurred.",
-          });
+          availableTokens.value = []; // Set to empty array
+          totalXLM.value = 0;
+          tokensFetched.value = true;
+          // Swal.fire({
+          //   icon: "error",
+          //   title: "Error",
+          //   text: response.data.message || "An unexpected error occurred.",
+          // });
         }
       })
       .catch((error) => {
