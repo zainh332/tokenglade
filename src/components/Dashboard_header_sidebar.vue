@@ -237,7 +237,7 @@ const OpenWalletModal = (e) => {
 const stellar_navigation = [
   { name: "Token Generator", href: "/token-generator", icon: generatorIcon, current: false },
   { name: "Claimable Balance", href: "/claimable-balance", icon: BalanceIIcon, current: false },
-  { name: "Claim Claimable Balance", href: "/claim-claimable-balance", icon: transfer, current: false }
+  { name: "Reclaim Claimable Balance", href: "/reclaim-claimable-balance", icon: transfer, current: false }
 ];
 
 //create listener to listen for connected changes

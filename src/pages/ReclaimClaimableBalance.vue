@@ -2,9 +2,9 @@
     <Layout>
       <div class="flex flex-col items-center max-w-2xl px-4 mx-auto space-y-4 sm:px-16">
         <div class="py-8 space-y-2">
-          <h1 class="font-semibold text-center text-t34">Claim Claimable Balance</h1>
+          <h1 class="font-semibold text-center text-t34">Reclaim Claimable Balance</h1>
           <p class="font-normal text-center text-t16">
-            Easily claim your claimable balances in bulk for specific assets on the Stellar network. Streamline the process with our simple and efficient claim feature.
+            Easily reclaim your claimable balances sent to other wallets in bulk for specific assets on the Stellar network. Simplify the process with our quick and efficient claim feature.
           </p>
         </div>
   
@@ -42,7 +42,7 @@
                     <div @mouseover="AssetCodeHovered = true" @mouseleave="AssetCodeHovered = false">
                       <button v-if="!AssetCodeHovered">?</button>
                       <div v-if="AssetCodeHovered" class="info-box">
-                        Select the asset to claim your tokens
+                        Select the asset to reclaim your tokens
                       </div>
                     </div>
                   </div>
@@ -63,7 +63,7 @@
       
                 <div>
                   <button type="submit" class="inline-flex justify-center text-sm font-semibold leading-6 text-white rounded-full bg-gradient btn-padding">
-                    Claim Claimable Balance
+                    Reclaim Claimable Balance
                   </button>
                 </div>
               </Form>
@@ -77,7 +77,7 @@
   
   <script setup>
   import Layout from "@/components/Dashboard_header_sidebar.vue";
-  import { ref , reactive, computed, watch } from "vue";
+  import { ref , reactive, computed, watch, onMounted } from "vue";
   import axios from 'axios';
   import Swal from 'sweetalert2';
   import { Form , Field, ErrorMessage} from 'vee-validate';
@@ -166,10 +166,16 @@
   })
   
   const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+  function getCookies(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
   
   // Function to check the wallet holding tokens
   function checkToken() {
-      const walletKey = values.distributor_wallet_address;
+      const walletKey = getCookies('public_key');
       
       if (!walletKey) {
         Swal.fire({
@@ -184,15 +190,6 @@
         return;
       }
       
-      Swal.fire({
-        title: 'Checking Tokens...',
-        html: 'Please wait while we check the holding tokens.',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();  // Start loading indicator when modal is shown
-        }
-      });
-      
       axios.post('/api/fetch_holding_tokens_claim_claimable_balance', {
         wallet_key: walletKey
       }, {
@@ -202,6 +199,7 @@
         }
       })
       .then((response) => {
+        
         if (response.data.status === "success") {
           Swal.close();  // Close loading modal after successful fetch
           availableTokens.value = response.data.tokens; // Set the available tokens in the dropdown
@@ -227,104 +225,122 @@
   }
   
   const submitForm = async (values) => {
+    // Check if token is selected first
+    if (!values.token) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Please select an asset before claiming.',
+        });
+        return;
+    }
+
     const selectedToken = availableTokens.value.find(
       (token) => token.code === values.token
     );
-    values.holdingTokenIssuerAddress = selectedToken.issuer
 
-    
-    if (!values.token || !values.holdingTokenIssuerAddress) {
+    // Add check for selectedToken
+    if (!selectedToken) {
         Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: 'Please select a asset before claiming.',
+            text: 'Selected asset not found. Please try again.',
         });
-        return
+        return;
     }
-   
+
+    values.holdingTokenIssuerAddress = selectedToken.issuer;
     if (TokenError.value == "") {
-      try {
-        // Show loading indicator
-        Swal.fire({
-          showConfirmButton: false,
-          title: 'Claiming Claimable Balance',
-          allowOutsideClick: false,
-          didOpen: () => {
-            Swal.showLoading();
-          },
-        });
-  
-        // Make API call to create claimable balance
-        const response = await axios.post('api/claim_claimable_balance', values, {
-          headers: {
-            'X-CSRF-TOKEN': window.Laravel.csrfToken,
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-  
-        // Hide loading indicator
-        Swal.close();
-        if (response.data.status === 'success') {
-            // Extract the unsigned XDR from the response
-            const unsignedXdr = response.data.unsigned_transactions;
-            const claim_claimable_balance_id = response.data.claim_claimable_balance_id;
-            const wallet_ids = response.data.wallet_ids;
-            // console.log(unsignedXdr)
-            // return
-          const transactionToSubmit = await signTransaction(unsignedXdr, 'TESTNET');
-  
-          Swal.fire({
-            showConfirmButton: false,
-            title: 'Claiming Claimable Balance',
-            allowOutsideClick: false,
-            didOpen: () => {
-              Swal.showLoading();
-            },
-          });
-          
-          // Submit the signed transaction to the backend for submission to Stellar
-          const submitResponse = await axios.post('api/submit_claim_claimable_balance_transaction', { 
-            transactionToSubmit,
-            claim_claimable_balance_id: claim_claimable_balance_id,
-            wallet_ids: wallet_ids
-           }, {
-            headers: {
-              'X-CSRF-TOKEN': window.Laravel.csrfToken,
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            },
-          });
-         
-          Swal.close(); //close lodaing swal
-          if(submitResponse.data.status == 'success'){
-            // Show success alert transaction submitted succesfully
+        try {
+            // Show loading indicator
             Swal.fire({
-              icon: 'success',
-              title: 'Success!',
-              text: 'Claimable balance has been claimeed successfully',
+              showConfirmButton: false,
+              title: 'Claiming Claimable Balance',
+              allowOutsideClick: false,
+              didOpen: () => {
+                Swal.showLoading();
+              },
+            });
+    
+            // Make API call to create claimable balance
+            const response = await axios.post('api/claim_claimable_balance', values, {
+              headers: {
+                'X-CSRF-TOKEN': window.Laravel.csrfToken,
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              },
+            });
+    
+            // Hide loading indicator
+            Swal.close();
+            if (response.data.status === 'success') {
+                // Extract the unsigned XDR from the response
+                const unsignedXdr = response.data.unsigned_transactions;
+                const claim_claimable_balance_id = response.data.claim_claimable_balance_id;
+                const wallet_ids = response.data.wallet_ids;
+              const transactionToSubmit = await signTransaction(unsignedXdr, 'TESTNET');
+    
+              Swal.fire({
+                showConfirmButton: false,
+                title: 'Claiming Claimable Balance',
+                allowOutsideClick: false,
+                didOpen: () => {
+                  Swal.showLoading();
+                },
+              });
+              
+              // Submit the signed transaction to the backend for submission to Stellar
+              const submitResponse = await axios.post('api/submit_claim_claimable_balance_transaction', { 
+                transactionToSubmit,
+                claim_claimable_balance_id: claim_claimable_balance_id,
+                wallet_ids: wallet_ids
+               }, {
+                headers: {
+                  'X-CSRF-TOKEN': window.Laravel.csrfToken,
+                  'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                },
+              });
+             
+              Swal.close(); //close lodaing swal
+              if(submitResponse.data.status == 'success'){
+                // Show success alert transaction submitted succesfully
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Success!',
+                  text: 'Claimable balance has been claimeed successfully',
+                });
+              }
+            } else if (response.data.status === 'error') {
+              Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: response.data.message,
+              });
+            } else {
+              // Handle unexpected statuses
+              Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An unexpected error occurred while claiming claimable balance',
+              });
+            }
+    
+          } catch (error) {
+            // Handle server or submission errors
+            console.error('Error:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: error.response?.data?.message || 'An error occurred while claiming claimable balance',
             });
           }
-        } else if (response.data.status === 'error') {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: response.data.message,
-          });
-        } else {
-          // Handle unexpected statuses
-          console.log('Unexpected status:', response.data.status);
-        }
-  
-      } catch (error) {
-        // Handle server or submission errors
-        console.error('Error:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: error.response?.data?.message || 'An error occurred while claiming claimable balance',
-        });
-      }
     }
   };
+
+  onMounted(async () => {
+  if (getCookies('public_key') ) {
+    checkToken();
+  }
+});
   
   </script>
 

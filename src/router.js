@@ -4,7 +4,7 @@ import Home from "./pages/Home.vue";
 import TokenGenerator from "./pages/TokenGenerator.vue";
 import TokenTransfer from "./pages/TokenTransfer.vue";
 import ClaimableBalance from "./pages/ClaimableBalance.vue";
-import ClaimClaimableBalance from "./pages/ClaimClaimableBalance.vue";
+import ReclaimClaimableBalance from "./pages/ReclaimClaimableBalance.vue";
 import TomlFileGenerator from "./pages/TomlFileGenerator.vue";
 import aboutus from "./pages/about-us.vue";
 import privacypolicy from "./pages/privacy-policy.vue";
@@ -63,11 +63,11 @@ const routes = [
         }
     },
     {
-        path: "/claim-claimable-balance",
-        component: ClaimClaimableBalance,
+        path: "/reclaim-claimable-balance",
+        component: ReclaimClaimableBalance,
         meta: {
-            title: "Claim Claimable Balance",
-            description: "Easily claim your claimable balances in bulk for specific assets on the Stellar network. Streamline the process with our simple and efficient claim feature.",
+            title: "Reclaim Claimable Balance",
+            description: "Easily reclaim your claimable balances in bulk for specific assets on the Stellar network. Streamline the process with our simple and efficient claim feature.",
         },
         beforeEnter: (to, from, next) => {
             if (hasRequiredCookies()) {

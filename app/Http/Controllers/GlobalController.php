@@ -76,7 +76,9 @@ class GlobalController extends Controller
             try {
                 // Fetch details of the wallet from the public address
                 $WalletAccount = $this->sdk->requestAccount($wallet_address);
-
+                if(!$WalletAccount){
+                    return response()->json(['status' => 'error', 'message' => 'Wallet is not active']);
+                }
                 $tokens = []; // Initialize an array to hold non-native assets
                 $totalXLM = 0;
 
@@ -151,7 +153,7 @@ class GlobalController extends Controller
                         'total_xlm' => $totalXLM, // Include the total XLM balance in the response
                     ]);
                 } else {
-                    return response()->json(['status' => 'error', 'message' => 'No Tokens Found in Connected Wallet']);
+                    return response()->json(['status' => 'error', 'message' => 'No tokens found in your wallet']);
                 }
             } catch (\InvalidArgumentException $e) {
                 return response()->json(['status' => 'error', 'message' => 'Invalid Wallet Address']);

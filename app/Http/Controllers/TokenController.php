@@ -45,12 +45,14 @@ use Soneso\StellarSDK\Xdr\TransactionEnvelope;
 
 class TokenController extends Controller
 {
-    private $sdk, $maxFee;
+    private $sdk, $maxFee, $network;
 
     public function __construct()
     {
         // $this->sdk = StellarSDK::getPublicNetInstance();
         $this->sdk = StellarSDK::getTestNetInstance();
+        // $this->network = Network::public();
+        $this->network = Network::testnet();
         $this->maxFee = 30000;
     }
 
@@ -83,7 +85,7 @@ class TokenController extends Controller
             $trustlineOperation = (new ChangeTrustOperationBuilder($asset))->build();
 
             // Build the trustline transaction
-            $trustlineTransaction = (new TransactionBuilder($distributorAccount, Network::testnet()))
+            $trustlineTransaction = (new TransactionBuilder($distributorAccount, $this->network))
                 ->addOperation($trustlineOperation)
                 ->build();
 
@@ -169,7 +171,7 @@ class TokenController extends Controller
 
 
                 // Sign the payment transaction with the issuer's private key
-                $paymentTransaction->sign($issuerKeyPair, Network::testnet());
+                $paymentTransaction->sign($issuerKeyPair, $this->network);
 
                 // Submit the payment transaction
                 $response = $this->sdk->submitTransaction($paymentTransaction);
@@ -204,7 +206,7 @@ class TokenController extends Controller
                             ->build();
 
                         // Sign the lock transaction with the issuer's private key
-                        $lockTransaction->sign($issuerKeyPair, Network::testnet());
+                        $lockTransaction->sign($issuerKeyPair, $this->network);
 
                         // Submit the lock transaction to lock the issuer account
                         $this->sdk->submitTransaction($lockTransaction);
@@ -395,7 +397,7 @@ class TokenController extends Controller
         $claimableBalanceOperation = new CreateClaimableBalanceOperation($claimants, $asset, $amount);
 
         // Build the transaction with a single operation that has single or multiple claimants
-        $transactionBuilder = (new TransactionBuilder($distributorAccount, Network::testnet()))
+        $transactionBuilder = (new TransactionBuilder($distributorAccount, $this->network))
             ->setMaxOperationFee($this->maxFee)
             ->addOperation($claimableBalanceOperation);
 
@@ -568,7 +570,7 @@ class TokenController extends Controller
                 if (!empty($eligible_balance_ids) && !empty($eligible_wallets_by_balance_id)) {
 
                     // Initiate the transaction for eligible claimable balances
-                    $claimClaimableBalanceTransaction = (new TransactionBuilder($distributorAccount, Network::testnet()))
+                    $claimClaimableBalanceTransaction = (new TransactionBuilder($distributorAccount, $this->network))
                         ->setMaxOperationFee($this->maxFee);
                 
                     // Create a main entry for the claimable balance

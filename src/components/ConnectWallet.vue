@@ -62,13 +62,13 @@
                                         <div class="modal-body" style="max-width:300px; word-break: break-all;" v-else>
                                             <h1 id="public_key" style="font-size: 14px;">{{ UserData.walletKey }}</h1> <!-- Show the public key -->
                                         </div>
-
+                                        
                                         <div class="mt-2">
                                             <button id="connectWalletButton" @click="connectWallet()" type="button"
-                                                class="walletconnect-btn" v-if="!isWalletConnected"> Connect
-                                                Wallet</button>
+                                            class="walletconnect-btn" v-if="!isWalletConnected"> Connect
+                                            Wallet</button>
                                             <button id="connectWalletButton" @click="disconnectWallet()" type="button"
-                                                class="walletconnect-btn" v-else> Disconnect Wallet</button>
+                                            class="walletconnect-btn" v-else> Disconnect Wallet</button>
                                             <button type="button" v-if="isLoading"
                                                 class="connectLoading-btn">Connecting...</button>
                                         </div>
@@ -118,8 +118,16 @@ const UserData = ref({
 })
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+// Add watch for open prop
+watch(() => ConnectWalletModal.open, (newValue) => {
+    if (newValue) {
+        fetch_wallet_types();
+    }
+});
+
 // Fetch available wallets from the server
-async function fetchWallets() {
+async function fetch_wallet_types() {
     try {
         const response = await axios.get('/api/fetch_wallet_types', {
             headers: {
@@ -145,7 +153,7 @@ async function fetchWallets() {
     }
 }
 
-async function selectWallet(publicKey, walletTypeId) {
+async function select_store_wallet(publicKey, walletTypeId) {
     if (publicKey && walletTypeId) {
         
         // Save public key and wallet type in UserData
@@ -215,10 +223,15 @@ async function connectWallet() {
                 if (publicKey) {
                     // Ensure the selected wallet type is set
                     if (selectedWallet.value) {
-                        // Call selectWallet with both public key and selected wallet type
-                        await selectWallet(publicKey, selectedWallet.value); // Pass publicKey and wallet type id
+                        UserData.value.walletKey = publicKey;
+                        await select_store_wallet(publicKey, selectedWallet.value); // Pass publicKey and wallet type id
                         isLoading.value = false;
-                        E('public_key').innerText = publicKey 
+                        Swal.fire({
+                            icon: "success",
+                            title: "Wallet Connected!",
+                            text: "Wallet connected successfully.",
+                        });
+                        closeModal();
                     } else {
                         Swal.fire({
                             icon: "error",
@@ -274,16 +287,10 @@ async function checkConnection() {
     isWalletConnected.value = conn
     if (conn) {
         const publicKey = await getPublicKey();
-        const cookie_public_key = getCookie("public_key"); // Assumes you have a function getCookie(name)
         const walletTypeId = getCookie("wallet_type_id");
-
-        //it mean user have updated its wallet from frieghter wallet
-        if(publicKey != cookie_public_key){
-            
-        }
-
-        UserData.value.public_key = publicKey; // Set the public key in UserData
-        UserData.value.wallet_type_id = walletTypeId; // Set the selected wallet type ID in UserData
+        UserData.value.walletKey = publicKey;
+        UserData.value.public_key = publicKey;
+        UserData.value.wallet_type_id = walletTypeId;
         
         if (publicKey && walletTypeId) {
             const response = await axios.post("/api/store_wallet",
@@ -305,11 +312,11 @@ async function checkConnection() {
         } else {
             // If either of them is missing, consider the connection incomplete or invalid
             isWalletConnected.value = false;
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: 'Wallet data missing or incomplete. Please reconnect your wallet.'
-            });
+            // Swal.fire({
+            //     icon: 'error',
+            //     title: 'Error!',
+            //     text: 'Wallet data missing or incomplete. Please reconnect your wallet.'
+            // });
         }
     }
 }
@@ -432,7 +439,7 @@ async function watchWalletChanges() {
                 await wallet_disconnected(previous_public_key);
             }
         }
-    }, 7000); // Check every second
+    }, 1000); // Check every second
 }
 
 // Watch `isWalletConnected` and trigger `watchWalletChanges` when it becomes true
@@ -448,7 +455,6 @@ watch(
 
 onMounted(() => {
     checkConnection()
-    fetchWallets()
     const previous_public_key = getCookie("public_key");
     if(previous_public_key)
     {

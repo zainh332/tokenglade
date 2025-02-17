@@ -13,7 +13,7 @@
           <div class="w-full">
             <Form class="space-y-6" @submit="submitForm(values)" :validationSchema="schema">
               <!-- Connect Wallet-->
-                <div class="flex items-center justify-between">
+                <!-- <div class="flex items-center justify-between">
                   <label for="distributor_wallet_address" class="block font-normal leading-6 text-gray-900 text-t16">
                     Wallet Address
                     <span class="text-red-500">*</span>
@@ -30,7 +30,7 @@
                     class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
                     Connect Wallet
                   </button>
-                </div>
+                </div> -->
               <!-- Connect Wallet-->
 
               
@@ -52,11 +52,13 @@
                   id="token"
                   name="token"
                   v-model="values.token"
-                  @click="checkToken()"
                   class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset px-3 ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 >
                 <option value="" disabled>Select Token</option>
-                <option v-for="token in availableTokens" :key="token.code" :value="token.code">
+                <option 
+                v-for="token in availableTokens" 
+                :key="token.code" 
+                :value="token.code">
                   {{ token.code }} ({{ token.balance }})
                 </option>
                 </select>
@@ -236,7 +238,7 @@
 
 <script setup>
 import Layout from "@/components/Dashboard_header_sidebar.vue";
-import { ref , reactive, computed, watch } from "vue";
+import { ref , reactive, computed, watch, onMounted } from "vue";
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { Form , Field, ErrorMessage} from 'vee-validate';
@@ -396,11 +398,11 @@ function getCookies(name) {
 // hear('connected', async (status) => {
 //   if (status) {
 
-    
+
 //     //has been connected, do the needfull
 //     if (E('walletConnected')) {
 //       const walletKey = getCookies('public_key');
-//       values.distributor_wallet_address = walletKey; 
+//       values.distributor_wallet_address = walletKey;
 //       E('distributor_wallet_connected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
 //     }
 //   }
@@ -411,24 +413,6 @@ function getCookies(name) {
 //     values.distributor_wallet_address = null; //set walletaddress to null when disconnected
 //   }
 // })
-
-//create listener to listen for connected changes
-hear('connected', async (status) => {
-  if (status) {
-    //has been connected, do the needfull
-    if (E('walletConnected')) {
-      const walletKey = await getPublicKey()
-      values.distributor_wallet_address = walletKey;  // Store the walletKey in wallet_address
-      E('distributor_wallet_connected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
-    }
-  }
-  else {
-    //has disconnected
-    E('distributor_wallet_connected').innerText = "Connect Wallet"
-    resetTokens();
-    values.distributor_wallet_address = null; //set walletaddress to null when disconnected
-  }
-})
 
 // Store selected token balance
 const selectedTokenBalance = computed(() => {
@@ -485,7 +469,7 @@ const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute
 
 // Function to check the wallet holding tokens
 function checkToken() {
-    const walletKey = values.distributor_wallet_address;
+    const walletKey = getCookies('public_key');
     
     if (!walletKey) {
       Swal.fire({
@@ -499,15 +483,6 @@ function checkToken() {
     if (tokensFetched.value) {
       return;
     }
-    
-    Swal.fire({
-      title: 'Checking Tokens...',
-      html: 'Please wait while we check the holding tokens.',
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();  // Start loading indicator when modal is shown
-      }
-    });
     
     axios.post('/api/fetch_holding_tokens_total_xlm', {
       wallet_key: walletKey
@@ -524,11 +499,13 @@ function checkToken() {
         totalXLM.value = response.data.total_xlm; 
         tokensFetched.value = true;  // Mark tokens as fetched
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: response.data.message || "An unexpected error occurred.",
-        });
+        availableTokens.value = [{ code: response.data.message }];
+        tokensFetched.value = true;
+        // Swal.fire({
+        //   icon: "error",
+        //   title: "Error",
+        //   text: response.data.message || "An unexpected error occurred.",
+        // });
       }
     })
     .catch((error) => {
@@ -623,6 +600,12 @@ const submitForm = async (values) => {
   }
 };
 
+// Add onMounted hook after other setup code
+onMounted(async () => {
+  if (getCookies('public_key') ) {
+    checkToken();
+  }
+});
 
 </script>
 
