@@ -398,24 +398,24 @@ function getCookies(name) {
 }
 
 
-// hear('connected', async (status) => {
-//   if (status) {
+hear('connected', async (status) => {
+  if (status) {
 
 
-//     //has been connected, do the needfull
-//     if (E('walletConnected')) {
-//       const walletKey = getCookies('public_key');
-//       values.distributor_wallet_address = walletKey;
-//       E('distributor_wallet_connected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
-//     }
-//   }
-//   else {
-//     //has disconnected
-//     E('distributor_wallet_connected').innerText = "Connect Wallet"
-//     resetTokens();
-//     values.distributor_wallet_address = null; //set walletaddress to null when disconnected
-//   }
-// })
+    //has been connected, do the needfull
+    if (E('walletConnected')) {
+      const walletKey = getCookies('public_key');
+      values.distributor_wallet_address = walletKey;
+      E('distributor_wallet_connected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
+    }
+  }
+  else {
+    //has disconnected
+    E('distributor_wallet_connected').innerText = "Connect Wallet"
+    resetTokens();
+    values.distributor_wallet_address = null; //set walletaddress to null when disconnected
+  }
+})
 
 // Store selected token balance
 const selectedTokenBalance = computed(() => {
