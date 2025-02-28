@@ -236,7 +236,7 @@
         Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: 'Please select an asset before claiming.',
+            text: 'Please select an asset before reclaiming.',
         });
         return;
     }
@@ -261,7 +261,7 @@
             // Show loading indicator
             Swal.fire({
               showConfirmButton: false,
-              title: 'Claiming Claimable Balance',
+              title: 'Reclaim Claimable Balance',
               allowOutsideClick: false,
               didOpen: () => {
                 Swal.showLoading();
@@ -269,7 +269,7 @@
             });
     
             // Make API call to create claimable balance
-            const response = await axios.post('api/claim_claimable_balance', values, {
+            const response = await axios.post('api/reclaim_claimable_balance', values, {
               headers: {
                 'X-CSRF-TOKEN': window.Laravel.csrfToken,
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -287,7 +287,7 @@
     
               Swal.fire({
                 showConfirmButton: false,
-                title: 'Claiming Claimable Balance',
+                title: 'Reclaim Claimable Balance',
                 allowOutsideClick: false,
                 didOpen: () => {
                   Swal.showLoading();
@@ -295,7 +295,7 @@
               });
               
               // Submit the signed transaction to the backend for submission to Stellar
-              const submitResponse = await axios.post('api/submit_claim_claimable_balance_transaction', { 
+              const submitResponse = await axios.post('api/submit_reclaim_claimable_balance_transaction', { 
                 transactionToSubmit,
                 claim_claimable_balance_id: claim_claimable_balance_id,
                 wallet_ids: wallet_ids
@@ -312,7 +312,7 @@
                 Swal.fire({
                   icon: 'success',
                   title: 'Success!',
-                  text: 'Claimable balance has been claimeed successfully',
+                  text: 'Reclaim balance has been claimeed successfully',
                 });
               }
             } else if (response.data.status === 'error') {
@@ -326,7 +326,7 @@
               Swal.fire({
                 icon: 'error',
                 title: 'Error!',
-                text: 'An unexpected error occurred while claiming claimable balance',
+                text: 'An unexpected error occurred while reclaiming claimable balance',
               });
             }
     
@@ -336,7 +336,7 @@
             Swal.fire({
               icon: 'error',
               title: 'Error!',
-              text: error.response?.data?.message || 'An error occurred while claiming claimable balance',
+              text: error.response?.data?.message || 'An error occurred while reclaiming claimable balance',
             });
           }
     }

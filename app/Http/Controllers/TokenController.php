@@ -475,7 +475,7 @@ class TokenController extends Controller
         }
     }
 
-    public function claim_claimable_balance(Request $request)
+    public function reclaim_claimable_balance(Request $request)
     {
         $asset_code = $request->token;
         $issuer_wallet_address = $request->holdingTokenIssuerAddress;
@@ -617,21 +617,21 @@ class TokenController extends Controller
                 } else {
                     return response()->json([
                         'status' => 'error',
-                        'message' => "Claim not available for the asset: ".$asset_code.". The specified claim time has not yet passed. You can claim after ".$claim_time." UTC.",
+                        'message' => "Reclaim not available for the asset: ".$asset_code.". The specified claim time has not yet passed. You can reclaim after ".$claim_time." UTC.",
                         'data' => $response_data
                     ]);
                 }
             } else {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'No claimable balance found for ' .$asset_code,
+                    'message' => 'No reclaimable balance found for ' .$asset_code,
                     'data' => $response_data
                 ]);
             }
         }
     }
 
-    public function submit_claim_claimable_balance_transaction(Request $request)
+    public function submit_reclaim_claimable_balance_transaction(Request $request)
     {
         try {
             // Get the signed XDR string from the request

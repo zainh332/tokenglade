@@ -26,8 +26,8 @@ Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
     Route::post('/update_wallet', 'WalletController@update_wallet')->name('update_wallet');
     Route::post('/generate_token', 'TokenController@generate_token')->name('generate_token');
     Route::post('/claimable_balance', 'TokenController@claimable_balance')->name('claimable_balance');
-    Route::post('/claim_claimable_balance', 'TokenController@claim_claimable_balance')->name('claim_claimable_balance');
-    Route::post('/submit_claim_claimable_balance_transaction', 'TokenController@submit_claim_claimable_balance_transaction')->name('submit_claim_claimable_balance_transaction');
+    Route::post('/reclaim_claimable_balance', 'TokenController@reclaim_claimable_balance')->name('reclaim_claimable_balance');
+    Route::post('/submit_reclaim_claimable_balance_transaction', 'TokenController@submit_reclaim_claimable_balance_transaction')->name('submit_reclaim_claimable_balance_transaction');
     Route::post('/token_transfer', 'TokenController@token_transfer')->name('token_transfer');
     Route::post('/token_generating_transaction', 'TokenController@token_generating_transaction')->name('token_generating_transaction');
     Route::post('/submit_transaction', 'TokenController@submit_transaction')->name('submit_transaction');
