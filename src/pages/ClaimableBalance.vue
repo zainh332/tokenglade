@@ -557,7 +557,7 @@ const submitForm = async (values) => {
         });
         
         // Submit the signed transaction to the backend for submission to Stellar
-        const submitResponse = await axios.post('api/submit_transaction', { 
+        const submitResponse = await axios.post('api/claimable_balance_transaction', { 
           transactionToSubmit,
           claimable_balance_id: claimableBalanceId
          }, {

@@ -295,7 +295,7 @@
               });
               
               // Submit the signed transaction to the backend for submission to Stellar
-              const submitResponse = await axios.post('api/submit_reclaim_claimable_balance_transaction', { 
+              const submitResponse = await axios.post('api/reclaim_claimable_balance_transaction', { 
                 transactionToSubmit,
                 claim_claimable_balance_id: claim_claimable_balance_id,
                 wallet_ids: wallet_ids
