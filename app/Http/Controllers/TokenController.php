@@ -32,6 +32,7 @@ use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
 use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
@@ -58,6 +59,19 @@ class TokenController extends Controller
 
     public function generate_token(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'asset_code' => 'required',
+            'total_supply' => 'required',
+            'distributor_wallet_key' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         try {
             // Get input data from the request
             $asset_code = $request->input('asset_code');
@@ -115,6 +129,23 @@ class TokenController extends Controller
 
     public function token_generating_transaction(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'transactionToSubmit' => 'required',
+            'issuerPublicKey' => 'required',
+            'issuerSecretkey' => 'required',
+            'total_supply' => 'required',
+            'distributorPublicKey' => 'required',
+            'asset_code' => 'required',
+            'lock_status' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         try {
             // Get the signed XDR string from the request
             $signedXdr = $request->input('transactionToSubmit');
@@ -252,14 +283,21 @@ class TokenController extends Controller
 
     public function claimable_balance(Request $request)
     {
-        $validatedData = $request->validate([
-            'distributor_wallet_address' => 'required|string', // Distributor wallet private key
-            'token' => 'required|string',                      // Asset token
-            'amount' => 'required|numeric|min:1',              // Amount must be a number and greater than 0
-            'reclaim_time' => 'required|numeric|min:1',      // Target wallet addresses in string format
-            'sender_can_claim_unit' => 'required',      // Target wallet addresses in string format
-            'target_wallet_address' => 'required|string',      // Target wallet addresses in string format
+        $validator = Validator::make($request->all(), [
+            'distributor_wallet_address' => 'required|string',
+            'token' => 'required',
+            'amount' => 'required|numeric|min:1', 
+            'reclaim_time' => 'required|numeric|min:1',
+            'sender_can_claim_unit' => 'required',
+            'target_wallet_address' => 'required|string',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
         $user_distributor_wallet_address = $request->distributor_wallet_address;
         $assetCode = $request->input('token');
@@ -425,6 +463,18 @@ class TokenController extends Controller
 
     public function submit_transaction(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'transactionToSubmit' => 'required',
+            'claimable_balance_id' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         try {
             // Get the signed XDR string from the request
             $signedXdr = $request->input('transactionToSubmit');
@@ -477,6 +527,19 @@ class TokenController extends Controller
 
     public function reclaim_claimable_balance(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'token' => 'required',
+            'holdingTokenIssuerAddress' => 'required',
+            'distributor_wallet_address' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         $asset_code = $request->token;
         $issuer_wallet_address = $request->holdingTokenIssuerAddress;
         $distributor_wallet_address = $request->distributor_wallet_address;
@@ -633,6 +696,19 @@ class TokenController extends Controller
 
     public function submit_reclaim_claimable_balance_transaction(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'transactionToSubmit' => 'required',
+            'claim_claimable_balance_id' => 'required',
+            'wallet_ids' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         try {
             // Get the signed XDR string from the request
             $signedXdr = $request->input('transactionToSubmit');
