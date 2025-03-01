@@ -1,7 +1,6 @@
 <?php
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
-use Exception;
 
 
 /**
