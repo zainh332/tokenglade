@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('stellar_tokens', function (Blueprint $table) {
             $table->id();
             $table->string('asset_code', 12);
-            $table->string('total_supply', 12);
+            $table->decimal('total_supply', 20, 7);
             $table->string('user_wallet_address', 60);
             $table->string('issuerPublicKey', 60);
             $table->string('issuerSecretkey', 60);

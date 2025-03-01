@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('distributor_wallet_key', 60);
             $table->string('asset_code', 12);
-            $table->string('amount', 12);
+            $table->double('amount', 20, 7);
             $table->string('memo', 40)->nullable();
             $table->tinyInteger('status')->default(0);
             $table->timestamps();
