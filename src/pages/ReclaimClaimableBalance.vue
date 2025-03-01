@@ -312,7 +312,7 @@
                 Swal.fire({
                   icon: 'success',
                   title: 'Success!',
-                  text: 'Reclaim balance has been claimeed successfully',
+                  text: 'Balance has been reclaimed successfully',
                 });
               }
             } else if (response.data.status === 'error') {
