@@ -48,8 +48,8 @@ class GlobalController extends Controller
 
     public function __construct()
     {
-        // $this->sdk = StellarSDK::getPublicNetInstance();
-        $this->sdk = StellarSDK::getTestNetInstance();
+        $this->sdk = StellarSDK::getPublicNetInstance();
+        // $this->sdk = StellarSDK::getTestNetInstance();
         $this->maxFee = 30000;
     }
     //

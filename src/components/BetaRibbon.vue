@@ -5,7 +5,7 @@
             <div class="flex justify-between h-20">
 
                 <div class="flex"> -->
-                    <span>Beta Version (Currently on Testnet Network)</span>
+                    <span>Beta Version</span>
                 <!-- </div>
             </div>
         </div> -->

@@ -24,12 +24,14 @@ Route::post('/disconnect_wallet', 'WalletController@disconnect_wallet')->name('d
 
 Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
     Route::post('/update_wallet', 'WalletController@update_wallet')->name('update_wallet');
+    Route::post('/generate_issuer_wallet', 'TokenController@generate_issuer_wallet')->name('generate_issuer_wallet');
     Route::post('/generate_token', 'TokenController@generate_token')->name('generate_token');
     Route::post('/claimable_balance', 'TokenController@claimable_balance')->name('claimable_balance');
     Route::post('/reclaim_claimable_balance', 'TokenController@reclaim_claimable_balance')->name('reclaim_claimable_balance');
     Route::post('/token_transfer', 'TokenController@token_transfer')->name('token_transfer');
     
     // Transactions
+    Route::post('/funding_issuer_wallet_transaction', 'StellarTransactionController@funding_issuer_wallet_transaction')->name('funding_issuer_wallet_transaction');
     Route::post('/token_generating_transaction', 'StellarTransactionController@token_generating_transaction')->name('token_generating_transaction');
     Route::post('/claimable_balance_transaction', 'StellarTransactionController@claimable_balance_transaction')->name('claimable_balance_transaction');
     Route::post('/reclaim_claimable_balance_transaction', 'StellarTransactionController@reclaim_claimable_balance_transaction')->name('reclaim_claimable_balance_transaction');

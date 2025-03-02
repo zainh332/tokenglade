@@ -6,6 +6,7 @@ use App\Models\ClaimClaimableBalanceId;
 use App\Models\StellarToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
@@ -21,23 +22,76 @@ use Soneso\StellarSDK\TransactionBuilder;
 
 class StellarTransactionController extends Controller
 {
-    private $sdk, $maxFee, $network;
+    private $sdk, $network;
 
     public function __construct()
     {
-        $this->sdk = StellarSDK::getTestNetInstance();
-        $this->network = Network::testnet();
-        // $this->sdk = StellarSDK::getPublicNetInstance();
-        // $this->network = Network::public();
-        $this->maxFee = 30000;
+        // $this->sdk = StellarSDK::getTestNetInstance();
+        // $this->network = Network::testnet();
+        $this->sdk = StellarSDK::getPublicNetInstance();
+        $this->network = Network::public();
+    }
+
+    public function funding_issuer_wallet_transaction(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'funding_issuer_wallet_signedXdr' => 'required',
+            'issuer_wallet_public_key' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $signedXdr = $request->input('funding_issuer_wallet_signedXdr');
+            $issuer_public_key = $request->input('issuer_wallet_public_key');
+
+            // Convert the XDR string into a Transaction object using fromEnvelopeBase64XdrString
+            $transactionEnvelope = AbstractTransaction::fromEnvelopeBase64XdrString($signedXdr);
+            // Submit the transaction to the Stellar network using the SDK
+            $response = $this->sdk->submitTransaction($transactionEnvelope);
+            Log::info("Transaction Response:", (array) $response);
+
+            // Check if the transaction was successful
+            if ($response && $response->isSuccessful()) {
+
+                // // Update status in claimable_balance_receivers table for all receivers
+                DB::table('user_issuer_wallets')
+                    ->where('issuer_public_key', $issuer_public_key)
+                    ->update([
+                        'signed_transaction' => $signedXdr,
+                        'status' => 1,
+                    ]);
+
+                return response()->json([
+                    'success' => true,
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Transaction failed',
+                    'result_codes' => $response?->getExtras()?->getResultCodes() ?? 'Unknown error',
+                    'details' => $response?->getExtras()?->getResultXdr() ?? 'No details available'
+                ], 400);
+            }
+        } catch (HorizonRequestException $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        } catch (\Exception $e) {
+            // Catch and return any errors
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function token_generating_transaction(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'transactionToSubmit' => 'required',
-            'issuerPublicKey' => 'required',
-            'issuerSecretkey' => 'required',
+            'issuer_wallet_public_key' => 'required',
+            'issuer_wallet_secrect_key' => 'required',
             'total_supply' => 'required',
             'distributorPublicKey' => 'required',
             'asset_code' => 'required',
@@ -54,8 +108,8 @@ class StellarTransactionController extends Controller
         try {
             // Get the signed XDR string from the request
             $signedXdr = $request->input('transactionToSubmit');
-            $issuerPublicKey = $request->input('issuerPublicKey');
-            $issuerSecretkey = $request->input('issuerSecretkey');
+            $issuerPublicKey = $request->input('issuer_wallet_public_key');
+            $issuerSecretkey = $request->input('issuer_wallet_secrect_key');
             $total_supply = $request->input('total_supply');
             $distributorPublicKey = $request->input('distributorPublicKey');
             $asset_code = $request->input('asset_code');
@@ -106,7 +160,7 @@ class StellarTransactionController extends Controller
                     ->build();
 
 
-                // Sign the payment transaction with the issuer's private key
+                // Sign the payment transaction
                 $paymentTransaction->sign($issuerKeyPair, $this->network);
 
                 // Submit the payment transaction
@@ -141,7 +195,7 @@ class StellarTransactionController extends Controller
                             ->addOperation($lockOperation)
                             ->build();
 
-                        // Sign the lock transaction with the issuer's private key
+                        // Sign the lock transaction
                         $lockTransaction->sign($issuerKeyPair, $this->network);
 
                         // Submit the lock transaction to lock the issuer account
@@ -284,7 +338,7 @@ class StellarTransactionController extends Controller
                     $claimableBalanceIds = $request->input('claim_claimable_balance_id');
                     $walletIds = $request->input('wallet_ids');
 
-                    if($walletIds){
+                    if ($walletIds) {
                         // Update status in claimable_balances table for each wallet_id
                         foreach ($walletIds as $walletId) {
                             DB::table('claim_claimable_claimants')
@@ -293,7 +347,7 @@ class StellarTransactionController extends Controller
                         }
                     }
 
-                    if($claimableBalanceIds){
+                    if ($claimableBalanceIds) {
                         // Update status in claimable_balance_receivers table for each claimable balance ID
                         foreach ($claimableBalanceIds as $claimableBalanceId) {
                             DB::table('claim_claimable_balance_ids')

@@ -6,6 +6,7 @@ use App\Models\ClaimClaimableBalance;
 use App\Models\ClaimClaimableBalanceId;
 use App\Models\ClaimClaimableClaimant;
 use App\Models\StellarToken;
+use App\Models\UserIssuerWallet;
 use Carbon\Carbon;
 use DateTime;
 use Exception;
@@ -50,11 +51,76 @@ class TokenController extends Controller
 
     public function __construct()
     {
-        $this->sdk = StellarSDK::getTestNetInstance();
-        $this->network = Network::testnet();
-        // $this->sdk = StellarSDK::getPublicNetInstance();
-        // $this->network = Network::public();
+        // $this->sdk = StellarSDK::getTestNetInstance();
+        // $this->network = Network::testnet();
+        $this->sdk = StellarSDK::getPublicNetInstance();
+        $this->network = Network::public();
         $this->maxFee = 30000;
+    }
+
+    public function generate_issuer_wallet(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'distributor_wallet_key' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        
+        try {
+            $distributor_wallet_key = $request->input('distributor_wallet_key');
+
+            $check_xlm_balance = checkXlmBalance($distributor_wallet_key);
+            if($check_xlm_balance < 6){
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Insufficient balance. You need at least 6 XLM to proceed.',
+                ]);
+            }
+            $xlm_amount = 3;
+
+            // Generate a new keypair for the issuer
+            $issuerKeyPair = KeyPair::random();
+            $issuerPublicKey = $issuerKeyPair->getAccountId();
+            $issuerSecretkey = $issuerKeyPair->getSecretSeed();
+
+            $distributorAccount = $this->sdk->requestAccount($distributor_wallet_key);
+
+            // Step 1: Create & Fund the Issuer Wallet
+            $createAccountOp = (new CreateAccountOperationBuilder($issuerPublicKey, strval($xlm_amount)))->build();
+
+            // Build & Sign the Transaction
+            $transaction = (new TransactionBuilder($distributorAccount, $this->network))
+            ->addOperation($createAccountOp)
+            ->build();
+
+            // Convert transaction to XDR format
+            $unsignedXDR = $transaction->toEnvelopeXdrBase64();
+
+            $token_generated = new UserIssuerWallet();
+            $token_generated->user_wallet_address = $distributor_wallet_key;
+            $token_generated->issuer_public_key = $issuerPublicKey;
+            $token_generated->issuer_secret_key = $issuerSecretkey;
+            $token_generated->xlm_amount = $xlm_amount;
+            $token_generated->unsigned_transaction = $unsignedXDR;
+            $token_generated->save();
+
+            // Return the XDR string to the frontend
+            return response()->json([
+                'success' => true,
+                'unsignedXDR' => $unsignedXDR,
+                'issuerPublicKey' => $issuerPublicKey,
+                'issuerSecretkey' => $issuerSecretkey,
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['status' => 'error', 'message' => 'Error while creating issuer wallet']);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => 'Something went wrong']);
+        }
     }
 
     public function generate_token(Request $request)
@@ -62,7 +128,8 @@ class TokenController extends Controller
         $validator = Validator::make($request->all(), [
             'asset_code' => 'required',
             'total_supply' => 'required',
-            'distributor_wallet_key' => 'required'
+            'distributor_wallet_key' => 'required',
+            'issuer_wallet_public_key' => 'required'
         ]);
 
         if ($validator->fails()) {
@@ -76,17 +143,10 @@ class TokenController extends Controller
             // Get input data from the request
             $asset_code = $request->input('asset_code');
             $total_supply = $request->input('total_supply');
-            $distributor_wallet_key = $request->input('distributor_wallet_key'); // Use distributor's secret key (private key)
+            $distributor_wallet_key = $request->input('distributor_wallet_key');
+            $issuerPublicKey = $request->input('issuer_wallet_public_key');
 
-            // Generate a new keypair for the issuer
-            $issuerKeyPair = KeyPair::random();
-            $issuerPublicKey = $issuerKeyPair->getAccountId();
-            $issuerSecretkey = $issuerKeyPair->getSecretSeed();
-
-            // Fund the issuer account on the testnet using Friendbot (for testnet only)
-            file_get_contents("https://friendbot.stellar.org/?addr=" . $issuerPublicKey);
-
-            // Load the distributor account using its private key
+            // Load the distributor account
             $distributorAccount = $this->sdk->requestAccount($distributor_wallet_key);
 
             if (strlen($asset_code) <= 4) {
@@ -108,7 +168,7 @@ class TokenController extends Controller
             $token_generated->total_supply = $total_supply;
             $token_generated->user_wallet_address = $distributor_wallet_key;
             $token_generated->issuerPublicKey = $issuerPublicKey;
-            $token_generated->issuerSecretkey = $issuerSecretkey;
+            $token_generated->issuerSecretkey = $issuerPublicKey;
             $token_generated->unsigned_transaction = $trustlineTransaction->toEnvelopeXdrBase64();
             $token_generated->save();
 
@@ -116,14 +176,14 @@ class TokenController extends Controller
             return response()->json([
                 'unsigned_trustline_transaction' => $trustlineTransaction->toEnvelopeXdrBase64(),
                 'issuerPublicKey' => $issuerPublicKey,
-                'issuerSecretkey' => $issuerSecretkey,
+                'issuerSecretkey' => $issuerPublicKey,
                 'total_supply' => $total_supply,
                 'asset_code' => $asset_code
             ]);
         } catch (\InvalidArgumentException $e) {
-            return response()->json(['status' => 'error', 'msg' => 'Error while generating token']);
+            return response()->json(['status' => 'error', 'message' => 'Error while generating token']);
         } catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'msg' => 'Something went wrong']);
+            return response()->json(['status' => 'error', 'message' => 'Something went wrong']);
         }
     }
 
@@ -238,12 +298,12 @@ class TokenController extends Controller
 
         // If there is not enough XLM, return an error
         if (!$hasEnoughXLM) {
-            return response()->json(['status' => 'error', 'msg' => 'Insufficient XLM balance to create claimable balances'], Response::HTTP_BAD_REQUEST);
+            return response()->json(['status' => 'error', 'message' => 'Insufficient XLM balance to create claimable balances'], Response::HTTP_BAD_REQUEST);
         }
 
         // If there is not enough token balance, return an error
         if (!$hasEnoughTokens) {
-            return response()->json(['status' => 'error', 'msg' => 'Insufficient balance for the specified asset and amount'], Response::HTTP_BAD_REQUEST);
+            return response()->json(['status' => 'error', 'message' => 'Insufficient balance for the specified asset and amount'], Response::HTTP_BAD_REQUEST);
         }
 
         // Create the asset
@@ -326,7 +386,11 @@ class TokenController extends Controller
         $asset_code = $request->token;
         $issuer_wallet_address = $request->holdingTokenIssuerAddress;
         $distributor_wallet_address = $request->distributor_wallet_address;
-        $url = 'https://horizon-testnet.stellar.org/claimable_balances/?asset='
+        // $url = 'https://horizon-testnet.stellar.org/claimable_balances/?asset='
+        //     . $asset_code . '%3A' . $issuer_wallet_address
+        //     . '&claimant=' . $distributor_wallet_address
+        //     . '&limit=200&order=desc';
+        $url = 'https://horizon.stellar.org/claimable_balances/?asset='
             . $asset_code . '%3A' . $issuer_wallet_address
             . '&claimant=' . $distributor_wallet_address
             . '&limit=200&order=desc';

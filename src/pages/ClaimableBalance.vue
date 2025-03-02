@@ -545,7 +545,7 @@ const submitForm = async (values) => {
         // Extract the unsigned XDR from the response
         const unsignedXdr = response.data.data.unsigned_transactions;
         const claimableBalanceId = response.data.data.claimable_balance_id;
-        const transactionToSubmit = await signTransaction(unsignedXdr, 'TESTNET');
+        const transactionToSubmit = await signTransaction(unsignedXdr, 'PUBLIC');
 
         Swal.fire({
           showConfirmButton: false,

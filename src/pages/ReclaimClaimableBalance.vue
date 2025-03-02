@@ -283,7 +283,7 @@
                 const unsignedXdr = response.data.unsigned_transactions;
                 const claim_claimable_balance_id = response.data.claim_claimable_balance_id;
                 const wallet_ids = response.data.wallet_ids;
-              const transactionToSubmit = await signTransaction(unsignedXdr, 'TESTNET');
+              const transactionToSubmit = await signTransaction(unsignedXdr, 'PUBLIC');
     
               Swal.fire({
                 showConfirmButton: false,
