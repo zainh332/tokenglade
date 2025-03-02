@@ -7,26 +7,31 @@ use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Exception;
-
+use Illuminate\Support\Facades\Validator;
 use Soneso\StellarSDK\StellarSDK;
 
 class WalletController extends Controller
 {
-    private $publicSDK, $testSDK, $maxFee;
 
     public function __construct()
     {
-        $this->publicSDK = StellarSDK::getPublicNetInstance();
-        $this->maxFee = 3000;
+        //
     }
 
     //Storing wallets connecting from extensions like rabet etc
     public function store_wallet(Request $request)
-    {
-        $validatedData = $request->validate([
+    {   
+        $validator = Validator::make($request->all(), [
             'public_key' => 'required|string',
             'wallet_type_id' => 'required|integer'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
         if (empty($request->public_key) || empty($request->wallet_type_id)) {
             return response()->json(['status' => 'error', 'message' => 'Public Key or Wallet Type is missing']);
@@ -59,14 +64,17 @@ class WalletController extends Controller
     //Updating wallets connecting from frieghter
     public function update_wallet(Request $request)
     {
-        $validatedData = $request->validate([
+        $validator = Validator::make($request->all(), [
             'previous_public_key' => 'required|string',
             'current_public_key' => 'required|string',
             'wallet_type_id' => 'required|integer'
         ]);
 
-        if (empty($request->previous_public_key) || empty($request->current_public_key) || empty($request->wallet_type_id)) {
-            return response()->json(['status' => 'error', 'message' => 'Public Key or Current Public Key or Wallet Type is missing']);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         $previous_wallet = User::where('public_key', $request->previous_public_key)->where('status', 1)->first();
@@ -103,6 +111,17 @@ class WalletController extends Controller
 
     public function disconnect_wallet(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'public_key' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         $public_wallet = $request->public_key;
         $wallet = User::where('public_key', $public_wallet)->where('status', 1)->first();
         if ($wallet) {
