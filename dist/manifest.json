@@ -41,7 +41,7 @@
     "src": "src/assets/xbull.png"
   },
   "src/main.css": {
-    "file": "assets/main-dfd64fe1.css",
+    "file": "assets/main-6aee2e97.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -53,9 +53,9 @@
       "assets/lights-c425c569.png"
     ],
     "css": [
-      "assets/main-dfd64fe1.css"
+      "assets/main-6aee2e97.css"
     ],
-    "file": "assets/main-373c83c1.js",
+    "file": "assets/main-0b84fec3.js",
     "isEntry": true,
     "src": "src/main.js"
   }
