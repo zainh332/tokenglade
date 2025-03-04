@@ -389,7 +389,7 @@ async function disconnectWallet() {
 
 // Watches wallet connection status and public key changes
 async function watchWalletChanges() {
-    setInterval(async () => {
+    // setInterval(async () => {
         const connected = await isConnected();
         if (connected) {
             const current_public_key = await getPublicKey();
@@ -426,7 +426,7 @@ async function watchWalletChanges() {
                 await wallet_disconnected(previous_public_key);
             }
         }
-    }, 3000); // Check every second
+    // }, 3000); // Check every second
 }
 
 // Watch `isWalletConnected` and trigger `watchWalletChanges` when it becomes true
