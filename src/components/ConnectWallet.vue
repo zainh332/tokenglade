@@ -405,7 +405,7 @@ async function watchWalletChanges() {
                 
                 const response = await axios.post("/api/update_wallet", UserData.value, {
                 headers: {
-                    'X-CSRF-TOKEN': window.Laravel.csrfToken,
+                    'X-CSRF-TOKEN': csrfToken,
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 },
                 });
