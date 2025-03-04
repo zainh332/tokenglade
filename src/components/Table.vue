@@ -27,12 +27,12 @@
             <tbody>
                   <tr v-for="token in people" :key="token.id" class="bg-white divide-gray-200 sm:divide-x">
                     <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap text-t16 sm:pl-6 lg:pl-20">
-                      <a :href="`https://stellar.expert/explorer/testnet/account/${token.user_wallet_address}`" target="_blank" class="text-blue-500 underline">
+                      <a :href="`https://stellar.expert/explorer/public/account/${token.user_wallet_address}`" target="_blank" class="text-blue-500 underline">
                         {{ formatAddress(token.user_wallet_address) }}
                       </a>
                     </td>
                     <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap text-t16 sm:pl-6 lg:pl-20">
-                      <a :href="`https://stellar.expert/explorer/testnet/account/${token.issuerPublicKey}`" target="_blank" class="text-blue-500 underline">
+                      <a :href="`https://stellar.expert/explorer/public/account/${token.issuerPublicKey}`" target="_blank" class="text-blue-500 underline">
                         {{ formatAddress(token.issuerPublicKey) }}
                       </a>
                     </td>
