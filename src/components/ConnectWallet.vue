@@ -402,6 +402,7 @@ async function watchWalletChanges() {
                 UserData.value.current_public_key = current_public_key; // Set the public key in UserData
                 UserData.value.previous_public_key = previous_public_key; // Set the selected wallet type ID in UserData
                 UserData.value.wallet_type_id = wallet_type_id; // freighter only
+                console.log("Sending Token:", localStorage.getItem('token'));
                 const response = await axios.post("/api/update_wallet", UserData.value, {
                 headers: {
                     'X-CSRF-TOKEN': window.Laravel.csrfToken,
@@ -409,6 +410,8 @@ async function watchWalletChanges() {
                 },
                 });
                 if (response.data.status === "success") {
+                    localStorage.setItem('token', response.data.token); // Save the new token
+                    console.log("New Token Stored:", response.data.token);
                     // If both are found, set UserData and mark connection as successful
                     window.location.reload();
                 } 
