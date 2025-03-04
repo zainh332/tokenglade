@@ -402,7 +402,7 @@ async function watchWalletChanges() {
                 UserData.value.current_public_key = current_public_key; // Set the public key in UserData
                 UserData.value.previous_public_key = previous_public_key; // Set the selected wallet type ID in UserData
                 UserData.value.wallet_type_id = wallet_type_id; // freighter only
-                
+                console.log("token",localStorage.getItem('token')); // Should print the token
                 const response = await axios.post("/api/update_wallet", UserData.value, {
                 headers: {
                     'X-CSRF-TOKEN': csrfToken,
