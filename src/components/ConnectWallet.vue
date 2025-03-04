@@ -118,16 +118,8 @@ const UserData = ref({
 })
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-// Add watch for open prop
-watch(() => ConnectWalletModal.open, (newValue) => {
-    if (newValue) {
-        fetch_wallet_types();
-    }
-});
-
 // Fetch available wallets from the server
-async function fetch_wallet_types() {
+async function fetchWallets() {
     try {
         const response = await axios.get('/api/fetch_wallet_types', {
             headers: {
@@ -153,7 +145,7 @@ async function fetch_wallet_types() {
     }
 }
 
-async function select_store_wallet(publicKey, walletTypeId) {
+async function selectWallet(publicKey, walletTypeId) {
     if (publicKey && walletTypeId) {
         
         // Save public key and wallet type in UserData
@@ -223,15 +215,10 @@ async function connectWallet() {
                 if (publicKey) {
                     // Ensure the selected wallet type is set
                     if (selectedWallet.value) {
-                        UserData.value.walletKey = publicKey;
-                        await select_store_wallet(publicKey, selectedWallet.value); // Pass publicKey and wallet type id
+                        // Call selectWallet with both public key and selected wallet type
+                        await selectWallet(publicKey, selectedWallet.value); // Pass publicKey and wallet type id
                         isLoading.value = false;
-                        Swal.fire({
-                            icon: "success",
-                            title: "Wallet Connected!",
-                            text: "Wallet connected successfully.",
-                        });
-                        closeModal();
+                        E('public_key').innerText = publicKey 
                     } else {
                         Swal.fire({
                             icon: "error",
@@ -287,10 +274,17 @@ async function checkConnection() {
     isWalletConnected.value = conn
     if (conn) {
         const publicKey = await getPublicKey();
+        const cookie_public_key = getCookie("public_key"); // Assumes you have a function getCookie(name)
         const walletTypeId = getCookie("wallet_type_id");
-        UserData.value.walletKey = publicKey;
-        UserData.value.public_key = publicKey;
-        UserData.value.wallet_type_id = walletTypeId;
+        // console.log(publicKey, cookie_public_key,walletTypeId )
+
+        //it mean user have updated its wallet from frieghter wallet
+        if(publicKey != cookie_public_key){
+            
+        }
+
+        UserData.value.public_key = publicKey; // Set the public key in UserData
+        UserData.value.wallet_type_id = walletTypeId; // Set the selected wallet type ID in UserData
         
         if (publicKey && walletTypeId) {
             const response = await axios.post("/api/store_wallet",
@@ -312,11 +306,11 @@ async function checkConnection() {
         } else {
             // If either of them is missing, consider the connection incomplete or invalid
             isWalletConnected.value = false;
-            // Swal.fire({
-            //     icon: 'error',
-            //     title: 'Error!',
-            //     text: 'Wallet data missing or incomplete. Please reconnect your wallet.'
-            // });
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Wallet data missing or incomplete. Please reconnect your wallet.'
+            });
         }
     }
 }
@@ -396,12 +390,13 @@ async function disconnectWallet() {
 // Watches wallet connection status and public key changes
 async function watchWalletChanges() {
     setInterval(async () => {
-        const connected = (await isConnected()) && (await isAllowed()) && (localStorage.getItem("wallet_connect") || "false") == "true";
+        const connected = await isConnected();
         if (connected) {
             const current_public_key = await getPublicKey();
             const previous_public_key = getCookie("public_key");
             const wallet_type_id = getCookie("wallet_type_id");
 
+            
             if (previous_public_key !== current_public_key) {
                 
                 UserData.value.current_public_key = current_public_key; // Set the public key in UserData
@@ -430,7 +425,7 @@ async function watchWalletChanges() {
                 // }
             }
             else{
-                // console.log("same wallets connected");
+                console.log("same wallets connected");
             }
         } else {
             // Pass the stored public key to disconnect if no longer connected
@@ -455,6 +450,7 @@ watch(
 
 onMounted(() => {
     checkConnection()
+    fetchWallets()
     const previous_public_key = getCookie("public_key");
     if(previous_public_key)
     {
