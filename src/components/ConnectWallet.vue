@@ -389,14 +389,16 @@ async function disconnectWallet() {
 
 // Watches wallet connection status and public key changes
 async function watchWalletChanges() {
-    // setInterval(async () => {
+    setInterval(async () => {
         const connected = await isConnected();
         if (connected) {
             const current_public_key = await getPublicKey();
             const previous_public_key = getCookie("public_key");
             const wallet_type_id = getCookie("wallet_type_id");
 
-            if (previous_public_key !== current_public_key) {                
+
+            if (previous_public_key !== current_public_key) {
+                
                 UserData.value.current_public_key = current_public_key; // Set the public key in UserData
                 UserData.value.previous_public_key = previous_public_key; // Set the selected wallet type ID in UserData
                 UserData.value.wallet_type_id = wallet_type_id; // freighter only
@@ -412,11 +414,11 @@ async function watchWalletChanges() {
                 } 
                 else {
                     // Handle a failure response from the server (optional)
-                    // Swal.fire({
-                    //     icon: "error",
-                    //     title: "Error!",
-                    //     text: "Failed to connect wallet.",
-                    // });
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error!",
+                        text: "Failed to connect wallet.",
+                    });
                 }
             }
         } else {
@@ -426,7 +428,7 @@ async function watchWalletChanges() {
                 await wallet_disconnected(previous_public_key);
             }
         }
-    // }, 3000); // Check every second
+    }, 3000); // Check every second
 }
 
 // Watch `isWalletConnected` and trigger `watchWalletChanges` when it becomes true
