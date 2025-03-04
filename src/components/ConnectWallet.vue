@@ -444,22 +444,22 @@ async function watchWalletChanges() {
 
 // Watch `isWalletConnected` and trigger `watchWalletChanges` when it becomes true
 watch(
-    isWalletConnected,
-    (newVal) => {
-        if (newVal) {
-            watchWalletChanges();
-        }
-    },
-    { immediate: false } // Only trigger on actual changes, not immediately
+    // isWalletConnected,
+    // (newVal) => {
+    //     if (newVal) {
+    //         watchWalletChanges();
+    //     }
+    // },
+    // { immediate: false } // Only trigger on actual changes, not immediately
 );
 
 onMounted(() => {
     checkConnection()
-    const previous_public_key = getCookie("public_key");
-    if(previous_public_key)
-    {
-        watchWalletChanges(); // Call directly if `previous_public_key` is there
-    }
+    // const previous_public_key = getCookie("public_key");
+    // if(previous_public_key)
+    // {
+    //     watchWalletChanges(); // Call directly if `previous_public_key` is there
+    // }
 })
 
 </script>
