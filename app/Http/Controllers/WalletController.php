@@ -94,14 +94,8 @@ class WalletController extends Controller
             ]
         );
 
-        $existingToken = $wallet->tokens()->latest()->first();
-        if (!$existingToken) {
-            // Generate a new token if none exists
-            $token = $wallet->createToken('tokenglade')->plainTextToken;
-        } else {
-            // Use the existing token
-            $token = $existingToken->plainTextToken;
-        }
+        // Create a new token for the user
+        $token = $wallet->createToken('tokenglade')->plainTextToken;
 
         setcookie('public_key', $request->current_public_key, time() + (86400 * 30), "/");
         setcookie('wallet_type_id', $request->wallet_type_id, time() + (86400 * 30), "/");
