@@ -399,15 +399,9 @@ async function watchWalletChanges() {
         const connected = await isConnected();
         if (connected) {
             const current_public_key = await getPublicKey();
-            let previous_public_key = getCookie("public_key");
+            const previous_public_key = getCookie("public_key");
             const wallet_type_id = getCookie("wallet_type_id");
 
-            if (!previous_public_key) {
-                // If no previous key is found, set the current key as previous
-                previous_public_key = current_public_key;
-                document.cookie = `public_key=${current_public_key}; path=/`; // Store it in cookies
-            }
-            
             if (previous_public_key !== current_public_key) {
                 
                 UserData.value.current_public_key = current_public_key; // Set the public key in UserData
@@ -434,6 +428,9 @@ async function watchWalletChanges() {
                 //         text: "Failed to connect wallet.",
                 //     });
                 // }
+            }
+            else{
+                // console.log("same wallets connected");
             }
         } else {
             // Pass the stored public key to disconnect if no longer connected
