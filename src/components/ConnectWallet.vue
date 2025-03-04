@@ -439,7 +439,7 @@ async function watchWalletChanges() {
                 await wallet_disconnected(previous_public_key);
             }
         }
-    }, 1000); // Check every second
+    }, 7000); // Check every second
 }
 
 // Watch `isWalletConnected` and trigger `watchWalletChanges` when it becomes true
