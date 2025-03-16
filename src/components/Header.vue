@@ -1,5 +1,5 @@
 <template>
-  <Disclosure as="nav" class="bg-white " v-slot="{ signInModal }">
+  <Disclosure as="nav" class="bg-white " v-slot="{ open  }">
     <div class="max-w-6xl px-4 mx-auto sm:px-6 lg:px-8">
       <div class="flex justify-between h-20">
         <div class="flex">
@@ -56,24 +56,19 @@
       </div>
     </div>
 
-    <!-- <DisclosurePanel class="lg:hidden">
+    <DisclosurePanel class="lg:hidden">
       <div class="pt-2 pb-3 space-y-1">
         <router-link v-for="link in Links" :key="link.name" :to="link.to"
           class="block py-2 pl-3 pr-4 text-base font-medium text-gray-500 border-l-4 border-transparent hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700">
           {{ link.name }}
         </router-link>
-
+        <!-- Add Connect Wallet button for mobile -->
+      <button id="walletConnected" @click="OpenWalletModal" type="submit"
+        class="w-full px-4 py-2 mt-2 text-base font-medium text-white rounded-md bg-gradient hover:bg-blue-700">
+        Connect Wallet
+      </button>
       </div>
-      <div class="pt-4 pb-3 border-t border-gray-200">
-
-        <div class="mt-3 space-y-1">
-          <DisclosureButton as="a" href="#"
-            class="block px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800">Sign in
-          </DisclosureButton>
-
-        </div>
-      </div>
-    </DisclosurePanel> -->
+    </DisclosurePanel>
   </Disclosure>
 
   <Modal :open="signInModal" />

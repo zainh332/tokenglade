@@ -7,13 +7,11 @@
       </div>
     </div>
     <div class="">
-      <!-- <div class="relative z-10 flex items-center justify-between max-w-6xl px-4 pt-24 mx-auto sm:pt-44 sm:px-6 lg:px-8"> -->
-      <!-- <div class="relative z-10 flex flex-col items-center justify-center max-w-6xl px-4 pt-8 mx-auto sm:pt-16 md:pt-24 sm:px-6 lg:px-8"> -->
       <div class="responsive-container">
         <div class="shrink-0">
           <div class="">
             <h1
-              class="sm:text-[64px] text-[42px] font-normal sm:text-left text-center sm:leading-lh65">
+              class="text-[32px] sm:text-[64px] font-normal text-center sm:text-left">
               Gateway to Stellar
               <span class="block font-semibold">Solutions</span>
             </h1>
