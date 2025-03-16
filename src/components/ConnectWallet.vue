@@ -270,9 +270,16 @@ function getCookie(name) {
 }
 
 async function checkConnection() {
-    let conn = (await isConnected()) && (await isAllowed()) && (localStorage.getItem("wallet_connect") || "false") == "true";
-    isWalletConnected.value = conn
-    if (conn) {
+    // let conn = (await isConnected()) && (await isAllowed()) && (localStorage.getItem("wallet_connect") || "false") == "true";
+    let isWalletConnectedBefore = localStorage.getItem("wallet_connect") === "true";
+    
+    let conn = isWalletConnectedBefore && (await isConnected()) && (await isAllowed());
+    isWalletConnected.value = conn;
+
+    if (!conn) {
+        console.warn("Wallet not connected or not allowed.");
+        return;
+    }
         const publicKey = await getPublicKey();
         const cookie_public_key = getCookie("public_key"); // Assumes you have a function getCookie(name)
         const walletTypeId = getCookie("wallet_type_id");
@@ -312,7 +319,7 @@ async function checkConnection() {
                 text: 'Wallet data missing or incomplete. Please reconnect your wallet.'
             });
         }
-    }
+    // }
 }
 
 async function wallet_disconnected(public_key) {
