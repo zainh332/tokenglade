@@ -16,10 +16,9 @@ return new class extends Migration
             $table->string('asset_code', 12);
             $table->decimal('total_supply', 20, 7);
             $table->string('user_wallet_address', 60);
-            $table->string('issuerPublicKey', 60);
-            $table->string('issuerSecretkey', 60);
-            $table->string('unsigned_transaction');
-            $table->longText('signed_transaction')->nullable();
+            $table->string('issuerPublicKey', 60)->nullable();
+            $table->string('issuerSecretkey', 60)->nullable();
+            $table->string('current_stellar_transaction_id')->nullable()->index();
             $table->string('memo', 40)->nullable();
             $table->boolean('lock_status')->default(false);
             $table->tinyInteger('status')->default(0);

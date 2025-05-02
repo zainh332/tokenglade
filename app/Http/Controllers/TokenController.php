@@ -6,6 +6,7 @@ use App\Models\ClaimClaimableBalance;
 use App\Models\ClaimClaimableBalanceId;
 use App\Models\ClaimClaimableClaimant;
 use App\Models\StellarToken;
+use App\Models\StellarTransactions;
 use App\Models\UserIssuerWallet;
 use Carbon\Carbon;
 use DateTime;
@@ -33,6 +34,7 @@ use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
 use Soneso\StellarSDK\AbstractTransaction;
@@ -47,7 +49,7 @@ use Soneso\StellarSDK\Xdr\TransactionEnvelope;
 
 class TokenController extends Controller
 {
-    private $sdk, $maxFee, $network;
+    private $sdk, $maxFee, $network, $tkg_issuer_wallet, $token_creation_fee, $funding_wallet, $funding_wallet_key;
 
     public function __construct()
     {
@@ -56,12 +58,20 @@ class TokenController extends Controller
         $this->sdk = StellarSDK::getPublicNetInstance();
         $this->network = Network::public();
         $this->maxFee = 30000;
+        $this->tkg_issuer_wallet = 'GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ';
+        // $this->tkg_issuer_wallet = 'GAZBD52GEZY3IOT4WWNDFHYPJVTTRWZDLEKZXACCS42ZVEICEOCACDYA'; //distributor wallet for testing
+        $this->token_creation_fee = 2; //200 tkg
+        $this->funding_wallet = 'GB4D3ZIEUKMEJQDVUFMWBE5PY2ODVM35JOVW62ESV7UXW3N7DU6F77YM';
+        $this->funding_wallet_key = env('XLM_FUNDING_WALLET_KEY');
     }
 
-    public function generate_issuer_wallet(Request $request)
+    public function user_generate_token_request(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'distributor_wallet_key' => 'required'
+            'distributor_wallet_key' => 'required',
+            'asset_code' => 'required',
+            'total_supply' => 'required',
+            'lock_status' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -71,120 +81,390 @@ class TokenController extends Controller
             ], 422);
         }
         
+        $distributor_wallet_key = $request->input('distributor_wallet_key');
+        $asset_code = $request->input('asset_code');
+        $total_supply = $request->input('total_supply');
+        $memo = $request->input('memo');
+        $lock_status = $request->input('lock_status');
+        $check_tkg_balance = checkTkgBalance($distributor_wallet_key);
+
+        if($check_tkg_balance < $this->token_creation_fee){
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Insufficient balance. You need at least ' . $this->token_creation_fee . ' TKG in your wallet to proceed.',
+            ]);
+        }
+
+        //charge token creation fee
+        $token_creation_charges = $this->tokenCreationFeeTransaction($distributor_wallet_key, $asset_code, $total_supply, $memo, $lock_status);
+        if (!$token_creation_charges) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Insufficient balance. You need at least', $this->token_creation_fee, ' available TKG to proceed.',
+            ], 500);
+        }
+        return response()->json([
+            'status' => 'success',
+            'unsigned_token_creation_fee_transaction' => $token_creation_charges['unsigned_token_creation_fee_transaction'],
+        ], 200);
+    }
+
+    // Private helper method (used internally)
+    private function tokenCreationFeeTransaction($distributor_wallet_key, $asset_code, $total_supply, $memo, $lock_status)
+    {
+        DB::beginTransaction();
+
         try {
-            $distributor_wallet_key = $request->input('distributor_wallet_key');
+            // Load distributor account from Stellar
+            $distributorAccount = $this->sdk->requestAccount($distributor_wallet_key);
+    
+            $asset = new AssetTypeCreditAlphaNum4('TKG', $this->tkg_issuer_wallet);
 
-            $check_xlm_balance = checkXlmBalance($distributor_wallet_key);
-            if($check_xlm_balance < 6){
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Insufficient balance. You need at least 6 XLM to proceed.',
-                ]);
+            // Define the payment operation (from distributor to issuer)
+            $paymentOp = (new PaymentOperationBuilder(
+                // $this->tkg_issuer_wallet,     // destination: issuer
+                'GAZBD52GEZY3IOT4WWNDFHYPJVTTRWZDLEKZXACCS42ZVEICEOCACDYA',     // destination: issuer
+                $asset,                  // asset being sent: TKG
+                strval($this->token_creation_fee) // amount: fee (200)
+            ))
+            ->setSourceAccount($distributor_wallet_key)
+            ->build();
+            
+            // Build the transaction
+            $transaction = (new TransactionBuilder($distributorAccount, $this->network))
+            ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'TokenGlade Testing'))
+            ->addOperation($paymentOp)
+            ->build();
+
+            $token_creation = new StellarToken();
+            $token_creation->asset_code = $asset_code;
+            $token_creation->total_supply = $total_supply;
+            $token_creation->user_wallet_address = $distributor_wallet_key;
+            $token_creation->memo = $memo; 
+            $token_creation->lock_status = $lock_status; 
+            $token_creation->save();
+
+            $generate_issuer_wallet_transaction = new StellarTransactions();
+            $generate_issuer_wallet_transaction->stellar_token_id = $token_creation->id;
+            $generate_issuer_wallet_transaction->user_wallet_address = $distributor_wallet_key;
+            $generate_issuer_wallet_transaction->transaction_type_id = 1; //token creation fee transaction
+            $generate_issuer_wallet_transaction->unsigned_xdr = $transaction->toEnvelopeXdrBase64();
+            $generate_issuer_wallet_transaction->status = false;
+            $generate_issuer_wallet_transaction->save();
+
+            $token_creation->current_stellar_transaction_id = $generate_issuer_wallet_transaction->id;
+            $token_creation->save();
+
+            // Commit the transaction if everything was successful
+            DB::commit();
+
+            // Return unsigned transaction (XDR) to frontend
+            return[
+                'status' => 'success',
+                'unsigned_token_creation_fee_transaction' => $transaction->toEnvelopeXdrBase64()
+            ];
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Could not create token creation fee transaction',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    
+
+    public function submit_transaction(Request $request)
+    {
+        $signedXdr = $request->signedXdr;
+        $payload = $request->payload;
+
+        $distributor_wallet_key = $payload['distributor_wallet_key']; 
+        $type = $request->type;
+        $assetCode = $payload['asset_code'];
+
+        // Convert the XDR string into a Transaction object using fromEnvelopeBase64XdrString
+        $transactionEnvelope = AbstractTransaction::fromEnvelopeBase64XdrString($signedXdr);
+        // Submit the transaction to the Stellar network using the SDK
+        $response = $this->sdk->submitTransaction($transactionEnvelope);
+
+        // Check if the transaction was successful
+        if ($response && $response->isSuccessful()) 
+        {
+            DB::beginTransaction();
+            try
+            {
+                if($type == 1) //tokenCreationFeeTransaction
+                {
+                    $tokenCreation = StellarToken::where('user_wallet_address', $distributor_wallet_key)
+                    ->where('asset_code', $assetCode)
+                    ->whereNotNull('current_stellar_transaction_id')
+                    ->latest()->first();
+
+                    if (!$tokenCreation) {
+                        return response()->json([
+                            'success' => false,
+                            'error' => 'Token creation record not found for this wallet and asset code.',
+                        ], 404);
+                    }
+
+                    $generate_issuer_wallet_transaction = new StellarTransactions();
+                    $generate_issuer_wallet_transaction->stellar_token_id = $tokenCreation->id;
+                    $generate_issuer_wallet_transaction->user_wallet_address = $distributor_wallet_key;
+                    $generate_issuer_wallet_transaction->transaction_type_id = 1;
+                    $generate_issuer_wallet_transaction->signed_xdr = $signedXdr;
+                    $generate_issuer_wallet_transaction->tx_hash = $response->getHash();
+                    $generate_issuer_wallet_transaction->status = true;
+                    $generate_issuer_wallet_transaction->save();
+
+                    // Update the token creation record with the new transaction ID
+                    $tokenCreation->current_stellar_transaction_id = $generate_issuer_wallet_transaction->id;
+                    $tokenCreation->save();
+
+                    $generate_issuer_wallet = $this->generateIssuerWalletFromKey($distributor_wallet_key, $tokenCreation->current_stellar_transaction_id);
+        
+                    if (!$generate_issuer_wallet) {
+                        DB::rollBack();
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Issuer wallet generation failed.'
+                        ], 500);
+                    }
+
+                    $issuer_wallet_distributor_wallet_trustline_transaction = $this->issuer_wallet_distributor_wallet_trustline_transaction($distributor_wallet_key, $generate_issuer_wallet->current_stellar_transaction_id);
+                    if (!$issuer_wallet_distributor_wallet_trustline_transaction) {
+                        DB::rollBack();
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Trustline Transaction failed'
+                        ], 500);
+                    }
+                    
+                    DB::commit();
+                    return response()->json([
+                        'status' => 'success',
+                        'unsigned_trustline_transaction' => $issuer_wallet_distributor_wallet_trustline_transaction['unsigned_trustline_transaction'],
+                    ], 200);
+                }
+            
+                else if($type == 3) //Issuer Wallet Distributor Wallet Trustline transaction
+                {
+                    $token_created = StellarToken::where('user_wallet_address', $distributor_wallet_key)
+                    ->where('asset_code', $assetCode)
+                    ->whereNotNull('current_stellar_transaction_id')
+                    ->whereNotNull('issuerPublicKey')
+                    ->whereNotNull('issuerSecretkey')
+                    ->where('status', 1)
+                    ->latest()
+                    ->first();
+
+                    if (!$token_created) {
+                        return response()->json([
+                            'success' => false,
+                            'error' => 'Token creation record not found for this wallet and asset code.',
+                        ], 404);
+                    }
+
+                    $generate_issuer_wallet_transaction = new StellarTransactions();
+                    $generate_issuer_wallet_transaction->stellar_token_id = $token_created->id;
+                    $generate_issuer_wallet_transaction->user_wallet_address = $distributor_wallet_key;
+                    $generate_issuer_wallet_transaction->transaction_type_id = 3;
+                    $generate_issuer_wallet_transaction->signed_xdr = $signedXdr;
+                    $generate_issuer_wallet_transaction->tx_hash = $response->getHash();
+                    $generate_issuer_wallet_transaction->status = true;
+                    $generate_issuer_wallet_transaction->save();
+
+                    // Update the token creation record with the new transaction ID
+                    $token_created->current_stellar_transaction_id = $generate_issuer_wallet_transaction->id;
+                    $token_created->save();
+                    
+                    $generate_token = $this->token_transfer($distributor_wallet_key, $assetCode, $token_created->issuerPublicKey, $token_created->issuerSecretKey, $token_created->total_supply);
+                    if (!$generate_token) {
+                        DB::rollBack();
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Token generation failed.'
+                        ], 500);
+                    }
+
+                    DB::commit();
+                    return response()->json([
+                        'status' => 'success',
+                        'assetCode' => $assetCode,
+                        'issuerPublicKey' => $token_created->issuerPublicKey,
+                        'issuerSecretKey' => $token_created->issuerSecretKey
+                    ]);
+                }
+                else {
+                    return response()->json([
+                        'success' => 'error',
+                        'message' => 'Transaction type not found',
+                    ], 404);
+                }
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return false;
             }
-            $xlm_amount = 3;
+        }
+        else 
+        {
+            return response()->json([
+                'success' => false,
+                'error' => 'Transaction failed',
+                'result_codes' => $response?->getExtras()?->getResultCodes() ?? 'Unknown error',
+                'details' => $response?->getExtras()?->getResultXdr() ?? 'No details available'
+            ], 400);
+        }
+    }
+        
+    private function generateIssuerWalletFromKey($distributor_wallet_key, $current_stellar_transaction_id)
+    {
+        DB::beginTransaction();
+        try {
+            $xlm_amount = 2;
+            $funding_wallet_key = KeyPair::fromSeed($this->funding_wallet_key);
 
-            // Generate a new keypair for the issuer
             $issuerKeyPair = KeyPair::random();
             $issuerPublicKey = $issuerKeyPair->getAccountId();
             $issuerSecretkey = $issuerKeyPair->getSecretSeed();
 
-            $distributorAccount = $this->sdk->requestAccount($distributor_wallet_key);
+            $fundingAccount = $this->sdk->requestAccount($this->funding_wallet);
 
-            // Step 1: Create & Fund the Issuer Wallet
+            // Create & Fund the Issuer Wallet from Funding wallet
             $createAccountOp = (new CreateAccountOperationBuilder($issuerPublicKey, strval($xlm_amount)))->build();
 
             // Build & Sign the Transaction
-            $transaction = (new TransactionBuilder($distributorAccount, $this->network))
-            ->addOperation($createAccountOp)
-            ->build();
+            $transaction = (new TransactionBuilder($fundingAccount, $this->network))
+                ->addOperation($createAccountOp)
+                ->build();
 
-            // Convert transaction to XDR format
-            $unsignedXDR = $transaction->toEnvelopeXdrBase64();
+            $transaction->sign($funding_wallet_key, $this->network);
 
-            $token_generated = new UserIssuerWallet();
-            $token_generated->user_wallet_address = $distributor_wallet_key;
-            $token_generated->issuer_public_key = $issuerPublicKey;
-            $token_generated->issuer_secret_key = $issuerSecretkey;
-            $token_generated->xlm_amount = $xlm_amount;
-            $token_generated->unsigned_transaction = $unsignedXDR;
-            $token_generated->save();
+            // Submit the transaction to the Stellar network
+            $response = $this->sdk->submitTransaction($transaction);
 
-            // Return the XDR string to the frontend
-            return response()->json([
-                'success' => true,
-                'unsignedXDR' => $unsignedXDR,
-                'issuerPublicKey' => $issuerPublicKey,
-                'issuerSecretkey' => $issuerSecretkey,
-            ]);
-        } catch (\InvalidArgumentException $e) {
-            return response()->json(['status' => 'error', 'message' => 'Error while creating issuer wallet']);
+            if (isset($response->hash)) 
+            {
+
+                $token_creation = StellarToken::where('user_wallet_address', $distributor_wallet_key)
+                ->where('current_stellar_transaction_id', $current_stellar_transaction_id)
+                ->whereNull('issuerPublicKey')
+                ->whereNull('issuerSecretkey')
+                ->latest()
+                ->first();
+
+                if (!$token_creation) {
+                    DB::rollBack();
+                    return false;
+                }
+
+                $generate_issuer_wallet_transaction = new StellarTransactions();
+                $generate_issuer_wallet_transaction->stellar_token_id = $token_creation->id;
+                $generate_issuer_wallet_transaction->distributor_wallet_key = $distributor_wallet_key;
+                $generate_issuer_wallet_transaction->transaction_type_id = 2; //Generate Issuer Wallet transaction
+                $generate_issuer_wallet_transaction->signed_xdr = $transaction->toEnvelopeXdrBase64();
+                $generate_issuer_wallet_transaction->status = true;
+                $generate_issuer_wallet_transaction->save();
+
+                $token_creation->current_stellar_transaction_id = $generate_issuer_wallet_transaction->id;
+                $token_creation->issuerPublicKey = $issuerPublicKey;
+                $token_creation->issuerSecretkey = $issuerSecretkey;
+                $token_creation->status = 1;
+                $token_creation->save();
+
+                DB::commit();
+                return $token_creation->current_stellar_transaction_id;
+            }
+            else{
+                DB::rollBack();
+                return false;
+            }
         } catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'message' => 'Something went wrong']);
+            DB::rollBack();
+            Log::error('Issuer wallet generation failed: ' . $e->getMessage());
+            return false;
         }
     }
 
-    public function generate_token(Request $request)
+    private function issuer_wallet_distributor_wallet_trustline_transaction($distributor_wallet_key, $current_stellar_transaction_id)
     {
-        $validator = Validator::make($request->all(), [
-            'asset_code' => 'required',
-            'total_supply' => 'required',
-            'distributor_wallet_key' => 'required',
-            'issuer_wallet_public_key' => 'required'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        try {
-            // Get input data from the request
-            $asset_code = $request->input('asset_code');
-            $total_supply = $request->input('total_supply');
-            $distributor_wallet_key = $request->input('distributor_wallet_key');
-            $issuerPublicKey = $request->input('issuer_wallet_public_key');
-
+        DB::beginTransaction();
+        try{
             // Load the distributor account
             $distributorAccount = $this->sdk->requestAccount($distributor_wallet_key);
-
-            if (strlen($asset_code) <= 4) {
-                $asset = new AssetTypeCreditAlphaNum4($asset_code, $issuerPublicKey);
-            } else {
-                $asset = new AssetTypeCreditAlphanum12($asset_code, $issuerPublicKey);
-            }
-
+    
+            $token_created = StellarToken::where('user_wallet_address', $distributor_wallet_key)
+            ->where('current_stellar_transaction_id', $current_stellar_transaction_id)
+            ->where('status', 1)
+            ->latest()
+            ->first();
+    
+            $asset_code = $token_created->asset_code;
+            $issuerPublicKey = $token_created->issuerPublicKey;
+            $asset = (strlen($asset_code) <= 4) ? new AssetTypeCreditAlphaNum4($asset_code, $issuerPublicKey) : new AssetTypeCreditAlphanum12($asset_code, $issuerPublicKey);
+    
             // Create a trustline between distributor and the asset
             $trustlineOperation = (new ChangeTrustOperationBuilder($asset))->build();
-
+    
             // Build the trustline transaction
             $trustlineTransaction = (new TransactionBuilder($distributorAccount, $this->network))
-                ->addOperation($trustlineOperation)
-                ->build();
+           ->addOperation($trustlineOperation)
+           ->build();
+    
+           $trustline_transaction = new StellarTransactions();
+           $trustline_transaction->stellar_token_id = $token_created->id;
+           $trustline_transaction->distributor_wallet_key = $distributor_wallet_key;
+           $trustline_transaction->transaction_type_id = 3; //Issuer Wallet Distributor Wallet Trustline
+           $trustline_transaction->unsigned_xdr = $trustlineTransaction->toEnvelopeXdrBase64();
+           $trustline_transaction->status = false;
+           $trustline_transaction->save();
+    
+           $token_created->current_stellar_transaction_id = $trustline_transaction->id;
+           $token_created->save();
+    
+           DB::commit();
 
-            $token_generated = new StellarToken();
-            $token_generated->asset_code = $asset_code;
-            $token_generated->total_supply = $total_supply;
-            $token_generated->user_wallet_address = $distributor_wallet_key;
-            $token_generated->issuerPublicKey = $issuerPublicKey;
-            $token_generated->issuerSecretkey = $issuerPublicKey;
-            $token_generated->unsigned_transaction = $trustlineTransaction->toEnvelopeXdrBase64();
-            $token_generated->save();
-
-            // Return the XDR string to the frontend
-            return response()->json([
-                'unsigned_trustline_transaction' => $trustlineTransaction->toEnvelopeXdrBase64(),
-                'issuerPublicKey' => $issuerPublicKey,
-                'issuerSecretkey' => $issuerPublicKey,
-                'total_supply' => $total_supply,
-                'asset_code' => $asset_code
-            ]);
-        } catch (\InvalidArgumentException $e) {
-            return response()->json(['status' => 'error', 'message' => 'Error while generating token']);
-        } catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'message' => 'Something went wrong']);
+           return[
+                'status' => 'success',
+                'unsigned_trustline_transaction' => $trustlineTransaction->toEnvelopeXdrBase64()
+            ];
         }
+
+        catch(\Exception $e){
+            DB::rollback();
+            return false;
+        }
+    }
+
+    private function token_transfer($distributor_wallet_key, $asset_code, $issuerPublicKey, $issuerSecretKey, $total_supply)
+    {
+        //  $issuerKeyPair = KeyPair::fromSeed($issuerSecretKey);
+        //  $issuerAccountId = $issuerKeyPair->getAccountId();
+         $issuerAccount = $this->sdk->requestAccount($issuerPublicKey);
+         
+         if (strlen($asset_code) <= 4) {
+             $asset = new AssetTypeCreditAlphaNum4($asset_code, $issuerPublicKey);
+         } else {
+             $asset = new AssetTypeCreditAlphanum12($asset_code, $issuerPublicKey);
+         }
+
+        // Send the total supply from issuer to distributor
+        $paymentOperation = (new PaymentOperationBuilder($distributor_wallet_key, $asset, $total_supply))->build();
+
+        // Build the payment transaction
+        $paymentTransaction = (new TransactionBuilder($issuerAccount))
+            ->addOperation($paymentOperation)
+            ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Token created by TokenGlade'))
+            ->build();
+
+        // Sign the payment transaction
+        $paymentTransaction->sign($issuerSecretKey, $this->network);
+
+        // Submit the payment transaction
+        $response = $this->sdk->submitTransaction($paymentTransaction);
+        return $response ? true : false;
     }
 
     public function claimable_balance(Request $request)
