@@ -15,8 +15,7 @@ class StellarToken extends Model
         'user_wallet_address', 
         'issuerPublicKey', 
         'issuerSecretkey',
-        'unsigned_transaction',
-        'signed_transaction',
+        'current_stellar_transaction_id',
         'memo', 
         'lock_status',
         'status'

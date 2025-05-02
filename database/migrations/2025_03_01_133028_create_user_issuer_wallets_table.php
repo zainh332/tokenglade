@@ -17,8 +17,7 @@ return new class extends Migration
             $table->string('issuer_public_key', 60);
             $table->string('issuer_secret_key', 60);
             $table->double('xlm_amount', 20, 7);
-            $table->string('unsigned_transaction');
-            $table->longText('signed_transaction')->nullable();
+            $table->longText('signed_transaction');
             $table->string('memo', 40)->nullable();
             $table->tinyInteger('status')->default(0);
             $table->timestamps();
