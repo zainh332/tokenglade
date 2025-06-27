@@ -251,18 +251,13 @@ const submitForm = async (form_details) => {
       },
     });
     
-    // console.log(generateResponse.data);
-    
     if(generateResponse.data.status == 'success'){
-      // console.log(generateResponse.data);
       // Extract the unsigned transaction (XDR) and other variables from the response
       const unsignedXdr = generateResponse.data.unsigned_token_creation_fee_transaction;
-      // console.log(unsignedXdr);
       
       //Use Freighter to sign the transaction
       const signedXdr = await signTransaction(unsignedXdr, 'PUBLIC');
-      // console.log(signedXdr, distributorPublicKey);
-      
+
       
       //Submit the signed transaction to the backend for submission to Stellar
       const submitResponse1 = await axios.post('api/submit_transaction',{
@@ -287,9 +282,11 @@ const submitForm = async (form_details) => {
         //Submit the signed transaction to the backend for submission to Stellar
         const submitResponse2 = await axios.post('api/submit_transaction', {
           signedXdr,
-          distributorPublicKey, 
           type: 3, 
-          assetCode: form_details.asset_code 
+          payload: {
+            distributor_wallet_key: distributor_wallet_key,
+            asset_code: form_details.asset_code
+          }
         }, 
         {
           headers: {

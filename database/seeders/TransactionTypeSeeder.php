@@ -20,6 +20,7 @@ class TransactionTypeSeeder extends Seeder
                 'name' => 'Token Creation Fee',
                 'name' => 'Generate Issuer Wallet',
                 'name' => 'Issuer Wallet Distributor Wallet Trustline',
+                'name' => 'Created Token Transfer',
             ],
         ];
 
