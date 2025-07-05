@@ -1,6 +1,6 @@
 <template>
   <div class="table-wrapper">
-    <div class="relative z-50">
+    <div class="relative">
       
       <div class="max-w-6xl px-4 pt-8 pb-8 mx-auto mt-8 bg-white sm:px-6 sm:mt-16 lg:px-8 rounded-3xl sm:drop-shadow">
         <div class="sm:flex sm:items-center">
