@@ -7,7 +7,7 @@
           <div class="sm:flex-auto">
             <div class="w-32 h-1 px-8 mx-auto rounded-full bg-gradient"></div>
             <h1 class="mt-4 font-semibold leading-relaxed text-center text-black text-t24 sm:leading-lh65">
-            Latest Stellar Tokens Generated with TokenGlade
+            Latest Tokens Generated with TokenGlade
             </h1>
           </div>
      
@@ -22,19 +22,19 @@
                       <th scope="col" class="pb-3.5 pl-4 text-left pr-4 text-[20px] font-semibold text-gray-900 sm:pl-6 lg:pl-20 ">Distributor Address</th>
                       <th scope="col" class="pb-3.5 pl-4 text-left pr-4 text-[20px] font-semibold text-gray-900 sm:pl-6 lg:pl-20 ">Issuer Address</th>
                       <th scope="col" class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900">Symbol</th>
-                      <th scope="col" class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900">Total Supply</th>
+                      <th scope="col" class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900">Blockchain</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="token in people" :key="token.id" class="bg-white divide-gray-200 sm:divide-x">
+                    <tr v-for="token in users" :key="token.id" class="bg-white divide-gray-200 sm:divide-x">
                       <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap text-t16 sm:pl-6 lg:pl-20">
                         <a :href="`https://stellar.expert/explorer/public/account/${token.user_wallet_address}`" target="_blank" class="text-blue-500 underline">
                           {{ formatAddress(token.user_wallet_address) }}
                         </a>
                       </td>
                       <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap text-t16 sm:pl-6 lg:pl-20">
-                        <a :href="`https://stellar.expert/explorer/public/account/${token.issuerPublicKey}`" target="_blank" class="text-blue-500 underline">
-                          {{ formatAddress(token.issuerPublicKey) }}
+                        <a :href="`https://stellar.expert/explorer/public/account/${token.issuer_public_key}`" target="_blank" class="text-blue-500 underline">
+                          {{ formatAddress(token.issuer_public_key) }}
                         </a>
                       </td>
                       <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap sm:pl-6 lg:pl-20 text-t16">{{ token.asset_code }}</td>
@@ -52,16 +52,16 @@
 </template>
 
 <script setup>
-import flower from '@/assets/flower.png'
 import axios from 'axios'
 import { ref, computed, defineProps, onMounted, watch } from "vue";
 import Swal from 'sweetalert2';
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-const people = ref([]);
+const users = ref([]);
 
 function formatAddress(address) {
+    if (!address || typeof address !== 'string') return '—';
     if (address.length > 9) {
         return `${address.slice(0, 3)}...${address.slice(6, 9)}..${address.slice(-3)}`;
     }
@@ -75,8 +75,9 @@ async function fetchWallets() {
                 'X-CSRF-TOKEN': csrfToken
             }
         });
+        
         if (response.data.status === "success") {
-          people.value = response.data.tokens;
+          users.value = response.data.tokens;
         } else {
             Swal.fire({
                 icon: "error",

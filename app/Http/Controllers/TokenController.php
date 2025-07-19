@@ -247,7 +247,7 @@ class TokenController extends Controller
                     'assetCode' => $assetCode,
                     'issuerPublicKey' => $token_created->issuer_public_key,
                     'issuerSecretKey' => $token_created->issuer_secret_key
-                ]);
+                ], 200);
             } else {
                 return response()->json([
                     'success' => 'error',

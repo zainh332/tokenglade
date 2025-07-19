@@ -12,8 +12,7 @@
     >
       <router-link class="font-normal text-t14" to="/">Home</router-link>
       <router-link class="font-normal text-t14" to="/about-us">About us</router-link>
-      <router-link class="font-normal text-t14" to="/token-generator">Dashboard</router-link
-      >
+      <!-- <router-link class="font-normal text-t14" to="/token-generator">Dashboard</router-link> -->
       <!-- <router-link class="font-normal text-t14" to="#"
         >Dashboard</router-link
       > -->

@@ -37,14 +37,18 @@
                                         <div id='connectWalletModal' class="modal-body mx-10" v-if="!isWalletConnected">
                                             <h1 class="mb-5">Connect Your Wallet</h1>
                                             <div class="mb-3">
-                                                <label for="selectedWallet"
+                                                <label for="selectedBlockchain"
                                                     class="block text-sm font-medium text-black-700 mb-1">
                                                     Select Blockchain
                                                 </label>
-                                                <select id="selectedWallet" name="selectedWallet"
-                                                    v-model="selectedWallet"
+                                                <select id="selectedBlockchain" name="selectedBlockchain"
+                                                    v-model="selectedBlockchain"
                                                     class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                                                    <option value="" disabled selected>Choose a Blockchain</option>
+                                                    <option value="" disabled selected>Choose a blockchain</option>
+                                                    <option v-for="blockchain in blockchainOptions" :key="blockchain.key"
+                                                        :value="blockchain.id">
+                                                        {{ blockchain.name }}
+                                                    </option>
                                                 </select>
                                             </div>
                                             <div class="mb-3">
@@ -111,7 +115,9 @@ import { E } from "../utils/utils.js";
 const ConnectWalletModal = defineProps({ open: Boolean });
 const modalId = "ConnectWallet";
 const walletOptions = ref([]);
+const blockchainOptions = ref([]);
 const selectedWallet = ref("");
+const selectedBlockchain = ref("");
 const isLoading = ref(false);
 const isWalletConnected = ref(false);
 
@@ -129,7 +135,34 @@ const UserData = ref({
 })
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-// Fetch available wallets from the server
+
+// Fetch available blockchains from the server
+async function fetchblockchains() {
+    try {
+        const response = await axios.get('/api/fetch_blockchains', {
+            headers: {
+                'X-CSRF-TOKEN': csrfToken
+            }
+        });
+        
+        if (response.data.status === "success") {
+            blockchainOptions.value = response.data.blockchains;
+        } else {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: response.data.message || "An unexpected error occurred.",
+            });
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: error.response?.data?.message || "Failed to fetch blockchains. Please try again later.",
+        });
+    }
+}
 async function fetchWallets() {
     try {
         const response = await axios.get('/api/fetch_wallet_types', {
@@ -156,12 +189,13 @@ async function fetchWallets() {
     }
 }
 
-async function selectWallet(publicKey, walletTypeId) {
-    if (publicKey && walletTypeId) {
+async function selectWallet(publicKey, walletTypeId, blockchainTypeId) {
+    if (publicKey && walletTypeId, blockchainTypeId) {
 
         // Save public key and wallet type in UserData
         UserData.value.public_key = publicKey;  // Set the public key in UserData
         UserData.value.wallet_type_id = walletTypeId;  // Set the selected wallet type ID in UserData
+        UserData.value.blockchain_id = blockchainTypeId;  // Set the blockchain ID in UserData
 
         try {
             const response = await axios.post('/api/store_wallet', UserData.value, {
@@ -225,9 +259,8 @@ async function connectWallet() {
                 const publicKey = await getPublicKey();
                 if (publicKey) {
                     // Ensure the selected wallet type is set
-                    if (selectedWallet.value) {
-                        // Call selectWallet with both public key and selected wallet type
-                        await selectWallet(publicKey, selectedWallet.value); // Pass publicKey and wallet type id
+                    if (selectedWallet.value && selectedBlockchain.value) {
+                        await selectWallet(publicKey, selectedWallet.value, selectedBlockchain.value); // Pass publicKey and wallet type id
                         isLoading.value = false;
                         E('public_key').innerText = publicKey
                     } else {
@@ -294,7 +327,7 @@ async function checkConnection() {
     const publicKey = await getPublicKey();
     const cookie_public_key = getCookie("public_key"); // Assumes you have a function getCookie(name)
     const walletTypeId = getCookie("wallet_type_id");
-    // console.log(publicKey, cookie_public_key,walletTypeId )
+    const blockchainId = getCookie("blockchain_id");
 
     //it mean user have updated its wallet from frieghter wallet
     if (publicKey != cookie_public_key) {
@@ -303,14 +336,16 @@ async function checkConnection() {
 
     UserData.value.public_key = publicKey; // Set the public key in UserData
     UserData.value.wallet_type_id = walletTypeId; // Set the selected wallet type ID in UserData
+    UserData.value.blockchain_id = blockchainId; // Set the selected wallet type ID in UserData
 
-    if (publicKey && walletTypeId) {
+    if (publicKey && walletTypeId && blockchainId) {
         const response = await axios.post("/api/store_wallet",
             UserData.value);
         if (response.data.status === "success") {
             // If both are found, set UserData and mark connection as successful
             UserData.value.walletKey = publicKey;
             UserData.value.wallet_type_id = walletTypeId;
+            UserData.value.blockchain_id = blockchainId;
             speak("connected", true); // Call speak function with the connected status
         } else {
             // Handle a failure response from the server (optional)
@@ -351,6 +386,7 @@ async function wallet_disconnected(public_key) {
             document.cookie = "public_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             document.cookie = "wallet_type_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "blockchain_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             window.location.reload();
         } else {
             Swal.fire({
@@ -387,6 +423,7 @@ async function disconnectWallet() {
             document.cookie = "public_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             document.cookie = "wallet_type_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "blockchain_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             window.location.reload();
         } else {
             Swal.fire({
@@ -413,6 +450,7 @@ async function watchWalletChanges() {
             const current_public_key = await getPublicKey();
             const previous_public_key = getCookie("public_key");
             const wallet_type_id = getCookie("wallet_type_id");
+            const blockchain_id = getCookie("blockchain_id");
 
 
             if (previous_public_key !== current_public_key) {
@@ -420,7 +458,7 @@ async function watchWalletChanges() {
                 UserData.value.current_public_key = current_public_key; // Set the public key in UserData
                 UserData.value.previous_public_key = previous_public_key; // Set the selected wallet type ID in UserData
                 UserData.value.wallet_type_id = wallet_type_id; // freighter only
-                // console.log("Sending Token:", localStorage.getItem('token'));
+                UserData.value.blockchain_id = blockchain_id;
                 const response = await axios.post("/api/update_wallet", UserData.value, {
                     headers: {
                         'X-CSRF-TOKEN': window.Laravel.csrfToken,
@@ -466,6 +504,7 @@ watch(
 onMounted(() => {
     checkConnection()
     fetchWallets()
+    fetchblockchains()
     const previous_public_key = getCookie("public_key");
     if (previous_public_key) {
         watchWalletChanges(); // Call directly if `previous_public_key` is there

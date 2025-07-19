@@ -21,6 +21,7 @@ class WalletTypeSeeder extends Seeder
                 'name' => 'Frighter',
                 'key' => 'frighter',
                 'status' => 1,
+                'blockchain_id' => 1,
             ],
         ];
 

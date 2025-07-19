@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Header />
+    <Header @wallet-status="handleWalletStatus" />
     <div>
       <div class="container mx-auto py-10">
         <div class="flex flex-col lg:flex-row items-center justify-between gap-12">
@@ -14,10 +14,14 @@
               Easily generate blockchain tokens across multiple networks with our intuitive platform.
             </p>
             <div class="py-5">
-              <button @click="openTokenModal" type="button"
+              <!-- <button @click="openTokenModal" type="button" id="mintToken"
                 class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
                 Mint Token
-              </button>
+              </button> -->
+              <button @click="openTokenModal" type="button" id="mintToken"
+              class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
+              {{ isWalletConnected ? 'Mint Token' : 'Connect Wallet to Mint' }}
+            </button>
             </div>
           </div>
 
@@ -31,7 +35,7 @@
 
       <Table />
 
-      <div
+      <!-- <div
         class="grid max-w-6xl grid-cols-1 gap-12 px-4 py-10 mx-auto cards md:grid-cols-2 lg:grid-cols-3 sm:pt-24 sm:px-6 lg:px-8">
         <div
           class="drop-shadow bg-white hover:bg-purple-600 cursor-pointer group transition-all group duration-200 card-gradient h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
@@ -54,7 +58,7 @@
             Claimable Balance to other wallets with TokenGlade
           </p>
         </div>
-      </div>
+      </div> -->
 
       <div class="py-10 my-10 bg-white text-center">
         <h2 class="text-3xl font-bold mb-10">How It works</h2>
@@ -66,9 +70,7 @@
             </div>
             <h3 class="text-xl font-semibold mb-2">Choose Your Blockchain</h3>
             <p class="text-dark text-sm">
-              Select from supported blockchains like Stellar dive,<br />
-              or <span class="text-blue-500">Ripptle</span> (coming soon)<br />
-              No registration needed.
+              Currently, TokenGlade supports the Stellar blockchain. More chains coming soon.
             </p>
           </div>
 
@@ -79,8 +81,8 @@
             </div>
             <h3 class="text-xl font-semibold mb-2">Connect Your Wallet</h3>
             <p class="text-dark text-sm">
-              TokenGlace will auto-suggest the right wallet (e.g. Freighter for Stellar).<br />
-              Securely.
+              TokenGlade will automatically suggest the right wallet<br />
+              based on the blockchain you select (e.g., Freighter for Stellar).
             </p>
           </div>
 
@@ -91,8 +93,9 @@
             </div>
             <h3 class="text-xl font-semibold mb-2">Mint Your Token</h3>
             <p class="text-dark text-sm">
-              Your token is live on-chain instantly –<br />
-              viewable on Stellar Expert or similar explorers.
+              Enter your token details and click “Create”.<br />
+              Your token goes live instantly on Stellar.<br />
+              Other blockchains coming soon!
             </p>
           </div>
         </div>
@@ -105,9 +108,9 @@
             <h1 class="mt-2 font-semibold leading-relaxed text-center text-black text-t34 sm:leading-lh65">
               Frequent questions
             </h1>
-            <p class="text-center text-t16">
+            <!-- <p class="text-center text-t16">
               It is a long established fact that a reader will be distracted
-            </p>
+            </p> -->
           </div>
         </div>
         <Faq />
@@ -134,6 +137,14 @@ import Wallet from "@/assets/wallet.jpg";
 import axios from 'axios'
 import { ref, computed, defineProps, onMounted, watch } from "vue";
 import Swal from 'sweetalert2';
+
+const isWalletConnected = ref(false);
+const walletKey = ref('');
+
+function handleWalletStatus(event) {
+  isWalletConnected.value = event.connected;
+  walletKey.value = event.walletKey || '';
+}
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 

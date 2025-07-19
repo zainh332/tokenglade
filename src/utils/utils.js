@@ -92,31 +92,7 @@ export const fDate = (dateString) => {
     // Return date in "yyyy-MM-dd" format
     return year + '-' + month + '-' + day;
 }
-//image selector
-// export const selectImage = (callback) => {
-//     const img = document.createElement('input')
-//     img.type = 'file'
-//     img.accept = 'image/*';
-//     img.style.display = 'none'
-//     img.addEventListener('change', function(event) {  
-//         const file = event.target.files[0];
-//         const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-//         if(file != null) {
-//             if (file && file.size > maxSize) {
-//                 callback(MAX_SIZE_EXCEEDED)
-//                 img.value = ''; // Clear the file input
-//             }
-//             else {
-//                 callback(file)
-//             }
-//         }
-//         else {
-//             callback("")
-//         }
-//     });
-//     document.body.appendChild(img)
-//     return img;
-// }
+
 //to add auth credentials
 export const authLogin = (formData) => {
     formData.append('token', getCookie('USER'));

@@ -32,7 +32,7 @@ const faqs = [
   {
     question: "What is TokenGlade, and what does it offer?",
     answer:
-      "TokenGlade is a platform designed to empower individuals and organizations to create, manage, and interact with tokens on the Stellar blockchain. It streamlines the token creation process, offers simplified claimable balance management, and enhances the usability of Stellar operations.",
+      "TokenGlade is a no-code blockchain platform that allows anyone to create and manage custom tokens on the Stellar blockchain—without writing a single line of code. It simplifies token generation, claimable balances, and other blockchain operations, with support for additional blockchains like Ripple and Ethereum coming soon.",
   },
   {
     question: " Is TokenGlade secure to use?",
@@ -40,24 +40,14 @@ const faqs = [
       "Yes, TokenGlade places a strong emphasis on security. We have integrated external wallet extensions like Frighter to allow users to securely connect their issuer and distributor wallets without exposing private keys. Your assets and information are safeguarded throughout your token-related activities.",
   },
   {
-    question: "How does TokenGlade simplify claimable balances?",
-    answer:
-      "TokenGlade simplifies claimable balances by providing a user-friendly interface. Users can easily input recipient multiple wallet addresses, the number of tokens to distribute, and optional memos. The platform takes care of the rest, ensuring accurate and secure asset distribution.",
-  },
-  {
     question: "What benefits does TokenGlade offer for token creators?",
     answer:
-      "Token creators benefit from TokenGlade's efficient token creation process. It allows them to define asset codes, specify total supplies, and review token parameters effortlessly. Additionally, TokenGlade generates TOML files to enhance token credibility and visibility.",
+      "Token creators benefit from TokenGlade's efficient token creation process. It allows them to define asset codes, specify total supplies, and review token parameters effortlessly.",
   },
   {
-    question: "How does TokenGlade contribute to the Stellar blockchain ecosystem?",
+    question: "How can I verify my generated token?",
     answer:
-      "TokenGlade significantly contributes to the Stellar blockchain ecosystem by making Stellar's features more user-friendly and accessible. Our platform simplifies processes such as token creation, claimable balance management, and etc. By enhancing usability, TokenGlade promotes broader adoption of Stellar's capabilities and empowers both individuals and organizations to engage with blockchain technology more effectively.",
-  },
-  {
-    question: "How can I verify my generated token, for instance on the Stellar network?",
-    answer:
-      "You can verify the generated token by checking your distributor's wallet, where the generated tokens will be available. Additionally, if you're using the Stellar network, you can also use the relevant Stellar tools to verify and track your generated tokens.",
+      "You can verify the generated token by checking your distributor's wallet, where the generated tokens will be available. For instance, if you're using the Stellar network, you can also use the relevant Stellar tools to verify and track your generated tokens.",
   },
 ];
 

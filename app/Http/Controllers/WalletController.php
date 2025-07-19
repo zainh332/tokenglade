@@ -23,7 +23,8 @@ class WalletController extends Controller
     {   
         $validator = Validator::make($request->all(), [
             'public_key' => 'required|string',
-            'wallet_type_id' => 'required|integer'
+            'wallet_type_id' => 'required|integer',
+            'blockchain_id' => 'required|integer'
         ]);
 
         if ($validator->fails()) {
@@ -33,8 +34,8 @@ class WalletController extends Controller
             ], 422);
         }
 
-        if (empty($request->public_key) || empty($request->wallet_type_id)) {
-            return response()->json(['status' => 'error', 'message' => 'Public Key or Wallet Type is missing']);
+        if (empty($request->public_key) || empty($request->wallet_type_id) || empty($request->blockchain_id)) {
+            return response()->json(['status' => 'error', 'message' => 'Public Key or Wallet Type is missing or Blockchain Type missing']);
         }
 
         // Update or create the wallet with the status set to 1
@@ -42,6 +43,7 @@ class WalletController extends Controller
             ['public_key' => $request->public_key],  // Condition for finding an existing record
             [
                 'wallet_type_id' => $request->wallet_type_id, // Fields to update or insert
+                'blockchain_id' => $request->blockchain_id, // Fields to update or insert
                 'status' => 1
             ]
         );
@@ -52,6 +54,7 @@ class WalletController extends Controller
 
         setcookie('public_key', $request->public_key, time() + (86400 * 30), "/");
         setcookie('wallet_type_id', $request->wallet_type_id, time() + (86400 * 30), "/");
+        setcookie('blockchain_id', $request->blockchain_id, time() + (86400 * 30), "/");
         setcookie('accessToken', $token, time() + (86400 * 30), "/");
 
         return response()->json([
@@ -67,7 +70,8 @@ class WalletController extends Controller
         $validator = Validator::make($request->all(), [
             'previous_public_key' => 'required|string',
             'current_public_key' => 'required|string',
-            'wallet_type_id' => 'required|integer'
+            'wallet_type_id' => 'required|integer',
+            'blockchain_id' => 'required|integer'
         ]);
 
         if ($validator->fails()) {
@@ -90,6 +94,7 @@ class WalletController extends Controller
             ['public_key' => $request->current_public_key],  // Condition for finding an existing record
             [
                 'wallet_type_id' => $request->wallet_type_id, // Fields to update or insert
+                'blockchain_id' => $request->blockchain_id,
                 'status' => 1
             ]
         );
@@ -99,6 +104,7 @@ class WalletController extends Controller
 
         setcookie('public_key', $request->current_public_key, time() + (86400 * 30), "/");
         setcookie('wallet_type_id', $request->wallet_type_id, time() + (86400 * 30), "/");
+        setcookie('blockchain_id', $request->blockchain_id, time() + (86400 * 30), "/");
         setcookie('accessToken', $token, time() + (86400 * 30), "/");
 
         return response()->json([

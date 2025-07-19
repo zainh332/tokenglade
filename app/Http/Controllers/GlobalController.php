@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Blockchain;
 use App\Models\ClaimableBalance;
 use App\Models\ClaimableBalanceReceiver;
 use App\Models\StellarToken;
@@ -63,6 +64,17 @@ class GlobalController extends Controller
         return response()->json([
             'status' => 'success',
             'wallets' => $wallets
+        ]);
+    }
+
+    public function fetch_blockchains()
+    {
+        $blockchains = Blockchain::orderBy('name')->get();
+
+        // Return the response
+        return response()->json([
+            'status' => 'success',
+            'blockchains' => $blockchains
         ]);
     }
 

@@ -9,38 +9,25 @@
             </router-link>
           </div>
           <div class="hidden sm:ml-6 lg:flex sm:space-x-6">
-
-            <!-- <a v-for="link in Links" :key="link.name" href="#" class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">{{link.name}}</a> -->
             <router-link v-for="link in Links" :key="link.name" :to="link.to"
               class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
               {{ link.name }}
             </router-link>
-
           </div>
         </div>
         <div class="hidden sm:ml-6 lg:flex sm:items-center">
 
-
           <!-- Profile dropdown -->
           <div class="flex items-center gap-2 ">
-            <!-- <router-link to="/register" class="px-5 py-1.5 rounded-full hover-gradient hover:text-white hover:border-white text-t14 leading-[20px] border border-black/50">Sign up</router-link> -->
-            <!-- <router-link class="px-5 py-1.5 rounded-full text-t14 overflow-hidden leading-[20px] text-white bg-gradient  bg-cover" to="#">Sign in</router-link> -->
-
-
             <button id="walletConnected" @click="OpenWalletModal" type="submit" class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
               Connect Wallet
             </button>
 
             <ConnectWalletModal :open="ConnectWalletModals" @close="ConnectWalletModals = false" />
-
-            <!-- <button @click="setOpen" type="submit"
-              class="px-5 py-1.5 rounded-full text-t14 overflow-hidden leading-[20px] text-white bg-gradient  bg-cover">
-              Sign In
-            </button> -->
             
-            <router-link v-if="isWalletConnected" id="dashboard" to="/token-generator" class="text-white rounded-full btn-padding text-t14 bg-gradient">
+            <!-- <router-link v-if="isWalletConnected" id="dashboard" to="/token-generator" class="text-white rounded-full btn-padding text-t14 bg-gradient">
               Dashboard
-            </router-link>
+            </router-link> -->
 
           </div>
         </div>
@@ -88,6 +75,7 @@ import { E, getCookie, hasLogin, saveToken } from "../utils/utils.js";
 import { getPublicKey } from "@stellar/freighter-api";
 const signInModal = ref(false);
 const ConnectWalletModals = ref(false);
+const emit = defineEmits(['wallet-status']);
 const isWalletConnected = ref(false);
 
 const setOpen = (e) => {
@@ -99,14 +87,6 @@ const OpenWalletModal = (e) => {
   e.preventDefault();
   ConnectWalletModals.value = true;
 };
-
-// const OpenWalletModal = (e) => {
-//   e.preventDefault();
-//   if (ConnectWalletModals.value) { ConnectWalletModals.value = false }
-//   setTimeout(() => {
-//     ConnectWalletModals.value = !ConnectWalletModals.value;
-//   }, 100)
-// };
 
 const Links = [
   {
@@ -123,16 +103,25 @@ const Links = [
 //create listener to listen for connected changes
 hear('connected', async (status) => {
   if (status) {
+    const walletKey = await getPublicKey()
+
+    emit('wallet-status', {
+      connected: true,
+      walletKey,
+    });
+
     //has been connected, do the needfull
     if (E('walletConnected')) {
       isWalletConnected.value = true;
-      const walletKey = await getPublicKey()
       E('walletConnected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
     }
   }
   else {
     //has disconnected
     isWalletConnected.value = false;
+    emit('wallet-status', {
+      connected: false,
+    });
     E('walletConnected').innerText = "Connect Wallet"
   }
 })
