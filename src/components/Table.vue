@@ -26,20 +26,32 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="token in users" :key="token.id" class="bg-white divide-gray-200 sm:divide-x">
-                      <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap text-t16 sm:pl-6 lg:pl-20">
-                        <a :href="`https://stellar.expert/explorer/public/account/${token.user_wallet_address}`" target="_blank" class="text-blue-500 underline">
-                          {{ formatAddress(token.user_wallet_address) }}
-                        </a>
-                      </td>
-                      <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap text-t16 sm:pl-6 lg:pl-20">
-                        <a :href="`https://stellar.expert/explorer/public/account/${token.issuer_public_key}`" target="_blank" class="text-blue-500 underline">
-                          {{ formatAddress(token.issuer_public_key) }}
-                        </a>
-                      </td>
-                      <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap sm:pl-6 lg:pl-20 text-t16">{{ token.asset_code }}</td>
-                      <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap sm:pl-6 lg:pl-20 text-t16">{{ token.total_supply }}</td>
-                    </tr>
+                      <tr v-for="token in fetched_tokens" :key="token.id" class="bg-white divide-gray-200 sm:divide-x">
+                        <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap text-t16 sm:pl-6 lg:pl-20">
+                          <template v-if="token.blockchain?.name === 'Stellar'">
+                            <a
+                              :href="`https://stellar.expert/explorer/public/account/${token.stellar_token?.user_wallet_address}`"
+                              target="_blank"
+                              class="text-blue-500 underline"
+                            >
+                              {{ formatAddress(token.stellar_token?.user_wallet_address) }}
+                            </a>
+                          </template>
+                        </td>
+                        <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap text-t16 sm:pl-6 lg:pl-20">
+                          <template v-if="token.blockchain?.name === 'Stellar'">
+                            <a :href="`https://stellar.expert/explorer/public/account/${token.stellar_token.issuer_public_key}`" target="_blank" class="text-blue-500 underline">
+                              {{ formatAddress(token.stellar_token.issuer_public_key) }}
+                            </a>
+                          </template>
+                        </td>
+                        <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap sm:pl-6 lg:pl-20 text-t16">
+                          <template v-if="token.blockchain?.name === 'Stellar'">
+                            {{ token.stellar_token.asset_code }}
+                          </template>
+                        </td>
+                        <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap sm:pl-6 lg:pl-20 text-t16">{{ token.blockchain.name }}</td>
+                      </tr>
                   </tbody>
                 </table>
               </div>
@@ -58,7 +70,7 @@ import Swal from 'sweetalert2';
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-const users = ref([]);
+const fetched_tokens = ref([]);
 
 function formatAddress(address) {
     if (!address || typeof address !== 'string') return '—';
@@ -77,7 +89,7 @@ async function fetchWallets() {
         });
         
         if (response.data.status === "success") {
-          users.value = response.data.tokens;
+          fetched_tokens.value = response.data.tokens;
         } else {
             Swal.fire({
                 icon: "error",

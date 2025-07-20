@@ -360,26 +360,36 @@ const submitForm = async (form) => {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
           },
         });
-
-        if (submitResponse2.data.data.status === 'success') {
+    
+        if (submitResponse2.data.status.trim() === 'success') {
           Swal.close();
 
-          Swal.fire({
-            icon: 'success',
-            title: 'Token Created!',
-            text: `Your token ${submitResponse2.data.data.assetCode} has been created succuessfull And your issuer Public key: ${submitResponse2.data.data.issuerPublicKey} and your Issuer Secret key: ${submitResponse2.data.data.issuerSecretKey}`
-          }).then(() => {
-            // Reset form values
-            form.asset_code = "";
-            form.total_supply = "";
-          });
+          setTimeout(() => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Token Created!',
+              html: `
+                <p>Your token <b>${submitResponse2.data.assetCode}</b> has been created successfully.</p>
+                <p><b>Issuer Public Key:</b><br>${submitResponse2.data.issuerPublicKey}</p>
+                <p><b>Issuer Secret Key:</b><br>${submitResponse2.data.issuerSecretKey}</p>
+                <p style="color: red; font-weight: bold; margin-top: 10px;">
+                  ⚠ Please copy and save these keys before closing this modal!
+                </p>
+              `,
+              confirmButtonText: 'I’ve saved the keys',
+              allowOutsideClick: false
+            }).then(() => {
+              form.asset_code = "";
+              form.total_supply = "";
+            });
+          }, 200);
         }
 
         else{
           Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: submitResponse2.data.data.message || 'Transaction submission failed.',
+            text: submitResponse2.data.message || 'Transaction submission failed.',
           });
         }
     

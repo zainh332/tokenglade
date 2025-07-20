@@ -34,54 +34,55 @@
                                     </div>
                                     <div class="modal-content modal-wallet">
                                         <!-- v-if="!isWalletConnected", show the dropdown -->
-                                        <div id='connectWalletModal' class="modal-body mx-10" v-if="!isWalletConnected">
+                                        <!-- If NOT connected -->
+                                        <template v-if="!isWalletConnected">
+                                        <div id="connectWalletModal" class="modal-body mx-10">
                                             <h1 class="mb-5">Connect Your Wallet</h1>
                                             <div class="mb-3">
-                                                <label for="selectedBlockchain"
-                                                    class="block text-sm font-medium text-black-700 mb-1">
-                                                    Select Blockchain
-                                                </label>
-                                                <select id="selectedBlockchain" name="selectedBlockchain"
-                                                    v-model="selectedBlockchain"
-                                                    class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                                                    <option value="" disabled selected>Choose a blockchain</option>
-                                                    <option v-for="blockchain in blockchainOptions" :key="blockchain.key"
-                                                        :value="blockchain.id">
-                                                        {{ blockchain.name }}
-                                                    </option>
-                                                </select>
+                                            <label for="selectedBlockchain" class="block text-sm font-medium text-black-700 mb-1">
+                                                Select Blockchain
+                                            </label>
+                                            <select id="selectedBlockchain" name="selectedBlockchain" v-model="selectedBlockchain"
+                                                class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                                                <option value="" disabled selected>Choose a blockchain</option>
+                                                <option v-for="blockchain in blockchainOptions" :key="blockchain.key" :value="blockchain.id">
+                                                {{ blockchain.name }}
+                                                </option>
+                                            </select>
                                             </div>
                                             <div class="mb-3">
-                                                <label for="selectedWallet"
-                                                    class="block text-sm font-medium text-black-700 mb-1">
-                                                    Select Wallet
-                                                </label>
-                                                <select id="selectedWallet" name="selectedWallet"
-                                                    v-model="selectedWallet"
-                                                    class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                                                    <option value="" disabled selected>Choose your Wallet</option>
-                                                    <option v-for="wallet in walletOptions" :key="wallet.key"
-                                                        :value="wallet.id">
-                                                        {{ wallet.name }}
-                                                    </option>
-                                                </select>
+                                            <label for="selectedWallet" class="block text-sm font-medium text-black-700 mb-1">
+                                                Select Wallet
+                                            </label>
+                                            <select id="selectedWallet" name="selectedWallet" v-model="selectedWallet"
+                                                class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                                                <option value="" disabled selected>Choose your Wallet</option>
+                                                <option v-for="wallet in walletOptions" :key="wallet.key" :value="wallet.id">
+                                                {{ wallet.name }}
+                                                </option>
+                                            </select>
+                                            </div>
+
+                                            <div class="mt-5">
+                                            <button id="connectWalletButton" @click="connectWallet()" type="button" class="walletconnect-btn">
+                                                Connect Wallet
+                                            </button>
                                             </div>
                                         </div>
-                                        <!-- v-else, show the UserData.public_key(public key) -->
-                                        <div class="modal-body" style="max-width:300px; word-break: break-all;" v-else>
-                                            <h1 id="public_key" style="font-size: 14px;">{{ UserData.walletKey }}</h1>
-                                            <!-- Show the public key -->
-                                        </div>
+                                        </template>
 
-                                        <div class="mt-5">
-                                            <button id="connectWalletButton" @click="connectWallet()" type="button"
-                                                class="walletconnect-btn" v-if="!isWalletConnected"> Connect
-                                                Wallet</button>
-                                            <button id="connectWalletButton" @click="disconnectWallet()" type="button"
-                                                class="walletconnect-btn" v-else> Disconnect Wallet</button>
-                                            <button type="button" v-if="isLoading"
-                                                class="connectLoading-btn">Connecting...</button>
+                                        <!-- If connected -->
+                                        <template v-else>
+                                        <div class="modal-body" style="word-break: break-all;">
+                                            <h1 id="public_key" style="font-size: 14px;">{{ UserData.walletKey }}</h1>
                                         </div>
+                                        <div class="mt-5">
+                                            <button id="connectWalletButton" @click="disconnectWallet()" type="button" class="walletconnect-btn">
+                                            Disconnect Wallet
+                                            </button>
+                                        </div>
+                                        </template>
+
                                         <div class="mt-3 mx-3">
                                             <p class="text-center block text-sm font-medium text-gray-700 mb-1">
                                                 We never store your wallet info. Used only for on-chain operations.
@@ -189,7 +190,7 @@ async function fetchWallets() {
     }
 }
 
-async function selectWallet(publicKey, walletTypeId, blockchainTypeId) {
+async function storeWallet(publicKey, walletTypeId, blockchainTypeId) {
     if (publicKey && walletTypeId, blockchainTypeId) {
 
         // Save public key and wallet type in UserData
@@ -207,13 +208,13 @@ async function selectWallet(publicKey, walletTypeId, blockchainTypeId) {
 
                 // Set the 'isWalletConnected' flag to true for the different if conditions
                 isWalletConnected.value = true;
-
+                
                 // Save wallet connection status in localStorage
                 localStorage.setItem('wallet_connect', 'true');
-
+                
                 // Set the token
                 localStorage.setItem('token', response.data.token);
-
+                
                 // Notify the user of successful connection
                 speak('connected', true);
             }
@@ -260,7 +261,7 @@ async function connectWallet() {
                 if (publicKey) {
                     // Ensure the selected wallet type is set
                     if (selectedWallet.value && selectedBlockchain.value) {
-                        await selectWallet(publicKey, selectedWallet.value, selectedBlockchain.value); // Pass publicKey and wallet type id
+                        await storeWallet(publicKey, selectedWallet.value, selectedBlockchain.value); // Pass publicKey and wallet type id
                         isLoading.value = false;
                         E('public_key').innerText = publicKey
                     } else {
@@ -466,9 +467,6 @@ async function watchWalletChanges() {
                     },
                 });
                 if (response.data.status === "success") {
-                    // localStorage.setItem('token', response.data.token); // Save the new token
-                    // console.log("New Token Stored:", response.data.token);
-                    // If both are found, set UserData and mark connection as successful
                     window.location.reload();
                 }
                 else {

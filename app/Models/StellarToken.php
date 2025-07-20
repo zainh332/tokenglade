@@ -21,4 +21,9 @@ class StellarToken extends Model
         'issuer_wallet_status',
         'created_token_transfer_status'
     ];
+
+    public function token()
+    {
+        return $this->hasOne(Token::class);
+    }
 }

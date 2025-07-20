@@ -8,4 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Blockchain extends Model
 {
     use HasFactory;
+
+    public function tokens()
+    {
+        return $this->hasMany(Token::class);
+    }
 }

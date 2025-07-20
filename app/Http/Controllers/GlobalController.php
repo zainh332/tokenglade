@@ -6,6 +6,7 @@ use App\Models\Blockchain;
 use App\Models\ClaimableBalance;
 use App\Models\ClaimableBalanceReceiver;
 use App\Models\StellarToken;
+use App\Models\Token;
 use App\Models\WalletType;
 use Illuminate\Http\Request;
 
@@ -208,7 +209,10 @@ class GlobalController extends Controller
     }
 
     public function fetch_wallet_tokens (){
-        $get_wallets_tokens = StellarToken::limit(4)->orderBy('id', 'desc')->get();
+        $get_wallets_tokens = Token::with(['stellarToken', 'blockchain'])
+        ->limit(4)
+        ->orderBy('id', 'desc')
+        ->get();
         return response()->json([
             'status' => 'success',
             'tokens' => $get_wallets_tokens,
