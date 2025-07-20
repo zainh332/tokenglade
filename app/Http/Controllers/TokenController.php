@@ -42,7 +42,7 @@ class TokenController extends Controller
         $this->sdk = StellarSDK::getPublicNetInstance();
         $this->network = Network::public();
         $this->maxFee = 30000;
-        $this->token_creation_fee = 4; //XLM
+        $this->token_creation_fee = 50; //XLM
         $this->issuer_wallet_ammount = 4; //XLM
         $this->xlm_funding_wallet = env('XLM_FUNDING_WALLET');
         $this->xlm_funding_wallet_key = env('XLM_FUNDING_WALLET_KEY'); //using to send xlm and activating issuer wallet 
@@ -71,7 +71,7 @@ class TokenController extends Controller
         $lock_status = $request->input('lock_status');
         $distributor_wallet_xlm_balance = checkXlmBalance($distributor_wallet_key);
 
-        if ($distributor_wallet_xlm_balance < $this->token_creation_fee) {
+        if ($distributor_wallet_xlm_balance < ($this->token_creation_fee + 5)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Insufficient balance. You need at least ' . $this->token_creation_fee . ' XLM available in your wallet to proceed.',
@@ -98,7 +98,7 @@ class TokenController extends Controller
         $token = new Token();
         $token->stellar_token_id = $token_creation->id;
         $token->blockchain_id = 1; //stellar
-        $token_creation->save();
+        $token->save();
 
         $addStellarTransactionRecord = $this->addStellarTransactionRecord($token_creation->id, $distributor_wallet_key, 1, $token_creation_charges['unsigned_token_creation_fee_transaction'], '', '', false);
         $token_creation->current_stellar_transaction_id = $addStellarTransactionRecord->id;

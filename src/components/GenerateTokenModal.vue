@@ -369,13 +369,13 @@ const submitForm = async (form) => {
               icon: 'success',
               title: 'Token Created!',
               html: `
-                <p>Your token <b>${submitResponse2.data.assetCode}</b> has been created successfully.</p>
-                <p><b>Issuer Public Key:</b><br>${submitResponse2.data.issuerPublicKey}</p>
-                <p><b>Issuer Secret Key:</b><br>${submitResponse2.data.issuerSecretKey}</p>
-                <p style="color: red; font-weight: bold; margin-top: 10px;">
-                  ⚠ Please copy and save these keys before closing this modal!
-                </p>
-              `,
+              <p>Your token <b>${submitResponse2.data.assetCode}</b> has been created successfully.</p>
+              <p style="margin-top: 10px;"><b>Issuer Public Key:</b><br>${submitResponse2.data.issuerPublicKey}</p>
+              <p style="margin-top: 10px;"><b>Issuer Secret Key:</b><br>${submitResponse2.data.issuerSecretKey}</p>
+              <p style="color: red; font-weight: bold; margin-top: 20px;">
+                ⚠ Please copy and save these keys before closing this modal!
+              </p>
+            `,
               confirmButtonText: 'I’ve saved the keys',
               allowOutsideClick: false
             }).then(() => {
