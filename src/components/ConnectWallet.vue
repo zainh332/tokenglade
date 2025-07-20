@@ -416,6 +416,7 @@ async function disconnectWallet() {
             },
         });
         if (response.data.status === "success") {
+            closeModal();
 
             //clear everthing from cookies 
             localStorage.setItem('wallet_connect', 'false')
