@@ -22,6 +22,17 @@
               class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
               {{ isWalletConnected ? 'Mint Token' : 'Connect Wallet to Mint' }}
             </button>
+
+            <DisclosurePanel class="lg:hidden">
+              <div class="pt-6 space-y-1">
+                <a href="https://lobstr.co/trade/native/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
+                  Buy TKG Tokens from Lobstr
+                </a>
+              </div>
+            </DisclosurePanel>
             </div>
           </div>
 

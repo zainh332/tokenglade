@@ -53,7 +53,7 @@
     "src": "src/assets/xbull.png"
   },
   "src/main.css": {
-    "file": "assets/main-94710a87.css",
+    "file": "assets/main-14f55964.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -67,9 +67,9 @@
       "assets/wallet-3292a01f.jpg"
     ],
     "css": [
-      "assets/main-94710a87.css"
+      "assets/main-14f55964.css"
     ],
-    "file": "assets/main-53b6f6f3.js",
+    "file": "assets/main-2fef3989.js",
     "isEntry": true,
     "src": "src/main.js"
   }

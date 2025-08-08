@@ -18,18 +18,20 @@
         <div class="hidden sm:ml-6 lg:flex sm:items-center">
 
           <!-- Profile dropdown -->
-          <div class="flex items-center gap-2 ">
+          <div class="flex items-center gap-2">
+            <a href="https://lobstr.co/trade/native/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
+              Buy TKG Tokens
+            </a>
+          </div>
+          <!-- <div class="flex items-center gap-2 ">
             <button id="walletConnected" @click="OpenWalletModal" type="submit" class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
               Connect Wallet
             </button>
-
             <ConnectWalletModal :open="ConnectWalletModals" @close="ConnectWalletModals = false" />
-            
-            <!-- <router-link v-if="isWalletConnected" id="dashboard" to="/token-generator" class="text-white rounded-full btn-padding text-t14 bg-gradient">
-              Dashboard
-            </router-link> -->
-
-          </div>
+          </div> -->
         </div>
         <div class="flex items-center -mr-2 lg:hidden">
           <!-- Mobile menu button -->
@@ -50,10 +52,10 @@
           {{ link.name }}
         </router-link>
         <!-- Add Connect Wallet button for mobile -->
-      <button id="walletConnected" @click="OpenWalletModal" type="submit"
+      <!-- <button id="walletConnected" @click="OpenWalletModal" type="submit"
         class="w-full px-4 py-2 mt-2 text-base font-medium text-white rounded-md bg-gradient hover:bg-blue-700">
         Connect Wallet
-      </button>
+      </button> -->
       </div>
     </DisclosurePanel>
   </Disclosure>
