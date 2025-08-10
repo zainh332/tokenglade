@@ -19,7 +19,7 @@
 
           <!-- Profile dropdown -->
           <div class="flex items-center gap-2">
-            <a href="https://lobstr.co/trade/native/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
+            <a href="https://lobstr.co/trade/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
               target="_blank"
               rel="noopener noreferrer"
               class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
