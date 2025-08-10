@@ -180,7 +180,7 @@
                                         <!-- Warning -->
                                         <div
                                             class="bg-yellow-100 border border-yellow-300 text-yellow-800 px-4 py-2 rounded-md text-sm">
-                                            ⚠ Please ensure your wallet has at least 50 XLM before proceeding. The created token will be sent to your connected wallet.
+                                            ⚠ Please ensure your wallet has at least 10 XLM before proceeding. The created token will be sent to your connected wallet.
                                         </div>
 
                                         <!-- Submit -->
