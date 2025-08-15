@@ -38,4 +38,7 @@ Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
     // Route::post('/fetch_claimable_balance', 'GlobalController@fetch_claimable_balance')->name('fetch_claimable_balance');
 });
 
+Route::get('/circulating-supply', [CirculatingSupplyController::class, 'show']);
+Route::get('/total-supply', [CirculatingSupplyController::class, 'total']);
+
 
