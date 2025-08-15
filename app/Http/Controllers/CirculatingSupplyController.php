@@ -45,14 +45,46 @@ class CirculatingSupplyController extends Controller
         Log::info('[total] start', ['rid' => $rid]);
 
         try {
+            // optional: allow ?refresh=1 to bust cache while testing
+            if ($request->boolean('refresh')) {
+                Cache::forget('tkg_total_supply');
+            }
+
             $json = Cache::remember('tkg_total_supply', 30, function () use ($rid) {
                 [$asset, $horizon] = $this->fetchAssetRecord($rid);
+
+                // ---- compute totals even if `amount` is absent ----
+                $balances = $asset['balances'] ?? [];
+                $auth     = (float) ($balances['authorized'] ?? 0);
+                $authML   = (float) ($balances['authorized_to_maintain_liabilities'] ?? 0);
+                $unauth   = (float) ($balances['unauthorized'] ?? 0);
+
+                $totalIssued = isset($asset['amount'])
+                    ? (float) $asset['amount']
+                    : ($auth + $authML + $unauth);
+
+                $cbAmount  = (float) ($asset['claimable_balances_amount'] ?? 0);
+                $lpAmount  = (float) ($asset['liquidity_pools_amount'] ?? 0);
+                $contracts = (float) ($asset['contracts_amount'] ?? 0);
+
+                $acc        = $asset['accounts'] ?? null;
+                $numHolders = is_array($acc)
+                    ? (int) (($acc['authorized'] ?? 0)
+                        +  ($acc['authorized_to_maintain_liabilities'] ?? 0)
+                        +  ($acc['unauthorized'] ?? 0))
+                    : ($asset['num_accounts'] ?? null);
+
+                // Use $this->fmt(...) if you already have it in the controller
                 return [
-                    'asset_code'   => env('ASSET_CODE', 'TKG'),
-                    'asset_issuer' => env('ASSET_ISSUER'),
-                    'total_issued' => (string) ($asset['amount'] ?? '0'),
-                    'updated_at'   => now()->toIso8601String(),
-                    'source'       => $horizon,
+                    'asset_code'                 => env('ASSET_CODE', 'TKG'),
+                    'asset_issuer'               => env('ASSET_ISSUER'),
+                    'total_issued'               => $this->fmt($totalIssued),
+                    'liquidity_pools_amount'     => $this->fmt($lpAmount),
+                    'contracts_amount'           => $this->fmt($contracts),
+                    'claimable_balances_amount'  => $this->fmt($cbAmount),
+                    'num_holders'                => $numHolders,
+                    'updated_at'                 => now()->toIso8601String(),
+                    'source'                     => $horizon,
                 ];
             });
 
@@ -71,6 +103,7 @@ class CirculatingSupplyController extends Controller
             ], 500)->header('X-Request-Id', $rid);
         }
     }
+
 
     public function show(Request $request)
     {
@@ -132,7 +165,7 @@ class CirculatingSupplyController extends Controller
                 // Optional static override
                 $staticOverride = (float) (env('TKG_STATIC_NON_CIRC_AMOUNT', 0));
                 $nonCircTotal   = max($nonCircFromWallets, $staticOverride);
-                
+
                 // 3) Circulating
                 $circulating = $totalIssued - $nonCircTotal;
                 if ($excludeCB) {
