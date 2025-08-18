@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-0b14c6a2.css",
+    "file": "assets/app-dd7a366f.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
@@ -53,7 +53,7 @@
     "src": "src/assets/xbull.png"
   },
   "src/main.css": {
-    "file": "assets/main-7f4c1f52.css",
+    "file": "assets/main-b857151a.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -67,9 +67,9 @@
       "assets/wallet-3292a01f.jpg"
     ],
     "css": [
-      "assets/main-7f4c1f52.css"
+      "assets/main-b857151a.css"
     ],
-    "file": "assets/main-d2d46cc2.js",
+    "file": "assets/main-f685c80c.js",
     "isEntry": true,
     "src": "src/main.js"
   }
