@@ -1,5 +1,5 @@
 <template>
-    <TransitionRoot as="template" :show="open">
+    <TransitionRoot as="template" :show="props.modelValue">
         <Dialog id="connectWalletParent" as="div" class="relative z-10" @close="closeModal">
             <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
                 leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
@@ -27,7 +27,7 @@
                                 </svg>
                             </button>
                             <div :id="modalId" :data-bs-backdrop="backdrop" :data-bs-keyboard="keyboard" tabindex="-1"
-                                aria-labelledby="exampleModalLabel" :inert="!open">
+                                aria-labelledby="exampleModalLabel" :inert="!props.modelValue">
                                 <div class="modal-dialog">
                                     <div class="sm:mx-auto sm:w-full sm:max-w-md">
                                         <img class="w-auto h-16 mx-auto mb-1" :src="Logo" alt="Your Company" />
@@ -112,8 +112,6 @@ import { isConnected, setAllowed, isAllowed, getPublicKey } from "@stellar/freig
 import Swal from 'sweetalert2';
 import { E } from "../utils/utils.js";
 
-
-const ConnectWalletModal = defineProps({ open: Boolean });
 const modalId = "ConnectWallet";
 const walletOptions = ref([]);
 const blockchainOptions = ref([]);
@@ -121,13 +119,15 @@ const selectedWallet = ref("");
 const selectedBlockchain = ref("");
 const isLoading = ref(false);
 const isWalletConnected = ref(false);
+const props = defineProps({ modelValue: { type: Boolean, default: false } })
 
 const backdrop = computed(() => (!isWalletConnected.value ? "static" : ""));
 const keyboard = computed(() => (!isWalletConnected.value ? "false" : ""));
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(['update:modelValue', 'close'])
 function closeModal() {
-    emit("close");
+    emit('update:modelValue', false)
+    emit('close')
 }
 
 const UserData = ref({

@@ -37,20 +37,6 @@
                                 <!-- Form -->
                                 <Form @submit="submitForm" :validationSchema="schema">
                                     <div class="space-y-4">
-
-                                        <!-- Distributor Wallet (read-only) -->
-                                        <!-- <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                                Distributor Wallet
-                                                <span class="text-gray-400 cursor-help"
-                                                    title="This is your connected wallet.">?</span>
-                                            </label>
-                                            <div
-                                                class="bg-gradient text-white rounded-full px-3 py-2 text-sm font-mono truncate w-[120px]">
-                                                123456789 Dummy Token
-                                            </div>
-                                        </div> -->
-
                                        <div>
                                             <label for="distributor_wallet_private_key" class="block text-sm font-medium text-gray-700 mb-1">
                                                 Distributor Wallet
@@ -74,13 +60,16 @@
                                                 </span>
                                             </label>
 
+                                            
                                             <button
                                                 id="walletConnected"
+                                                @click="OpenConnectWalletModal"
                                                 type="button"
                                                 class="bg-gradient text-white rounded-full px-3 py-2 text-sm font-mono truncate w-[120px]"
                                                 >
                                                 {{ walletKey ? walletKey.substring(0, 6) + '...' + walletKey.slice(-4) : 'Connect Wallet' }}
                                                 </button>
+                                                <ConnectWalletModal :open="ConnectWalletModals" @close="ConnectWalletModals = false" />
                                         </div>
 
 
@@ -199,6 +188,7 @@
                 </div>
             </Dialog>
         </TransitionRoot>
+          <ConnectWalletModal :open="ConnectWalletModals" />
     </template>
 
 <script setup>
@@ -211,20 +201,20 @@ import Swal from 'sweetalert2';
 import { getPublicKey, signTransaction, isConnected, requestAccess, getNetwork } from "@stellar/freighter-api"; 
 import { E } from "../utils/utils.js"; 
 import axios from 'axios';
+import ConnectWalletModal from '@/components/ConnectWallet.vue';
 
 const AssetCodeHovered = ref(false);
 const TotalSupplyHovered = ref(false);
 const DistributorHovered = ref(false);
 const LockIssuerHovered = ref(false);
 const isWalletConnected = ref(false);
+const ConnectWalletModals = ref(false);
+const { open } = defineProps({ open: Boolean, distributorWallet: String })
 
+
+const OpenConnectWalletModal = () => { ConnectWalletModals.value = true }
 const toggleValue = ref(false);
 
-// Props and Emit
-const props = defineProps({
-    open: Boolean,
-    distributorWallet: String
-})
 const emit = defineEmits(['close'])
 
 // State
@@ -252,9 +242,7 @@ const schema = Yup.object({
 
 
 // Close modal
-function closeModal() {
-    emit('close')
-}
+const closeModal = () => emit('close')
 
 
 
@@ -427,12 +415,14 @@ hear('connected', async (status) => {
   if (status) {
     //has been connected, do the needfull
     if (E('walletConnected')) {
+      isWalletConnected.value = true;
       walletKey = await getPublicKey();
       
       E('walletConnected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
     }
   }
   else {
+    isWalletConnected.value = false;
     E('walletConnected').innerText = "----";
   }
 })

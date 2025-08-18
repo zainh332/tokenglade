@@ -14,14 +14,14 @@
               Easily generate blockchain tokens across multiple networks with our intuitive platform.
             </p>
             <div class="py-5">
-              <!-- <button @click="openTokenModal" type="button" id="mintToken"
-                class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
-                Mint Token
-              </button> -->
-              <button @click="openTokenModal" type="button" id="mintToken"
-              class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
-              {{ isWalletConnected ? 'Mint Token' : 'Connect Wallet to Mint' }}
-            </button>
+              <button
+                type="button"
+                id="mintToken"
+                class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient"
+                @click="isWalletConnected ? openTokenModal() : openConnectWalletModal()"
+              >
+                {{ isWalletConnected ? 'Mint Token' : 'Connect Wallet to Mint' }}
+              </button>
 
             <DisclosurePanel class="lg:hidden">
               <div class="pt-6 space-y-1">
@@ -45,31 +45,6 @@
       <!-- Table -->
 
       <Table />
-
-      <!-- <div
-        class="grid max-w-6xl grid-cols-1 gap-12 px-4 py-10 mx-auto cards md:grid-cols-2 lg:grid-cols-3 sm:pt-24 sm:px-6 lg:px-8">
-        <div
-          class="drop-shadow bg-white hover:bg-purple-600 cursor-pointer group transition-all group duration-200 card-gradient h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
-          <h1 class="font-semibold group-hover:text-white text-t34">{{ data.total_tokens }}</h1>
-          <p class="text-center group-hover:text-white text-[20px] font-normal">
-            Tokens created so far on TokenGlade
-          </p>
-        </div>
-        <div
-          class="drop-shadow bg-white hover:bg-purple-600 cursor-pointer group transition-all group duration-200 card-gradient h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
-          <h1 class="font-semibold group-hover:text-white text-t34">{{ data.total_claimablebalance_users }}</h1>
-          <p class="text-center group-hover:text-white text-[20px] font-normal">
-            Total Claimable Balance Users
-          </p>
-        </div>
-        <div
-          class="drop-shadow bg-white hover:bg-purple-600 cursor-pointer group transition-all group duration-200 card-gradient h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
-          <h1 class="font-semibold group-hover:text-white text-t34">{{ data.total_claimablebalance }}</h1>
-          <p class="text-center group-hover:text-white text-[20px] font-normal">
-            Claimable Balance to other wallets with TokenGlade
-          </p>
-        </div>
-      </div> -->
 
       <div class="py-10 my-10 bg-white text-center">
         <h2 class="text-3xl font-bold mb-10">How It works</h2>
@@ -126,7 +101,12 @@
         </div>
         <Faq />
       </div>
-      <GenerateTokenModal :show="isTokenModalOpen" @close="isTokenModalOpen = false" />
+      <GenerateTokenModal :open="isTokenModalOpen" @close="isTokenModalOpen = false" />
+        <ConnectWalletModal
+          v-model="ConnectWalletModals"
+          @status="handleWalletStatus"
+          @close="ConnectWalletModals = false"
+        />
       <Newsletter />
       <Footer />
     </div>
@@ -148,9 +128,11 @@ import Wallet from "@/assets/wallet.jpg";
 import axios from 'axios'
 import { ref, computed, defineProps, onMounted, watch } from "vue";
 import Swal from 'sweetalert2';
+import ConnectWalletModal from '@/components/ConnectWallet.vue';
 
 const isWalletConnected = ref(false);
 const walletKey = ref('');
+const ConnectWalletModals = ref(false);
 
 function handleWalletStatus(event) {
   isWalletConnected.value = event.connected;
@@ -160,14 +142,8 @@ function handleWalletStatus(event) {
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
 const isTokenModalOpen = ref(false)
-
-const openTokenModal = (e) => {
-  e.preventDefault()
-  isTokenModalOpen.value = true
-}
-const closeTokenModal = () => {
-  isTokenModalOpen  .value = false
-}
+const openTokenModal = () => { isTokenModalOpen.value = true }
+const openConnectWalletModal = () => { ConnectWalletModals.value = true }
 
 const data = ref({
   total_tokens: 0,

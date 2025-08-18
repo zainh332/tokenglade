@@ -9,29 +9,39 @@
             </router-link>
           </div>
           <div class="hidden sm:ml-6 lg:flex sm:space-x-6">
-            <router-link v-for="link in Links" :key="link.name" :to="link.to"
-              class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
-              {{ link.name }}
-            </router-link>
+            <template v-for="link in Links" :key="link.name">
+              <router-link
+                v-if="link.to"
+                :to="link.to"
+                class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14"
+              >
+                {{ link.name }}
+              </router-link>
+
+              <a
+                v-else
+                :href="link.href"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14"
+              >
+                {{ link.name }}
+              </a>
+            </template>
           </div>
+
         </div>
         <div class="hidden sm:ml-6 lg:flex sm:items-center">
 
           <!-- Profile dropdown -->
-          <div class="flex items-center gap-2">
-            <a href="https://lobstr.co/trade/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
-              Buy TKG Tokens
-            </a>
-          </div>
-          <!-- <div class="flex items-center gap-2 ">
+          <div class="flex items-center gap-2 ">
             <button id="walletConnected" @click="OpenWalletModal" type="submit" class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
               Connect Wallet
             </button>
+
             <ConnectWalletModal :open="ConnectWalletModals" @close="ConnectWalletModals = false" />
-          </div> -->
+      
+          </div>
         </div>
         <div class="flex items-center -mr-2 lg:hidden">
           <!-- Mobile menu button -->
@@ -52,16 +62,16 @@
           {{ link.name }}
         </router-link>
         <!-- Add Connect Wallet button for mobile -->
-      <!-- <button id="walletConnected" @click="OpenWalletModal" type="submit"
+      <button id="walletConnected" @click="OpenWalletModal" type="submit"
         class="w-full px-4 py-2 mt-2 text-base font-medium text-white rounded-md bg-gradient hover:bg-blue-700">
         Connect Wallet
-      </button> -->
+      </button>
       </div>
     </DisclosurePanel>
   </Disclosure>
 
   <Modal :open="signInModal" />
-  <ConnectWalletModal :open="ConnectWalletModals" />
+  <ConnectWalletModal v-model="ConnectWalletModals" />
 
 </template>
 
@@ -80,15 +90,7 @@ const ConnectWalletModals = ref(false);
 const emit = defineEmits(['wallet-status']);
 const isWalletConnected = ref(false);
 
-const setOpen = (e) => {
-  e.preventDefault();
-  signInModal.value = !signInModal.value;
-};
-
-const OpenWalletModal = (e) => {
-  e.preventDefault();
-  ConnectWalletModals.value = true;
-};
+const OpenWalletModal = () => { ConnectWalletModals.value = true; };
 
 const Links = [
   {
@@ -98,6 +100,10 @@ const Links = [
   {
     name: 'Privacy Policy',
     to: '/privacy-policy'
+  },
+  {
+    name: 'Buy TKG Tokens',
+    href: 'https://lobstr.co/trade/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ',
   },
 ]
 
