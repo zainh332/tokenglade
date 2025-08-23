@@ -208,8 +208,12 @@ class GlobalController extends Controller
         }
     }
 
-    public function fetch_wallet_tokens (){
+    public function fetch_generated_tokens (){
         $get_wallets_tokens = Token::with(['stellarToken', 'blockchain'])
+        ->whereHas('stellarToken', function ($q) {
+            $q->whereNotNull('issuer_public_key')
+              ->where('issuer_public_key', '!=', '');
+        })
         ->limit(4)
         ->orderBy('id', 'desc')
         ->get();
