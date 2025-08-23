@@ -266,11 +266,7 @@ const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute
 // Fetch available blockchains from the server
 async function fetchblockchains() {
     try {
-        const response = await axios.get("/api/fetch_blockchains", {
-            headers: {
-                "X-CSRF-TOKEN": csrfToken,
-            },
-        });
+        const response = await axios.get("/api/fetch_blockchains", {});
 
         if (response.data.status === "success") {
             blockchainOptions.value = response.data.blockchains;
@@ -294,11 +290,7 @@ async function fetchblockchains() {
 }
 async function fetchWallets() {
     try {
-        const response = await axios.get("/api/fetch_wallet_types", {
-            headers: {
-                "X-CSRF-TOKEN": csrfToken,
-            },
-        });
+        const response = await axios.get("/api/fetch_wallet_types", {});
         if (response.data.status === "success") {
             walletOptions.value = response.data.wallets;
         } else {
@@ -342,13 +334,14 @@ async function storeWallet(publicKey, walletTypeId, key, blockchainTypeId) {
         UserData.value.wallet_type_id = walletTypeId; // Set the selected wallet type ID in UserData
         UserData.value.blockchain_id = blockchainTypeId; // Set the blockchain ID in UserData
       console.log(csrfToken);
+      console.log(window.Laravel.csrfToken);
         try {
             const response = await axios.post(
                 "/api/store_wallet",
                 UserData.value,
                 {
                     headers: {
-                        'X-CSRF-TOKEN': csrfToken,
+                        'X-CSRF-TOKEN': window.Laravel.csrfToken,
                     },
                 }
             );
