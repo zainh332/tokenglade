@@ -231,7 +231,6 @@ import xbull from "@/assets/xbull.png";
 import axios from "axios";
 import {
     isConnected,
-    setAllowed,
     isAllowed,
     getPublicKey,
     requestAccess,
@@ -262,9 +261,7 @@ const UserData = ref({
     wallet_type_id: "",
 });
 
-const csrfToken = document
-    .querySelector('meta[name="csrf-token"]')
-    .getAttribute("content");
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
 // Fetch available blockchains from the server
 async function fetchblockchains() {
@@ -494,10 +491,10 @@ async function handleConnect() {
 async function checkConnection() {
     // let conn = (await isConnected()) && (await isAllowed()) && (localStorage.getItem("wallet_connect") || "false") == "true";
     let isWalletConnectedBefore =
-        localStorage.getItem("wallet_connect") === "true";
+    localStorage.getItem("wallet_connect") === "true";
 
     let conn =
-        isWalletConnectedBefore && (await isConnected()) && (await isAllowed());
+    //     isWalletConnectedBefore && (await isConnected()) && (await isAllowed());
     isWalletConnected.value = conn;
 
     if (!conn) {
