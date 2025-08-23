@@ -348,7 +348,7 @@ async function storeWallet(publicKey, walletTypeId, key, blockchainTypeId) {
                 UserData.value,
                 {
                     headers: {
-                        "X-CSRF-TOKEN": csrfToken,
+                        'X-CSRF-TOKEN': csrfToken,
                     },
                 }
             );
