@@ -33,8 +33,6 @@
                                         <img class="w-auto h-16 mx-auto mb-1" :src="Logo" alt="Your Company" />
                                     </div>
                                     <div class="modal-content modal-wallet">
-                                        <!-- v-if="!isWalletConnected", show the dropdown -->
-                                        <!-- If NOT connected -->
                                         <template v-if="!isWalletConnected">
                                         <div id="connectWalletModal" class="modal-body mx-10">
                                             <h1 class="mb-5">Connect Your Wallet</h1>
@@ -57,16 +55,22 @@
                                             <select id="selectedWallet" name="selectedWallet" v-model="selectedWallet"
                                                 class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
                                                 <option value="" disabled selected>Choose your Wallet</option>
-                                                <option v-for="wallet in walletOptions" :key="wallet.key" :value="wallet.id">
+                                                <option v-for="wallet in walletOptions" :key="wallet.key" :value="wallet.key">
                                                 {{ wallet.name }}
                                                 </option>
                                             </select>
                                             </div>
 
                                             <div class="mt-5">
-                                            <button id="connectWalletButton" @click="connectWallet()" type="button" class="walletconnect-btn">
-                                                Connect Wallet
-                                            </button>
+                                                <button
+                                                    id="connectWalletButton"
+                                                    @click="handleConnect"
+                                                    type="button"
+                                                    class="walletconnect-btn"
+                                                    :disabled="isLoading"
+                                                >
+                                                    {{ isLoading ? 'Connecting...' : 'Connect Wallet' }}
+                                                </button>
                                             </div>
                                         </div>
                                         </template>
@@ -108,9 +112,9 @@ import frighter from '@/assets/frighter.png'
 import albeto from '@/assets/albeto.png'
 import xbull from '@/assets/xbull.png'
 import axios from 'axios';
-import { isConnected, setAllowed, isAllowed, getPublicKey } from "@stellar/freighter-api";
+import { isConnected, setAllowed, isAllowed, getPublicKey, requestAccess } from "@stellar/freighter-api";
 import Swal from 'sweetalert2';
-import { E } from "../utils/utils.js";
+import { getCookie } from "../utils/utils.js";
 
 const modalId = "ConnectWallet";
 const walletOptions = ref([]);
@@ -190,8 +194,22 @@ async function fetchWallets() {
     }
 }
 
-async function storeWallet(publicKey, walletTypeId, blockchainTypeId) {
-    if (publicKey && walletTypeId, blockchainTypeId) {
+function getSelectedWalletMeta() {
+  const key = (selectedWallet.value || "").toLowerCase();
+  const rec = walletOptions.value.find(w => (w.key || "").toLowerCase() === key);
+  
+  if (!rec) return null;
+  return {
+    walletTypeId: rec.id,                 // numeric
+    blockchainTypeId: rec.blockchain_id,  // numeric
+    key: rec.key,                         // "freighter" | "rabet"
+    name: rec.name
+  };
+}
+
+async function storeWallet(publicKey, walletTypeId, key, blockchainTypeId) {
+    
+    if (publicKey && walletTypeId && key && blockchainTypeId) {
 
         // Save public key and wallet type in UserData
         UserData.value.public_key = publicKey;  // Set the public key in UserData
@@ -210,10 +228,17 @@ async function storeWallet(publicKey, walletTypeId, blockchainTypeId) {
                 isWalletConnected.value = true;
                 
                 // Save wallet connection status in localStorage
+                localStorage.setItem('public_key', publicKey);
                 localStorage.setItem('wallet_connect', 'true');
                 
                 // Set the token
                 localStorage.setItem('token', response.data.token);
+
+                // Save wallet connection status in localStorage
+                localStorage.setItem('wallet_type', walletTypeId);
+
+                // Save wallet connection status in localStorage
+                localStorage.setItem('wallet_key', key);
                 
                 // Notify the user of successful connection
                 speak('connected', true);
@@ -246,72 +271,79 @@ async function storeWallet(publicKey, walletTypeId, blockchainTypeId) {
     }
 }
 
-
-//handles wallet connection
-async function connectWallet() {
-    if (!isWalletConnected.value) {
-        //check if user has freighter installed
-        const flg = await isConnected()
-        if (flg) {
-            // Perform wallet connection logic here
-            isLoading.value = true;
-            if (await setAllowed()) {
-                // If allowed, get the public key and proceed with wallet connection
-                const publicKey = await getPublicKey();
-                if (publicKey) {
-                    // Ensure the selected wallet type is set
-                    if (selectedWallet.value && selectedBlockchain.value) {
-                        await storeWallet(publicKey, selectedWallet.value, selectedBlockchain.value); // Pass publicKey and wallet type id
-                        isLoading.value = false;
-                        E('public_key').innerText = publicKey
-                    } else {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Wallet Error!",
-                            text: "Please select a wallet type before connecting.",
-                        });
-                        isLoading.value = false;
-                    }
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Wallet Error!',
-                        text: 'Please unlock freighter wallet before connecting.',
-                    });
-                    isLoading.value = false;
-                }
-            } else {
-                isLoading.value = false;
-            }
-        }
-        else {
-            //show error that freighter is not installed
-            Swal.fire({
-                icon: 'error',
-                title: 'Wallet Error!',
-                text: 'Freighter wallet app is not installed in your browser.',
-            });
-            //open link to freighter wallet
-            window.open("https://www.freighter.app/", "_blank")
-        }
-    }
-    else {
-        //to disconnect
-        localStorage.setItem('wallet_connect', 'false')
-        isWalletConnected.value = false
-        speak('connected', false)
-        document.cookie =
-            "public_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        document.cookie =
-            "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        window.location.reload();
-    }
+function hasRabet() {
+  return typeof window !== "undefined" && !!window.rabet;
 }
 
-function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
+async function connectWallet(wallet) {
+  const candidate = (typeof wallet === "string") ? wallet : selectedWallet.value;
+  const key = (candidate || "").toString().trim().toLowerCase().replace("frighter","freighter");
+
+  switch (key) {
+    case "freighter": {
+      try {
+        const installed = await isConnected().catch(() => false);
+        if (!installed) throw new Error("Freighter not installed");
+
+        const allowed = await requestAccess().catch(() => null);
+        if (!allowed || allowed.address === "User declined access") {
+          throw new Error("Access declined by user");
+        }
+
+        const publicKey = await getPublicKey();
+        return { publicKey, wallet: "freighter" };
+      } catch (e) {
+        throw new Error(e.message || "Freighter connection failed");
+      }
+    }
+    case "rabet": {
+      if (!hasRabet()) throw new Error("Rabet not installed");
+      try {
+        const res = await window.rabet.connect();
+        if (!res?.publicKey) throw new Error("No public key from Rabet");
+        return { publicKey: res.publicKey, wallet: "rabet" };
+      } catch {
+        throw new Error("Rabet connection rejected");
+      }
+    }
+    default:
+      throw new Error("Unsupported wallet");
+  }
+}
+
+async function handleConnect() {
+  if (!selectedWallet.value) {
+    Swal.fire({ icon: "warning", title: "Select a wallet", text: "Choose Freighter or Rabet." });
+    return;
+  }
+
+  isLoading.value = true;
+  try {
+    // 1) connect to extension → { publicKey, wallet: "freighter" | "rabet" }
+    const result = await connectWallet(selectedWallet.value);
+
+    // 2) derive numeric IDs from your walletOptions
+    const meta = getSelectedWalletMeta();
+    // console.log(meta);
+    
+    if (!meta?.walletTypeId || !meta?.blockchainTypeId) {
+      throw new Error("Could not resolve wallet_type_id / blockchain_id from walletOptions.");
+    }
+
+
+    // 3) persist to backend with IDs (no hardcoding)
+    const ok = await storeWallet(result.publicKey, meta.walletTypeId, meta.key, meta.blockchainTypeId);
+    if (!ok) return;
+
+    // 4) update UI
+    UserData.value.walletKey = result.publicKey;
+    isWalletConnected.value = true;
+
+  } catch (e) {
+    Swal.fire({ icon: "error", title: "Wallet Error", text: e.message });
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 async function checkConnection() {
@@ -322,7 +354,6 @@ async function checkConnection() {
     isWalletConnected.value = conn;
 
     if (!conn) {
-        console.warn("Wallet not connected or not allowed.");
         return;
     }
     const publicKey = await getPublicKey();
@@ -462,14 +493,14 @@ async function watchWalletChanges() {
                 UserData.value.wallet_type_id = wallet_type_id; // freighter only
                 UserData.value.blockchain_id = blockchain_id;
                 const response = await axios.post("/api/update_wallet", UserData.value, {
-                    headers: {
+      headers: {
                         'X-CSRF-TOKEN': window.Laravel.csrfToken,
                         'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    },
-                });
+      },
+    });
                 if (response.data.status === "success") {
                     window.location.reload();
-                }
+    }
                 else {
                     // Handle a failure response from the server (optional)
                     // Swal.fire({
@@ -484,7 +515,7 @@ async function watchWalletChanges() {
             const previous_public_key = getCookie("public_key");
             if (previous_public_key) {
                 await wallet_disconnected(previous_public_key);
-            }
+    }
         }
     }, 3000); // Check every second
 }
