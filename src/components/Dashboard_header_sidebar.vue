@@ -241,19 +241,19 @@ const stellar_navigation = [
 ];
 
 //create listener to listen for connected changes
-hear('connected', async (status) => {
-  if (status) {
-    //has been connected, do the needfull
-    if (E('walletConnected')) {
-      const walletKey = await getPublicKey()
-      E('walletConnected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
-    }
-  }
-  else {
-    //has disconnected
-    E('walletConnected').innerText = "Connect Wallet"
-  }
-})
+// hear('connected', async (status) => {
+//   if (status) {
+//     //has been connected, do the needfull
+//     if (E('walletConnected')) {
+//       const walletKey = await getPublicKey()
+//       E('walletConnected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
+//     }
+//   }
+//   else {
+//     //has disconnected
+//     E('walletConnected').innerText = "Connect Wallet"
+//   }
+// })
 
 
 const route = useRoute();

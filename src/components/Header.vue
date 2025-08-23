@@ -33,7 +33,7 @@
         </div>
         <div class="hidden sm:ml-6 lg:flex sm:items-center">
 
-          <!-- Profile dropdown -->
+          <!-- Connect Wallet Button -->
           <div class="flex items-center gap-2 ">
             <button id="walletConnected" @click="OpenWalletModal" type="submit" class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
               Connect Wallet
@@ -82,9 +82,8 @@ import logo from '@/assets/logo.png';
 
 import { ref } from "vue";
 import Modal from '@/components/Modal.vue';
-import ConnectWalletModal from '@/components/ConnectWallet.vue';
+import ConnectWalletModal from './ConnectWallet.vue';
 import { E, getCookie, hasLogin, saveToken } from "../utils/utils.js";
-import { getPublicKey } from "@stellar/freighter-api";
 const signInModal = ref(false);
 const ConnectWalletModals = ref(false);
 const emit = defineEmits(['wallet-status']);
@@ -111,7 +110,7 @@ const Links = [
 //create listener to listen for connected changes
 hear('connected', async (status) => {
   if (status) {
-    const walletKey = await getPublicKey()
+    const walletKey = localStorage.getItem("public_key");
 
     emit('wallet-status', {
       connected: true,

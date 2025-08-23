@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 */
 Route::get('/fetch_wallet_types', 'GlobalController@fetch_wallet_types')->name('fetch_wallet_types');
 Route::get('/fetch_blockchains', 'GlobalController@fetch_blockchains')->name('fetch_blockchains');
-Route::get('/fetch_wallet_tokens', 'GlobalController@fetch_wallet_tokens')->name('fetch_wallet_tokens');
+Route::get('/fetch_generated_tokens', 'GlobalController@fetch_generated_tokens')->name('fetch_generated_tokens');
 Route::get('/count_data', 'GlobalController@count_data')->name('count_data');
 Route::post('/store_wallet', 'WalletController@store_wallet')->name('store_wallet');
 Route::post('/disconnect_wallet', 'WalletController@disconnect_wallet')->name('disconnect_wallet');

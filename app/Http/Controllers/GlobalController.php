@@ -58,7 +58,7 @@ class GlobalController extends Controller
     public function fetch_wallet_types()
     {
         $wallets = WalletType::where('status', 1) 
-            ->select('id','name', 'key')
+            ->select('id','name', 'key', 'blockchain_id')
             ->get();
 
         // Return the response
@@ -208,8 +208,12 @@ class GlobalController extends Controller
         }
     }
 
-    public function fetch_wallet_tokens (){
+    public function fetch_generated_tokens (){
         $get_wallets_tokens = Token::with(['stellarToken', 'blockchain'])
+        ->whereHas('stellarToken', function ($q) {
+            $q->whereNotNull('issuer_public_key')
+              ->where('issuer_public_key', '!=', '');
+        })
         ->limit(4)
         ->orderBy('id', 'desc')
         ->get();
