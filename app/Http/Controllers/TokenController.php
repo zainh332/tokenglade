@@ -42,7 +42,7 @@ class TokenController extends Controller
         $this->sdk = StellarSDK::getPublicNetInstance();
         $this->network = Network::public();
         $this->maxFee = 30000;
-        $this->token_creation_fee = 10; //XLM
+        $this->token_creation_fee = 0.002; //XLM
         $this->issuer_wallet_ammount = 4; //XLM
         $this->xlm_funding_wallet = env('XLM_FUNDING_WALLET');
         $this->xlm_funding_wallet_key = env('XLM_FUNDING_WALLET_KEY'); //using to send xlm and activating issuer wallet 
