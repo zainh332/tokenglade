@@ -488,18 +488,30 @@ async function handleConnect() {
     }
 }
 
+function getActiveWalletKey() {
+  // however you store it: cookie/localStorage/etc.
+  // return "freighter" | "rabet" | null
+  const t = getCookie("wallet_type_id"); // e.g. "2" = freighter in your app
+  return String(t) === "2" ? "freighter" : (t ? "rabet" : null);
+}
+
 async function checkConnection() {
-    // let conn = (await isConnected()) && (await isAllowed()) && (localStorage.getItem("wallet_connect") || "false") == "true";
-    let isWalletConnectedBefore =
-    localStorage.getItem("wallet_connect") === "true";
+    const hadSession = localStorage.getItem("wallet_connect") === "true";
+    if (!hadSession) { isWalletConnected.value = false; return; }
 
-    let conn =
-    //     isWalletConnectedBefore && (await isConnected()) && (await isAllowed());
-    isWalletConnected.value = conn;
+    const active = getActiveWalletKey(); // "freighter" | "rabet" | null
+    let conn = false;
 
-    if (!conn) {
-        return;
+    if (active === "freighter") {
+        const ok = await isConnected().catch(() => false);
+        const allowed = await isAllowed().catch(() => false);
+        conn = ok && allowed;
+    } else if (active === "rabet") {
+        conn = !!(window?.rabet && (window.rabet.account?.address || await window.rabet.isUnlocked().catch(() => false)));
     }
+
+    isWalletConnected.value = !!conn;
+    if (!conn) return;
     const publicKey = getCookie("public_key");
     // const cookie_public_key = getCookie("public_key"); // Assumes you have a function getCookie(name)
     const walletTypeId = getCookie("wallet_type_id");
