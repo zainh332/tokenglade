@@ -341,7 +341,7 @@ async function storeWallet(publicKey, walletTypeId, key, blockchainTypeId) {
         UserData.value.public_key = publicKey; // Set the public key in UserData
         UserData.value.wallet_type_id = walletTypeId; // Set the selected wallet type ID in UserData
         UserData.value.blockchain_id = blockchainTypeId; // Set the blockchain ID in UserData
-
+      console.log(csrfToken);
         try {
             const response = await axios.post(
                 "/api/store_wallet",
