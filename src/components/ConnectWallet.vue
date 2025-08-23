@@ -526,7 +526,12 @@ async function checkConnection() {
     UserData.value.blockchain_id = blockchainId; // Set the selected wallet type ID in UserData
 
     if (publicKey && walletTypeId && blockchainId) {
-        const response = await axios.post("/api/store_wallet", UserData.value);
+        const response = await axios.post("/api/store_wallet", {
+                headers: {
+                    "X-CSRF-TOKEN": csrfToken,
+                },
+            },
+            UserData.value);
         if (response.data.status === "success") {
             // If both are found, set UserData and mark connection as successful
             UserData.value.walletKey = publicKey;
