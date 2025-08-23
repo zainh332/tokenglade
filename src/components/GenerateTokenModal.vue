@@ -198,8 +198,7 @@ import { Form, Field, ErrorMessage } from 'vee-validate';
 import Logo from '@/assets/token-glade-logo.png'
 import * as Yup from "yup";
 import Swal from 'sweetalert2';
-import { getPublicKey, signTransaction, isConnected, requestAccess, getNetwork } from "@stellar/freighter-api"; 
-import { E } from "../utils/utils.js"; 
+import { E, signXdrWithWallet } from "../utils/utils.js"; 
 import axios from 'axios';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
 
@@ -243,8 +242,7 @@ const schema = Yup.object({
 
 // Close modal
 const closeModal = () => emit('close')
-
-
+const isTestnet = false;
 
 const maxValue = 922337203685; // The maximum allowed value
 const maxValueExceeded = ref(false); // Tracks if the value exceeds the max
@@ -281,15 +279,9 @@ const submitForm = async (form) => {
         Swal.showLoading();
       },
     });
-
-    const connected = await isConnected();
-    if (!connected) {
-      // If not connected, request access
-      await requestAccess();
-    }
-
+    
     // Get the distributor's public key from Freighter
-    const distributor_wallet_key = await getPublicKey();
+    const distributor_wallet_key = localStorage.getItem('public_key');
 
     // Prepare the payload for generating the unsigned transaction
     const payload = {
@@ -309,8 +301,7 @@ const submitForm = async (form) => {
       // Extract the unsigned transaction (XDR) and other variables from the response
       const unsignedXdr = generateResponse.data.unsigned_token_creation_fee_transaction;
       
-      //Use Freighter to sign the transaction
-      const signedXdr = await signTransaction(unsignedXdr, 'PUBLIC');
+      const signedXdr = await signXdrWithWallet(localStorage.getItem("wallet_key"), unsignedXdr, isTestnet);
 
       
       //Submit the signed transaction to the backend for submission to Stellar
@@ -330,8 +321,8 @@ const submitForm = async (form) => {
 
         const unsignedXdr = submitResponse1.data.unsigned_trustline_transaction;
       
-        //Use Freighter to sign the transaction
-        const signedXdr = await signTransaction(unsignedXdr, 'PUBLIC');
+        
+        const signedXdr = await signXdrWithWallet(localStorage.getItem("wallet_key"), unsignedXdr, isTestnet);
         
         //Submit the signed transaction to the backend for submission to Stellar
         const submitResponse2 = await axios.post('api/submit_transaction', {
@@ -416,7 +407,7 @@ hear('connected', async (status) => {
     //has been connected, do the needfull
     if (E('walletConnected')) {
       isWalletConnected.value = true;
-      walletKey = await getPublicKey();
+      walletKey = localStorage.getItem("public_key");
       
       E('walletConnected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
     }

@@ -185,7 +185,7 @@
                                             <div class="mt-5">
                                                 <button
                                                     id="connectWalletButton"
-                                                    @click="disconnectWallet()"
+                                                    @click="wallet_disconnected()"
                                                     type="button"
                                                     class="walletconnect-btn"
                                                 >
@@ -467,7 +467,6 @@ async function handleConnect() {
 
         // 2) derive numeric IDs from your walletOptions
         const meta = getSelectedWalletMeta();
-        // console.log(meta);
 
         if (!meta?.walletTypeId || !meta?.blockchainTypeId) {
             throw new Error(
@@ -482,9 +481,7 @@ async function handleConnect() {
             meta.key,
             meta.blockchainTypeId
         );
-        if (!ok) return;
-
-        // 4) update UI
+        
         UserData.value.walletKey = result.publicKey;
         isWalletConnected.value = true;
     } catch (e) {
@@ -506,14 +503,14 @@ async function checkConnection() {
     if (!conn) {
         return;
     }
-    const publicKey = await getPublicKey();
-    const cookie_public_key = getCookie("public_key"); // Assumes you have a function getCookie(name)
+    const publicKey = getCookie("public_key");
+    // const cookie_public_key = getCookie("public_key"); // Assumes you have a function getCookie(name)
     const walletTypeId = getCookie("wallet_type_id");
     const blockchainId = getCookie("blockchain_id");
 
-    //it mean user have updated its wallet from frieghter wallet
-    if (publicKey != cookie_public_key) {
-    }
+    // //it mean user have updated its wallet from frieghter wallet
+    // if (publicKey != cookie_public_key) {
+    // }
 
     UserData.value.public_key = publicKey; // Set the public key in UserData
     UserData.value.wallet_type_id = walletTypeId; // Set the selected wallet type ID in UserData
@@ -547,54 +544,9 @@ async function checkConnection() {
     }
     // }
 }
-
-async function wallet_disconnected(public_key) {
+async function wallet_disconnected() {
     try {
-        // const response = await axios.post("/api/disconnect_wallet", { public_key });
-        const response = await axios.post(
-            "/api/disconnect_wallet",
-            { public_key },
-            {
-                headers: {
-                    "X-CSRF-TOKEN": window.Laravel.csrfToken,
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-            }
-        );
-        if (response.data.status === "success") {
-            //clear everthing from cookies
-            localStorage.setItem("wallet_connect", "false");
-            isWalletConnected.value = false;
-            speak("connected", false);
-            document.cookie =
-                "public_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            document.cookie =
-                "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            document.cookie =
-                "wallet_type_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            document.cookie =
-                "blockchain_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            window.location.reload();
-        } else {
-            Swal.fire({
-                icon: "error",
-                title: "Error!",
-                text: "Failed to disconnect wallet.",
-            });
-        }
-    } catch (error) {
-        console.error("Error disconnecting wallet:", error);
-        Swal.fire({
-            icon: "error",
-            title: "Error!",
-            text: "An error occurred while disconnecting the wallet.",
-        });
-    }
-}
-
-async function disconnectWallet() {
-    try {
-        const public_key = await getPublicKey();
+        const public_key = localStorage.getItem("public_key");
         const response = await axios.post(
             "/api/disconnect_wallet",
             { public_key },
@@ -609,7 +561,11 @@ async function disconnectWallet() {
             closeModal();
 
             //clear everthing from cookies
+            localStorage.setItem("public_key", "false");
             localStorage.setItem("wallet_connect", "false");
+            localStorage.setItem("wallet_key", "false");
+            localStorage.setItem("token", "false");
+            localStorage.setItem("wallet_type", "false");
             isWalletConnected.value = false;
             speak("connected", false);
             document.cookie =
@@ -640,50 +596,50 @@ async function disconnectWallet() {
 
 // Watches wallet connection status and public key changes
 async function watchWalletChanges() {
-    setInterval(async () => {
-        const connected = await isConnected();
-        if (connected) {
-            const current_public_key = await getPublicKey();
-            const previous_public_key = getCookie("public_key");
-            const wallet_type_id = getCookie("wallet_type_id");
-            const blockchain_id = getCookie("blockchain_id");
+    // setInterval(async () => {
+    //     const connected = await isConnected();
+    //     if (connected) {
+    //         const current_public_key = await getPublicKey();
+    //         const previous_public_key = getCookie("public_key");
+    //         const wallet_type_id = getCookie("wallet_type_id");
+    //         const blockchain_id = getCookie("blockchain_id");
 
-            if (previous_public_key !== current_public_key) {
-                UserData.value.current_public_key = current_public_key; // Set the public key in UserData
-                UserData.value.previous_public_key = previous_public_key; // Set the selected wallet type ID in UserData
-                UserData.value.wallet_type_id = wallet_type_id; // freighter only
-                UserData.value.blockchain_id = blockchain_id;
-                const response = await axios.post(
-                    "/api/update_wallet",
-                    UserData.value,
-                    {
-                        headers: {
-                            "X-CSRF-TOKEN": window.Laravel.csrfToken,
-                            Authorization: `Bearer ${localStorage.getItem(
-                                "token"
-                            )}`,
-                        },
-                    }
-                );
-                if (response.data.status === "success") {
-                    window.location.reload();
-                } else {
-                    // Handle a failure response from the server (optional)
-                    // Swal.fire({
-                    //     icon: "error",
-                    //     title: "Error!",
-                    //     text: "Failed to connect wallet.",
-                    // });
-                }
-            }
-        } else {
-            // Pass the stored public key to disconnect if no longer connected
-            const previous_public_key = getCookie("public_key");
-            if (previous_public_key) {
-                await wallet_disconnected(previous_public_key);
-            }
-        }
-    }, 3000); // Check every second
+    //         if (previous_public_key !== current_public_key) {
+    //             UserData.value.current_public_key = current_public_key; // Set the public key in UserData
+    //             UserData.value.previous_public_key = previous_public_key; // Set the selected wallet type ID in UserData
+    //             UserData.value.wallet_type_id = wallet_type_id; // freighter only
+    //             UserData.value.blockchain_id = blockchain_id;
+    //             const response = await axios.post(
+    //                 "/api/update_wallet",
+    //                 UserData.value,
+    //                 {
+    //                     headers: {
+    //                         "X-CSRF-TOKEN": window.Laravel.csrfToken,
+    //                         Authorization: `Bearer ${localStorage.getItem(
+    //                             "token"
+    //                         )}`,
+    //                     },
+    //                 }
+    //             );
+    //             if (response.data.status === "success") {
+    //                 window.location.reload();
+    //             } else {
+    //                 // Handle a failure response from the server (optional)
+    //                 // Swal.fire({
+    //                 //     icon: "error",
+    //                 //     title: "Error!",
+    //                 //     text: "Failed to connect wallet.",
+    //                 // });
+    //             }
+    //         }
+    // } else {
+    //         // Pass the stored public key to disconnect if no longer connected
+    //         const previous_public_key = getCookie("public_key");
+    //         if (previous_public_key) {
+    //             await wallet_disconnected(previous_public_key);
+    // }
+    //     }
+    // }, 3000); // Check every second
 }
 
 // Watch `isWalletConnected` and trigger `watchWalletChanges` when it becomes true
