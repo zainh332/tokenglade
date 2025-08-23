@@ -23,7 +23,7 @@
                 {{ isWalletConnected ? 'Mint Token' : 'Connect Wallet to Mint' }}
               </button>
 
-            <DisclosurePanel class="lg:hidden">
+            <div class="lg:hidden">
               <div class="pt-6 space-y-1">
                 <a href="https://lobstr.co/trade/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
                   target="_blank"
@@ -32,7 +32,7 @@
                   Buy TKG Tokens
                 </a>
               </div>
-            </DisclosurePanel>
+            </div>
             </div>
           </div>
 
