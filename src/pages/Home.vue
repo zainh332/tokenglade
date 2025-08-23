@@ -29,7 +29,7 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
-                  Buy TKG Tokens from Lobstr
+                  Buy TKG Tokens
                 </a>
               </div>
             </DisclosurePanel>
