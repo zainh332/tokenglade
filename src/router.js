@@ -9,6 +9,7 @@ import TomlFileGenerator from "./pages/TomlFileGenerator.vue";
 import aboutus from "./pages/about-us.vue";
 import privacypolicy from "./pages/privacy-policy.vue";
 import termsofservice from "./pages/terms-of-service.vue";
+import Staking from "./pages/staking.vue";
 
 function hasRequiredCookies() {
     const public_key = getCookie('public_key');
@@ -118,6 +119,14 @@ const routes = [
         component: termsofservice,
         meta: {
             title: "Terms of Service",
+            description: ""
+        },
+    },
+    {
+        path: "/buy-stake",
+        component: Staking,
+        meta: {
+            title: "Buy Stake",
             description: ""
         },
     },

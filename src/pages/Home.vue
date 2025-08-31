@@ -2,27 +2,30 @@
   <div>
     <Header />
     <div>
-      <div class="container mx-auto py-10">
+      <div class="container mx-auto pt-[8rem] pb-10 relative top-0 z-[-1]">
         <div class="flex flex-col lg:flex-row items-center justify-between gap-12">
           <!-- Text Content -->
           <div class="text-center mx-auto lg:text-left max-w-3xl">
             <h1 class="text-[32px] sm:text-[48px] lg:text-[64px] font-normal leading-tight text-dark">
               Effortless Blockchain
-              <span class="block font-semibold">Token Creation</span>
+              <span
+                class="block font-semibold bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]  bg-clip-text text-transparent  bg-[length:200%_200%]  animate-gradientMove">
+                Token Creation
+              </span>
             </h1>
             <p class="text-[18px] sm:text-[20px] mt-4 text-dark max-w-xl mx-auto lg:mx-0">
               Easily generate blockchain tokens across multiple networks with our intuitive platform.
             </p>
             <div class="py-5">
-              <button @click="openTokenModal" type="button"
-                class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
+              <button @click="openTokenModal" type="button" class="text-xs text-white rounded-full btn-padding sm:text-t14   bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]
+         bg-[length:200%_200%] bg-no-repeat animate-gradientMove">
                 Mint Token
               </button>
             </div>
           </div>
 
           <!-- Image -->
-          <div class="hidden lg:block flex-shrink-0">
+          <div class="hidden lg:block flex-shrink-0 animate-float">
             <img class="w-[340px] h-[400px] xl:w-[500px] object-contain" :src="flower" alt="Decorative Flower" />
           </div>
         </div>
@@ -33,35 +36,43 @@
 
       <div
         class="grid max-w-6xl grid-cols-1 gap-12 px-4 py-10 mx-auto cards md:grid-cols-2 lg:grid-cols-3 sm:pt-24 sm:px-6 lg:px-8">
-        <div
-          class="drop-shadow bg-white hover:bg-purple-600 cursor-pointer group transition-all group duration-200 card-gradient h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
+
+        <div class="drop-shadow bg-[linear-gradient(182deg,_rgb(220_25_224_/_50%),_rgb(67_205_255_/_50%),_rgba(0,_254,_254,_0.5))] 
+           hover:bg-purple-600 cursor-pointer group transition-all duration-200 
+           h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
           <h1 class="font-semibold group-hover:text-white text-t34">{{ data.total_tokens }}</h1>
           <p class="text-center group-hover:text-white text-[20px] font-normal">
             Tokens created so far on TokenGlade
           </p>
         </div>
-        <div
-          class="drop-shadow bg-white hover:bg-purple-600 cursor-pointer group transition-all group duration-200 card-gradient h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
+
+        <div class="drop-shadow bg-[linear-gradient(182deg,_rgb(220_25_224_/_50%),_rgb(67_205_255_/_50%),_rgba(0,_254,_254,_0.5))] 
+           hover:bg-purple-600 cursor-pointer group transition-all duration-200 
+           h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
           <h1 class="font-semibold group-hover:text-white text-t34">{{ data.total_claimablebalance_users }}</h1>
           <p class="text-center group-hover:text-white text-[20px] font-normal">
             Total Claimable Balance Users
           </p>
         </div>
-        <div
-          class="drop-shadow bg-white hover:bg-purple-600 cursor-pointer group transition-all group duration-200 card-gradient h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
+
+        <div class="drop-shadow bg-[linear-gradient(182deg,_rgb(220_25_224_/_50%),_rgb(67_205_255_/_50%),_rgba(0,_254,_254,_0.5))] 
+           hover:bg-purple-600 cursor-pointer group transition-all duration-200 
+           h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
           <h1 class="font-semibold group-hover:text-white text-t34">{{ data.total_claimablebalance }}</h1>
           <p class="text-center group-hover:text-white text-[20px] font-normal">
             Claimable Balance to other wallets with TokenGlade
           </p>
         </div>
+
       </div>
+
 
       <div class="py-10 my-10 bg-white text-center">
         <h2 class="text-3xl font-bold mb-10">How It works</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
           <!-- Step 1 -->
           <div class="flex flex-col items-center">
-            <div class="bg-blue-100 p-4 rounded-full mb-4">
+            <div class="bg-blue-100 p-4 rounded-full mb-4 animate-pulseSoft">
               <img :src="Phone" alt="Choose Blockchain" class="w-12 h-12" />
             </div>
             <h3 class="text-xl font-semibold mb-2">Choose Your Blockchain</h3>
@@ -74,7 +85,7 @@
 
           <!-- Step 2 -->
           <div class="flex flex-col items-center">
-            <div class="bg-green-100 p-4 rounded-full mb-4">
+            <div class="bg-green-100 p-4 rounded-full mb-4 animate-pulseSoft">
               <img :src="Wallet" alt="Connect Wallet" class="w-12 h-12" />
             </div>
             <h3 class="text-xl font-semibold mb-2">Connect Your Wallet</h3>
@@ -86,7 +97,7 @@
 
           <!-- Step 3 -->
           <div class="flex flex-col items-center">
-            <div class="bg-yellow-100 p-4 rounded-full mb-4">
+            <div class="bg-yellow-100 p-4 rounded-full mb-4 animate-pulseSoft">
               <img :src="Coin" alt="Mint Token" class="w-12 h-12" />
             </div>
             <h3 class="text-xl font-semibold mb-2">Mint Your Token</h3>
@@ -144,7 +155,7 @@ const openTokenModal = (e) => {
   isTokenModalOpen.value = true
 }
 const closeTokenModal = () => {
-  isTokenModalOpen  .value = false
+  isTokenModalOpen.value = false
 }
 
 const data = ref({
