@@ -8,20 +8,22 @@
                 <!-- Text Content -->
                 <div class="text-center lg:text-left max-w-3xl">
                     <h1 class="text-[32px] sm:text-[48px] lg:text-[64px] font-normal leading-tight text-white">
-                        Gateway to
+                        Stake Your
                         <span class="block font-semibold">
-                            Stellar Solutions
+                            $TKG, Earn More
                         </span>
                     </h1>
                     <p class="text-[18px] sm:text-[20px] mt-4 text-white max-w-xl mx-auto lg:mx-0">
-                        Empowering users with a suite of Stellar features to unleash their innovative potential.
+                        Put your tokens to work with TokenGlade’s staking module. 
+                        Secure, seamless, and built for long-term rewards — up to 18% APY. 
+                        The stronger you hold, the more you earn
                     </p>
                 </div>
                 <!-- Form -->
                 <div class="flex-shrink-0 w-full max-w-md lg:max-w-lg bg-white rounded-[25px] shadow-lg">
                     <div class="bg-[#3A3A3A] text-white text-center py-5 rounded-t-[25px]">
                         <h2 class="card-header">
-                            Invest For <span>30 Days</span>
+                           Stake with <span>TokenGlade</span>
                         </h2>
                     </div>
                     <form class="flex flex-col gap-4 p-6">
@@ -33,13 +35,13 @@
                                 placeholder="Current balance" required>
                         </div>
                         <div>
-                            <label for="min_token" class="block text-sm font-medium text-gray-700">Min Token</label>
+                            <label for="min_token" class="block text-sm font-medium text-gray-700">Min $TKG Token</label>
                             <input type="text" id="min_token" name="min_token"
                                 class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3A3A3A]"
                                 placeholder="50" required>
                         </div>
                         <div>
-                            <label for="max_token" class="block text-sm font-medium text-gray-700">Max Token</label>
+                            <label for="max_token" class="block text-sm font-medium text-gray-700">Max $TKG Token</label>
                             <input type="text" id="max_token" name="max_token"
                                 class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3A3A3A]"
                                 placeholder="200" required>
@@ -63,13 +65,13 @@
                                         'linear-gradient(90deg, rgba(220,25,224,1), rgba(67,205,255,1), rgba(0,254,254,1))'
                                 }" />
                         </div>
-                        <div>
+                        <!-- <div>
                             <label for="after_days" class="block text-sm font-medium text-gray-700">After 30
                                 Days</label>
                             <input type="text" id="after_days" name="after_days"
                                 class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3A3A3A]"
                                 placeholder="After 30 Days" required>
-                        </div>
+                        </div> -->
                         <button type="submit"
                             class="w-full text-white py-2 rounded-[20px] hover:opacity-90 transition duration-300 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove">
                             Submit
@@ -82,7 +84,7 @@
             <div class="mx-auto">
                 <div class="table-section pb-10">
                     <h1>
-                        Latest Stellar Tokens <br> Generated with TokenGlade
+                        Latest Staking Reward <br> Transactions
                     </h1>
                 </div>
 
@@ -91,34 +93,24 @@
                     <table class="min-w-full border-collapse">
                         <thead class="bg-[#43CDFF] text-white">
                             <tr>
-                                <th class="py-3 px-4 text-center">Distributor Address</th>
-                                <th class="py-3 px-4 text-center">Issuer Address</th>
-                                <th class="py-3 px-4 text-center">Symbol</th>
-                                <th class="py-3 px-4 text-center">Total Supply</th>
+                                <th class="py-4 px-4 text-center">Wallet Address</th>
+                                <th class="py-4 px-4 text-center">Reward</th>
+                                <th class="py-4 px-4 text-center">Transactions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="(row, index) in paginatedData" :key="index"
                                 class="bg-white border-b border-[#EBEBEB]">
-                                <td class="py-3 px-4">
+                                <td class="py-4 px-4">
+                                    <td class="py-4 px-4 text-dark text-center">{{ row.wallet_address }}</td>
+                                </td>
+                                <td class="py-4 px-4">
                                     <span
-                                        class="inline-block w-full px-3 py-1 text-center text-sm font-medium text-dark bg-[#E5F5FF] rounded-full">
-                                        {{ row.distributor }}
+                                        class="inline-block w-full px-4 py-1 text-center text-sm font-medium text-dark bg-[#DBFEF0] rounded-full">
+                                        {{ row.reward }}
                                     </span>
                                 </td>
-                                <td class="py-3 px-4">
-                                    <span
-                                        class="inline-block w-full px-3 py-1 text-center text-sm font-medium text-dark bg-[#FFF9E5] rounded-full">
-                                        {{ row.issuer }}
-                                    </span>
-                                </td>
-                                <td class="py-3 px-4">
-                                    <span
-                                        class="inline-block w-full px-3 py-1 text-center text-sm font-medium text-dark bg-[#DBFEF0] rounded-full">
-                                        {{ row.symbol }}
-                                    </span>
-                                </td>
-                                <td class="py-3 px-4 text-dark text-center">{{ row.totalSupply }}</td>
+                                <td class="py-4 px-4 text-dark text-center">{{ row.transaction }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -147,17 +139,17 @@
                             <h1
                                 class="text-[32px] sm:text-[48px] lg:text-[64px] font-normal leading-tight text-dark mb-3">
                                 <span class="block text-[36px] font-semibold bg-dark leading-[1.4]">
-                                    Earn 0.1% Daily, Watch Your Wealth Grow
+                                    Stake $TKG, Watch Your Rewards Multiply
                                 </span>
                             </h1>
                             <p class="text-[18px] sm:text-[20px] mt-4 text-dark max-w-xl mx-auto lg:mx-0 leading-[1.7]">
-                                Why settle for low returns when you can earn 0.1% daily, 3% monthly, and a staggering
-                                36.5% annually? With DOPE Credits, your tokens work for you every single day, providing
-                                consistent, straightforward rewards that outshine traditional investments.
+                                Don’t just hold — make your tokens work. With TokenGlade’s staking module, earn <strong>daily passive rewards</strong> and climb tiers for even higher APY.  
+                                Up to <strong>18% annually</strong>, designed to reward conviction and long-term believers.  
+                                Backed by a <strong>35M $TKG reserve</strong>, staking is built to be sustainable and rewarding for years to come.
                             </p>
-                            <button class="text-dark p-2 rounded-[20px] bg-white border border-[#43CDFF]">
-                                APY <span class="font-bold">36.5%</span>
-                            </button>
+                            <!-- <button class="text-dark p-2 rounded-[20px] bg-white border border-[#43CDFF]">
+                                APY <span class="font-bold">Up to 18%</span>
+                            </button> -->
                         </div>
                         <!-- Image Column -->
                         <div class="md:w-1/2 p-4 flex flex-col items-center md:items-end justify-center gap-6">
@@ -180,19 +172,14 @@
                             <h1
                                 class="text-[32px] sm:text-[48px] lg:text-[64px] font-normal leading-tight text-dark mb-3">
                                 <span class="block text-[36px] font-semibold bg-dark leading-[1.4]">
-                                    Token Details Built for Performance
+                                    TokenGlade — Built for Speed & Reliability
                                 </span>
                             </h1>
                             <p class="text-[18px] sm:text-[20px] mt-4 text-dark max-w-xl mx-auto lg:mx-0 leading-[1.7]">
-                                DOPE Credits leverages the Stellar Blockchain for lightning-fast transactions and
-                                minimal fees, ensuring seamless and efficient staking. Whether you're earning rewards or
-                                transferring tokens, Stellar's advanced infrastructure makes DOPE Credits a powerhouse
-                                of performance and reliability. 🚀✨
+                                Powered by the <strong>Stellar Blockchain</strong>, TokenGlade delivers lightning-fast transactions and near-zero fees.  
+                                From staking to transfers, every action is seamless, secure, and efficient.  
+                                Stellar’s proven infrastructure makes TokenGlade a <strong>future-ready platform</strong> built to scale with global demand. 🚀✨
                             </p>
-                            <button
-                                class="text-white mt-5 py-2 px-4 rounded-[20px] hover:opacity-90 transition duration-300 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove">
-                                Drope explorer
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -251,16 +238,11 @@ function prevPage() {
 onMounted(() => {
     // Example table data
     tableData.value = [
-        { distributor: "Dist1", issuer: "Issuer1", symbol: "SYM1", totalSupply: 1000 },
-        { distributor: "Dist2", issuer: "Issuer2", symbol: "SYM2", totalSupply: 2000 },
-        { distributor: "Dist3", issuer: "Issuer3", symbol: "SYM3", totalSupply: 3000 },
-        { distributor: "Dist4", issuer: "Issuer4", symbol: "SYM4", totalSupply: 4000 },
-        { distributor: "Dist5", issuer: "Issuer5", symbol: "SYM5", totalSupply: 5000 },
-        { distributor: "Dist6", issuer: "Issuer6", symbol: "SYM6", totalSupply: 6000 },
-        { distributor: "Dist7", issuer: "Issuer7", symbol: "SYM7", totalSupply: 7000 },
-        { distributor: "Dist8", issuer: "Issuer8", symbol: "SYM8", totalSupply: 8000 },
-        { distributor: "Dist9", issuer: "Issuer9", symbol: "SYM9", totalSupply: 9000 },
-        { distributor: "Dist10", issuer: "Issuer10", symbol: "SYM10", totalSupply: 10000 },
+        { wallet_address: "GCJW......JSH", reward: "100 TKG", transaction: "Link" },
+        { wallet_address: "GIJW......KKQ", reward: "120 TKG", transaction: "Link" },
+        { wallet_address: "GAPK......SKSI", reward: "320 TKG", transaction: "Link"  },
+        { wallet_address: "GAAS......VEYP", reward: "50 TKG", transaction:  "Link"  },
+        { wallet_address: "GLOK......UUYD", reward: "543 TKG", transaction:  "Link"  },
     ];
 
     // Initialize slider value (optional)
@@ -292,7 +274,6 @@ onMounted(() => {
     font-size: 30px;
     line-height: 100%;
     text-align: center;
-    text-transform: uppercase;
 }
 
 .card-header span {

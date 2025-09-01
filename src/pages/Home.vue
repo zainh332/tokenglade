@@ -49,39 +49,6 @@
 
       <Table />
 
-      <div
-        class="grid max-w-6xl grid-cols-1 gap-12 px-4 py-10 mx-auto cards md:grid-cols-2 lg:grid-cols-3 sm:pt-24 sm:px-6 lg:px-8">
-
-        <div class="drop-shadow bg-[linear-gradient(182deg,_rgb(220_25_224_/_50%),_rgb(67_205_255_/_50%),_rgba(0,_254,_254,_0.5))] 
-           hover:bg-purple-600 cursor-pointer group transition-all duration-200 
-           h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
-          <h1 class="font-semibold group-hover:text-white text-t34">{{ data.total_tokens }}</h1>
-          <p class="text-center group-hover:text-white text-[20px] font-normal">
-            Tokens created so far on TokenGlade
-          </p>
-        </div>
-
-        <div class="drop-shadow bg-[linear-gradient(182deg,_rgb(220_25_224_/_50%),_rgb(67_205_255_/_50%),_rgba(0,_254,_254,_0.5))] 
-           hover:bg-purple-600 cursor-pointer group transition-all duration-200 
-           h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
-          <h1 class="font-semibold group-hover:text-white text-t34">{{ data.total_claimablebalance_users }}</h1>
-          <p class="text-center group-hover:text-white text-[20px] font-normal">
-            Total Claimable Balance Users
-          </p>
-        </div>
-
-        <div class="drop-shadow bg-[linear-gradient(182deg,_rgb(220_25_224_/_50%),_rgb(67_205_255_/_50%),_rgba(0,_254,_254,_0.5))] 
-           hover:bg-purple-600 cursor-pointer group transition-all duration-200 
-           h-[320px] rounded-[30px] flex flex-col px-10 items-center justify-center">
-          <h1 class="font-semibold group-hover:text-white text-t34">{{ data.total_claimablebalance }}</h1>
-          <p class="text-center group-hover:text-white text-[20px] font-normal">
-            Claimable Balance to other wallets with TokenGlade
-          </p>
-        </div>
-
-      </div>
-
-
       <div class="py-10 my-10 bg-white text-center">
         <h2 class="text-3xl font-bold mb-10">How It works</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">

@@ -10,7 +10,7 @@
             </span>
           </h1>
           <p class="text-[18px] sm:text-[20px] mt-4 text-white max-w-xl mx-auto lg:mx-0 leading-[1.2]">
-            Be part of the future with DOPE Credits. <br> Stake, earn, and grow with us!
+            Be part of the future with TokenGlade <br> Stake, earn, and grow with us
           </p>
         </div>
         <!-- Image Column -->
