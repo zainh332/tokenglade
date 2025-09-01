@@ -13,5 +13,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(WalletTypeSeeder::class);
+        $this->call(TransactionTypeSeeder::class);
+        $this->call(BlockchainSeeder::class);
     }
 }

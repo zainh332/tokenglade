@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Blockchain;
 use App\Models\ClaimableBalance;
 use App\Models\ClaimableBalanceReceiver;
 use App\Models\StellarToken;
+use App\Models\Token;
 use App\Models\WalletType;
 use Illuminate\Http\Request;
 
@@ -56,13 +58,24 @@ class GlobalController extends Controller
     public function fetch_wallet_types()
     {
         $wallets = WalletType::where('status', 1) 
-            ->select('id','name', 'key')
+            ->select('id','name', 'key', 'blockchain_id')
             ->get();
 
         // Return the response
         return response()->json([
             'status' => 'success',
             'wallets' => $wallets
+        ]);
+    }
+
+    public function fetch_blockchains()
+    {
+        $blockchains = Blockchain::orderBy('name')->get();
+
+        // Return the response
+        return response()->json([
+            'status' => 'success',
+            'blockchains' => $blockchains
         ]);
     }
 
@@ -195,8 +208,15 @@ class GlobalController extends Controller
         }
     }
 
-    public function fetch_wallet_tokens (){
-        $get_wallets_tokens = StellarToken::limit(4)->orderBy('id', 'desc')->get();
+    public function fetch_generated_tokens (){
+        $get_wallets_tokens = Token::with(['stellarToken', 'blockchain'])
+        ->whereHas('stellarToken', function ($q) {
+            $q->whereNotNull('issuer_public_key')
+              ->where('issuer_public_key', '!=', '');
+        })
+        ->limit(4)
+        ->orderBy('id', 'desc')
+        ->get();
         return response()->json([
             'status' => 'success',
             'tokens' => $get_wallets_tokens,

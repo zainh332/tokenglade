@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 50);
             $table->string('key', 10);
+            $table->integer('blockchain_id')->index();
             $table->tinyInteger('status')->default(1);
             $table->timestamps();
         });

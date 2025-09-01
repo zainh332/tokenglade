@@ -13,12 +13,17 @@ class StellarToken extends Model
         'asset_code', 
         'total_supply', 
         'user_wallet_address', 
-        'issuerPublicKey', 
-        'issuerSecretkey',
-        'unsigned_transaction',
-        'signed_transaction',
+        'issuer_public_key', 
+        'issuer_secret_key',
+        'current_stellar_transaction_id',
         'memo', 
         'lock_status',
-        'status'
+        'issuer_wallet_status',
+        'created_token_transfer_status'
     ];
+
+    public function token()
+    {
+        return $this->hasOne(Token::class);
+    }
 }

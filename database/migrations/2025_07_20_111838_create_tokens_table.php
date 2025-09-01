@@ -11,13 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('tokens', function (Blueprint $table) {
             $table->id();
-            $table->string('public_key', 60)->unique();
-            $table->integer('wallet_type_id')->index();
-            $table->integer('blockchain_id')->index();
-            $table->tinyInteger('status')->default(0);
-            $table->rememberToken();
+            $table->unsignedBigInteger('stellar_token_id')->index()->nullable();
+            $table->unsignedBigInteger('blockchain_id')->index()->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('tokens');
     }
 };
