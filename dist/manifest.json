@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-f3a98047.css",
+    "file": "assets/app-4f4f7731.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
@@ -16,13 +16,25 @@
     "file": "assets/flower-9bebdb58.png",
     "src": "src/assets/flower.png"
   },
-  "src/assets/footer-logo.png": {
-    "file": "assets/footer-logo-47ce9443.png",
-    "src": "src/assets/footer-logo.png"
-  },
   "src/assets/frighter.png": {
     "file": "assets/frighter-56128358.png",
     "src": "src/assets/frighter.png"
+  },
+  "src/assets/graph-1-card.png": {
+    "file": "assets/graph-1-card-d1dd035f.png",
+    "src": "src/assets/graph-1-card.png"
+  },
+  "src/assets/graph-1.png": {
+    "file": "assets/graph-1-a3c1d47f.png",
+    "src": "src/assets/graph-1.png"
+  },
+  "src/assets/graph-2-card.png": {
+    "file": "assets/graph-2-card-b87e8fad.png",
+    "src": "src/assets/graph-2-card.png"
+  },
+  "src/assets/graph-2.png": {
+    "file": "assets/graph-2-37a18b8a.png",
+    "src": "src/assets/graph-2.png"
   },
   "src/assets/lights.png": {
     "file": "assets/lights-c425c569.png",
@@ -53,7 +65,7 @@
     "src": "src/assets/xbull.png"
   },
   "src/main.css": {
-    "file": "assets/main-36451d53.css",
+    "file": "assets/main-a375a1c9.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -61,15 +73,18 @@
       "assets/logo-85d8ef3c.png",
       "assets/token-glade-logo-14ce1d6b.png",
       "assets/flower-9bebdb58.png",
-      "assets/footer-logo-47ce9443.png",
       "assets/coin-ab4d3c39.png",
       "assets/phone-592dc7ab.png",
-      "assets/wallet-3292a01f.jpg"
+      "assets/wallet-3292a01f.jpg",
+      "assets/graph-1-a3c1d47f.png",
+      "assets/graph-1-card-d1dd035f.png",
+      "assets/graph-2-37a18b8a.png",
+      "assets/graph-2-card-b87e8fad.png"
     ],
     "css": [
-      "assets/main-36451d53.css"
+      "assets/main-a375a1c9.css"
     ],
-    "file": "assets/main-118cb08a.js",
+    "file": "assets/main-e51922f2.js",
     "isEntry": true,
     "src": "src/main.js"
   }
