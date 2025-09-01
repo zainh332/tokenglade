@@ -18,9 +18,16 @@ class WalletTypeSeeder extends Seeder
 
         $wallets = [
             [
-                'name' => 'Frighter',
-                'key' => 'frighter',
+                'name' => 'Freighter',
+                'key' => 'freighter',
                 'status' => 1,
+                'blockchain_id' => 1,
+            ],
+            [
+                'name' => 'Rabet',
+                'key' => 'rabet',
+                'status' => 1,
+                'blockchain_id' => 1,
             ],
         ];
 

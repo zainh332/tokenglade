@@ -6,40 +6,42 @@
             <div class="space-y-2 py-8">
                 <h1 class="text-t34 text-center font-semibold">About TokenGlade</h1>
                 <p class="text-t16 text-center font-normal">
-                    Empowering Your Journey into the Stellar Universe
+                    One Platform. Every Chain. Infinite Tokens
                 </p>
             </div>
         </div>
-        <div class="py-4">
+         <div class="py-4">
             <h2 class="text-t24 font-semibold">Our Mission</h2>
             <p class="text-t16">
-                At TokenGlade, we are driven by a singular mission - to make blockchain technology accessible and user-friendly for everyone. We believe in the transformative power of blockchain, especially in the Stellar ecosystem, and we are committed to harnessing this power to simplify complex processes.
+            TokenGlade exists to make blockchain tokenization accessible to everyone. Our mission is to remove complexity from blockchain tools by enabling users to launch tokens on Stellar and soon, many other blockchains with zero code and zero friction.
             </p>
         </div>
         <div class="py-4">
             <h2 class="text-t24 font-semibold">Our Vision</h2>
             <p class="text-t16">
-                Our vision is to create a platform that empowers individuals and businesses to unlock the full potential of the Stellar blockchain. We aspire to be the go-to destination for anyone looking to harness the advantages of blockchain technology, whether it's token creation, smart contract deployment, or exploring the richness of the Stellar network.
+            We envision a world where anyone from developers to creators to small businesses can tap into the power of blockchain technology effortlessly. By building a no-code, multi-chain token creation platform, we're unlocking access to the tools of the future, starting with Stellar and expanding to Ripple, Ethereum, and beyond.
             </p>
         </div>
         <div class="py-4">
-            <h2 class="text-t24 font-semibold">Our Values</h2>
-            <p class="text-t16">
-                Integrity, innovation, and inclusivity are the cornerstones of our values. We are committed to maintaining the highest ethical standards in everything we do. We constantly innovate to bring you cutting-edge solutions. Above all, we embrace inclusivity, ensuring that blockchain's benefits are accessible to individuals and organizations worldwide.
-            </p>
-        </div>
-        <div class="py-4">
-            <h2 class="text-t24 font-semibold">Why TokenGlade?</h2>
-            <p class="text-t16">
-                With years of experience in blockchain technology, a passion for innovation, and a commitment to open-source principles, TokenGlade is uniquely positioned to simplify your journey into the Stellar universe. Our team comprises experts in software development, blockchain, and customer service, all dedicated to providing you with the best possible experience.
-            </p>
-        </div>
-        <div class="py-4">
-            <h2 class="text-t24 font-semibold">Join Us</h2>
-            <p class="text-t16">
-                We invite you to join us on this exciting journey into the world of Stellar blockchain. Whether you're a developer, a business owner, or simply someone curious about blockchain, TokenGlade is here to empower you. Together, we can shape the future of blockchain technology.
-            </p>
-        </div>
+        <h2 class="text-t24 font-semibold">Our Values</h2>
+        <p class="text-t16">
+          We believe in building tools that anyone can use regardless of their technical background. We lead with transparency, value open ecosystems, and are committed to empowering users globally with blockchain-enabled opportunities.
+        </p>
+      </div>
+
+         <div class="py-4">
+        <h2 class="text-t24 font-semibold">Why TokenGlade?</h2>
+        <p class="text-t16">
+          Most blockchain tools are built for developers. TokenGlade is different. We designed a platform that speaks to creators, innovators, and entrepreneurs not just coders. With support for Stellar (live) and multi-chain expansion underway, TokenGlade is the easiest way to turn your token idea into reality.
+        </p>
+      </div>
+
+      <div class="py-4">
+        <h2 class="text-t24 font-semibold">Join Us</h2>
+        <p class="text-t16">
+          Whether you're launching your first token or scaling your Web3 idea, TokenGlade is here to help. We're building a community-first platform that grows with you. Start your journey today and be part of the future of blockchain token creation.
+        </p>
+      </div>
     </div>
     <Footer />
 </Layout>

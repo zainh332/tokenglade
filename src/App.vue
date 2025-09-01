@@ -1,6 +1,6 @@
 <template>
   <div>
-  <beta-ribbon></beta-ribbon>
+  <!-- <beta-ribbon></beta-ribbon> -->
   <router-view></router-view>
   </div>
 </template>

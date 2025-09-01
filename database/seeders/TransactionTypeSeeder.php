@@ -15,13 +15,11 @@ class TransactionTypeSeeder extends Seeder
     {
         TransactionType::truncate();
 
-        $TransactionTypes = [
-            [
-                'name' => 'Token Creation Fee',
-                'name' => 'Generate Issuer Wallet',
-                'name' => 'Issuer Wallet Distributor Wallet Trustline',
-                'name' => 'Created Token Transfer',
-            ],
+       $TransactionTypes = [
+            ['name' => 'Token Creation Fee'],
+            ['name' => 'Generate Issuer Wallet'],
+            ['name' => 'Issuer Wallet Distributor Wallet Trustline'],
+            ['name' => 'Created Token Transfer'],
         ];
 
         // Insert Transaction types into the database

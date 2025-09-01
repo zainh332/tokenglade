@@ -12,7 +12,6 @@ class StellarTransactions extends Model
         'stellar_token_id',
         'claimable_balance_id',
         'reclaimable_balance_id',
-        
         'user_wallet_address', 
         'transaction_type_id', 
         'unsigned_xdr',

@@ -28,10 +28,10 @@
                   </div>
                 </div>
                 <div class="mt-2">
-                  <button id="distributor_wallet_connected" @click="OpenWalletModal" type="submit"
-                  class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
-              Connect Wallet
-            </button>
+                    <button id="distributor_wallet_connected" @click="OpenWalletModal" type="submit"
+                        class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
+                    Connect Wallet
+                  </button>
                 </div>
               </div>
               <!-- Distributor Wallet -->
@@ -295,10 +295,15 @@ const submitForm = async (form_details) => {
           },
         });
 
+        console.log('before success', submitResponse2.data)
+        
         if (submitResponse2.data.status === 'success') {
+          console.log('after success', submitResponse2.data)
+          Swal.close();
+
           Swal.fire({
             icon: 'success',
-            title: 'Success!',
+            title: 'Token Created!',
             text: `Your token ${submitResponse2.data.assetCode} has been created succuessfull And your issuer Public key: ${submitResponse2.data.issuerPublicKey} and your Issuer Secret key: ${submitResponse2.data.issuerSecretKey}`
           }).then(() => {
             // Reset form values
@@ -337,7 +342,7 @@ const submitForm = async (form_details) => {
     Swal.fire({
       icon: 'error',
       title: 'Error!',
-      text: error.response?.data?.error || 'An error occurred while processing the transaction.',
+      text: error.response?.data?.message || error.response?.data?.error || error.message || 'An error occurred while processing the transaction.',
     });
   }
 };

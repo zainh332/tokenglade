@@ -29,97 +29,77 @@ const routes = [
         path: "/",
         component: Home,
         meta: {
-            title: "Home",
-            description: "Explore the world of tokens with TokenGlade. Empower your journey into the Stellar universe and join the revolution in digital assets."
+            title: "TokenGlade — Create Tokens on Stellar (More Chains Coming Soon)",
+            description: "TokenGlade is a no-code platform that lets you create and launch tokens instantly on the Stellar blockchain. More blockchains like Ripple and Ethereum coming soon. Fast, secure, and developer-free token generation."
         },
-    },
-    {
-        path: "/token-generator",
-        component: TokenGenerator,
-        meta: {
-            title: "Token Generator",
-            description: "Create custom tokens effortlessly with TokenGlade's intuitive token generator. Make your mark in the token economy on the Stellar blockchain."
-        },
-        beforeEnter: (to, from, next) => {
-            if (hasRequiredCookies()) {
-                next(); // allow access if cookies exist
-            } else {
-                next('/'); // redirect to home page if cookies are missing
-            }
-        }
-    },
-    {
-        path: "/claimable-balance",
-        component: ClaimableBalance,
-        meta: {
-            title: "Claimable Balance",
-            description: "Explore claimable balances on TokenGlade. Control token distributions, airdrops, and rewards with precision on the Stellar blockchain.",
-        },
-        beforeEnter: (to, from, next) => {
-            if (hasRequiredCookies()) {
-                next(); // allow access if cookies exist
-            } else {
-                next('/'); // redirect to home page if cookies are missing
-            }
-        }
-    },
-    {
-        path: "/reclaim-claimable-balance",
-        component: ReclaimClaimableBalance,
-        meta: {
-            title: "Reclaim Claimable Balance",
-            description: "Easily reclaim your claimable balances in bulk for specific assets on the Stellar network. Streamline the process with our simple and efficient claim feature.",
-        },
-        beforeEnter: (to, from, next) => {
-            if (hasRequiredCookies()) {
-                next(); // allow access if cookies exist
-            } else {
-                next('/'); // redirect to home page if cookies are missing
-            }
-        }
     },
     // {
-    //   path: "/token-transfer",
-    //   component: TokenTransfer,
-    //   meta: {
-    //     title: "Token Transfer",
-    //     description: "Effortlessly transfer tokens across wallets on the Stellar blockchain with TokenGlade. Simplify token interactions and explore decentralized possibilities."
-    //   },
+    //     path: "/token-generator",
+    //     component: TokenGenerator,
+    //     meta: {
+    //         title: "Token Generator",
+    //         description: "Create custom tokens effortlessly with TokenGlade's intuitive token generator. Make your mark in the token economy on the Stellar blockchain."
+    //     },
+    //     beforeEnter: (to, from, next) => {
+    //         if (hasRequiredCookies()) {
+    //             next(); // allow access if cookies exist
+    //         } else {
+    //             next('/'); // redirect to home page if cookies are missing
+    //         }
+    //     }
     // },
-    //
     // {
-    //   path: "/toml-file-generator",
-    //   component: TomlFileGenerator,
-    //   meta: {
-    //     title: "TOML File Generator",
-    //     description: "Generate TOML files for your tokens with ease on TokenGlade. Enhance transparency, trust, and credibility for your token projects on the Stellar blockchain."
-    //   },
-    //   // beforeEnter: conditionalNext('isAdmin'),
+    //     path: "/claimable-balance",
+    //     component: ClaimableBalance,
+    //     meta: {
+    //         title: "Claimable Balance",
+    //         description: "Explore claimable balances on TokenGlade. Control token distributions, airdrops, and rewards with precision on the Stellar blockchain.",
+    //     },
+    //     beforeEnter: (to, from, next) => {
+    //         if (hasRequiredCookies()) {
+    //             next(); // allow access if cookies exist
+    //         } else {
+    //             next('/'); // redirect to home page if cookies are missing
+    //         }
+    //     }
+    // },
+    // {
+    //     path: "/reclaim-claimable-balance",
+    //     component: ReclaimClaimableBalance,
+    //     meta: {
+    //         title: "Reclaim Claimable Balance",
+    //         description: "Easily reclaim your claimable balances in bulk for specific assets on the Stellar network. Streamline the process with our simple and efficient claim feature.",
+    //     },
+    //     beforeEnter: (to, from, next) => {
+    //         if (hasRequiredCookies()) {
+    //             next(); // allow access if cookies exist
+    //         } else {
+    //             next('/'); // redirect to home page if cookies are missing
+    //         }
+    //     }
     // },
     {
         path: "/about-us",
         component: aboutus,
         meta: {
-            title: "About Us",
-            description: "Discover the mission of TokenGlade. We prioritize user-friendliness, transparency, and innovation in tokenization on the Stellar blockchain. Join the revolution!"
+            title: "About TokenGlade — No-Code Blockchain Token Creation Platform",
+            description: "Learn more about TokenGlade, a no-code multi-chain token creation platform. Discover our mission to simplify blockchain, starting with Stellar and expanding to Ripple, Ethereum, and more."
         },
-        // beforeEnter: conditionalNext('isAdmin'),
     },
     {
         path: "/privacy-policy",
         component: privacypolicy,
         meta: {
-            title: "Privacy Policy",
-            description: "Explore TokenGlade's Privacy Policy to discover how we handle your personal information. From data collection and usage to your choices, our policy ensures transparency and protection. Learn more about your privacy rights while using our platform."
+            title: "Privacy Policy — TokenGlade",
+            description: "Review TokenGlade’s Privacy Policy to learn how we collect, use, and protect your personal data while using our blockchain token creation platform."
         },
-        // beforeEnter: conditionalNext('isAdmin'),
     },
     {
         path: "/terms-service",
         component: termsofservice,
         meta: {
-            title: "Terms of Service",
-            description: ""
+            title: "Terms of Service — TokenGlade",
+            description: "Read the Terms of Service for TokenGlade. Understand your rights, responsibilities, and the rules that govern the use of our blockchain token generation platform."
         },
     },
     {
@@ -140,8 +120,25 @@ const router = createRouter({
 
 // Set the page title dynamically when the route changes
 router.beforeEach((to, from, next) => {
-    document.title = to.meta.title + " | TokenGlade";
+    if (to.meta && to.meta.title) {
+        document.title = to.meta.title;
+    }
+
+    // Optional: Set meta description if needed
+    if (to.meta && to.meta.description) {
+        let descriptionTag = document.querySelector('meta[name="description"]');
+        if (descriptionTag) {
+            descriptionTag.setAttribute('content', to.meta.description);
+        } else {
+            descriptionTag = document.createElement('meta');
+            descriptionTag.setAttribute('name', 'description');
+            descriptionTag.setAttribute('content', to.meta.description);
+            document.head.appendChild(descriptionTag);
+        }
+    }
+
     next();
 });
+
 
 export default router;

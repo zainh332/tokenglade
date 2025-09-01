@@ -16,19 +16,31 @@
             </router-link>
           </div>
           <div class="hidden sm:ml-6 lg:flex sm:space-x-6">
+            <template v-for="link in Links" :key="link.name">
+              <router-link
+                v-if="link.to"
+                :to="link.to"
+                class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14"
+              >
+                {{ link.name }}
+              </router-link>
 
-            <!-- <a v-for="link in Links" :key="link.name" href="#" class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">{{link.name}}</a> -->
-            <router-link v-for="link in Links" :key="link.name" :to="link.to"
-              class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
-              {{ link.name }}
-            </router-link>
-
+              <a
+                v-else
+                :href="link.href"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14"
+              >
+                {{ link.name }}
+              </a>
+            </template>
           </div>
+
         </div>
         <div class="hidden sm:ml-6 lg:flex sm:items-center">
 
-
-          <!-- Profile dropdown -->
+          <!-- Connect Wallet Button -->
           <div class="flex items-center gap-2 ">
             <!-- <router-link to="/register" class="px-5 py-1.5 rounded-full hover-gradient hover:text-white hover:border-white text-t14 leading-[20px] border border-black/50">Sign up</router-link> -->
             <!-- <router-link class="px-5 py-1.5 rounded-full text-t14 overflow-hidden leading-[20px] text-white bg-gradient  bg-cover" to="#">Sign in</router-link> -->
@@ -52,6 +64,7 @@
               Dashboard
             </router-link>
 
+      
           </div>
         </div>
         <div class="flex items-center -mr-2 lg:hidden">
@@ -82,7 +95,7 @@
   </Disclosure>
 
   <Modal :open="signInModal" />
-  <ConnectWalletModal :open="ConnectWalletModals" />
+  <ConnectWalletModal v-model="ConnectWalletModals" />
 
 </template>
 
@@ -93,12 +106,12 @@ import logo from '@/assets/logo.png';
 
 import { ref, onMounted, onUnmounted } from "vue";
 import Modal from '@/components/Modal.vue';
-import ConnectWalletModal from '@/components/ConnectWallet.vue';
+import ConnectWalletModal from './ConnectWallet.vue';
 import { E, getCookie, hasLogin, saveToken } from "../utils/utils.js";
-import { getPublicKey } from "@stellar/freighter-api";
 
 const signInModal = ref(false);
 const ConnectWalletModals = ref(false);
+const emit = defineEmits(['wallet-status']);
 const isWalletConnected = ref(false);
 
 // Scroll hide/show functionality
@@ -122,23 +135,7 @@ onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
 });
 
-const setOpen = (e) => {
-  e.preventDefault();
-  signInModal.value = !signInModal.value;
-};
-
-const OpenWalletModal = (e) => {
-  e.preventDefault();
-  ConnectWalletModals.value = true;
-};
-
-// const OpenWalletModal = (e) => {
-//   e.preventDefault();
-//   if (ConnectWalletModals.value) { ConnectWalletModals.value = false }
-//   setTimeout(() => {
-//     ConnectWalletModals.value = !ConnectWalletModals.value;
-//   }, 100)
-// };
+const OpenWalletModal = () => { ConnectWalletModals.value = true; };
 
 const Links = [
   {
@@ -158,16 +155,25 @@ const Links = [
 //create listener to listen for connected changes
 hear('connected', async (status) => {
   if (status) {
+    const walletKey = localStorage.getItem("public_key");
+
+    emit('wallet-status', {
+      connected: true,
+      walletKey,
+    });
+
     //has been connected, do the needfull
     if (E('walletConnected')) {
       isWalletConnected.value = true;
-      const walletKey = await getPublicKey()
       E('walletConnected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
     }
   }
   else {
     //has disconnected
     isWalletConnected.value = false;
+    emit('wallet-status', {
+      connected: false,
+    });
     E('walletConnected').innerText = "Connect Wallet"
   }
 })

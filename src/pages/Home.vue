@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Header />
+    <Header @wallet-status="handleWalletStatus" />
     <div>
       <div class="container mx-auto pt-[8rem] pb-10 relative top-0 z-[-1]">
         <div class="flex flex-col lg:flex-row items-center justify-between gap-12">
@@ -17,10 +17,25 @@
               Easily generate blockchain tokens across multiple networks with our intuitive platform.
             </p>
             <div class="py-5">
-              <button @click="openTokenModal" type="button" class="text-xs text-white rounded-full btn-padding sm:text-t14   bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]
-         bg-[length:200%_200%] bg-no-repeat animate-gradientMove">
-                Mint Token
+              <button
+                type="button"
+                id="mintToken"
+                class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient"
+                @click="isWalletConnected ? openTokenModal() : openConnectWalletModal()"
+              >
+                {{ isWalletConnected ? 'Mint Token' : 'Connect Wallet to Mint' }}
               </button>
+
+            <div class="lg:hidden">
+              <div class="pt-6 space-y-1">
+                <a href="https://lobstr.co/trade/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
+                  Buy TKG Tokens
+                </a>
+              </div>
+            </div>
             </div>
           </div>
 
@@ -77,9 +92,7 @@
             </div>
             <h3 class="text-xl font-semibold mb-2">Choose Your Blockchain</h3>
             <p class="text-dark text-sm">
-              Select from supported blockchains like Stellar dive,<br />
-              or <span class="text-blue-500">Ripptle</span> (coming soon)<br />
-              No registration needed.
+              Currently, TokenGlade supports the Stellar blockchain. More chains coming soon.
             </p>
           </div>
 
@@ -90,8 +103,8 @@
             </div>
             <h3 class="text-xl font-semibold mb-2">Connect Your Wallet</h3>
             <p class="text-dark text-sm">
-              TokenGlace will auto-suggest the right wallet (e.g. Freighter for Stellar).<br />
-              Securely.
+              TokenGlade will automatically suggest the right wallet<br />
+              based on the blockchain you select (e.g., Freighter for Stellar).
             </p>
           </div>
 
@@ -102,8 +115,9 @@
             </div>
             <h3 class="text-xl font-semibold mb-2">Mint Your Token</h3>
             <p class="text-dark text-sm">
-              Your token is live on-chain instantly –<br />
-              viewable on Stellar Expert or similar explorers.
+              Enter your token details and click “Create”.<br />
+              Your token goes live instantly on Stellar.<br />
+              Other blockchains coming soon!
             </p>
           </div>
         </div>
@@ -116,14 +130,19 @@
             <h1 class="mt-2 font-semibold leading-relaxed text-center text-black text-t34 sm:leading-lh65">
               Frequent questions
             </h1>
-            <p class="text-center text-t16">
+            <!-- <p class="text-center text-t16">
               It is a long established fact that a reader will be distracted
-            </p>
+            </p> -->
           </div>
         </div>
         <Faq />
       </div>
-      <GenerateTokenModal :show="isTokenModalOpen" @close="isTokenModalOpen = false" />
+      <GenerateTokenModal :open="isTokenModalOpen" @close="isTokenModalOpen = false" />
+        <ConnectWalletModal
+          v-model="ConnectWalletModals"
+          @status="handleWalletStatus"
+          @close="ConnectWalletModals = false"
+        />
       <Newsletter />
       <Footer />
     </div>
@@ -145,18 +164,22 @@ import Wallet from "@/assets/wallet.jpg";
 import axios from 'axios'
 import { ref, computed, defineProps, onMounted, watch } from "vue";
 import Swal from 'sweetalert2';
+import ConnectWalletModal from '@/components/ConnectWallet.vue';
+
+const isWalletConnected = ref(false);
+const walletKey = ref('');
+const ConnectWalletModals = ref(false);
+
+function handleWalletStatus(event) {
+  isWalletConnected.value = event.connected;
+  walletKey.value = event.walletKey || '';
+}
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
 const isTokenModalOpen = ref(false)
-
-const openTokenModal = (e) => {
-  e.preventDefault()
-  isTokenModalOpen.value = true
-}
-const closeTokenModal = () => {
-  isTokenModalOpen.value = false
-}
+const openTokenModal = () => { isTokenModalOpen.value = true }
+const openConnectWalletModal = () => { ConnectWalletModals.value = true }
 
 const data = ref({
   total_tokens: 0,

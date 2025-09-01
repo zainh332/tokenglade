@@ -20,6 +20,7 @@ class User extends Authenticatable
     protected $fillable = [
         'public_key',
         'wallet_type_id',
+        'blockchain_id',
         'status',
     ];
 

@@ -1,7 +1,5 @@
 /* UTILITY SCRIPTS */
-import {
-    getPublicKey,
-} from "@stellar/freighter-api";
+import { getPublicKey, signTransaction } from "@stellar/freighter-api";
 // import { MAX_SIZE_EXCEEDED } from "./constant";
 
 //the E operator
@@ -92,31 +90,7 @@ export const fDate = (dateString) => {
     // Return date in "yyyy-MM-dd" format
     return year + '-' + month + '-' + day;
 }
-//image selector
-// export const selectImage = (callback) => {
-//     const img = document.createElement('input')
-//     img.type = 'file'
-//     img.accept = 'image/*';
-//     img.style.display = 'none'
-//     img.addEventListener('change', function(event) {  
-//         const file = event.target.files[0];
-//         const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-//         if(file != null) {
-//             if (file && file.size > maxSize) {
-//                 callback(MAX_SIZE_EXCEEDED)
-//                 img.value = ''; // Clear the file input
-//             }
-//             else {
-//                 callback(file)
-//             }
-//         }
-//         else {
-//             callback("")
-//         }
-//     });
-//     document.body.appendChild(img)
-//     return img;
-// }
+
 //to add auth credentials
 export const authLogin = (formData) => {
     formData.append('token', getCookie('USER'));
@@ -169,4 +143,22 @@ export const fNum = (n, type = 'short') => {
 export const fAddr = (_address, n = 14) => {
     _address += ""
     return _address.substring(0,n) + '...' + _address.substring(_address.length - n)
+}
+
+export async function signXdrWithWallet(wallet, xdr, isTestnet) {
+  const key = (wallet || "").toString().trim().toLowerCase();
+
+  switch (key) {
+    case "freighter": {
+      const res = await signTransaction(xdr, isTestnet ? "TESTNET" : "PUBLIC");
+      return res?.signedTxXdr;
+    }
+    case "rabet": {
+      if (!window.rabet) throw new Error("Rabet not installed");
+      const res = await window.rabet.sign(xdr, isTestnet ? "testnet" : "mainnet");
+      return res?.xdr;
+    }
+    default:
+      throw new Error("Unsupported wallet for signing");
+  }
 }
