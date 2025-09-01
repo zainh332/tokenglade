@@ -2,7 +2,7 @@
   <div>
     <Header @wallet-status="handleWalletStatus" />
     <div>
-      <div class="container mx-auto pt-[8rem] pb-10 relative top-0 z-[-1]">
+      <div class="container mx-auto pt-[8rem] pb-10 relative top-0 z-0">
         <div class="flex flex-col lg:flex-row items-center justify-between gap-12">
           <!-- Text Content -->
           <div class="text-center mx-auto lg:text-left max-w-3xl">
