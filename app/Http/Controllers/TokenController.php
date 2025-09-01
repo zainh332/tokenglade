@@ -264,6 +264,8 @@ class TokenController extends Controller
                     $token_created->created_token_transfer_status = 1;
                     $token_created->save();
 
+                    //yahan call akrana hoga genrate toml ka function
+
                     return response()->json([
                         'status' => 'success',
                         'assetCode' => $assetCode,
@@ -801,5 +803,10 @@ class TokenController extends Controller
         $transaction->save();
 
         return $transaction;
+    }
+
+    private function generateTomlFile($name, $description, $url, $logo, $email, $issuer, $code)
+    {
+
     }
 }
