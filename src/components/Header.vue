@@ -148,6 +148,10 @@ const Links = [
   },
   {
     name: 'Buy TKG Tokens',
+    to: 'https://lobstr.co/trade/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ'
+  },
+  {
+    name: 'Stake TKG Tokens',
     to: '/buy-stake'
   },
 ]
