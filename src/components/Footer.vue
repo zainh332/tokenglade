@@ -35,10 +35,27 @@
         <div class="md:w-1/2 py-4 text-center md:text-left">
           <div class="flex">
             <div class="hidden lg:flex sm:space-x-6">
-              <router-link v-for="link in Links" :key="link.name" :to="link.to"
-                class="inline-flex items-center px-1 pt-1 font-normal text-white text-t14">
-                {{ link.name }}
-              </router-link>
+              <template v-for="link in Links" :key="link.name">
+                <!-- Internal route -->
+                <router-link
+                  v-if="link.to"
+                  :to="link.to"
+                  class="inline-flex items-center px-1 pt-1 font-normal text-white text-t14"
+                >
+                  {{ link.name }}
+                </router-link>
+
+                <!-- External URL -->
+                <a
+                  v-else-if="link.href"
+                  :href="link.href"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center px-1 pt-1 font-normal text-white text-t14"
+                >
+                  {{ link.name }}
+                </a>
+              </template>
             </div>
           </div>
         </div>
@@ -112,7 +129,7 @@ const Links = [
   },
   {
     name: 'Buy TKG Tokens',
-    to: '/buy-stake'
+    href: 'https://lobstr.co/trade/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ',
   },
 ]
 const FooterLinks = [
