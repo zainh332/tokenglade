@@ -242,7 +242,8 @@ const schema = Yup.object({
 
 // Close modal
 const closeModal = () => emit('close')
-const isTestnet = false;
+const network = (import.meta.env.VITE_STELLAR_ENVIRONMENT || "public").toLowerCase();
+const isTestnet = network === "testnet";
 
 const maxValue = 922337203685; // The maximum allowed value
 const maxValueExceeded = ref(false); // Tracks if the value exceeds the max
@@ -302,7 +303,6 @@ const submitForm = async (form) => {
       const unsignedXdr = generateResponse.data.unsigned_token_creation_fee_transaction;
       
       const signedXdr = await signXdrWithWallet(localStorage.getItem("wallet_key"), unsignedXdr, isTestnet);
-
       
       //Submit the signed transaction to the backend for submission to Stellar
       const submitResponse1 = await axios.post('api/submit_transaction',{

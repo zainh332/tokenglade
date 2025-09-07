@@ -35,17 +35,28 @@ use Soneso\StellarSDK\CreateAccountOperationBuilder;
 
 class TokenController extends Controller
 {
-    private $sdk, $maxFee, $network, $token_creation_fee, $xlm_funding_wallet, $xlm_funding_wallet_key, $issuer_wallet_ammount;
-
+    private $sdk, $maxFee, $network, $token_creation_fee;
+    private $xlm_funding_wallet, $xlm_funding_wallet_key, $issuer_wallet_amount;
+    
     public function __construct()
     {
-        $this->sdk = StellarSDK::getPublicNetInstance();
-        $this->network = Network::public();
-        $this->maxFee = 30000;
-        $this->token_creation_fee = 10; //XLM
-        $this->issuer_wallet_ammount = 4; //XLM
-        $this->xlm_funding_wallet = env('XLM_FUNDING_WALLET');
-        $this->xlm_funding_wallet_key = env('XLM_FUNDING_WALLET_KEY'); //using to send xlm and activating issuer wallet 
+        $stellarEnv = env('VITE_STELLAR_ENVIRONMENT');
+        
+        if ($stellarEnv === 'public') {
+            $this->sdk = StellarSDK::getPublicNetInstance();
+            $this->xlm_funding_wallet = env('XLM_FUNDING_WALLET');
+            $this->xlm_funding_wallet_key = env('XLM_FUNDING_WALLET_KEY');
+            $this->network = Network::public();
+        } else {
+            $this->sdk = StellarSDK::getTestNetInstance();
+            $this->network = Network::testnet();
+            $this->xlm_funding_wallet = env('XLM_FUNDING_WALLET_TESTNET');
+            $this->xlm_funding_wallet_key = env('XLM_FUNDING_WALLET_KEY_TESTNET');
+        }
+
+        $this->maxFee = 30;
+        $this->token_creation_fee = 50; //XLM
+        $this->issuer_wallet_amount = 4; //XLM
     }
 
     public function user_generate_token_request(Request $request)
@@ -301,7 +312,7 @@ class TokenController extends Controller
             $fundingAccount = $this->sdk->requestAccount($this->xlm_funding_wallet);
 
             // Create & Fund the Issuer Wallet from Funding wallet
-            $createAccountOp = (new CreateAccountOperationBuilder($issuerPublicKey, strval($this->issuer_wallet_ammount)))->build();
+            $createAccountOp = (new CreateAccountOperationBuilder($issuerPublicKey, strval($this->issuer_wallet_amount)))->build();
 
             // Build & Sign the Transaction
             $transaction = (new TransactionBuilder($fundingAccount, $this->network))

@@ -10,7 +10,7 @@ use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 function checkXlmBalance(string $publicKey): ?float
 {
     try {
-        $stellarEnv = env('STELLAR_ENVIRONMENT');
+        $stellarEnv = env('VITE_STELLAR_ENVIRONMENT');
 
         if ($stellarEnv === 'public') {
             $sdk = StellarSDK::getPublicNetInstance();
@@ -39,8 +39,7 @@ function checkXlmBalance(string $publicKey): ?float
 
 function checkTkgBalance(string $publicKey, ?float $amount = null): float|bool|null
 {
-    // --- Resolve environment + issuer (fail early if not configured) ---
-    $stellarEnv = env('STELLAR_ENVIRONMENT'); // 'public' or 'testnet'
+    $stellarEnv = env('VITE_STELLAR_ENVIRONMENT');
     $tkgIssuer  = $stellarEnv === 'public'
         ? env('TKG_ISSUER_PUBLIC')
         : env('TKG_ISSUER_TESTNET');
