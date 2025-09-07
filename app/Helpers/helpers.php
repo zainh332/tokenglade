@@ -1,4 +1,5 @@
 <?php
+
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 
@@ -9,7 +10,13 @@ use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 function checkXlmBalance(string $publicKey): ?float
 {
     try {
-        $sdk = StellarSDK::getPublicNetInstance();
+        $stellarEnv = env('STELLAR_ENVIRONMENT');
+
+        if ($stellarEnv === 'public') {
+            $sdk = StellarSDK::getPublicNetInstance();
+        } else {
+            $sdk = StellarSDK::getTestNetInstance();
+        }
         $account = $sdk->requestAccount($publicKey);
 
         foreach ($account->getBalances() as $balance) {
@@ -25,26 +32,46 @@ function checkXlmBalance(string $publicKey): ?float
             return false;
         }
         throw $e;
-    }
-    catch (\Exception $e) {
-        return null; 
+    } catch (\Exception $e) {
+        return null;
     }
 }
 
-function checkTkgBalance(string $publicKey): ?float
+function checkTkgBalance(string $publicKey, ?float $amount = null): float|bool|null
 {
-    $tkgIssuer = 'GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ';
+    // --- Resolve environment + issuer (fail early if not configured) ---
+    $stellarEnv = env('STELLAR_ENVIRONMENT'); // 'public' or 'testnet'
+    $tkgIssuer  = $stellarEnv === 'public'
+        ? env('TKG_ISSUER_PUBLIC')
+        : env('TKG_ISSUER_TESTNET');
+
+    if (!$tkgIssuer) {
+        return null;
+    }
+
+    // --- Pick SDK by env ---
+    $sdk = ($stellarEnv === 'public')
+        ? StellarSDK::getPublicNetInstance()
+        : StellarSDK::getTestNetInstance();
 
     try {
-        $sdk = StellarSDK::getPublicNetInstance();
+        // --- Fetch account (throws on 404) ---
         $account = $sdk->requestAccount($publicKey);
 
         foreach ($account->getBalances() as $balance) {
-            if ($balance->getAssetType() === 'credit_alphanum4' && 
-                $balance->getAssetCode() === 'TKG' && 
-                $balance->getAssetIssuer() === $tkgIssuer) 
-            {
-                return (float) $balance->getBalance();
+            if (
+                $balance->getAssetType() === 'credit_alphanum4' &&
+                $balance->getAssetCode() === 'TKG' &&
+                $balance->getAssetIssuer() === $tkgIssuer
+            ) {
+                $bal = (float) $balance->getBalance();
+
+                // If amount is given, return comparison instead of balance
+                if ($amount !== null) {
+                    return $bal >= $amount;
+                }
+
+                return $bal;
             }
         }
 
