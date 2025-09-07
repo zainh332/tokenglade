@@ -150,13 +150,13 @@ export async function signXdrWithWallet(wallet, xdr, isTestnet) {
 
   switch (key) {
     case "freighter": {
-      const res = await signTransaction(xdr, isTestnet ? "TESTNET" : "PUBLIC");
-      return res?.signedTxXdr;
+        const res = await signTransaction(xdr, isTestnet ? "TESTNET" : "PUBLIC");
+        return res;
     }
     case "rabet": {
       if (!window.rabet) throw new Error("Rabet not installed");
       const res = await window.rabet.sign(xdr, isTestnet ? "testnet" : "mainnet");
-      return res?.xdr;
+      return res;
     }
     default:
       throw new Error("Unsupported wallet for signing");
