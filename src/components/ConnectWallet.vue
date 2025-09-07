@@ -329,12 +329,9 @@ function getSelectedWalletMeta() {
 
 async function storeWallet(publicKey, walletTypeId, key, blockchainTypeId) {
     if (publicKey && walletTypeId && key && blockchainTypeId) {
-        // Save public key and wallet type in UserData
         UserData.value.public_key = publicKey; // Set the public key in UserData
         UserData.value.wallet_type_id = walletTypeId; // Set the selected wallet type ID in UserData
         UserData.value.blockchain_id = blockchainTypeId; // Set the blockchain ID in UserData
-      console.log(csrfToken);
-      console.log(window.Laravel.csrfToken);
         try {
             const response = await axios.post(
                 "/api/store_wallet",
@@ -506,13 +503,8 @@ async function checkConnection() {
     isWalletConnected.value = !!conn;
     if (!conn) return;
     const publicKey = getCookie("public_key");
-    // const cookie_public_key = getCookie("public_key"); // Assumes you have a function getCookie(name)
     const walletTypeId = getCookie("wallet_type_id");
     const blockchainId = getCookie("blockchain_id");
-
-    // //it mean user have updated its wallet from frieghter wallet
-    // if (publicKey != cookie_public_key) {
-    // }
 
     UserData.value.public_key = publicKey; // Set the public key in UserData
     UserData.value.wallet_type_id = walletTypeId; // Set the selected wallet type ID in UserData
@@ -600,73 +592,9 @@ async function wallet_disconnected() {
         });
     }
 }
-
-// Watches wallet connection status and public key changes
-async function watchWalletChanges() {
-    // setInterval(async () => {
-    //     const connected = await isConnected();
-    //     if (connected) {
-    //         const current_public_key = await getPublicKey();
-    //         const previous_public_key = getCookie("public_key");
-    //         const wallet_type_id = getCookie("wallet_type_id");
-    //         const blockchain_id = getCookie("blockchain_id");
-
-    //         if (previous_public_key !== current_public_key) {
-    //             UserData.value.current_public_key = current_public_key; // Set the public key in UserData
-    //             UserData.value.previous_public_key = previous_public_key; // Set the selected wallet type ID in UserData
-    //             UserData.value.wallet_type_id = wallet_type_id; // freighter only
-    //             UserData.value.blockchain_id = blockchain_id;
-    //             const response = await axios.post(
-    //                 "/api/update_wallet",
-    //                 UserData.value,
-    //                 {
-    //                     headers: {
-    //                         "X-CSRF-TOKEN": window.Laravel.csrfToken,
-    //                         Authorization: `Bearer ${localStorage.getItem(
-    //                             "token"
-    //                         )}`,
-    //                     },
-    //                 }
-    //             );
-    //             if (response.data.status === "success") {
-    //                 window.location.reload();
-    //             } else {
-    //                 // Handle a failure response from the server (optional)
-    //                 // Swal.fire({
-    //                 //     icon: "error",
-    //                 //     title: "Error!",
-    //                 //     text: "Failed to connect wallet.",
-    //                 // });
-    //             }
-    //         }
-    // } else {
-    //         // Pass the stored public key to disconnect if no longer connected
-    //         const previous_public_key = getCookie("public_key");
-    //         if (previous_public_key) {
-    //             await wallet_disconnected(previous_public_key);
-    // }
-    //     }
-    // }, 3000); // Check every second
-}
-
-// Watch `isWalletConnected` and trigger `watchWalletChanges` when it becomes true
-watch(
-    isWalletConnected,
-    (newVal) => {
-        if (newVal) {
-            watchWalletChanges();
-        }
-    },
-    { immediate: false } // Only trigger on actual changes, not immediately
-);
-
 onMounted(() => {
     checkConnection();
     fetchWallets();
     fetchblockchains();
-    const previous_public_key = getCookie("public_key");
-    if (previous_public_key) {
-        watchWalletChanges(); // Call directly if `previous_public_key` is there
-    }
 });
 </script>
