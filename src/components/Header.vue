@@ -148,7 +148,7 @@ const Links = [
   },
   {
     name: 'Stake',
-    to: '/buy-stake'
+    to: '/stake'
   },
   {
     name: 'Buy TKG Tokens',

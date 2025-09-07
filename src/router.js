@@ -103,10 +103,10 @@ const routes = [
         },
     },
     {
-        path: "/buy-stake",
+        path: "/stake",
         component: Staking,
         meta: {
-            title: "Buy Stake",
+            title: "Stake $TKG Tokens",
             description: ""
         },
     },
