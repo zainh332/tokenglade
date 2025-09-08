@@ -53,17 +53,6 @@
             </button>
 
             <ConnectWalletModal :open="ConnectWalletModals" @close="ConnectWalletModals = false" />
-
-            <!-- <button @click="setOpen" type="submit"
-              class="px-5 py-1.5 rounded-full text-t14 overflow-hidden leading-[20px] text-white bg-gradient  bg-cover">
-              Sign In
-            </button> -->
-
-            <router-link v-if="isWalletConnected" id="dashboard" to="/token-generator"
-              class="text-white rounded-full btn-padding text-t14 bg-gradient">
-              Dashboard
-            </router-link>
-
       
           </div>
         </div>
@@ -86,10 +75,10 @@
           {{ link.name }}
         </router-link>
         <!-- Add Connect Wallet button for mobile -->
-        <button id="walletConnected" @click="OpenWalletModal" type="submit"
-          class="w-full px-4 py-2 mt-2 text-base font-medium text-white rounded-md bg-gradient hover:bg-blue-700">
-          Connect Wallet
-        </button>
+      <button id="walletConnected" @click="OpenWalletModal" type="submit"
+        class="w-full px-4 py-2 mt-2 text-base font-medium text-white rounded-md bg-gradient hover:bg-blue-700">
+        Connect Wallet
+      </button>
       </div>
     </DisclosurePanel>
   </Disclosure>
