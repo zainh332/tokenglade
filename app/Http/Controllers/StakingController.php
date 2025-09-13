@@ -189,17 +189,65 @@ class StakingController extends Controller
 
     public function submit_xdr(Request $request)
     {
-        $signedXdr = $request->signedXdr;
+        $validator = Validator::make($request->all(), [
+            'signedXdr'  => [
+                'required',
+                function ($attr, $value, $fail) {
+                    if (!is_string($value) && !is_array($value)) {
+                        $fail('signedXdr must be a base64 string or a wallet response object.');
+                    }
+                },
+            ],
+            'staking_id' => ['required', 'integer', 'exists:stakings,id'],
+        ], [
+            'signedXdr.required'  => 'signedXdr is required.',
+            'staking_id.required' => 'staking_id is required.',
+            'staking_id.integer'  => 'staking_id must be an integer.',
+            'staking_id.exists'   => 'The specified staking record does not exist.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Validation error',
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        $raw = $request->signedXdr;
+
+        if (is_array($raw)) {
+            $signedXdr = $raw['signedTxXdr']         // Freighter
+                ?? $raw['xdr']                       // Rabet / xbull
+                ?? $raw['signed_envelope_xdr']       // Albedo
+                ?? $raw['envelope_xdr']              // fallback
+                ?? null;
+        } else {
+            $signedXdr = $raw;
+        }
+
+        if (!is_string($signedXdr) || trim($signedXdr) === '') {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Invalid signedXdr: expected base64 envelope XDR string.',
+            ], 422);
+        }
+
+        $signedXdr = trim($signedXdr);
+
+        if (base64_decode($signedXdr, true) === false) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'signedXdr is not valid base64.',
+            ], 422);
+        }
+
         $staking = Staking::where('id', $request->staking_id)->first();
         if (!$staking) {
             return response()->json(['status' => 'error', 'message' => 'Something went wrong!']);
         }
+
         try {
-            // $tx = Transaction::fromEnvelopeBase64XdrString($signedXdr);
-            // dd($tx);
-            // if (!empty($tx->getSignatures()[1])) {
-            //     $tx->setSignatures([$tx->getSignatures()[1]]);
-            // }
 
             $tx = Transaction::fromEnvelopeBase64XdrString($signedXdr);
             $result = $this->sdk->submitTransaction($tx);
