@@ -82,7 +82,7 @@ function formatAddress(address) {
 
 async function fetchWallets() {
     try {
-        const response = await axios.get('/api/fetch_generated_tokens', {
+        const response = await axios.get('/api/global/generated-tokens', {
             headers: {
                 'X-CSRF-TOKEN': csrfToken
             }

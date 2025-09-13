@@ -148,7 +148,7 @@ const Links = [
 //create listener to listen for connected changes
 hear('connected', async (status) => {
   if (status) {
-    const walletKey = localStorage.getItem("public_key");
+    const walletKey = getCookie("public_key");
 
     emit('wallet-status', {
       connected: true,

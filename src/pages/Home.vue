@@ -156,7 +156,7 @@ const data = ref({
 
 async function fetchdata() {
   try {
-    const response = await axios.get('/api/count_data', {
+    const response = await axios.get('/api/global/count-data', {
       headers: {
         'X-CSRF-TOKEN': csrfToken
       }

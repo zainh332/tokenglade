@@ -5,12 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Staking;
 use App\Models\StakingResult;
-use App\Models\Wallet;
+use App\Models\User;
+use App\Services\WalletService;
 use Exception;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -24,53 +22,61 @@ use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrSigner;
 use Illuminate\Support\Facades\Log;
+use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 
 class StakingController extends Controller
 {
     private $sdk, $minAmount, $maxFee, $daily_rate, $assetCode, $assetIssuer;
-    private $stakingRewardWalletKey, $stakingPublicWalletKey, $network;
+    private $stakingRewardWalletKey, $stakingPublicWalletKey, $network, $stakingPublicWallet, $stakingRewardWallet;
+    private WalletService $wallet;
 
-    public function __construct()
+    public function __construct(WalletService $wallet)
     {
         $stellarEnv = env('VITE_STELLAR_ENVIRONMENT');
-        
+
         if ($stellarEnv === 'public') {
             $this->sdk = StellarSDK::getPublicNetInstance();
-            $this->network = Network::public();
-        } else {
-            $this->sdk = StellarSDK::getTestNetInstance();
-            $this->network = Network::testnet();
-        }
 
-         if ($stellarEnv === 'public') {
-            $this->sdk = StellarSDK::getPublicNetInstance();
+            $this->stakingRewardWallet = env('STAKING_REWARD_WALLET');
             $this->stakingRewardWalletKey = env('STAKING_REWARD_WALLET_KEY');
+
+            $this->stakingPublicWallet = env('STAKING_PUBLIC_WALLET');
             $this->stakingPublicWalletKey = env('STAKING_PUBLIC_WALLET_KEY');
+
             $this->network = Network::public();
+            $this->assetIssuer =  env('TKG_ISSUER_PUBLIC');
         } else {
             $this->sdk = StellarSDK::getTestNetInstance();
+
+            $this->stakingRewardWallet = env('STAKING_REWARD_WALLET_TESTNET');
             $this->stakingRewardWalletKey = env('STAKING_REWARD_WALLET_KEY_TESTNET');
+
+            $this->stakingPublicWallet = env('STAKING_PUBLIC_WALLET_TESTNET');
             $this->stakingPublicWalletKey = env('STAKING_PUBLIC_WALLET_KEY_TESTNET');
+
+            $this->assetIssuer =  env('TKG_ISSUER_TESTNET');
             $this->network = Network::testnet();
         }
 
         $this->minAmount = 1500;
-        $this->maxFee = 20;
+        $this->maxFee = 3000;
         $this->daily_rate = 0.1 / 100;
         $this->assetCode = 'TKG';
-        $this->assetIssuer = 'GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ';
+        $this->wallet = $wallet;
     }
 
-    
-    public function startStaking(Request $request)
+
+    public function start_staking(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'amount' => ['required', 'integer', 'min:1500'],
+            'public_key' => ['required', 'string'],
         ], [
             'amount.required' => 'The amount field is required.',
             'amount.integer'  => 'The amount must be a valid number.',
             'amount.min'      => 'The amount must be at least 1500.',
+            'public_key.required' => 'The public key is required.',
         ]);
 
         if ($validator->fails()) {
@@ -81,13 +87,13 @@ class StakingController extends Controller
             ], 422);
         }
 
-        if (!isset($_COOKIE['public'])) {
+        if (!isset($_COOKIE['public_key'])) {
             return response()->json(['status' => 'error', 'message' => 'Wallet not connected!']);
         }
 
-        $public = $_COOKIE['public'];
+        $public = $request->input('public_key');
 
-        $wallet = Wallet::where('public', $public)->first();
+        $wallet = User::where('public_key', $public)->first();
         if (!$wallet) {
             return response()->json(['status' => 'error', 'message' => 'Wallet not found!']);
         }
@@ -105,13 +111,12 @@ class StakingController extends Controller
         }
 
         // Detect TKG trustline (issuer-specific)
-        $tkgIssuer = env('STELLAR_ENVIRONMENT') === 'public' ? env('TKG_ISSUER_PUBLIC'): env('TKG_ISSUER_TESTNET');
         $hasTrustline = false;
         foreach ($account->getBalances() as $b) {
             if (
                 $b->getAssetType() === 'credit_alphanum4' &&
                 $b->getAssetCode() === 'TKG' &&
-                $b->getAssetIssuer() === $tkgIssuer
+                $b->getAssetIssuer() === $this->assetIssuer
             ) {
                 $hasTrustline = true;
                 break;
@@ -126,7 +131,8 @@ class StakingController extends Controller
         $required = (float) $request->amount;
 
         // --- If your helper returns the BALANCE (original implementation) ---
-        $tkgBalance = $this->checkTkgBalance($public);
+        $tkgBalance = $this->wallet->getTkgBalance($public);
+
         if ($tkgBalance === false) {
             return response()->json(['status' => 'error', 'message' => 'Stellar account not found on network!']);
         }
@@ -140,20 +146,19 @@ class StakingController extends Controller
         DB::beginTransaction();
 
         try {
-            $stakingPublicWalletAccount = KeyPair::fromSeed($this->stakingPublicWalletKey);
 
-            $account = $this->sdk->requestAccount($wallet->public);
-
+            $source = $this->sdk->requestAccount($public);
             $asset = new AssetTypeCreditAlphanum4($this->assetCode, $this->assetIssuer);
 
-            // Payment Operation creation transactioin to send TKG token from users wallet to Staking Public Wallet
-            $paymentOperation = (new PaymentOperationBuilder($stakingPublicWalletAccount->getAccountId(), $asset, $request->amount))->build();
-            $txbuilder = new TransactionBuilder($account);
-            $txbuilder->setMaxOperationFee($this->maxFee);
-            $transaction = $txbuilder->addOperation($paymentOperation)->addMemo(new Memo(1, 'TKG staking'))->build();
-            $signer = Signer::preAuthTx($transaction, $this->network);
-            $sk = new XdrSigner($signer, 1);
-            $transaction->addSignature(new XdrDecoratedSignature('sign', $sk->encode()));
+            $paymentOp = (new PaymentOperationBuilder($this->stakingPublicWallet, $asset, $request->amount))
+                ->setSourceAccount($public)
+                ->build();
+
+            $transaction = (new TransactionBuilder($source, $this->network))
+                ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'TKG staking'))
+                ->addOperation($paymentOp)
+                ->build();
+
             $xdr = $transaction->toEnvelopeXdrBase64();
 
             // Operation failed
@@ -162,24 +167,52 @@ class StakingController extends Controller
                 Log::info('Something went wrong during staking operation.');
             }
 
-            $existing_staking = Staking::where('public', $_COOKIE['public'])->where('is_withdrawn', false)->where('amount', '>=', $this->minAmount)->latest()->first();
+            $existing_staking = Staking::where('public', $_COOKIE['public_key'])->where('is_withdrawn', false)->where('amount', '>=', $this->minAmount)->latest()->first();
             if ($existing_staking) {
                 $existing_staking->amount += $request->amount;
                 $existing_staking->save();
             } else {
                 $new_stake = new Staking();
-                $new_stake->public = $_COOKIE['public'];
+                $new_stake->public = $_COOKIE['public_key'];
                 $new_stake->is_withdrawn = false;
                 $new_stake->amount = $request->amount;
                 $new_stake->save();
             }
-
 
             DB::commit(); // Commit the transaction
             return response()->json(['xdr' => $xdr, 'status' => 'success', 'staking_id' => $existing_staking ? $existing_staking->id : $new_stake->id]);
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback the transaction
             return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function submit_xdr(Request $request)
+    {
+        $signedXdr = $request->signedXdr;
+        $staking = Staking::where('id', $request->staking_id)->first();
+        if (!$staking) {
+            return response()->json(['status' => 'error', 'message' => 'Something went wrong!']);
+        }
+        try {
+            // $tx = Transaction::fromEnvelopeBase64XdrString($signedXdr);
+            // dd($tx);
+            // if (!empty($tx->getSignatures()[1])) {
+            //     $tx->setSignatures([$tx->getSignatures()[1]]);
+            // }
+
+            $tx = Transaction::fromEnvelopeBase64XdrString($signedXdr);
+            $result = $this->sdk->submitTransaction($tx);
+
+            $txID = $result->getId();
+            if ($txID) {
+                $staking->transaction_id = $txID;
+                $staking->save();
+            }
+            return response()->json(['status' => 'success', 'message' => 'Staking Succeffull'], 200);
+        } catch (HorizonRequestException $e) {
+            Log::info('Error while submitting Xdr.'. $e);
+            return response()->json(['status' => 'error', 'message' => 'Failed!']);
         }
     }
 
@@ -222,7 +255,7 @@ class StakingController extends Controller
             $active_staking_wallet->is_withdrawn = true;
             $active_staking_wallet->save();
 
-            return response()->json(['status' => 'success', 'message' => 'Sucessfully Stoped Staking and '.$active_staking_wallet->amount.' TKG tokens are sent back to your wallet', 'tx' => $res->getId()]);
+            return response()->json(['status' => 'success', 'message' => 'Sucessfully Stoped Staking and ' . $active_staking_wallet->amount . ' TKG tokens are sent back to your wallet', 'tx' => $res->getId()]);
         } catch (\Throwable $th) {
             Log::error('Stop Staking Error: ' . $th->getMessage());
             Log::info('Error while stop staking.');
@@ -284,33 +317,6 @@ class StakingController extends Controller
                 'file' => $th->getFile(),
                 'line' => $th->getLine(),
             ]);
-        }
-    }
-
-    // XDR SUBMIT
-    public function submitXdr(Request $request)
-    {
-        $signedXdr = $request->signedXdr;
-        $staking = Staking::where('id', $request->staking_id)->first();
-        if (!$staking) {
-            return response()->json(['status' => 'error', 'message' => 'Something went wrong!']);
-        }
-        try {
-            $sdk = $this->sdk;
-            $tx = Transaction::fromEnvelopeBase64XdrString($signedXdr);
-            if (!empty($tx->getSignatures()[1])) {
-                $tx->setSignatures([$tx->getSignatures()[1]]);
-            }
-            $result = $sdk->submitTransaction($tx);
-            $txID = $result->getId();
-            if ($txID) {
-                $staking->transaction_id = $txID;
-                $staking->save();
-            }
-            return response()->json(['status' => 'success', 'message' => 'Staking Succeffull'], 200);
-        } catch (\Throwable $th) {
-            return response()->json(['status' => 'error', 'message' => 'Failed!']);
-            Log::info('Error while submitting Xdr.');
         }
     }
 }

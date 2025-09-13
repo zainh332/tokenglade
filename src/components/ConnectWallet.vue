@@ -185,7 +185,7 @@
                                             <div class="mt-5">
                                                 <button
                                                     id="connectWalletButton"
-                                                    @click="wallet_disconnected()"
+                                                    @click="disconnectWallet()"
                                                     type="button"
                                                     class="walletconnect-btn"
                                                 >
@@ -231,7 +231,7 @@ import xbull from "@/assets/xbull.png";
 import axios from "axios";
 import {
     isConnected,
-    isAllowed,
+        isAllowed,
     getPublicKey,
     requestAccess,
 } from "@stellar/freighter-api";
@@ -266,7 +266,7 @@ const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute
 // Fetch available blockchains from the server
 async function fetchblockchains() {
     try {
-        const response = await axios.get("/api/fetch_blockchains", {});
+        const response = await axios.get("/api/global/blockchains", {});
 
         if (response.data.status === "success") {
             blockchainOptions.value = response.data.blockchains;
@@ -290,7 +290,7 @@ async function fetchblockchains() {
 }
 async function fetchWallets() {
     try {
-        const response = await axios.get("/api/fetch_wallet_types", {});
+        const response = await axios.get("/api/global/wallet-types", {});
         if (response.data.status === "success") {
             walletOptions.value = response.data.wallets;
         } else {
@@ -334,11 +334,11 @@ async function storeWallet(publicKey, walletTypeId, key, blockchainTypeId) {
         UserData.value.blockchain_id = blockchainTypeId; // Set the blockchain ID in UserData
         try {
             const response = await axios.post(
-                "/api/store_wallet",
+                "/api/wallet/store",
                 UserData.value,
                 {
                     headers: {
-                        'X-CSRF-TOKEN': window.Laravel.csrfToken,
+                        "X-CSRF-TOKEN": csrfToken,
                     },
                 }
             );
@@ -468,7 +468,8 @@ async function handleConnect() {
             meta.key,
             meta.blockchainTypeId
         );
-        
+        if (!ok) return;
+
         UserData.value.walletKey = result.publicKey;
         isWalletConnected.value = true;
     } catch (e) {
@@ -479,27 +480,23 @@ async function handleConnect() {
 }
 
 function getActiveWalletKey() {
-  // however you store it: cookie/localStorage/etc.
-  // return "freighter" | "rabet" | null
-  const t = getCookie("wallet_type_id"); // e.g. "2" = freighter in your app
+  const t = localStorage.getItem("wallet_type"); 
   return String(t) === "2" ? "freighter" : (t ? "rabet" : null);
 }
 
 async function checkConnection() {
-    const hadSession = localStorage.getItem("wallet_connect") === "true";
-    if (!hadSession) { isWalletConnected.value = false; return; }
+    let isWalletConnectedBefore = localStorage.getItem("wallet_connect") === "true";
+    let conn = isWalletConnectedBefore && (await isConnected()) && (await isAllowed());
 
     const active = getActiveWalletKey(); // "freighter" | "rabet" | null
-    let conn = false;
-
-    if (active === "freighter") {
-        const ok = await isConnected().catch(() => false);
-        const allowed = await isAllowed().catch(() => false);
-        conn = ok && allowed;
-    } else if (active === "rabet") {
-        conn = !!(window?.rabet && (window.rabet.account?.address || await window.rabet.isUnlocked().catch(() => false)));
-    }
-
+    // if (active === "freighter") {
+    //     const ok = await isConnected().catch(() => false);
+    //     const allowed = await isAllowed().catch(() => false);
+    //     conn = ok && allowed;
+    // } else if (active === "rabet") {
+    //     conn = !!(window?.rabet && (window.rabet.account?.address || await window.rabet.isUnlocked().catch(() => false)));
+    // }
+    
     isWalletConnected.value = !!conn;
     if (!conn) return;
     const publicKey = getCookie("public_key");
@@ -511,12 +508,7 @@ async function checkConnection() {
     UserData.value.blockchain_id = blockchainId; // Set the selected wallet type ID in UserData
 
     if (publicKey && walletTypeId && blockchainId) {
-        const response = await axios.post("/api/store_wallet", {
-                headers: {
-                    "X-CSRF-TOKEN": csrfToken,
-                },
-            },
-            UserData.value);
+        const response = await axios.post("/api/wallet/store", UserData.value);
         if (response.data.status === "success") {
             // If both are found, set UserData and mark connection as successful
             UserData.value.walletKey = publicKey;
@@ -543,7 +535,7 @@ async function checkConnection() {
     }
     // }
 }
-async function wallet_disconnected() {
+async function disconnectWallet() {
     try {
         const public_key = localStorage.getItem("public_key");
         const response = await axios.post(
@@ -560,11 +552,7 @@ async function wallet_disconnected() {
             closeModal();
 
             //clear everthing from cookies
-            localStorage.setItem("public_key", "false");
             localStorage.setItem("wallet_connect", "false");
-            localStorage.setItem("wallet_key", "false");
-            localStorage.setItem("token", "false");
-            localStorage.setItem("wallet_type", "false");
             isWalletConnected.value = false;
             speak("connected", false);
             document.cookie =
@@ -595,50 +583,47 @@ async function wallet_disconnected() {
 
 // Watches wallet connection status and public key changes
 async function watchWalletChanges() {
-    // setInterval(async () => {
-    //     const connected = await isConnected();
-    //     if (connected) {
-    //         const current_public_key = await getPublicKey();
-    //         const previous_public_key = getCookie("public_key");
-    //         const wallet_type_id = getCookie("wallet_type_id");
-    //         const blockchain_id = getCookie("blockchain_id");
+    setInterval(async () => {
+        const frieghter = getCookie("wallet_type_id");
+        
+        if (frieghter == 1 && localStorage.getItem("wallet_connect") === "true") {
+            const current_public_key = await getPublicKey();
+            const previous_public_key = getCookie("public_key");
+            const wallet_type_id = getCookie("wallet_type_id");
+            const blockchain_id = getCookie("blockchain_id");
 
-    //         if (previous_public_key !== current_public_key) {
-    //             UserData.value.current_public_key = current_public_key; // Set the public key in UserData
-    //             UserData.value.previous_public_key = previous_public_key; // Set the selected wallet type ID in UserData
-    //             UserData.value.wallet_type_id = wallet_type_id; // freighter only
-    //             UserData.value.blockchain_id = blockchain_id;
-    //             const response = await axios.post(
-    //                 "/api/update_wallet",
-    //                 UserData.value,
-    //                 {
-    //                     headers: {
-    //                         "X-CSRF-TOKEN": window.Laravel.csrfToken,
-    //                         Authorization: `Bearer ${localStorage.getItem(
-    //                             "token"
-    //                         )}`,
-    //                     },
-    //                 }
-    //             );
-    //             if (response.data.status === "success") {
-    //                 window.location.reload();
-    //             } else {
-    //                 // Handle a failure response from the server (optional)
-    //                 // Swal.fire({
-    //                 //     icon: "error",
-    //                 //     title: "Error!",
-    //                 //     text: "Failed to connect wallet.",
-    //                 // });
-    //             }
-    //         }
-    // } else {
-    //         // Pass the stored public key to disconnect if no longer connected
-    //         const previous_public_key = getCookie("public_key");
-    //         if (previous_public_key) {
-    //             await wallet_disconnected(previous_public_key);
-    // }
-    //     }
-    // }, 3000); // Check every second
+            if (previous_public_key !== current_public_key) {
+                UserData.value.current_public_key = current_public_key; // Set the public key in UserData
+                UserData.value.previous_public_key = previous_public_key; // Set the selected wallet type ID in UserData
+                UserData.value.wallet_type_id = wallet_type_id; // freighter only
+                UserData.value.blockchain_id = blockchain_id;
+                const response = await axios.post(
+                    "/api/wallet/update",
+                    UserData.value,
+                    {
+                        headers: {
+                            "X-CSRF-TOKEN": window.Laravel.csrfToken,
+                            Authorization: `Bearer ${localStorage.getItem(
+                                "token"
+                            )}`,
+                        },
+                    }
+                );
+                if (response.data.status === "success") {
+                    window.location.reload();
+                } else {
+                    // await disconnectWallet(previous_public_key);
+                    // Handle a failure response from the server (optional)
+                    // Swal.fire({
+                    //     icon: "error",
+                    //     title: "Error!",
+                    //     text: "Failed to connect wallet.",
+                    // });
+                }
+            }
+        } else {
+        }
+    }, 3000); // Check every second
 }
 
 // Watch `isWalletConnected` and trigger `watchWalletChanges` when it becomes true

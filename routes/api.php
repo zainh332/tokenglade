@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
@@ -16,29 +15,62 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-Route::get('/fetch_wallet_types', 'GlobalController@fetch_wallet_types')->name('fetch_wallet_types');
-Route::get('/fetch_blockchains', 'GlobalController@fetch_blockchains')->name('fetch_blockchains');
-Route::get('/fetch_generated_tokens', 'GlobalController@fetch_generated_tokens')->name('fetch_generated_tokens');
-Route::get('/count_data', 'GlobalController@count_data')->name('count_data');
-Route::post('/store_wallet', 'WalletController@store_wallet')->name('store_wallet');
-Route::post('/disconnect_wallet', 'WalletController@disconnect_wallet')->name('disconnect_wallet');
 
-Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
-    Route::post('/update_wallet', 'WalletController@update_wallet')->name('update_wallet');
-    Route::post('/generate_issuer_wallet', 'TokenController@generate_issuer_wallet')->name('generate_issuer_wallet');
-    Route::post('/generate_token', 'TokenController@user_generate_token_request')->name('generate_token');
-    Route::post('/submit_transaction', 'TokenController@submit_transaction')->name('submit_transaction');
-    Route::post('/claimable_balance', 'TokenController@claimable_balance')->name('claimable_balance');
-    Route::post('/reclaim_claimable_balance', 'TokenController@reclaim_claimable_balance')->name('reclaim_claimable_balance');
-    Route::post('/token_transfer', 'TokenController@token_transfer')->name('token_transfer');
-    
-    Route::post('/check_wallet', 'GlobalController@check_wallet')->name('check_wallet');
-    Route::post('/fetch_holding_tokens_total_xlm', 'GlobalController@fetch_holding_tokens_total_xlm')->name('fetch_holding_tokens_total_xlm');
-    Route::post('/fetch_holding_tokens_claim_claimable_balance', 'GlobalController@fetch_holding_tokens_claim_claimable_balance')->name('fetch_holding_tokens_claim_claimable_balance');
-    // Route::post('/fetch_claimable_balance', 'GlobalController@fetch_claimable_balance')->name('fetch_claimable_balance');
+// ==========================
+// GlobalController
+// ==========================
+Route::prefix('global')->group(function () {
+    Route::get('wallet-types', 'GlobalController@fetch_wallet_types')->name('global.walletTypes');
+    Route::get('blockchains', 'GlobalController@fetch_blockchains')->name('global.blockchains');
+    Route::get('generated-tokens', 'GlobalController@fetch_generated_tokens')->name('global.generatedTokens');
+    Route::get('count-data', 'GlobalController@count_data')->name('global.countData');
+    Route::get('check-xlm-balance', 'GlobalController@check_xlm_balance')->name('global.checkXlmBalance');
+    Route::get('check-tkg-balance', 'GlobalController@check_tkg_balance')->name('global.checkTkgBalance');
 });
 
-Route::get('/circulating-supply', [CirculatingSupplyController::class, 'show']);
-Route::get('/total-supply', [CirculatingSupplyController::class, 'total']);
+// ==========================
+// WalletController
+// ==========================
+Route::prefix('wallet')->group(function () {
+    Route::post('store', 'WalletController@store_wallet')->name('wallet.store');
+    Route::post('disconnect', 'WalletController@disconnect_wallet')->name('wallet.disconnect');
+});
 
 
+Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
+    // ==========================
+    // WalletController
+    // ==========================
+    Route::prefix('wallet')->group(function () {
+        Route::post('update', 'WalletController@update_wallet')->name('wallet.update');
+    });
+
+    // ==========================
+    // TokenController
+    // ==========================
+    Route::prefix('token')->group(function () {
+        Route::post('generate-issuer-wallet', 'TokenController@generate_issuer_wallet')->name('token.generateIssuerWallet');
+        Route::post('generate', 'TokenController@user_generate_token_request')->name('token.generate');
+        Route::post('submit-transaction', 'TokenController@submit_transaction')->name('token.submitTransaction');
+        Route::post('claimable-balance', 'TokenController@claimable_balance')->name('token.claimableBalance');
+        Route::post('reclaim-claimable-balance', 'TokenController@reclaim_claimable_balance')->name('token.reclaimClaimableBalance');
+    });
+
+    // ==========================
+    // StakingController
+    // ==========================
+    Route::prefix('staking')->group(function () {
+        Route::post('start', 'StakingController@start_staking')->name('staking.start');
+        Route::post('submit-xdr', 'StakingController@submit_xdr')->name('staking.submitXdr');
+        Route::post('reward-distribution', 'StakingController@reward_distribution')->name('staking.reward');
+        Route::post('stop', 'StakingController@stop_staking')->name('staking.stop');
+    });
+});
+
+// ==========================
+// CirculatingSupplyController
+// ==========================
+Route::prefix('supply')->group(function () {
+    Route::get('circulating', 'CirculatingSupplyController@show')->name('supply.circulating');
+    Route::get('total', 'CirculatingSupplyController@total')->name('supply.total');
+});

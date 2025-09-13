@@ -260,7 +260,7 @@ const submitForm = async (form_details) => {
 
       
       //Submit the signed transaction to the backend for submission to Stellar
-      const submitResponse1 = await axios.post('api/submit_transaction',{
+      const submitResponse1 = await axios.post('api/token/submit-transaction',{
         signedXdr,
         type: 1,
         payload 
@@ -280,7 +280,7 @@ const submitForm = async (form_details) => {
         const signedXdr = await signTransaction(unsignedXdr, 'PUBLIC');
         
         //Submit the signed transaction to the backend for submission to Stellar
-        const submitResponse2 = await axios.post('api/submit_transaction', {
+        const submitResponse2 = await axios.post('api/token/submit-transaction', {
           signedXdr,
           type: 3, 
           payload: {

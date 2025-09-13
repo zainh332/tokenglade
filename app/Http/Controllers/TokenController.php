@@ -8,6 +8,7 @@ use App\Models\ClaimClaimableClaimant;
 use App\Models\StellarToken;
 use App\Models\StellarTransactions;
 use App\Models\Token;
+use App\Services\WalletService;
 use Carbon\Carbon;
 use Exception;
 
@@ -37,9 +38,11 @@ class TokenController extends Controller
 {
     private $sdk, $maxFee, $network, $token_creation_fee;
     private $xlm_funding_wallet, $xlm_funding_wallet_key, $issuer_wallet_amount;
-    
-    public function __construct()
+    private WalletService $wallet;
+
+    public function __construct(WalletService $wallet)
     {
+        $this->wallet = $wallet; 
         $stellarEnv = env('VITE_STELLAR_ENVIRONMENT');
         
         if ($stellarEnv === 'public') {
@@ -80,7 +83,7 @@ class TokenController extends Controller
         $total_supply = $request->input('total_supply');
         $memo = $request->input('memo');
         $lock_status = $request->input('lock_status');
-        $distributor_wallet_xlm_balance = checkXlmBalance($distributor_wallet_key);
+        $distributor_wallet_xlm_balance = $this->wallet->getXlmBalance($distributor_wallet_key);
 
         if ($distributor_wallet_xlm_balance < ($this->token_creation_fee + 5)) {
             return response()->json([
@@ -89,6 +92,7 @@ class TokenController extends Controller
             ]);
         }
 
+        
         //charge token creation fee
         $token_creation_charges = $this->tokenCreationXLMFeeTransaction($distributor_wallet_key, $asset_code, $total_supply, $memo, $lock_status);
         if (!$token_creation_charges) {
@@ -97,6 +101,7 @@ class TokenController extends Controller
                 'message' => 'Transaction failed. Something went wrong',
             ], 500);
         }
+        // dd($token_creation_charges);
 
         $token_creation = new StellarToken();
         $token_creation->asset_code = $asset_code;

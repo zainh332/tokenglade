@@ -38,7 +38,7 @@
                                 <Form @submit="submitForm" :validationSchema="schema">
                                     <div class="space-y-4">
                                        <div>
-                                            <label for="distributor_wallet_private_key" class="block text-sm font-medium text-gray-700 mb-1">
+                                            <label for="distributor_wallet" class="block text-sm font-medium text-gray-700 mb-1">
                                                 Distributor Wallet
                                                 <span class="text-red-500">*</span>
                                                 <span class="relative ml-1">
@@ -198,7 +198,7 @@ import { Form, Field, ErrorMessage } from 'vee-validate';
 import Logo from '@/assets/token-glade-logo.png'
 import * as Yup from "yup";
 import Swal from 'sweetalert2';
-import { E, signXdrWithWallet } from "../utils/utils.js"; 
+import { E, signXdrWithWallet, getCookie } from "../utils/utils.js"; 
 import axios from 'axios';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
 
@@ -291,7 +291,7 @@ const submitForm = async (form) => {
     };
     
     // Step 1: Request the unsigned transaction from the backend
-    const generateResponse = await axios.post('api/generate_token', payload, {
+    const generateResponse = await axios.post('api/token/generate', payload, {
       headers: {
         'X-CSRF-TOKEN': window.Laravel.csrfToken,
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -305,7 +305,7 @@ const submitForm = async (form) => {
       const signedXdr = await signXdrWithWallet(localStorage.getItem("wallet_key"), unsignedXdr, isTestnet);
       
       //Submit the signed transaction to the backend for submission to Stellar
-      const submitResponse1 = await axios.post('api/submit_transaction',{
+      const submitResponse1 = await axios.post('api/token/submit-transaction',{
         signedXdr,
         type: 1,
         payload 
@@ -325,7 +325,7 @@ const submitForm = async (form) => {
         const signedXdr = await signXdrWithWallet(localStorage.getItem("wallet_key"), unsignedXdr, isTestnet);
         
         //Submit the signed transaction to the backend for submission to Stellar
-        const submitResponse2 = await axios.post('api/submit_transaction', {
+        const submitResponse2 = await axios.post('api/token/submit-transaction', {
           signedXdr,
           type: 3, 
           payload: {
@@ -407,7 +407,7 @@ hear('connected', async (status) => {
     //has been connected, do the needfull
     if (E('walletConnected')) {
       isWalletConnected.value = true;
-      walletKey = localStorage.getItem("public_key");
+      walletKey = getCookie("public_key");
       
       E('walletConnected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
     }
