@@ -237,7 +237,7 @@ import graphCard1 from '@/assets/graph-1-card.png';
 import graph2 from '@/assets/graph-2.png';
 import graphCard2 from '@/assets/graph-2-card.png';
 import { ref, computed, onMounted } from "vue";
-import { checkTkgBalance, getCookie } from "../utils/utils.js";
+import { checkTkgBalance, getCookie, updateLoader, apiHeaders } from "../utils/utils.js";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { signTransaction } from "@stellar/freighter-api";
@@ -246,8 +246,6 @@ import { signTransaction } from "@stellar/freighter-api";
 // Slider state (0 → 100)
 // ---------------------
 const rangeValue = ref(0); // start at 0%
-const sliderMin = 0;
-const sliderMax = 100;
 
 // ---------------------
 // TKG Balance & staking bounds
@@ -319,81 +317,75 @@ onMounted(async () => {
 });
 
 async function onSubmit() {
-    const network = (import.meta.env.VITE_STELLAR_ENVIRONMENT || "public").toLowerCase();
-    const isTestnet = network === "testnet";
-    if (!hasMinBalance.value) {
-        Swal.fire({ icon: "warning", title: "Insufficient Balance", text: "You need at least 1,500 TKG to stake." });
-        return;
-    }
+  const network = (import.meta.env.VITE_STELLAR_ENVIRONMENT || "public").toLowerCase();
+  const isTestnet = network === "testnet";
+  if (!hasMinBalance.value) {
+    Swal.fire({ icon: "warning", title: "Insufficient Balance", text: "You need at least 1,500 TKG to stake." });
+    return;
+  }
 
-    const amount = Number(selectedTokens.value);
-    const max = Number(stakeMax.value || 0);
+  const amount = Number(selectedTokens.value);
+  const max = Number(stakeMax.value || 0);
 
-    if (isNaN(amount) || amount < stakeMin || amount > max) {
-        Swal.fire({
-            icon: "error",
-            title: "Invalid Amount",
-            text: `Stake amount must be between 1,500 and ${max.toLocaleString()} TKG.`,
-        });
-        return;
-    }
+  if (isNaN(amount) || amount < stakeMin || amount > max) {
+    Swal.fire({
+      icon: "error",
+      title: "Invalid Amount",
+      text: `Stake amount must be between 1,500 and ${max.toLocaleString()} TKG.`,
+    });
+    return;
+  }
 
-    const pk = publicKey || localStorage.getItem("public_key");
-    const bearer = localStorage.getItem("token");
+  const pk = publicKey || localStorage.getItem("public_key");
+  const bearer = localStorage.getItem("token");
 
-    if (!pk || !bearer) {
-        Swal.fire({
-            icon: "info",
-            title: "Connect Wallet",
-            text: "Please connect your wallet and sign in before staking.",
-        });
-        return;
-    }
+  if (!pk || !bearer) {
+    Swal.fire({ icon: "info", title: "Connect Wallet", text: "Please connect your wallet and sign in before staking." });
+    return;
+  }
 
-    stakeLoading.value = true;
+  stakeLoading.value = true;
 
-    try {
-        Swal.fire({ icon: "Staking Please", title: "Staking Please Wait!" });
+  try {
+    updateLoader("Preparing Staking", "Creating staking payment XDR…");
 
-        const res = await axios.post(
-            "/api/staking/start",
+    const res = await axios.post(
+      "/api/staking/start",
             {
                 public_key: pk,
                 amount,
             },
-            {
-                headers: {
-                    "Accept": "application/json",
-                    "X-Requested-With": "XMLHttpRequest",
-                    Authorization: `Bearer ${bearer}`,
-                },
-                withCredentials: true, // in case your API relies on cookies/sanctum
-            }
-        );
+      {
+        headers: apiHeaders(),
+        withCredentials: true,
+      }
+    );
 
-        if (res.data.status === "success") {
-            console.log(res.data.xdr);
-            
-            signXdr(res.data.xdr, res.data.staking_id, isTestnet);
-        } else {
-            const msg =
-                res?.data?.message ||
-                res?.data?.error ||
-                "Failed to stake tokens.";
-            Swal.fire({ icon: "error", title: "Error!", text: msg });
-        }
-    } catch (error) {
-        // Handle Laravel validation (422) gracefully
-        const msg =
-            error?.response?.data?.message ||
-            (error?.response?.status === 422
-                ? "Validation error. Please check your input."
-                : "An error occurred while staking tokens.");
-        Swal.fire({ icon: "error", title: "Error!", text: msg });
-        console.error("Error staking tokens:", error);
-    } finally {
-        stakeLoading.value = false;
+    if (res.data.status === "success") {
+      
+      updateLoader(
+        "Sign in Wallet",
+        `Please approve the staking transaction for <b>${amount.toLocaleString()}</b> TKG…`
+      );
+      
+      signXdr(res.data.xdr, res.data.staking_id, isTestnet);
+    } else {
+      const msg = res?.data?.message || res?.data?.error || "Failed to stake tokens.";
+      Swal.close();
+      Swal.fire({ icon: "error", title: "Error!", text: msg });
     }
+  } catch (error) {
+    const msg =
+      error?.response?.data?.message ||
+      (error?.response?.status === 422
+        ? "Validation error. Please check your input."
+        : "An error occurred while staking tokens.");
+    Swal.close();
+    Swal.fire({ icon: "error", title: "Error!", text: msg });
+    console.error("Error staking tokens:", error);
+  } finally {
+    stakeLoading.value = false;
+  }
 }
 
 async function signXdr(xdr, staking_id, testnet) {
@@ -413,7 +405,6 @@ async function signXdr(xdr, staking_id, testnet) {
             break;
 
         case "freighter":
-            console.log(testnet);
             await signTransaction(xdr, testnet ? "TESTNET" : "PUBLIC")
                 .then(function (result) {
                     const xdr = result;
@@ -456,35 +447,56 @@ async function signXdr(xdr, staking_id, testnet) {
                 });
             break;
         default:
-            submitStakingXdr(xdr, staking_id);
+            throw new Error("No wallet selected. Connect a wallet first.");
     }
 }
 
 async function submitStakingXdr(signedXdr, staking_id) {
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    try {
-        const { data } = await axios.post(
-            '/api/staking/submit-xdr',               // or base_url + '/staking/submitXdr'
-            { signedXdr, staking_id},
-            {
-                headers: {
-                    'X-CSRF-TOKEN': token,          // needed for web routes
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                },
-            }
-        );
+  const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-        if (data.status === 1) {
-            //   toastr.success('Successful', 'Staking');
-            setTimeout(() => location.reload(true), 1000);
-        } else {
-            //   toastr.error(data.msg || 'Staking failed', 'Staking Error');
-        }
-    } catch (err) {
-        // toastr.error('Something went wrong!', 'Staking Error');
-    } finally {
-        // btnLoaderHide?.();
+  // Optional: update the loader text before submitting
+  if (typeof updateLoader === "function") {
+    updateLoader("Submitting", "Broadcasting signed transaction to Stellar…");
+  }
+
+  try {
+    const { data } = await axios.post(
+      '/api/staking/submit-xdr',
+      { signedXdr, staking_id },
+      {
+        headers: apiHeaders(),
+        withCredentials: true,
+      }
+    );
+
+    if (data?.status === "success" || data?.status === 1) {
+      if (typeof updateLoader === "function") {
+        updateLoader("Finalizing", "Saving staking record…");
+      }
+      // Close loader and show success (or just reload)
+      if (Swal.isVisible()) Swal.close();
+
+      // Optional success toast/modal here
+      Swal.fire({ icon: 'success', title: 'Staked!', text: 'Your TKG were staked successfully.' });
+
+      setTimeout(() => location.reload(), 800);
+    } else {
+      if (Swal.isVisible()) Swal.close();
+      Swal.fire({
+        icon: 'error',
+        title: 'Staking failed',
+        text: data?.message || data?.error || 'Something went wrong while submitting your transaction.',
+      });
     }
+  } catch (err) {
+    if (Swal.isVisible()) Swal.close();
+    Swal.fire({
+      icon: 'error',
+      title: 'Network error',
+      text: err?.response?.data?.message || err?.message || 'Failed to submit the transaction.',
+    });
+    console.error('submitStakingXdr error:', err);
+  }
 }
 </script>
 

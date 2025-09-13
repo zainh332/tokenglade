@@ -229,3 +229,21 @@ export function updateLoader(title, text) {
     Swal.showLoading();
   }
 }
+
+export function apiHeaders(extra = {}) {
+  const csrf  = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+  const token = localStorage.getItem('token') || '';
+
+  return {
+    Accept: 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
+    ...(csrf  ? { 'X-CSRF-TOKEN': csrf } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...extra, // e.g. { 'Content-Type': 'multipart/form-data' }
+  };
+
+    const headers = {
+      "X-CSRF-TOKEN": window.Laravel?.csrfToken,
+      "Authorization": `Bearer ${localStorage.getItem("token")}`,
+    };
+}
