@@ -198,7 +198,7 @@ import { Form, Field, ErrorMessage } from 'vee-validate';
 import Logo from '@/assets/token-glade-logo.png'
 import * as Yup from "yup";
 import Swal from 'sweetalert2';
-import { E, signXdrWithWallet, getCookie } from "../utils/utils.js"; 
+import { E, signXdrWithWallet, getCookie,updateLoader } from "../utils/utils.js"; 
 import axios from 'axios';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
 
@@ -272,82 +272,78 @@ const submitForm = async (form) => {
   try {
     // Show loading indicator
     form.lock_status = toggleValue.value;
-    Swal.fire({
-      showConfirmButton: false,
-      title: 'Generating Token',
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      },
-    });
-    
+
     // Get the distributor's public key from Freighter
-    const distributor_wallet_key = localStorage.getItem('public_key');
+    const distributor_wallet_key = getCookie("public_key");
+    const headers = {
+      "X-CSRF-TOKEN": window.Laravel?.csrfToken,
+      "Authorization": `Bearer ${localStorage.getItem("token")}`,
+    };
+
+    updateLoader("Generating Token", "Preparing fee transaction XDR…");
 
     // Prepare the payload for generating the unsigned transaction
     const payload = {
       ...form,
       distributor_wallet_key,
     };
-    
+
     // Step 1: Request the unsigned transaction from the backend
-    const generateResponse = await axios.post('api/token/generate', payload, {
-      headers: {
-        'X-CSRF-TOKEN': window.Laravel.csrfToken,
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    const generateResponse = await axios.post("api/token/generate", payload, { headers });
+
+    if (generateResponse.data.status !== "success") {
+      Swal.close();
+      return Swal.fire({ icon: "error", title: "Error!", text: generateResponse.data.message || "Token creation fee transaction failed." });
+    }
+
+    // Extract the unsigned transaction (XDR) and other variables from the response
+    const unsignedXdr = generateResponse.data.unsigned_token_creation_fee_transaction;
+    updateLoader("Sign in Wallet", "Please approve the fee transaction in your wallet…");
+    const feeSignedXdr = await signXdrWithWallet(localStorage.getItem("wallet_key"), unsignedXdr, isTestnet);
+
+    updateLoader("Submitting", "Submitting fee transaction to Stellar…");
+    //Submit the signed transaction to the backend for submission to Stellar
+    const submitResponse1 = await axios.post("api/token/submit-transaction", {
+      signedXdr: feeSignedXdr,
+      type: 1,
+      payload,
+    }, { headers });
+
+    if (submitResponse1.data.status !== "success") {
+      Swal.close();
+      return Swal.fire({ icon: "error", title: "Error!", text: submitResponse1.data.message || "Fee transaction submission failed." });
+    }
+
+    const unsignedTrustXdr = submitResponse1.data.unsigned_trustline_transaction;
+    updateLoader("Preparing Trustline", "Creating trustline transaction XDR…");
+
+    updateLoader("Sign in Wallet", "Please approve the trustline transaction in your wallet…");
+
+    const trustSignedXdr = await signXdrWithWallet(localStorage.getItem("wallet_key"), unsignedTrustXdr, isTestnet);
+
+    //Submit the signed transaction to the backend for submission to Stellar
+    updateLoader("Submitting", "Submitting trustline transaction to Stellar…");
+    const submitResponse2 = await axios.post("api/token/submit-transaction", {
+      signedXdr: trustSignedXdr,
+      type: 3,
+      payload: {
+        distributor_wallet_key,
+        asset_code: form.asset_code,
       },
-    });
-    
-    if(generateResponse.data.status == 'success'){
-      // Extract the unsigned transaction (XDR) and other variables from the response
-      const unsignedXdr = generateResponse.data.unsigned_token_creation_fee_transaction;
-      
-      const signedXdr = await signXdrWithWallet(localStorage.getItem("wallet_key"), unsignedXdr, isTestnet);
-      
-      //Submit the signed transaction to the backend for submission to Stellar
-      const submitResponse1 = await axios.post('api/token/submit-transaction',{
-        signedXdr,
-        type: 1,
-        payload 
-      }, 
-      {
-        headers: {
-          'X-CSRF-TOKEN': window.Laravel.csrfToken,
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
+    }, { headers });
 
-      if (submitResponse1.data.status === 'success') {
+    if ((submitResponse2.data.status || "").trim() !== "success") {
+      Swal.close();
+      return Swal.fire({ icon: "error", title: "Error!", text: submitResponse2.data.message || "Trustline transaction submission failed." });
+    }
+    updateLoader("Finalizing", "Saving token details…");
+    Swal.close();
 
-        const unsignedXdr = submitResponse1.data.unsigned_trustline_transaction;
-      
-        
-        const signedXdr = await signXdrWithWallet(localStorage.getItem("wallet_key"), unsignedXdr, isTestnet);
-        
-        //Submit the signed transaction to the backend for submission to Stellar
-        const submitResponse2 = await axios.post('api/token/submit-transaction', {
-          signedXdr,
-          type: 3, 
-          payload: {
-            distributor_wallet_key: distributor_wallet_key,
-            asset_code: form.asset_code
-          }
-        }, 
-        {
-          headers: {
-            'X-CSRF-TOKEN': window.Laravel.csrfToken,
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-    
-        if (submitResponse2.data.status.trim() === 'success') {
-          Swal.close();
-
-          setTimeout(() => {
-            Swal.fire({
-              icon: 'success',
-              title: 'Token Created!',
-              html: `
+    setTimeout(() => {
+      Swal.fire({
+        icon: 'success',
+        title: 'Token Created!',
+        html: `
               <p>Your token <b>${submitResponse2.data.assetCode}</b> has been created successfully.</p>
               <p style="margin-top: 10px;"><b>Issuer Public Key:</b><br>${submitResponse2.data.issuerPublicKey}</p>
               <p style="margin-top: 10px;"><b>Issuer Secret Key:</b><br>${submitResponse2.data.issuerSecretKey}</p>
@@ -355,40 +351,16 @@ const submitForm = async (form) => {
                 ⚠ Please copy and save these keys before closing this modal!
               </p>
             `,
-              confirmButtonText: 'I’ve saved the keys',
-              allowOutsideClick: false
-            }).then(() => {
-              form.asset_code = "";
-              form.total_supply = "";
-            });
-          }, 200);
-        }
+        confirmButtonText: 'I’ve saved the keys',
+        allowOutsideClick: false
+      }).then(() => {
+        form.asset_code = "";
+        form.total_supply = "";
+      });
+    }, 200);
 
-        else{
-          Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: submitResponse2.data.message || 'Transaction submission failed.',
-          });
-        }
-    
-        // Hide loading indicator
-        Swal.close();
-      }
-      else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: submitResponse1.data.message || 'Trustline Transaction failed.',
-        });
-      }
-    } else{
-      Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: generateResponse.data.message || 'Token creation fess transaction failed.',
-        });
-    }
+    // Hide loading indicator
+    Swal.close();
   } catch (error) {
     // Handle any errors that occur during submission
     Swal.fire({
@@ -408,7 +380,7 @@ hear('connected', async (status) => {
     if (E('walletConnected')) {
       isWalletConnected.value = true;
       walletKey = getCookie("public_key");
-      
+
       E('walletConnected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
     }
   }

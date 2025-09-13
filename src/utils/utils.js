@@ -1,6 +1,7 @@
 /* UTILITY SCRIPTS */
 import { getPublicKey, signTransaction } from "@stellar/freighter-api";
 import axios from "axios";
+import Swal from 'sweetalert2';
 // import { MAX_SIZE_EXCEEDED } from "./constant";
 
 //the E operator
@@ -209,4 +210,22 @@ export async function checkTkgBalance(public_address) {
         console.error("Error:", error);
         return 0;
     }
+}
+
+export function updateLoader(title, text) {
+  if (!Swal.isVisible()) {
+    Swal.fire({
+      title,
+      html: `<div style="font-size:14px">${text}</div>`,
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => Swal.showLoading(),
+    });
+  } else {
+    Swal.update({
+      title,
+      html: `<div style="font-size:14px">${text}</div>`,
+    });
+    Swal.showLoading();
+  }
 }
