@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Staking;
 use App\Models\StakingAsset;
 use App\Models\StakingReward;
+use App\Models\StakingTransaction;
 use App\Models\User;
 use App\Services\WalletService;
 use Exception;
@@ -163,10 +164,10 @@ class StakingController extends Controller
                 ->addOperation($paymentOp)
                 ->build();
 
-            $xdr = $transaction->toEnvelopeXdrBase64();
+            $unsigned_xdr = $transaction->toEnvelopeXdrBase64();
 
             // Operation failed
-            if (!$xdr) {
+            if (!$unsigned_xdr) {
                 throw new \Exception('Something went wrong during staking operation.');
                 Log::info('Something went wrong during staking operation.');
             }
@@ -187,7 +188,10 @@ class StakingController extends Controller
                 $existing_staking->amount = $newTotal;
                 $existing_staking->tier   = $tier;
                 $existing_staking->apy    = $apy;
+                $existing_staking->staking_status_id    = 2; //topped up
                 $existing_staking->save();
+
+                $this->addStakingTransactionRecord($existing_staking->id, null, $unsigned_xdr, null, null, 2);
             } else {
                 // first stake in this asset
                 $startTotal = (float)$request->amount;
@@ -200,10 +204,12 @@ class StakingController extends Controller
                 $new_stake->tier              = $tier;
                 $new_stake->apy               = $apy;
                 $new_stake->save();
+
+                $this->addStakingTransactionRecord($new_stake->id, null, $unsigned_xdr, null, null, 1);
             }
 
             DB::commit();
-            return response()->json(['xdr' => $xdr, 'status' => 'success', 'staking_id' => $existing_staking ? $existing_staking->id : $new_stake->id]);
+            return response()->json(['xdr' => $unsigned_xdr, 'status' => 'success', 'staking_id' => $existing_staking ? $existing_staking->id : $new_stake->id]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
@@ -280,6 +286,9 @@ class StakingController extends Controller
                 $staking->transaction_id = $txID;
                 $staking->save();
             }
+
+            $this->addStakingTransactionRecord($staking->id, null, null, $signedXdr, $txID, $staking->staking_status_id);
+
             return response()->json(['status' => 'success', 'message' => 'Staking Succeffull'], 200);
         } catch (HorizonRequestException $e) {
             Log::info('Error while submitting Xdr.' . $e);
@@ -324,7 +333,10 @@ class StakingController extends Controller
             $res = $this->sdk->submitTransaction($transaction);
 
             $active_staking_wallet->is_withdrawn = true;
+            $active_staking_wallet->staking_status_id = 4; //unstaked
             $active_staking_wallet->save();
+
+            $this->addStakingTransactionRecord($active_staking_wallet->id, null, null, null, $res->getId(), $active_staking_wallet->staking_status_id);
 
             return response()->json(['status' => 'success', 'message' => 'Sucessfully Stoped Staking and ' . $active_staking_wallet->amount . ' TKG tokens are sent back to your wallet', 'tx' => $res->getId()]);
         } catch (\Throwable $th) {
@@ -453,5 +465,19 @@ class StakingController extends Controller
             'status'    => 'success',
             'positions' => $positions,
         ]);
+    }
+
+    private function addStakingTransactionRecord($staking_id, $staking_reward_id, $unsigned_xdr, $signed_xdr, $transaction_id, $staking_status_id)
+    {
+        $transaction = new StakingTransaction();
+        $transaction->staking_id = $staking_id;
+        $transaction->staking_reward_id = $staking_reward_id;
+        $transaction->unsigned_xdr = $unsigned_xdr;
+        $transaction->signed_xdr = $signed_xdr;
+        $transaction->transaction_id = $transaction_id;
+        $transaction->staking_status_id = $staking_status_id;
+        $transaction->save();
+
+        return $transaction;
     }
 }

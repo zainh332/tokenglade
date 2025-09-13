@@ -22,6 +22,7 @@ return new class extends Migration
             $table->timestamp('unlock_at')->nullable();
             $table->boolean('is_withdrawn')->default(false);
             $table->text('transaction_id')->nullable();
+            $table->text('staking_status_id');
             $table->timestamps();
 
             $table->index(['public', 'staking_asset_id']);
