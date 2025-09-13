@@ -173,7 +173,6 @@ class StakingController extends Controller
             }
 
             $existing_staking = Staking::where('public', $_COOKIE['public_key'])
-                ->where('staking_asset_id', $staking_asset)
                 ->where('is_withdrawn', false)
                 ->latest()
                 ->first();
@@ -203,6 +202,7 @@ class StakingController extends Controller
                 $new_stake->amount            = $startTotal;
                 $new_stake->tier              = $tier;
                 $new_stake->apy               = $apy;
+                $new_stake->staking_status_id    = 1;
                 $new_stake->save();
 
                 $this->addStakingTransactionRecord($new_stake->id, null, $unsigned_xdr, null, null, 1);
