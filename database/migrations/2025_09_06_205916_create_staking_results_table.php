@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('staking_results', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('staking_id')->index();
-            $table->double('amount');
+            $table->decimal('amount', 20, 7);
             $table->text('transaction_id');
             $table->timestamps();
         });

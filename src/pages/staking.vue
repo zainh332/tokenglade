@@ -319,6 +319,7 @@ onMounted(async () => {
 async function onSubmit() {
   const network = (import.meta.env.VITE_STELLAR_ENVIRONMENT || "public").toLowerCase();
   const isTestnet = network === "testnet";
+  const stakingAssetId = isTestnet ? 2 : 1;
   if (!hasMinBalance.value) {
     Swal.fire({ icon: "warning", title: "Insufficient Balance", text: "You need at least 1,500 TKG to stake." });
     return;
@@ -354,6 +355,7 @@ async function onSubmit() {
             {
                 public_key: pk,
                 amount,
+                staking_asset_id: stakingAssetId,
             },
       {
         headers: apiHeaders(),

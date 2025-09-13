@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Staking;
+use App\Models\StakingAsset;
 use App\Models\StakingResult;
 use App\Models\User;
 use App\Services\WalletService;
@@ -70,6 +71,7 @@ class StakingController extends Controller
     public function start_staking(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'staking_asset_id' => ['required', 'integer'],
             'amount' => ['required', 'integer', 'min:1500'],
             'public_key' => ['required', 'string'],
         ], [
@@ -96,6 +98,11 @@ class StakingController extends Controller
         $wallet = User::where('public_key', $public)->first();
         if (!$wallet) {
             return response()->json(['status' => 'error', 'message' => 'Wallet not found!']);
+        }
+
+        $staking_asset = StakingAsset::find($request->staking_asset_id);
+        if (!$staking_asset) {
+            return response()->json(['status' => 'error', 'message' => 'Staking asset not found!']);
         }
 
         // Make sure the account exists on Stellar (and we can read its balances)
@@ -174,7 +181,7 @@ class StakingController extends Controller
             } else {
                 $new_stake = new Staking();
                 $new_stake->public = $_COOKIE['public_key'];
-                $new_stake->is_withdrawn = false;
+                $new_stake->staking_asset_id = $staking_asset;
                 $new_stake->amount = $request->amount;
                 $new_stake->save();
             }

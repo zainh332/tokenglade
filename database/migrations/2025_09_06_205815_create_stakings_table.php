@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('stakings', function (Blueprint $table) {
             $table->id();
-            $table->string('public', 60);
-            $table->double('amount');
+            $table->string('public', 56);
+            $table->bigInteger('staking_asset_id');
+            $table->decimal('amount', 20, 7);
             $table->tinyInteger('tier')->default(1);
             $table->decimal('apy', 5, 2)->default(0);
             $table->integer('lock_days')->default(0);
@@ -22,6 +23,8 @@ return new class extends Migration
             $table->boolean('is_withdrawn')->default(false);
             $table->text('transaction_id')->nullable();
             $table->timestamps();
+
+            $table->index(['public', 'staking_asset_id']);
         });
     }
 
