@@ -539,7 +539,7 @@ async function disconnectWallet() {
     try {
         const public_key = localStorage.getItem("public_key");
         const response = await axios.post(
-            "/api/disconnect_wallet",
+            "/api/wallet/disconnect",
             { public_key },
             {
                 headers: {
