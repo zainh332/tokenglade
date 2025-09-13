@@ -90,9 +90,10 @@
 
                             <button type="submit"
                                 class="w-full text-white py-2 rounded-[20px] hover:opacity-90 transition duration-300 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove"
-                                :disabled="stakeLoading || !hasMinBalance">
-                                <span v-if="!stakeLoading">Stake</span>
-                                <span v-else>Staking…</span>
+                                :disabled="stakeLoading || !hasMinBalance" :aria-busy="stakeLoading">
+                                <span v-if="stakeLoading">Staking…</span>
+                                <span v-else-if="hasPositions">Stake More</span>
+                                <span v-else>Stake</span>
                             </button>
                         </template>
 
@@ -113,6 +114,52 @@
                 </div>
             </div>
         </div>
+
+        <!-- Your Active Stakes -->
+        <section v-if="hasPositions" id="your-stakes" class="container mx-auto mt-16 mb-10">
+            <div class="container mx-auto pt-20">
+                <h2 class="text-2xl font-semibold text-center mb-6">Your Active Stakes</h2>
+
+                <div class="w-full max-w-[80%] mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                    <table class="min-w-full border-collapse">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="py-3 px-4 text-left">Asset</th>
+                                <th class="py-3 px-4 text-right">Amount</th>
+                                <th class="py-3 px-4 text-center">APY</th>
+                                <!-- <th class="py-3 px-4 text-center">Lock</th> -->
+                                <!-- <th class="py-3 px-4 text-center">Rewarded</th> -->
+                                <!-- <th class="py-3 px-4 text-center">Actions</th> -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="pos in positions" :key="pos.id" class="border-b">
+                                <td class="py-3 px-4">{{ pos.asset_code }}</td>
+                                <td class="py-3 px-4 text-right">{{ formatAmount(pos.amount) }}</td>
+                                <td class="py-3 px-4 text-center">{{ pos.apy }}%</td>
+                                <!-- <td class="py-3 px-4">
+                                <div class="w-full max-w-[220px] mx-auto">
+                                    <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                        <div class="h-2 bg-[#43CDFF]" :style="{ width: lockProgress(pos) + '%' }"></div>
+                                    </div>
+                                    <div class="flex justify-between text-[11px] mt-1 text-gray-500">
+                                        <span>{{ formatDate(pos.start_at) }}</span>
+                                        <span>{{ formatDate(pos.unlock_at) }}</span>
+                                    </div>
+                                </div>
+                            </td> -->
+                                <!-- <td class="py-3 px-4 text-center">
+                                <div class="flex justify-center gap-2">
+                                    <button class="px-3 py-1 rounded border" @click="unstake(pos)"
+                                        :disabled="!canUnstake(pos)">Unstake</button>
+                                </div>
+                            </td> -->
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
 
         <div class="container mx-auto pt-20">
             <div class="mx-auto">
@@ -314,6 +361,7 @@ onMounted(async () => {
     } finally {
         loadingBalance.value = false;
     }
+    await fetchPositions();
 });
 
 async function onSubmit() {
@@ -500,6 +548,43 @@ async function submitStakingXdr(signedXdr, staking_id) {
         console.error('submitStakingXdr error:', err);
     }
 }
+
+// --- User Staking tab state ---
+const positions = ref([]);
+const hasPositions = computed(() => positions.value.length > 0);
+
+// Aggregates for the User Staking tab KPIs
+const totalStaked = computed(() =>
+    positions.value.reduce((s, p) => s + Number(p.amount || 0), 0)
+);
+
+// Helpers (used by the "Your Active Stakes" table)
+function formatAmount(v) { return Number(v || 0).toLocaleString(); }
+function formatDate(d) {
+    const dt = d instanceof Date ? d : new Date(d);
+    return isNaN(+dt) ? '—' : dt.toLocaleDateString();
+}
+// function lockProgress(pos) {
+//   const s = new Date(pos.start_at), u = new Date(pos.unlock_at), now = new Date();
+//   if (isNaN(+s) || isNaN(+u) || u <= s) return 0;
+//   return Math.min(100, Math.max(0, ((now - s) / (u - s)) * 100)).toFixed(0);
+// }
+
+async function fetchPositions() {
+    if (!publicKey) return;
+    try {
+        const { data } = await axios.get('/api/staking/user', {
+            params: { public_key: publicKey },
+            headers: apiHeaders(),
+            withCredentials: true,
+        });
+        positions.value = Array.isArray(data?.positions) ? data.positions : [];
+    } catch (e) {
+        console.warn('Failed to load positions', e);
+        positions.value = [];
+    }
+}
+
 </script>
 
 <style lang="scss" scoped>

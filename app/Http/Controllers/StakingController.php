@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Staking;
 use App\Models\StakingAsset;
-use App\Models\StakingResult;
+use App\Models\StakingReward;
 use App\Models\User;
 use App\Services\WalletService;
 use Exception;
@@ -16,14 +16,11 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PaymentOperationBuilder;
-use Soneso\StellarSDK\Signer;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
-use Soneso\StellarSDK\Xdr\XdrSigner;
 use Illuminate\Support\Facades\Log;
-use Soneso\StellarSDK\AbstractTransaction;
+use Illuminate\Validation\ValidationException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 
 class StakingController extends Controller
@@ -183,10 +180,10 @@ class StakingController extends Controller
             if ($existing_staking) {
                 // new total after this stake
                 $newTotal = (float)$existing_staking->amount + (float)$request->amount;
-                
+
                 // compute tier + apy for TKG totals
                 [$tier, $apy] = $this->tkgTierAndApy($newTotal);
-                
+
                 $existing_staking->amount = $newTotal;
                 $existing_staking->tier   = $tier;
                 $existing_staking->apy    = $apy;
@@ -344,7 +341,7 @@ class StakingController extends Controller
         Staking::whereNull('transaction_id')->delete();
 
         $invests = Staking::whereNotNull('transaction_id')
-            ->where('amount', '>=', 1000)
+            ->where('amount', '>=', $this->minAmount)
             ->where('is_withdrawn', 0)
             ->where('updated_at', '<=', now()->subHours(24))
             ->get();
@@ -353,7 +350,7 @@ class StakingController extends Controller
         foreach ($invests as $key => $invest) {
             $result = $this->reward($invest);
             if ($result) {
-                StakingResult::create(['staking_id' => $invest->id, 'amount' => $result->amount, 'transaction_id' => $result->tx]);
+                StakingReward::create(['staking_id' => $invest->id, 'amount' => $result->amount, 'transaction_id' => $result->tx]);
             }
             $invest->updated_at = now();
             $invest->save();
@@ -407,5 +404,54 @@ class StakingController extends Controller
 
         // below tier threshold
         return [0, 0.00];
+    }
+
+    public function user_staking(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'public_key'        => ['required', 'string', 'size:56', 'regex:/^G[A-Z0-9]{55}$/'],
+                'staking_asset_id'  => ['nullable', 'integer', 'exists:staking_assets,id'],
+                'include_withdrawn' => ['nullable', 'boolean'],
+            ], [
+                'public_key.regex'  => 'Invalid Stellar public key.',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'error'  => 'Validation error',
+                'errors' => $e->errors(),
+            ], 422);
+        }
+
+        $includeWithdrawn = $request->boolean('include_withdrawn');
+        $assetId          = $data['staking_asset_id'] ?? null;
+
+        $rows = Staking::query()
+            ->select(['id', 'staking_asset_id', 'amount', 'apy', 'lock_days', 'unlock_at', 'created_at'])
+            ->with(['asset:id,code']) // eager-load only what you need
+            ->forPublic($data['public_key'])
+            ->when(!$includeWithdrawn, fn($q) => $q->active())
+            ->when($assetId, fn($q) => $q->where('staking_asset_id', $assetId))
+            ->minAmount($this->minAmount)
+            ->latest()
+            ->get();
+
+        $positions = $rows->map(function (Staking $s) {
+            return [
+                'id'         => (int) $s->id,
+                'asset_code' => $s->asset?->code,
+                'amount'     => (float) $s->amount,
+                'apy'        => (float) $s->apy,
+                'lock_days'  => (int) $s->lock_days,
+                'start_at'   => optional($s->created_at)->toIso8601String(),
+                'unlock_at'  => optional($s->unlock_at)->toIso8601String(),
+            ];
+        });
+
+        return response()->json([
+            'status'    => 'success',
+            'positions' => $positions,
+        ]);
     }
 }

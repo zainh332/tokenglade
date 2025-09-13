@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('staking_results', function (Blueprint $table) {
+        Schema::create('staking_rewards', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('staking_id')->index();
             $table->decimal('amount', 20, 7);
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('staking_results');
+        Schema::dropIfExists('staking_rewards');
     }
 };
