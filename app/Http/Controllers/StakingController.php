@@ -174,22 +174,41 @@ class StakingController extends Controller
                 Log::info('Something went wrong during staking operation.');
             }
 
-            $existing_staking = Staking::where('public', $_COOKIE['public_key'])->where('is_withdrawn', false)->where('amount', '>=', $this->minAmount)->latest()->first();
+            $existing_staking = Staking::where('public', $_COOKIE['public_key'])
+                ->where('staking_asset_id', $staking_asset)
+                ->where('is_withdrawn', false)
+                ->latest()
+                ->first();
+
             if ($existing_staking) {
-                $existing_staking->amount += $request->amount;
+                // new total after this stake
+                $newTotal = (float)$existing_staking->amount + (float)$request->amount;
+                
+                // compute tier + apy for TKG totals
+                [$tier, $apy] = $this->tkgTierAndApy($newTotal);
+                
+                $existing_staking->amount = $newTotal;
+                $existing_staking->tier   = $tier;
+                $existing_staking->apy    = $apy;
                 $existing_staking->save();
             } else {
+                // first stake in this asset
+                $startTotal = (float)$request->amount;
+                [$tier, $apy] = $this->tkgTierAndApy($startTotal);
+
                 $new_stake = new Staking();
-                $new_stake->public = $_COOKIE['public_key'];
-                $new_stake->staking_asset_id = $staking_asset;
-                $new_stake->amount = $request->amount;
+                $new_stake->public            = $_COOKIE['public_key'];
+                $new_stake->staking_asset_id  = $staking_asset->id;
+                $new_stake->amount            = $startTotal;
+                $new_stake->tier              = $tier;
+                $new_stake->apy               = $apy;
                 $new_stake->save();
             }
 
-            DB::commit(); // Commit the transaction
+            DB::commit();
             return response()->json(['xdr' => $xdr, 'status' => 'success', 'staking_id' => $existing_staking ? $existing_staking->id : $new_stake->id]);
         } catch (\Exception $e) {
-            DB::rollBack(); // Rollback the transaction
+            DB::rollBack();
             return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
         }
     }
@@ -266,7 +285,7 @@ class StakingController extends Controller
             }
             return response()->json(['status' => 'success', 'message' => 'Staking Succeffull'], 200);
         } catch (HorizonRequestException $e) {
-            Log::info('Error while submitting Xdr.'. $e);
+            Log::info('Error while submitting Xdr.' . $e);
             return response()->json(['status' => 'error', 'message' => 'Failed!']);
         }
     }
@@ -373,5 +392,20 @@ class StakingController extends Controller
                 'line' => $th->getLine(),
             ]);
         }
+    }
+
+    private function tkgTierAndApy(float $total): array
+    {
+        // Tier 3: 100,000+  => 18%
+        if ($total >= 100000) return [3, 18.00];
+
+        // Tier 2: 10,000–99,999 => 15%
+        if ($total >= 10000)   return [2, 15.00];
+
+        // Tier 1: 1,400–9,999  => 12%
+        if ($total >= 1400)    return [1, 12.00];
+
+        // below tier threshold
+        return [0, 0.00];
     }
 }
