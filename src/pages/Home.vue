@@ -150,13 +150,11 @@ const openConnectWalletModal = () => { ConnectWalletModals.value = true }
 
 const data = ref({
   total_tokens: 0,
-  total_claimablebalance: 0,
-  total_claimablebalance_users: 0
 });
 
 async function fetchdata() {
   try {
-    const response = await axios.get('/api/global/count-data', {
+    const response = await axios.get('/api/global/count_data', {
       headers: {
         'X-CSRF-TOKEN': csrfToken
       }
@@ -164,8 +162,6 @@ async function fetchdata() {
     if (response.data.status === "success") {
       data.value = {
         total_tokens: response.data.total_tokens,
-        total_claimablebalance: response.data.total_claimablebalance,
-        total_claimablebalance_users: response.data.total_claimablebalance_users
       };
     } else {
       Swal.fire({
