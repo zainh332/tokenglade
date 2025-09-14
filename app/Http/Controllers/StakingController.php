@@ -173,9 +173,9 @@ class StakingController extends Controller
             }
 
             $existing_staking = Staking::where('user_id', $userId)
-            ->where('is_withdrawn', false)
-            ->latest()
-            ->first();
+                ->where('is_withdrawn', false)
+                ->latest()
+                ->first();
 
             if ($existing_staking) {
                 $newTotal = (float)$existing_staking->amount + (float)$request->amount;
@@ -295,31 +295,41 @@ class StakingController extends Controller
         }
     }
 
-    public function stop_staking($wallet_address = null)
+    public function unstake(Request $request)
     {
-        if (!$wallet_address) {
-            return response()->json(['status' => 'error', 'message' => 'Wallet address not provided!']);
+        $validator = Validator::make($request->all(), [
+            'staking_id' => ['required', 'integer', 'exists:stakings,id'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Validation error',
+                'errors'  => $validator->errors(),
+            ], 422);
         }
 
-        $staking_wallet = Staking::where('public', $wallet_address)->first();
-        if ($staking_wallet->isEmpty()) {
-            return response()->json(['status' => 'error', 'message' => 'Wallet not found!']);
+        $staking = Staking::with('user:id,public_key')->find($request->staking_id);
+        if (!$staking) {
+            return response()->json(['status' => 'error', 'message' => 'Staking not found!'], 404);
         }
 
-        $active_staking_wallet = $staking_wallet->where('amount', '>=', $this->minAmount)
+        $active_staking_wallet = Staking::whereKey($request->staking_id)
+            ->with('user:id,public_key')
+            ->where('staking_status_id', '<>', 4)
             ->where('is_withdrawn', false)
-            ->whereNotNull('transaction_id');
+            ->whereNotNull('transaction_id')
+            ->first();
 
-        if ($active_staking_wallet->isEmpty()) {
-            return response()->json(['status' => 'error', 'message' => 'Already stopped staking!']);
+        if (!$active_staking_wallet) {
+            return response()->json(['status' => 'error', 'message' => 'Already stopped staking!'], 422);
         }
 
         try {
-            $mainSecret = env('STAKING_PUBLIC_WALLET_KEY');
-            $mainPair = KeyPair::fromSeed($mainSecret);
+            $mainPair = KeyPair::fromSeed($this->stakingPublicWalletKey);
 
             $mainAccount = $this->sdk->requestAccount($mainPair->getAccountId());
-            $account = $this->sdk->requestAccount($wallet_address);
+            $account = $this->sdk->requestAccount($active_staking_wallet->user->public_key);
 
             $asset = new AssetTypeCreditAlphanum4($this->assetCode, $this->assetIssuer);
 

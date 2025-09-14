@@ -56,7 +56,7 @@
                             <div class="relative w-full">
                                 <div class="flex items-center justify-between mb-1">
                                     <label for="range_value" class="block text-sm font-medium text-gray-700">
-                                        
+
                                     </label>
                                     <span class="text-xs text-gray-500">
                                         Min: <strong>1,500</strong> • Max: <strong>{{ formattedMaxStake }}</strong>
@@ -135,7 +135,7 @@
                                 <th class="py-3 px-4 text-center">APY</th>
                                 <!-- <th class="py-3 px-4 text-center">Lock</th> -->
                                 <!-- <th class="py-3 px-4 text-center">Rewarded</th> -->
-                                <!-- <th class="py-3 px-4 text-center">Actions</th> -->
+                                <th class="py-3 px-4 text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -143,23 +143,22 @@
                                 <td class="py-3 px-4">{{ pos.asset_code }}</td>
                                 <td class="py-3 px-4 text-right">{{ formatAmount(pos.amount) }}</td>
                                 <td class="py-3 px-4 text-center">{{ pos.apy }}%</td>
-                                <!-- <td class="py-3 px-4">
-                                <div class="w-full max-w-[220px] mx-auto">
-                                    <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-                                        <div class="h-2 bg-[#43CDFF]" :style="{ width: lockProgress(pos) + '%' }"></div>
-                                    </div>
-                                    <div class="flex justify-between text-[11px] mt-1 text-gray-500">
-                                        <span>{{ formatDate(pos.start_at) }}</span>
-                                        <span>{{ formatDate(pos.unlock_at) }}</span>
-                                    </div>
-                                </div>
-                            </td> -->
-                                <!-- <td class="py-3 px-4 text-center">
-                                <div class="flex justify-center gap-2">
-                                    <button class="px-3 py-1 rounded border" @click="unstake(pos)"
-                                        :disabled="!canUnstake(pos)">Unstake</button>
-                                </div>
-                            </td> -->
+                                <td class="py-3 px-4 text-center">
+                                    <button class="inline-flex items-center rounded-xl px-3 py-1.5 text-sm font-medium
+           text-white bg-rose-500 hover:bg-rose-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                                        :disabled="!canUnstake(pos) || unstaking[pos.id]"
+                                        :title="!canUnstake(pos) ? ('Unlocks on ' + formatDate(pos.unlock_at)) : 'Unstake'"
+                                        @click="unstake(pos)">
+                                        <svg v-if="unstaking[pos.id]" class="animate-spin h-4 w-4 mr-2"
+                                            viewBox="0 0 24 24" fill="none">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                stroke-width="4" />
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                        </svg>
+                                        Unstake
+                                    </button>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -220,7 +219,7 @@
                     <div class="flex justify-between items-center px-4 py-3">
                         <div class="text-sm text-gray-600">
                             Showing {{ paginatedData.length ? (startIndex + 1) : 0 }}–{{ endIndex }} of {{
-                            paginatedData.length
+                                paginatedData.length
                             }}
                         </div>
                         <div class="flex gap-2">
@@ -578,6 +577,8 @@ const totalStaked = computed(() =>
     positions.value.reduce((s, p) => s + Number(p.amount || 0), 0)
 );
 
+const unstaking = ref({});
+
 // Helpers (used by the "Your Active Stakes" table)
 function formatAmount(v) { return Number(v || 0).toLocaleString(); }
 function formatDate(d) {
@@ -603,6 +604,50 @@ async function fetchPositions() {
         console.warn('Failed to load positions', e);
         positions.value = [];
     }
+}
+
+function canUnstake(pos) {
+  if (!pos?.unlock_at) return true;
+  const unlockMs = new Date(pos.unlock_at).getTime();
+  return Number.isFinite(unlockMs) && Date.now() >= unlockMs;
+}
+
+async function unstake(pos) {
+  if (!pos?.id) return;
+
+  const ok = await Swal.fire({
+    icon: "warning",
+    title: "Unstake this position?",
+    text: "Your staked tokens will be returned to your wallet.",
+    showCancelButton: true,
+    confirmButtonText: "Unstake",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#ef4444",
+  });
+  if (!ok.isConfirmed) return;
+
+  try {
+    unstaking.value = { ...unstaking.value, [pos.id]: true };
+
+    // call your API (adjust path/body as your backend expects)
+    const { data } = await axios.post(
+      "/api/staking/unstake",
+      { staking_id: pos.id },
+      { headers: apiHeaders(), withCredentials: true }
+    );
+
+    if (data?.status === "success") {
+      Swal.fire({ icon: "success", title: "Unstaked", timer: 1400, showConfirmButton: false });
+      const i = positions.value.findIndex(p => p.id === pos.id);
+      if (i !== -1) positions.value.splice(i, 1);
+    } else {
+      Swal.fire({ icon: "error", title: "Failed", text: data?.message || "Could not unstake." });
+    }
+  } catch (e) {
+    Swal.fire({ icon: "error", title: "Network error", text: e?.response?.data?.message || e.message });
+  } finally {
+    unstaking.value = { ...unstaking.value, [pos.id]: false };
+  }
 }
 
 function shortMiddle(str, left = 4, right = 4) {

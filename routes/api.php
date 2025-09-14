@@ -64,7 +64,7 @@ Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
         Route::post('start', 'StakingController@start_staking')->name('staking.start');
         Route::post('submit-xdr', 'StakingController@submit_xdr')->name('staking.submitXdr');
         Route::post('reward-distribution', 'StakingController@reward_distribution')->name('staking.reward');
-        Route::post('stop', 'StakingController@stop_staking')->name('staking.stop');
+        Route::post('unstake', 'StakingController@unstake')->name('staking.unstake');
         Route::get('user', 'StakingController@user_staking')->name('staking.user');
     });
 });
