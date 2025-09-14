@@ -620,13 +620,29 @@ class StakingController extends Controller
                 'errors' => $e->errors(),
             ], 422);
         }
-
-        $includeWithdrawn = $request->boolean('include_withdrawn');
         $assetId          = $data['staking_asset_id'] ?? null;
 
         $rows = Staking::query()
-            ->select(['id', 'staking_asset_id', 'amount', 'apy', 'lock_days', 'unlock_at', 'created_at'])
-            ->with(['asset:id,code']) // eager-load only what you need
+            ->select([
+                'id',
+                'staking_asset_id',
+                'amount',
+                'apy',
+                'lock_days',
+                'unlock_at',
+                'created_at',
+                'staking_status_id'
+            ])
+            // what we need for display
+            ->with([
+                'asset:id,code',
+                'status:id,name',
+            ])
+            // reward aggregates
+            ->withSum('rewards as total_reward', 'amount')
+            ->withCount('rewards as rewards_count')
+            ->withMax('rewards as last_reward_at', 'created_at')
+
             ->ForPublicKey($data['public_key'])
             ->whereNotNull('transaction_id')
             ->when($assetId, fn($q) => $q->where('staking_asset_id', $assetId))
@@ -636,13 +652,24 @@ class StakingController extends Controller
 
         $positions = $rows->map(function (Staking $s) {
             return [
-                'id'         => (int) $s->id,
-                'asset_code' => $s->asset?->code,
-                'amount'     => (float) $s->amount,
-                'apy'        => (float) $s->apy,
-                'lock_days'  => (int) $s->lock_days,
-                'start_at'   => optional($s->created_at)->toIso8601String(),
-                'unlock_at'  => optional($s->unlock_at)->toIso8601String(),
+                'id'            => (int) $s->id,
+                'asset_code'    => $s->asset?->code,
+                'amount'        => (float) $s->amount,
+                'apy'           => (float) $s->apy,
+
+                // status
+                'status'        => $s->status?->name,          // e.g. "Active", "Stopped", etc.
+                'status_id'     => (int) ($s->staking_status_id ?? 0),
+
+                // rewards
+                'total_reward'  => (float) ($s->total_reward ?? 0),   // sum of rewards.amount
+                'rewards_count' => (int) ($s->rewards_count ?? 0),
+                'last_reward_at' => $s->last_reward_at ? \Illuminate\Support\Carbon::parse($s->last_reward_at)->toIso8601String() : null,
+
+                // lock / dates
+                'lock_days'     => (int) $s->lock_days,
+                'start_at'      => optional($s->created_at)->toIso8601String(),
+                'unlock_at'     => optional($s->unlock_at)->toIso8601String(),
             ];
         });
 

@@ -8,7 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class StakingStatus extends Model
 {
     use HasFactory;
-    protected $fillable = [
-        'name',
-    ];
+    protected $guarded = [];
+
+    public function stakings()
+    {
+        return $this->hasMany(Staking::class, 'staking_status_id');
+    }
 }

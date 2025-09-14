@@ -47,5 +47,10 @@ class Staking extends Model
     {
         return $this->hasMany(StakingReward::class, 'staking_id');
     }
+
+    public function status()
+    {
+        return $this->belongsTo(StakingStatus::class, 'staking_status_id');
+    }
 }
 

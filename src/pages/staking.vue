@@ -121,10 +121,10 @@
             </div>
         </div>
 
-        <!-- Your Active Stakes -->
+        <!-- Your Staking History -->
         <section v-if="hasPositions" id="your-stakes" class="container mx-auto mt-16 mb-10">
             <div class="container mx-auto pt-20">
-                <h2 class="text-2xl font-semibold text-center mb-6">Your Active Stakes</h2>
+                <h2 class="text-2xl font-semibold text-center mb-6">Your Staking History</h2>
 
                 <div class="w-full max-w-[80%] mx-auto bg-white rounded-xl shadow-md overflow-hidden">
                     <table class="min-w-full border-collapse">
@@ -133,21 +133,49 @@
                                 <th class="py-3 px-4 text-left">Asset</th>
                                 <th class="py-3 px-4 text-right">Amount</th>
                                 <th class="py-3 px-4 text-center">APY</th>
-                                <!-- <th class="py-3 px-4 text-center">Lock</th> -->
-                                <!-- <th class="py-3 px-4 text-center">Rewarded</th> -->
+                                <th class="py-3 px-4 text-center">Status</th>
+                                <th class="py-3 px-4 text-center">Rewards</th>
+                                <th class="py-3 px-4 text-center">Last Reward</th>
                                 <th class="py-3 px-4 text-center">Actions</th>
                             </tr>
                         </thead>
+
                         <tbody>
                             <tr v-for="pos in positions" :key="pos.id" class="border-b">
                                 <td class="py-3 px-4">{{ pos.asset_code }}</td>
-                                <td class="py-3 px-4 text-right">{{ formatAmount(pos.amount) }}</td>
-                                <td class="py-3 px-4 text-center">{{ pos.apy }}%</td>
+
+                                <td class="py-3 px-4 text-right">
+                                    {{ formatAmount(pos.amount) }}
+                                </td>
+
                                 <td class="py-3 px-4 text-center">
-                                    <button class="inline-flex items-center rounded-xl px-3 py-1.5 text-sm font-medium
-           text-white bg-rose-500 hover:bg-rose-600 disabled:opacity-40 disabled:cursor-not-allowed"
-                                        :disabled="!canUnstake(pos) || unstaking[pos.id]"
-                                        :title="!canUnstake(pos) ? ('Unlocks on ' + formatDate(pos.unlock_at)) : 'Unstake'"
+                                    {{ Number(pos.apy).toFixed(2) }}%
+                                </td>
+
+                                <td class="py-3 px-4 text-center">
+                                    <span
+                                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                                        :class="statusClass(pos.status_id)" :title="pos.status || '—'">
+                                        {{ pos.status || '—' }}
+                                    </span>
+                                </td>
+
+                                <td class="py-3 px-4 text-center">
+                                    <div class="text-sm">
+                                        <div class="font-medium">{{ formatAmount(pos.total_reward || 0) }} TKG</div>
+                                        <div class="text-gray-500 text-xs">{{ pos.rewards_count || 0 }} payout(s)</div>
+                                    </div>
+                                </td>
+
+                                <td class="py-3 px-4 text-center">
+                                    {{ formatDate(pos.last_reward_at) }}
+                                </td>
+
+                                <td class="py-3 px-4 text-center">
+                                    <button
+                                        class="inline-flex items-center rounded-xl px-3 py-1.5 text-sm font-medium text-white bg-rose-500 hover:bg-rose-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                                        :disabled="!canUnstake(pos) || !!unstaking[pos.id]"
+                                        :title="canUnstake(pos) ? 'Unstake' : ('Unlocks on ' + formatDate(pos.unlock_at))"
                                         @click="unstake(pos)">
                                         <svg v-if="unstaking[pos.id]" class="animate-spin h-4 w-4 mr-2"
                                             viewBox="0 0 24 24" fill="none">
@@ -165,6 +193,7 @@
                 </div>
             </div>
         </section>
+
 
         <div class="container mx-auto pt-20">
             <div class="mx-auto">
@@ -583,14 +612,30 @@ const unstaking = ref({});
 // Helpers (used by the "Your Active Stakes" table)
 function formatAmount(v) { return Number(v || 0).toLocaleString(); }
 function formatDate(d) {
+    if (!d) return '-';
     const dt = d instanceof Date ? d : new Date(d);
-    return isNaN(+dt) ? '—' : dt.toLocaleDateString();
+    return Number.isNaN(dt.getTime()) ? '-' : dt.toLocaleDateString();
 }
+
 // function lockProgress(pos) {
 //   const s = new Date(pos.start_at), u = new Date(pos.unlock_at), now = new Date();
 //   if (isNaN(+s) || isNaN(+u) || u <= s) return 0;
 //   return Math.min(100, Math.max(0, ((now - s) / (u - s)) * 100)).toFixed(0);
 // }
+
+function statusClass(statusId) {
+    switch (Number(statusId)) {
+        case 1: // Staked
+        case 2: // Topped Up
+            return "bg-emerald-100 text-emerald-700";
+        case 3: // Rewarded (if you show this)
+            return "bg-blue-100 text-blue-700";
+        case 4: // Stopped
+            return "bg-gray-200 text-gray-700";
+        default:
+            return "bg-gray-100 text-gray-700";
+    }
+}
 
 async function fetchPositions() {
     if (!publicKey) return;
@@ -608,46 +653,41 @@ async function fetchPositions() {
 }
 
 function canUnstake(pos) {
-    if (!pos?.unlock_at) return true;
-    const unlockMs = new Date(pos.unlock_at).getTime();
-    return Number.isFinite(unlockMs) && Date.now() >= unlockMs;
+    if (Number(pos.status_id) === 4) return false;
+    const now = Date.now();
+    const unlock = pos.unlock_at ? Date.parse(pos.unlock_at) : 0;
+    return unlock === 0 || unlock <= now;
 }
 
 async function unstake(pos) {
-    if (!pos?.id) return;
-
-    const ok = await Swal.fire({
+    const confirm = await Swal.fire({
         icon: "warning",
-        title: "Unstake this position?",
-        text: "Your staked tokens will be returned to your wallet.",
+        title: "Unstake?",
+        text: "This will stop rewards and return your staked tokens.",
         showCancelButton: true,
-        confirmButtonText: "Unstake",
-        cancelButtonText: "Cancel",
-        confirmButtonColor: "#ef4444",
+        confirmButtonText: "Yes, unstake",
     });
-    if (!ok.isConfirmed) return;
+    if (!confirm.isConfirmed) return;
 
     try {
-        unstaking.value = { ...unstaking.value, [pos.id]: true };
+        unstaking.value[pos.id] = true;
 
-        // call your API (adjust path/body as your backend expects)
         const { data } = await axios.post(
-            "/api/staking/unstake",
+            "/api/staking/stop",
             { staking_id: pos.id },
             { headers: apiHeaders(), withCredentials: true }
         );
 
         if (data?.status === "success") {
-            Swal.fire({ icon: "success", title: "Unstaked", timer: 1400, showConfirmButton: false });
-            const i = positions.value.findIndex(p => p.id === pos.id);
-            if (i !== -1) positions.value.splice(i, 1);
+            await fetchPositions(); // refresh table
+            Swal.fire({ icon: "success", title: "Unstaked", timer: 1200, showConfirmButton: false });
         } else {
             Swal.fire({ icon: "error", title: "Failed", text: data?.message || "Could not unstake." });
         }
     } catch (e) {
         Swal.fire({ icon: "error", title: "Network error", text: e?.response?.data?.message || e.message });
     } finally {
-        unstaking.value = { ...unstaking.value, [pos.id]: false };
+        unstaking.value[pos.id] = false;
     }
 }
 
