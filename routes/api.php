@@ -20,12 +20,12 @@ use Illuminate\Support\Facades\Route;
 // GlobalController
 // ==========================
 Route::prefix('global')->group(function () {
-    Route::get('wallet-types', 'GlobalController@fetch_wallet_types')->name('global.walletTypes');
-    Route::get('blockchains', 'GlobalController@fetch_blockchains')->name('global.blockchains');
+    Route::get('wallet_types', 'GlobalController@wallet_types')->name('global.walletTypes');
+    Route::get('blockchains', 'GlobalController@blockchains')->name('global.blockchains');
     Route::get('generated_tokens', 'GlobalController@generated_tokens')->name('global.generatedTokens');
     Route::get('count_data', 'GlobalController@count_data')->name('global.countData');
-    Route::get('check-xlm-balance', 'GlobalController@check_xlm_balance')->name('global.checkXlmBalance');
-    Route::get('check-tkg-balance', 'GlobalController@check_tkg_balance')->name('global.checkTkgBalance');
+    Route::get('check_xlm_balance', 'GlobalController@check_xlm_balance')->name('global.checkXlmBalance');
+    Route::get('check_tkg_balance', 'GlobalController@check_tkg_balance')->name('global.checkTkgBalance');
     Route::get('staking_reward', 'GlobalController@staking_reward')->name('global.countData');
 });
 
@@ -50,8 +50,7 @@ Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
     // TokenController
     // ==========================
     Route::prefix('token')->group(function () {
-        Route::post('generate-issuer-wallet', 'TokenController@generate_issuer_wallet')->name('token.generateIssuerWallet');
-        Route::post('generate', 'TokenController@user_generate_token_request')->name('token.generate');
+        Route::post('generate', 'TokenController@generate_token')->name('token.generate');
         Route::post('submit-transaction', 'TokenController@submit_transaction')->name('token.submitTransaction');
         Route::post('claimable-balance', 'TokenController@claimable_balance')->name('token.claimableBalance');
         Route::post('reclaim-claimable-balance', 'TokenController@reclaim_claimable_balance')->name('token.reclaimClaimableBalance');

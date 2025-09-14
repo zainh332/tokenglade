@@ -196,7 +196,7 @@ export async function signXdrWithWallet(wallet, xdr, isTestnet) {
 
 export async function checkTkgBalance(public_address) {
     try {
-        const { data } = await axios.get("/api/global/check-tkg-balance", {
+        const { data } = await axios.get("/api/global/check_tkg_balance", {
             params: { public_wallet: public_address },
         });
 

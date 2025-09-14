@@ -290,7 +290,7 @@ async function fetchblockchains() {
 }
 async function fetchWallets() {
     try {
-        const response = await axios.get("/api/global/wallet-types", {});
+        const response = await axios.get("/api/global/wallet_types", {});
         if (response.data.status === "success") {
             walletOptions.value = response.data.wallets;
         } else {

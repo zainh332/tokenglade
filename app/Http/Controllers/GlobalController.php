@@ -119,7 +119,7 @@ class GlobalController extends Controller
     }
 
 
-    public function fetch_wallet_types()
+    public function wallet_types()
     {
         $wallets = WalletType::where('status', 1)
             ->select('id', 'name', 'key', 'blockchain_id')
@@ -132,7 +132,7 @@ class GlobalController extends Controller
         ]);
     }
 
-    public function fetch_blockchains()
+    public function blockchains()
     {
         $blockchains = Blockchain::orderBy('name')->get();
 

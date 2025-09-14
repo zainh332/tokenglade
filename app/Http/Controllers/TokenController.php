@@ -62,7 +62,7 @@ class TokenController extends Controller
         $this->issuer_wallet_amount = 4; //XLM
     }
 
-    public function user_generate_token_request(Request $request)
+    public function generate_token(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'distributor_wallet_key' => 'required',
