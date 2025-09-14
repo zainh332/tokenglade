@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Blockchain;
-use App\Models\ClaimableBalance;
-use App\Models\ClaimableBalanceReceiver;
+use App\Models\StakingReward;
 use App\Models\StellarToken;
 use App\Models\Token;
 use App\Models\WalletType;
@@ -26,7 +25,7 @@ class GlobalController extends Controller
 
     public function __construct(WalletService $wallet)
     {
-        $this->wallet = $wallet; 
+        $this->wallet = $wallet;
         $stellarEnv = env('VITE_STELLAR_ENVIRONMENT');
 
         if ($stellarEnv === 'public') {
@@ -70,8 +69,8 @@ class GlobalController extends Controller
     {
         try {
             $data = $request->validate([
-                'public_wallet' => ['required','string'],
-                'min' => ['nullable','numeric'],
+                'public_wallet' => ['required', 'string'],
+                'min' => ['nullable', 'numeric'],
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -80,7 +79,7 @@ class GlobalController extends Controller
                 'errors'  => $e->errors(),
             ], 422);
         }
-        
+
         try {
             $min = $data['min'] ?? null;
             $result = $this->wallet->getTkgBalance($data['public_wallet'], $min);
@@ -98,7 +97,6 @@ class GlobalController extends Controller
                 'status'    => 1,
                 'balance' => (float) $result,
             ]);
-
         } catch (HorizonRequestException $e) {
             if ($e->getStatusCode() === 404) {
                 // account not funded / not found
@@ -124,7 +122,7 @@ class GlobalController extends Controller
     public function fetch_wallet_types()
     {
         $wallets = WalletType::where('status', 1)
-            ->select('id','name', 'key', 'blockchain_id')
+            ->select('id', 'name', 'key', 'blockchain_id')
             ->get();
 
         // Return the response
@@ -144,7 +142,6 @@ class GlobalController extends Controller
             'blockchains' => $blockchains
         ]);
     }
-
 
 
     public function fetch_holding_tokens_claim_claimable_balance(Request $request)
@@ -197,7 +194,8 @@ class GlobalController extends Controller
         }
     }
 
-    public function fetch_generated_tokens (){
+    public function generated_tokens()
+    {
         $get_wallets_tokens = Token::with(['stellarToken', 'blockchain'])
             ->whereHas('stellarToken', function ($q) {
                 $q->whereNotNull('issuer_public_key')
@@ -212,15 +210,40 @@ class GlobalController extends Controller
         ]);
     }
 
-    public function count_data(){
+    public function count_data()
+    {
         $total_tokens = StellarToken::count();
-        $total_claimablebalance_users = ClaimableBalance::count();
-        $total_claimablebalance = ClaimableBalanceReceiver::count();
         return response()->json([
             'status' => 'success',
             'total_tokens' => $total_tokens,
-            'total_claimablebalance_users' => $total_claimablebalance_users,
-            'total_claimablebalance' => $total_claimablebalance,
+        ]);
+    }
+
+    public function staking_reward(Request $request)
+    {
+
+        $limit = min(max((int)$request->input('limit', 20), 1), 100);
+
+        // eager-load staking to get wallet address without N+1 queries
+        $rows = StakingReward::query()
+            ->with(['staking:id,public'])                 // only need 'public' from parent
+            ->latest('created_at')
+            ->take($limit)
+            ->get(['id', 'staking_id', 'amount', 'transaction_id', 'created_at']);
+
+        // shape for frontend table
+        $out = $rows->map(function (StakingReward $r) {
+            return [
+                'wallet_address' => $r->staking?->public,                   // from stakings.public
+                'reward'         => (float)$r->amount,                      // amount rewarded
+                'transaction'    => $r->transaction_id,                     // tx hash / id
+                'at'             => optional($r->created_at)->toIso8601String(),
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'stakingreward'   => $out,
         ]);
     }
 

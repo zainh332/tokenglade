@@ -197,7 +197,7 @@
                     <!-- Pagination -->
                     <div class="flex justify-between items-center px-4 py-3">
                         <div class="text-sm text-gray-600">
-                            Showing {{ startIndex + 1 }}–{{ endIndex }} of {{ tableData.length }}
+                            Showing {{ startIndex + 1 }}–{{ endIndex }} of {{ paginatedData.length }}
                         </div>
                         <div class="flex gap-2">
                             <button @click="prevPage" :disabled="currentPage === 1"
@@ -294,6 +294,10 @@ import { signTransaction } from "@stellar/freighter-api";
 // ---------------------
 const rangeValue = ref(0); // start at 0%
 
+// --- User Staking tab state ---
+const positions = ref([]);
+const hasPositions = computed(() => positions.value.length > 0);
+
 // ---------------------
 // TKG Balance & staking bounds
 // ---------------------
@@ -322,14 +326,12 @@ const selectedTokensFormatted = computed(() => `${selectedTokens.value.toLocaleS
 // ---------------------
 // Table & Pagination
 // ---------------------
-const tableData = ref([]);
 const currentPage = ref(1);
 const itemsPerPage = 5;
 
-const totalPages = computed(() => Math.ceil(tableData.value.length / itemsPerPage));
 const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage);
-const endIndex = computed(() => Math.min(startIndex.value + itemsPerPage, tableData.value.length));
-const paginatedData = computed(() => tableData.value.slice(startIndex.value, endIndex.value));
+const endIndex = computed(() => Math.min(startIndex.value + itemsPerPage, paginatedData.value.length));
+const paginatedData = ref([]);
 
 function nextPage() {
     if (currentPage.value < totalPages.value) currentPage.value++;
@@ -342,14 +344,6 @@ function prevPage() {
 // Initialize
 // ---------------------
 onMounted(async () => {
-    tableData.value = [
-        { wallet_address: "GCJW......JSH", reward: "100 TKG", transaction: "Link" },
-        { wallet_address: "GIJW......KKQ", reward: "120 TKG", transaction: "Link" },
-        { wallet_address: "GAPK......SKSI", reward: "320 TKG", transaction: "Link" },
-        { wallet_address: "GAAS......VEYP", reward: "50 TKG", transaction: "Link" },
-        { wallet_address: "GLOK......UUYD", reward: "543 TKG", transaction: "Link" },
-    ];
-
     try {
         const pk = publicKey;
         if (pk) {
@@ -362,6 +356,8 @@ onMounted(async () => {
         loadingBalance.value = false;
     }
     await fetchPositions();
+    await fetchrewards();
+    
 });
 
 async function onSubmit() {
@@ -549,10 +545,6 @@ async function submitStakingXdr(signedXdr, staking_id) {
     }
 }
 
-// --- User Staking tab state ---
-const positions = ref([]);
-const hasPositions = computed(() => positions.value.length > 0);
-
 // Aggregates for the User Staking tab KPIs
 const totalStaked = computed(() =>
     positions.value.reduce((s, p) => s + Number(p.amount || 0), 0)
@@ -582,6 +574,31 @@ async function fetchPositions() {
     } catch (e) {
         console.warn('Failed to load positions', e);
         positions.value = [];
+    }
+}
+
+async function fetchrewards() {
+    try {
+        const response = await axios.get('/api/global/staking_reward', {
+            headers: apiHeaders(),
+        });
+        
+        if (response.data.status === "success") {
+          paginatedData.value = response.data.stakingreward;
+        } else {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: response.data.message || "An unexpected error occurred.",
+            });
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: error.response?.data?.message || "Failed to fetch wallet types. Please try again later.",
+        });
     }
 }
 

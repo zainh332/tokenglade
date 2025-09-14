@@ -9,7 +9,6 @@ class Staking extends Model
 {
     protected $guarded = [];
 
-    // Helpful casts for consistent JSON output
     protected $casts = [
         'amount'       => 'decimal:7',
         'apy'          => 'decimal:2',
@@ -19,13 +18,11 @@ class Staking extends Model
         'updated_at'   => 'datetime',
     ];
 
-    // Relation
     public function asset()
     {
         return $this->belongsTo(StakingAsset::class, 'staking_asset_id');
     }
 
-    // Scopes you’re already conceptually using in the controller
     public function scopeForPublic(Builder $q, string $public): Builder
     {
         return $q->where('public', $public);
@@ -39,6 +36,11 @@ class Staking extends Model
     public function scopeMinAmount(Builder $q, float $min): Builder
     {
         return $q->where('amount', '>=', $min);
+    }
+
+    public function rewards()
+    {
+        return $this->hasMany(StakingReward::class, 'staking_id');
     }
 }
 

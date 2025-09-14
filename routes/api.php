@@ -22,10 +22,11 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('global')->group(function () {
     Route::get('wallet-types', 'GlobalController@fetch_wallet_types')->name('global.walletTypes');
     Route::get('blockchains', 'GlobalController@fetch_blockchains')->name('global.blockchains');
-    Route::get('generated-tokens', 'GlobalController@fetch_generated_tokens')->name('global.generatedTokens');
-    Route::get('count-data', 'GlobalController@count_data')->name('global.countData');
+    Route::get('generated_tokens', 'GlobalController@generated_tokens')->name('global.generatedTokens');
+    Route::get('count_data', 'GlobalController@count_data')->name('global.countData');
     Route::get('check-xlm-balance', 'GlobalController@check_xlm_balance')->name('global.checkXlmBalance');
     Route::get('check-tkg-balance', 'GlobalController@check_tkg_balance')->name('global.checkTkgBalance');
+    Route::get('staking_reward', 'GlobalController@staking_reward')->name('global.countData');
 });
 
 // ==========================
