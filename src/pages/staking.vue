@@ -181,8 +181,8 @@
                             <tr>
                                 <th class="py-4 px-4 text-center">Wallet Address</th>
                                 <th class="py-4 px-4 text-center">Reward</th>
-                                <th class="py-4 px-4 text-center">Date</th>
                                 <th class="py-4 px-4 text-center">Transactions</th>
+                                <th class="py-4 px-4 text-center">Date</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -201,9 +201,7 @@
                                         {{ row.reward }}
                                     </span>
                                 </td>
-                                <td class="py-4 px-4 text-dark text-center">
-                                    {{ fmtDate(row.at) }}
-                                </td>
+
                                 <td class="py-4 px-4 text-dark text-center">
                                     <a v-if="row.transaction" :href="txUrl(row.transaction)" target="_blank"
                                         rel="noopener noreferrer" class="underline text-blue-600 hover:text-blue-800"
@@ -211,6 +209,9 @@
                                         Link
                                     </a>
                                     <span v-else>—</span>
+                                </td>
+                                <td class="py-4 px-4 text-dark text-center">
+                                    {{ fmtDate(row.at) }}
                                 </td>
                             </tr>
                         </tbody>
@@ -607,47 +608,47 @@ async function fetchPositions() {
 }
 
 function canUnstake(pos) {
-  if (!pos?.unlock_at) return true;
-  const unlockMs = new Date(pos.unlock_at).getTime();
-  return Number.isFinite(unlockMs) && Date.now() >= unlockMs;
+    if (!pos?.unlock_at) return true;
+    const unlockMs = new Date(pos.unlock_at).getTime();
+    return Number.isFinite(unlockMs) && Date.now() >= unlockMs;
 }
 
 async function unstake(pos) {
-  if (!pos?.id) return;
+    if (!pos?.id) return;
 
-  const ok = await Swal.fire({
-    icon: "warning",
-    title: "Unstake this position?",
-    text: "Your staked tokens will be returned to your wallet.",
-    showCancelButton: true,
-    confirmButtonText: "Unstake",
-    cancelButtonText: "Cancel",
-    confirmButtonColor: "#ef4444",
-  });
-  if (!ok.isConfirmed) return;
+    const ok = await Swal.fire({
+        icon: "warning",
+        title: "Unstake this position?",
+        text: "Your staked tokens will be returned to your wallet.",
+        showCancelButton: true,
+        confirmButtonText: "Unstake",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#ef4444",
+    });
+    if (!ok.isConfirmed) return;
 
-  try {
-    unstaking.value = { ...unstaking.value, [pos.id]: true };
+    try {
+        unstaking.value = { ...unstaking.value, [pos.id]: true };
 
-    // call your API (adjust path/body as your backend expects)
-    const { data } = await axios.post(
-      "/api/staking/unstake",
-      { staking_id: pos.id },
-      { headers: apiHeaders(), withCredentials: true }
-    );
+        // call your API (adjust path/body as your backend expects)
+        const { data } = await axios.post(
+            "/api/staking/unstake",
+            { staking_id: pos.id },
+            { headers: apiHeaders(), withCredentials: true }
+        );
 
-    if (data?.status === "success") {
-      Swal.fire({ icon: "success", title: "Unstaked", timer: 1400, showConfirmButton: false });
-      const i = positions.value.findIndex(p => p.id === pos.id);
-      if (i !== -1) positions.value.splice(i, 1);
-    } else {
-      Swal.fire({ icon: "error", title: "Failed", text: data?.message || "Could not unstake." });
+        if (data?.status === "success") {
+            Swal.fire({ icon: "success", title: "Unstaked", timer: 1400, showConfirmButton: false });
+            const i = positions.value.findIndex(p => p.id === pos.id);
+            if (i !== -1) positions.value.splice(i, 1);
+        } else {
+            Swal.fire({ icon: "error", title: "Failed", text: data?.message || "Could not unstake." });
+        }
+    } catch (e) {
+        Swal.fire({ icon: "error", title: "Network error", text: e?.response?.data?.message || e.message });
+    } finally {
+        unstaking.value = { ...unstaking.value, [pos.id]: false };
     }
-  } catch (e) {
-    Swal.fire({ icon: "error", title: "Network error", text: e?.response?.data?.message || e.message });
-  } finally {
-    unstaking.value = { ...unstaking.value, [pos.id]: false };
-  }
 }
 
 function shortMiddle(str, left = 4, right = 4) {
