@@ -56,11 +56,17 @@
                             <div class="relative w-full">
                                 <div class="flex items-center justify-between mb-1">
                                     <label for="range_value" class="block text-sm font-medium text-gray-700">
-                                        Select range
+                                        
                                     </label>
                                     <span class="text-xs text-gray-500">
                                         Min: <strong>1,500</strong> • Max: <strong>{{ formattedMaxStake }}</strong>
                                     </span>
+                                </div>
+
+                                <!-- Tooltip -->
+                                <div class="absolute -top-[0] transform -translate-x-1/2 text-xs bg-[#43CDFF] text-white px-2 py-1 rounded-[5px] transition-all duration-200"
+                                    :style="{ left: `calc(${percentage}% - 1px)` }">
+                                    {{ rangeValue }}%
                                 </div>
 
                                 <!-- Range Input (0 → 100) -->
@@ -176,38 +182,52 @@
                             <tr>
                                 <th class="py-4 px-4 text-center">Wallet Address</th>
                                 <th class="py-4 px-4 text-center">Reward</th>
+                                <th class="py-4 px-4 text-center">Date</th>
                                 <th class="py-4 px-4 text-center">Transactions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(row, index) in paginatedData" :key="index"
+                            <tr v-if="pageRows.length === 0">
+                                <td colspan="4" class="py-6 text-center text-gray-500">No rewards yet.</td>
+                            </tr>
+
+                            <tr v-for="(row, index) in pageRows" :key="index"
                                 class="bg-white border-b border-[#EBEBEB]">
-                                <td class="py-4 px-4 text-dark text-center">{{ row.wallet_address }}</td>
+                                <td class="py-4 px-4 text-dark text-center">
+                                    <span :title="row.wallet_address">{{ shortMiddle(row.wallet_address, 6, 6) }}</span>
+                                </td>
                                 <td class="py-4 px-4">
                                     <span
                                         class="inline-block w-full px-4 py-1 text-center text-sm font-medium text-dark bg-[#DBFEF0] rounded-full">
                                         {{ row.reward }}
                                     </span>
                                 </td>
-                                <td class="py-4 px-4 text-dark text-center">{{ row.transaction }}</td>
+                                <td class="py-4 px-4 text-dark text-center">
+                                    {{ fmtDate(row.at) }}
+                                </td>
+                                <td class="py-4 px-4 text-dark text-center">
+                                    <a v-if="row.transaction" :href="txUrl(row.transaction)" target="_blank"
+                                        rel="noopener noreferrer" class="underline text-blue-600 hover:text-blue-800"
+                                        :title="row.transaction">
+                                        Link
+                                    </a>
+                                    <span v-else>—</span>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
 
-                    <!-- Pagination -->
                     <div class="flex justify-between items-center px-4 py-3">
                         <div class="text-sm text-gray-600">
-                            Showing {{ startIndex + 1 }}–{{ endIndex }} of {{ paginatedData.length }}
+                            Showing {{ paginatedData.length ? (startIndex + 1) : 0 }}–{{ endIndex }} of {{
+                            paginatedData.length
+                            }}
                         </div>
                         <div class="flex gap-2">
                             <button @click="prevPage" :disabled="currentPage === 1"
-                                class="px-3 py-1 text-sm border rounded-lg disabled:opacity-50">
-                                Prev
-                            </button>
+                                class="px-3 py-1 text-sm border rounded-lg disabled:opacity-50">Prev</button>
                             <button @click="nextPage" :disabled="currentPage === totalPages"
-                                class="px-3 py-1 text-sm border rounded-lg disabled:opacity-50">
-                                Next
-                            </button>
+                                class="px-3 py-1 text-sm border rounded-lg disabled:opacity-50">Next</button>
                         </div>
                     </div>
                 </div>
@@ -293,6 +313,13 @@ import { signTransaction } from "@stellar/freighter-api";
 // Slider state (0 → 100)
 // ---------------------
 const rangeValue = ref(0); // start at 0%
+const min = 0;
+const max = 100;
+
+// Tooltip percentage for slider
+const percentage = computed(() => {
+    return ((rangeValue.value - min) / (max - min)) * 100;
+});
 
 // --- User Staking tab state ---
 const positions = ref([]);
@@ -328,17 +355,19 @@ const selectedTokensFormatted = computed(() => `${selectedTokens.value.toLocaleS
 // ---------------------
 const currentPage = ref(1);
 const itemsPerPage = 5;
+const paginatedData = ref([]);
 
 const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage);
 const endIndex = computed(() => Math.min(startIndex.value + itemsPerPage, paginatedData.value.length));
-const paginatedData = ref([]);
+const totalPages = computed(() => Math.max(1, Math.ceil(paginatedData.value.length / itemsPerPage)));
 
-function nextPage() {
-    if (currentPage.value < totalPages.value) currentPage.value++;
-}
-function prevPage() {
-    if (currentPage.value > 1) currentPage.value--;
-}
+const pageRows = computed(() => paginatedData.value.slice(startIndex.value, endIndex.value));
+
+const network = (import.meta.env.VITE_STELLAR_ENVIRONMENT || "public").toLowerCase();
+
+const explorerBase = network === 'testnet'
+    ? 'https://stellar.expert/explorer/testnet'
+    : 'https://stellar.expert/explorer/public';
 
 // ---------------------
 // Initialize
@@ -357,11 +386,10 @@ onMounted(async () => {
     }
     await fetchPositions();
     await fetchrewards();
-    
+
 });
 
 async function onSubmit() {
-    const network = (import.meta.env.VITE_STELLAR_ENVIRONMENT || "public").toLowerCase();
     const isTestnet = network === "testnet";
     const stakingAssetId = isTestnet ? 2 : 1;
     if (!hasMinBalance.value) {
@@ -577,14 +605,34 @@ async function fetchPositions() {
     }
 }
 
+function shortMiddle(str, left = 4, right = 4) {
+    if (!str) return '';
+    return str.length <= left + right ? str : `${str.slice(0, left)}…${str.slice(-right)}`;
+}
+
+function txUrl(hash) {
+    if (!hash) return '#';
+    return `${explorerBase}/tx/${hash}`;
+}
+
+function fmtDate(d) {
+    if (!d) return '—';
+    const dt = new Date(d);
+    if (Number.isNaN(dt.getTime())) return '—';
+    return dt.toLocaleString(undefined, {
+        year: 'numeric', month: 'short', day: '2-digit',
+        // hour: '2-digit', minute: '2-digit'
+    });
+}
+
 async function fetchrewards() {
     try {
         const response = await axios.get('/api/global/staking_reward', {
             headers: apiHeaders(),
         });
-        
+
         if (response.data.status === "success") {
-          paginatedData.value = response.data.stakingreward;
+            paginatedData.value = response.data.stakingreward;
         } else {
             Swal.fire({
                 icon: "error",
