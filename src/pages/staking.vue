@@ -534,7 +534,7 @@ async function submitStakingXdr(signedXdr, staking_id) {
 
     try {
         const { data } = await axios.post(
-            '/api/staking/submit-xdr',
+            '/api/staking/submit_xdr',
             { signedXdr, staking_id },
             {
                 headers: apiHeaders(),

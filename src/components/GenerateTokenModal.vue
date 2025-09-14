@@ -303,7 +303,7 @@ const submitForm = async (form) => {
 
     updateLoader("Submitting", "Submitting fee transaction to Stellar…");
     //Submit the signed transaction to the backend for submission to Stellar
-    const submitResponse1 = await axios.post("api/token/submit-transaction", {
+    const submitResponse1 = await axios.post("api/token/submit_transaction", {
       signedXdr: feeSignedXdr,
       type: 1,
       payload,
@@ -323,7 +323,7 @@ const submitForm = async (form) => {
 
     //Submit the signed transaction to the backend for submission to Stellar
     updateLoader("Submitting", "Submitting trustline transaction to Stellar…");
-    const submitResponse2 = await axios.post("api/token/submit-transaction", {
+    const submitResponse2 = await axios.post("api/token/submit_transaction", {
       signedXdr: trustSignedXdr,
       type: 3,
       payload: {
