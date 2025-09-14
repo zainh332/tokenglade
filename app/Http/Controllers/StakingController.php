@@ -342,6 +342,7 @@ class StakingController extends Controller
             $res = $this->sdk->submitTransaction($transaction);
 
             $active_staking_wallet->is_withdrawn = true;
+            $active_staking_wallet->transaction_id = $res->getId();
             $active_staking_wallet->staking_status_id = 4; //unstaked
             $active_staking_wallet->save();
 
@@ -631,7 +632,8 @@ class StakingController extends Controller
                 'lock_days',
                 'unlock_at',
                 'created_at',
-                'staking_status_id'
+                'transaction_id',
+                'staking_status_id',
             ])
             // what we need for display
             ->with([
@@ -658,8 +660,9 @@ class StakingController extends Controller
                 'apy'           => (float) $s->apy,
 
                 // status
-                'status'        => $s->status?->name,          // e.g. "Active", "Stopped", etc.
+                'status'        => $s->status?->name,
                 'status_id'     => (int) ($s->staking_status_id ?? 0),
+                'transaction'     => $s->transaction_id,
 
                 // rewards
                 'total_reward'  => (float) ($s->total_reward ?? 0),   // sum of rewards.amount

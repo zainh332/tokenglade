@@ -103,7 +103,6 @@
                             </button>
                         </template>
 
-                        <!-- If balance < 1500: show notice + Lobstr link -->
                         <template v-else-if="!loadingBalance">
                             <div class="rounded-xl border border-amber-300 bg-amber-50 p-4">
                                 <p class="text-sm text-amber-800">
@@ -130,22 +129,21 @@
                     <table class="min-w-full border-collapse">
                         <thead class="bg-gray-100">
                             <tr>
-                                <th class="py-3 px-4 text-left">Asset</th>
                                 <th class="py-3 px-4 text-right">Amount</th>
                                 <th class="py-3 px-4 text-center">APY</th>
                                 <th class="py-3 px-4 text-center">Status</th>
                                 <th class="py-3 px-4 text-center">Rewards</th>
                                 <th class="py-3 px-4 text-center">Last Reward</th>
+                                <th class="py-3 px-4 text-center">Transaction</th>
                                 <th class="py-3 px-4 text-center">Actions</th>
                             </tr>
                         </thead>
 
                         <tbody>
                             <tr v-for="pos in positions" :key="pos.id" class="border-b">
-                                <td class="py-3 px-4">{{ pos.asset_code }}</td>
 
                                 <td class="py-3 px-4 text-right">
-                                    {{ formatAmount(pos.amount) }}
+                                    {{ formatAmount(pos.amount) }} TKG
                                 </td>
 
                                 <td class="py-3 px-4 text-center">
@@ -169,6 +167,19 @@
 
                                 <td class="py-3 px-4 text-center">
                                     {{ formatDate(pos.last_reward_at) }}
+                                </td>
+                                <td class="py-3 px-4 text-center">
+                                    <a
+                                        v-if="pos.transaction"
+                                        :href="txUrl(pos.transaction)"
+                                        target="_blank"
+                                        rel="noopener"
+                                        class="inline-block px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 font-mono text-xs hover:bg-gray-200 transition"
+                                        :title="pos.transaction"
+                                    >
+                                        {{ shortMiddle(pos.transaction, 6, 6) }}
+                                    </a>
+                                    <span v-else>—</span>
                                 </td>
 
                                 <td class="py-3 px-4 text-center">
@@ -660,20 +671,24 @@ function canUnstake(pos) {
 }
 
 async function unstake(pos) {
-    const confirm = await Swal.fire({
+    if (!pos?.id) return;
+
+    const ok = await Swal.fire({
         icon: "warning",
         title: "Unstake?",
         text: "This will stop rewards and return your staked tokens.",
         showCancelButton: true,
-        confirmButtonText: "Yes, unstake",
+        confirmButtonText: "Unstake",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#ef4444",
     });
-    if (!confirm.isConfirmed) return;
+    if (!ok.isConfirmed) return;
 
     try {
         unstaking.value[pos.id] = true;
 
         const { data } = await axios.post(
-            "/api/staking/stop",
+            "/api/staking/unstake",
             { staking_id: pos.id },
             { headers: apiHeaders(), withCredentials: true }
         );
