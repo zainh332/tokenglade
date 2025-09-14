@@ -51,7 +51,7 @@
                         </div>
 
                         <!-- If balance >= 1500: show staking fields -->
-                        <template v-if="!loadingBalance && hasMinBalance">
+                        <!-- <template v-if="!loadingBalance && hasMinBalance"> -->
                             <!-- Range -->
                             <div class="relative w-full">
                                 <div class="flex items-center justify-between mb-1">
@@ -140,9 +140,9 @@
                                 <span v-if="stakeLoading">Staking…</span>
                                 <span v-else>Stake</span>
                             </button>
-                        </template>
+                        <!-- </template> -->
 
-                        <template v-else-if="!loadingBalance">
+                        <!-- <template v-else-if="!loadingBalance">
                             <div class="rounded-xl border border-amber-300 bg-amber-50 p-4">
                                 <p class="text-sm text-amber-800">
                                     Your $TKG balance is less than <strong>1,500</strong>. You need at least 1,500 $TKG
@@ -153,7 +153,7 @@
                                     Buy $TKG on LOBSTR
                                 </a>
                             </div>
-                        </template>
+                        </template> -->
                     </form>
                 </div>
             </div>
