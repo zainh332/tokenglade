@@ -94,11 +94,50 @@
                                     readonly />
                             </div>
 
+                            <div class="mt-2 rounded-xl border bg-gray-50 p-3">
+                                <!-- Projected tier / APY -->
+                                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                    <div class="text-sm text-gray-600">
+                                    Projected after stake:
+                                    <strong>{{ fmtTKG(projectedTotal) }} TKG</strong>
+                                    </div>
+                                    <div class="text-sm">
+                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                                            :class="projected.tier === 3 ? 'bg-emerald-100 text-emerald-800'
+                                                : projected.tier === 2 ? 'bg-blue-100 text-blue-800'
+                                                : projected.tier === 1 ? 'bg-violet-100 text-violet-800'
+                                                : 'bg-gray-100 text-gray-600'">
+                                        Tier {{ projected.tier || '—' }} • {{ projected.apy.toFixed(2) }}% APY
+                                    </span>
+                                    </div>
+                                </div>
+
+                                <!-- Reward chips -->
+                                <div class="grid grid-cols-3 gap-2 text-center">
+                                    <div class="rounded-lg bg-white border p-2">
+                                    <div class="text-[11px] text-gray-500">Est. Daily</div>
+                                    <div class="text-sm font-semibold">{{ fmtTKG(estDaily) }} TKG</div>
+                                    </div>
+                                    <div class="rounded-lg bg-white border p-2">
+                                    <div class="text-[11px] text-gray-500">Est. Monthly</div>
+                                    <div class="text-sm font-semibold">{{ fmtTKG(estMonthly) }} TKG</div>
+                                    </div>
+                                    <div class="rounded-lg bg-white border p-2">
+                                    <div class="text-[11px] text-gray-500">Est. Yearly</div>
+                                    <div class="text-sm font-semibold">{{ fmtTKG(estYearly) }} TKG</div>
+                                    </div>
+                                </div>
+
+                                <!-- Hint when below threshold -->
+                                <p v-if="projected.tier === 0" class="mt-2 text-xs text-amber-700">
+                                    Stake at least <strong>1,500 TKG</strong> to start earning rewards.
+                                </p>
+                            </div>
+
                             <button type="submit"
                                 class="w-full text-white py-2 rounded-[20px] hover:opacity-90 transition duration-300 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove"
                                 :disabled="stakeLoading || !hasMinBalance" :aria-busy="stakeLoading">
                                 <span v-if="stakeLoading">Staking…</span>
-                                <span v-else-if="hasPositions">Stake More</span>
                                 <span v-else>Stake</span>
                             </button>
                         </template>
@@ -428,6 +467,36 @@ onMounted(async () => {
     await fetchrewards();
 
 });
+
+const existingTkgStaked = computed(() =>
+  (Array.isArray(positions?.value) ? positions.value : [])
+    // if you have a status flag, filter to active only; else just sum:
+    .filter(p => (p.asset_code || '').toUpperCase() === 'TKG')
+    .reduce((sum, p) => sum + Number(p.amount || 0), 0)
+);
+
+// --- Tier & APY rules (mirrors backend tkgTierAndApy) ---
+function tierAndApy(total) {
+  if (total >= 100000) return { tier: 3, apy: 18.00 };
+  if (total >= 10000)  return { tier: 2, apy: 15.00 };
+  if (total >= 1500)   return { tier: 1, apy: 12.00 };
+  return { tier: 0, apy: 0.00 };
+}
+
+// --- Totals after this stake selection ---
+const projectedTotal = computed(() => existingTkgStaked.value + Number(selectedTokens.value || 0));
+const projected = computed(() => tierAndApy(projectedTotal.value)); // { tier, apy }
+
+// --- Reward estimates for the *selected* amount at projected APY ---
+const estDaily   = computed(() => Number(selectedTokens.value) * (projected.value.apy / 100) / 365);
+const estMonthly = computed(() => estDaily.value * 30);   // simple 30-day month
+const estYearly  = computed(() => Number(selectedTokens.value) * (projected.value.apy / 100));
+
+// --- Helpers ---
+function fmtTKG(n, digits = 2) {
+  const num = Number(n || 0);
+  return num.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
 
 async function onSubmit() {
     const isTestnet = network === "testnet";
