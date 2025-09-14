@@ -143,7 +143,7 @@ import {
     requestAccess,
 } from "@stellar/freighter-api";
 import Swal from "sweetalert2";
-import { getCookie } from "../utils/utils.js";
+import { getCookie, apiHeaders } from "../utils/utils.js";
 
 const modalId = "ConnectWallet";
 const walletOptions = ref([]);
@@ -234,68 +234,54 @@ function getSelectedWalletMeta() {
     };
 }
 
-async function storeWallet(publicKey, walletTypeId, key, blockchainTypeId) {
-    if (publicKey && walletTypeId && key && blockchainTypeId) {
-        UserData.value.public_key = publicKey; // Set the public key in UserData
-        UserData.value.wallet_type_id = walletTypeId; // Set the selected wallet type ID in UserData
-        UserData.value.blockchain_id = blockchainTypeId; // Set the blockchain ID in UserData
-        try {
-            const response = await axios.post(
-                "/api/wallet/store",
-                UserData.value,
-                {
-                    headers: {
-                        "X-CSRF-TOKEN": csrfToken,
-                    },
-                }
-            );
-            if (response.data.status === "success") {
-                // Set the 'isWalletConnected' flag to true for the different if conditions
-                isWalletConnected.value = true;
+async function storeWallet(publicKey, walletTypeId, walletKey, blockchainTypeId) {
+  try {
+    const resp = await axios.post(
+      '/api/wallet/store',
+      {
+        public_key: publicKey,
+        wallet_type_id: walletTypeId,
+        wallet_key: walletKey,           // only if your API expects it
+        blockchain_id: blockchainTypeId,
+      },
+      { headers: apiHeaders(), withCredentials: true }
+    );
 
-                // Save wallet connection status in localStorage
-                localStorage.setItem("public_key", publicKey);
-                localStorage.setItem("wallet_connect", "true");
+    const { status, data } = resp;
 
-                // Set the token
-                localStorage.setItem("token", response.data.token);
+    if (data?.status === 'success') {
+      // mark connected
+      isWalletConnected.value = true;
 
-                // Save wallet connection status in localStorage
-                localStorage.setItem("wallet_type", walletTypeId);
+      // persist values
+      localStorage.setItem('public_key', data.public ?? publicKey);
+      localStorage.setItem('wallet_connect', 'true');
+      if (data.token) localStorage.setItem('token', data.token);
+      localStorage.setItem('wallet_type', String(walletTypeId));
+      if (walletKey)  localStorage.setItem('wallet_key', walletKey);
 
-                // Save wallet connection status in localStorage
-                localStorage.setItem("wallet_key", key);
+      // optional UX
+      if (typeof speak === 'function') speak('connected', true);
 
-                // Notify the user of successful connection
-                speak("connected", true);
-            } else {
-                // Handle a failure response from the server (optional)
-                Swal.fire({
-                    icon: "error",
-                    title: "Error!",
-                    text: "Failed to connect wallet.",
-                });
-            }
-        } catch (error) {
-            Swal.fire({
-                icon: "error",
-                title: "Error!",
-                text:
-                    error.response?.data?.message ||
-                    "Failed to connect wallet.",
-            });
-        }
-    } else {
-        // Trigger the 'speak' function with a disconnected status
-        speak("connected", false);
-
-        // Show an error if no wallet is selected
-        Swal.fire({
-            icon: "error",
-            title: "Wallet Error!",
-            text: "Please select a wallet to connect.",
-        });
+      return true; // <-- important
     }
+
+    Swal.fire({ icon: 'error', title: 'Error!', text: data?.message || 'Failed to connect wallet.' });
+    return false;
+  } catch (err) {
+    const resp = err?.response;
+    console.error('[storeWallet] error:', {
+      status: resp?.status,
+      data: resp?.data,
+      headers: resp?.headers,
+    });
+    Swal.fire({
+      icon: 'error',
+      title: 'Could not save wallet',
+      text: resp?.data?.message || resp?.data?.error || `Request failed (${resp?.status || 'network'})`,
+    });
+    return false;
+  }
 }
 
 function hasRabet() {
@@ -347,24 +333,23 @@ async function connectWallet(wallet) {
 async function handleConnect() {
     if (!selectedWallet.value) {
         Swal.fire({
-            icon: "warning",
-            title: "Select a wallet",
-            text: "Choose Freighter or Rabet.",
+            icon: 'warning',
+            title: 'Select a wallet',
+            text: 'Choose Freighter or Rabet.',
         });
         return;
     }
 
     isLoading.value = true;
+
     try {
-        // 1) connect to extension → { publicKey, wallet: "freighter" | "rabet" }
         const result = await connectWallet(selectedWallet.value);
 
-        // 2) derive numeric IDs from your walletOptions
         const meta = getSelectedWalletMeta();
 
         if (!meta?.walletTypeId || !meta?.blockchainTypeId) {
             throw new Error(
-                "Could not resolve wallet_type_id / blockchain_id from walletOptions."
+                'Could not resolve wallet_type_id / blockchain_id from walletOptions.'
             );
         }
 
@@ -375,16 +360,37 @@ async function handleConnect() {
             meta.key,
             meta.blockchainTypeId
         );
-        if (!ok) return;
+        if (ok !== true) {
+            // Don’t silently bail — show a clear error so you know why it didn’t reload.
+            Swal.fire({
+                icon: 'error',
+                title: 'Could not save wallet',
+                text: 'Your wallet was connected locally but could not be saved on the server.',
+            });
+            return;
+        }
 
+        // Update local state so UI reacts immediately (even if we reload)
         UserData.value.walletKey = result.publicKey;
         isWalletConnected.value = true;
+
+        // Ensure any modal is closed before reload
+        if (Swal.isVisible()) Swal.close();
+
+        // Give the browser a tick to flush storage/cookies
+        setTimeout(() => {
+            // Use replace() to avoid storing the pre-login page in history
+            window.location.replace(window.location.href);
+            // fallback (some browsers): window.location.reload();
+        }, 150);
     } catch (e) {
-        Swal.fire({ icon: "error", title: "Wallet Error", text: e.message });
+        console.error('[handleConnect] error:', e);
+        Swal.fire({ icon: 'error', title: 'Wallet Error', text: e?.message || 'Failed to connect wallet.' });
     } finally {
         isLoading.value = false;
     }
 }
+
 
 function getActiveWalletKey() {
     const t = localStorage.getItem("wallet_type");
@@ -448,18 +454,17 @@ async function disconnectWallet() {
         const response = await axios.post(
             "/api/wallet/disconnect",
             { public_key },
-            {
-                headers: {
-                    "X-CSRF-TOKEN": window.Laravel.csrfToken,
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-            }
+            { headers: apiHeaders(), withCredentials: true }
         );
         if (response.data.status === "success") {
             closeModal();
 
             //clear everthing from cookies
             localStorage.setItem("wallet_connect", "false");
+            localStorage.setItem("token", null);
+            localStorage.setItem("public_key", null);
+            localStorage.setItem("wallet_key", null);
+            localStorage.setItem("wallet_type", null);
             isWalletConnected.value = false;
             speak("connected", false);
             document.cookie =
@@ -507,14 +512,7 @@ async function watchWalletChanges() {
                 const response = await axios.post(
                     "/api/wallet/update",
                     UserData.value,
-                    {
-                        headers: {
-                            "X-CSRF-TOKEN": window.Laravel.csrfToken,
-                            Authorization: `Bearer ${localStorage.getItem(
-                                "token"
-                            )}`,
-                        },
-                    }
+                    { headers: apiHeaders(), withCredentials: true }
                 );
                 if (response.data.status === "success") {
                     window.location.reload();

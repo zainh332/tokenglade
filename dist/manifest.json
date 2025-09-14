@@ -65,7 +65,7 @@
     "src": "src/assets/xbull.png"
   },
   "src/main.css": {
-    "file": "assets/main-09071ce9.css",
+    "file": "assets/main-749a0dfe.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -82,9 +82,9 @@
       "assets/graph-2-card-b87e8fad.png"
     ],
     "css": [
-      "assets/main-09071ce9.css"
+      "assets/main-749a0dfe.css"
     ],
-    "file": "assets/main-b5defd2b.js",
+    "file": "assets/main-d7a6b4ba.js",
     "isEntry": true,
     "src": "src/main.js"
   }
