@@ -239,11 +239,11 @@
                             <h1
                                 class="text-[32px] sm:text-[48px] lg:text-[64px] font-normal leading-tight text-dark mb-3">
                                 <span class="block text-[36px] font-semibold bg-dark leading-[1.4]">
-                                    Stake $TKG, Watch Your Rewards Multiply
+                                    Don’t just hold, Make your tokens work
                                 </span>
                             </h1>
                             <p class="text-[18px] sm:text-[20px] mt-4 text-dark max-w-xl mx-auto lg:mx-0 leading-[1.7]">
-                                Don’t just hold — make your tokens work. With TokenGlade’s staking module, earn
+                                With TokenGlade’s staking module, earn
                                 <strong>daily passive rewards</strong> and climb tiers for even higher APY.
                                 Up to <strong>18% annually</strong>, designed to reward conviction and long-term
                                 believers.
@@ -284,7 +284,7 @@
                                 From staking to transfers, every action is seamless, secure, and efficient.
                                 Stellar’s proven infrastructure makes TokenGlade a <strong>future-ready
                                     platform</strong> built
-                                to scale with global demand. 🚀✨
+                                to scale with global demand.
                             </p>
                         </div>
                     </div>
