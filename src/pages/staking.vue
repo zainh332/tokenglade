@@ -172,7 +172,7 @@
                                 <th class="py-3 px-4 text-center">APY</th>
                                 <th class="py-3 px-4 text-center">Status</th>
                                 <th class="py-3 px-4 text-center">Rewards</th>
-                                <th class="py-3 px-4 text-center">Last Reward</th>
+                                <th class="py-3 px-4 text-center">Next Reward</th>
                                 <th class="py-3 px-4 text-center">Transaction</th>
                                 <th class="py-3 px-4 text-center">Actions</th>
                             </tr>
@@ -205,8 +205,13 @@
                                 </td>
 
                                 <td class="py-3 px-4 text-center">
-                                    {{ formatDate(pos.last_reward_at) }}
+                                    <div v-if="Number(pos.apy) > 0 && !isEnded(pos)" class="text-sm">
+                                        <div class="font-medium">{{ formatAmount(dailyReward(pos)) }} TKG</div>
+                                        <div class="text-gray-500 text-xs">{{ etaString(nextRewardAt(pos)) }}</div>
+                                    </div>
+                                    <span v-else>—</span>
                                 </td>
+
                                 <td class="py-3 px-4 text-center">
                                     <a
                                         v-if="pos.transaction"
@@ -482,6 +487,43 @@ function tierAndApy(total) {
   if (total >= 1500)   return { tier: 1, apy: 12.00 };
   return { tier: 0, apy: 0.00 };
 }
+
+function isEnded(pos) {
+  // Adjust if your backend already provides a boolean
+  return Number(pos.status_id) === 4 || Boolean(pos.is_withdrawn);
+}
+
+// Daily reward = amount × (APY / 100) / 365 (no compounding; matches backend logic)
+function dailyReward(pos) {
+  const apy = Number(pos.apy) || 0;
+  const amt = Number(pos.amount) || 0;
+  if (apy <= 0 || amt <= 0) return 0;
+  return +(amt * (apy / 100) / 365).toFixed(7); // 7dp to match on-chain precision
+}
+
+// Next reward time = (last_reward_at || start_at) + 24h
+function nextRewardAt(pos) {
+  const baseStr = pos.last_reward_at || pos.start_at;
+  const base = baseStr ? new Date(baseStr) : null;
+  if (!base || isNaN(+base)) return null;
+  return new Date(base.getTime() + 24 * 60 * 60 * 1000);
+}
+
+// Human ETA like "in 5h 12m" / "in 2d 3h" / "due now"
+function etaString(dt) {
+  if (!dt) return '—';
+  const now = new Date();
+  const ms = dt - now;
+  if (ms <= 0) return 'due now';
+  const mins = Math.floor(ms / 60000);
+  const days = Math.floor(mins / (60 * 24));
+  const hours = Math.floor((mins - days * 24 * 60) / 60);
+  const m = mins % 60;
+  if (days > 0) return `in ${days}d ${hours}h`;
+  if (hours > 0) return `in ${hours}h ${m}m`;
+  return `in ${m}m`;
+}
+
 
 // --- Totals after this stake selection ---
 const projectedTotal = computed(() => existingTkgStaked.value + Number(selectedTokens.value || 0));
