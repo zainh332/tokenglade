@@ -26,7 +26,7 @@ use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 
 class StakingController extends Controller
 {
-    private $sdk, $minAmount, $maxFee, $daily_rate, $assetCode, $assetIssuer;
+    private $sdk, $minAmount, $maxFee, $assetCode, $assetIssuer;
     private $stakingRewardWalletKey, $stakingPublicWalletKey, $network, $stakingPublicWallet, $stakingRewardWallet;
     private WalletService $wallet;
 
@@ -60,7 +60,6 @@ class StakingController extends Controller
 
         $this->minAmount = 1500;
         $this->maxFee = 3000;
-        $this->daily_rate = 0.1 / 100;
         $this->assetCode = 'TKG';
         $this->wallet = $wallet;
     }
@@ -174,6 +173,7 @@ class StakingController extends Controller
 
             $existing_staking = Staking::where('user_id', $userId)
                 ->where('is_withdrawn', false)
+                ->whereNotNull('transaction_id')
                 ->latest()
                 ->first();
 
@@ -358,57 +358,233 @@ class StakingController extends Controller
     // Job distributing staking reward
     public function reward_distribution()
     {
-        // remove incomplete staking created
-        Staking::whereNull('transaction_id')->delete();
+        Log::info('staking.reward_distribution.start', [
+            'now'      => now()->toIso8601String(),
+            'min'      => $this->minAmount,
+            'env'      => env('VITE_STELLAR_ENVIRONMENT'),
+        ]);
 
-        $invests = Staking::whereNotNull('transaction_id')
-            ->where('amount', '>=', $this->minAmount)
-            ->where('is_withdrawn', 0)
-            ->where('updated_at', '<=', now()->subHours(24))
-            ->get();
+        try {
+            $invests = Staking::query()
+                ->with(['user:id,public_key'])
+                ->whereNotNull('transaction_id')                 // stake is “activated”
+                ->where('amount', '>=', $this->minAmount)
+                ->where('is_withdrawn', false)
+                ->where('staking_status_id', '<>', 4)            // not “Stopped”
+                // ->where('updated_at', '<=', now()->subHours(24)) // pay at most once a day
+                ->get();
 
-        // Looping through invest
-        foreach ($invests as $key => $invest) {
-            $result = $this->reward($invest);
-            if ($result) {
-                StakingReward::create(['staking_id' => $invest->id, 'amount' => $result->amount, 'transaction_id' => $result->tx]);
+            if ($invests->isEmpty()) {
+                Log::info('staking.reward_distribution.no_eligible', [
+                    'reason' => 'No rows matched eligibility filters'
+                ]);
+                return response()->json(['processed' => 0]);
             }
-            $invest->updated_at = now();
-            $invest->save();
+
+            Log::info('staking.reward_distribution.eligible_found', [
+                'count' => $invests->count()
+            ]);
+
+            $processed = 0;
+
+            foreach ($invests as $invest) {
+                // Always isolate each staking in its own try/catch so one failure doesn’t stop the batch
+                try {
+                    $since = $invest->updated_at ?? $invest->created_at;
+                    $days  = max(1, $since->diffInDays(now()));
+
+                    Log::info('staking.reward_distribution.evaluate', [
+                        'staking_id'  => $invest->id,
+                        'user_id'     => $invest->user_id,
+                        'public_key'  => $invest->user?->public_key,
+                        'amount'      => (float) $invest->amount,
+                        'apy'         => (float) $invest->apy,
+                        'last_mark'   => optional($since)->toIso8601String(),
+                        'days'        => $days,
+                    ]);
+
+                    $result = $this->reward($invest, $days);
+
+                    if ($result) {
+                        // Create reward record
+                        $reward = StakingReward::create([
+                            'staking_id'     => $invest->id,
+                            'amount'         => $result->amount,
+                            'transaction_id' => $result->tx,
+                        ]);
+
+                        Log::info('staking.reward_distribution.reward_recorded', [
+                            'staking_id'       => $invest->id,
+                            'reward_id'        => $reward->id,
+                            'amount'           => $result->amount,
+                            'horizon_tx'       => $result->tx,
+                        ]);
+
+                        // Your internal audit trail (do not pass secrets)
+                        $this->addStakingTransactionRecord(
+                            $invest->id,
+                            $reward->id,
+                            $result->unsignedXdr ?? null,   // keep null if you’re not capturing it
+                            $result->signedXdr   ?? null,   // keep null if you’re not capturing it
+                            $result->tx,
+                            3, // e.g. 3 = Reward Distributed
+                            ['days' => $days, 'apy' => (float)$invest->apy]
+                        );
+
+                        // mark cadence
+                        $invest->updated_at = now();
+                        $invest->save();
+
+                        Log::info('staking.reward_distribution.marked_paid', [
+                            'staking_id' => $invest->id,
+                            'updated_at' => $invest->updated_at->toIso8601String(),
+                        ]);
+
+                        $processed++;
+                    } else {
+                        Log::warning('staking.reward_distribution.skipped_or_failed', [
+                            'staking_id' => $invest->id,
+                            'user_id'    => $invest->user_id,
+                            'reason'     => 'reward() returned null (see reward() logs for details)',
+                        ]);
+                        // Even if failed, still advance updated_at to avoid tight loops? Usually no:
+                        // $invest->updated_at = now();
+                        // $invest->save();
+                    }
+                } catch (\Throwable $e) {
+                    Log::error('staking.reward_distribution.item_exception', [
+                        'staking_id' => $invest->id,
+                        'user_id'    => $invest->user_id,
+                        'message'    => $e->getMessage(),
+                        'file'       => $e->getFile(),
+                        'line'       => $e->getLine(),
+                    ]);
+                }
+            }
+
+            Log::info('staking.reward_distribution.done', [
+                'processed' => $processed
+            ]);
+
+            return response()->json(['processed' => $processed]);
+        } catch (\Throwable $e) {
+            Log::critical('staking.reward_distribution.fatal', [
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+            ]);
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Reward distribution failed. Check logs.'
+            ], 500);
         }
-        return response()->json([$invests]);
     }
 
     // Sending staking reward tokens to the wallet from staking reward wallet
-    private function reward($invest)
+    private function reward(Staking $invest, int $days = 1)
     {
-        $amount = $this->daily_rate * $invest->amount;
-        try {
-            // Destination Account
-            $mainPair = KeyPair::fromSeed($this->stakingRewardWalletKey);
+        $apy = (float) $invest->apy;
 
-            $mainAccount = $this->sdk->requestAccount($mainPair->getAccountId());
-            $account = $this->sdk->requestAccount($invest->public);
-
-            $asset = new AssetTypeCreditAlphanum4($this->assetCode, $this->assetIssuer);
-
-            // Payment Operation
-            $paymentOperation = (new PaymentOperationBuilder($account->getAccountId(), $asset, $amount))->build();
-            $txbuilder = new TransactionBuilder($mainAccount);
-            $txbuilder->setMaxOperationFee($this->maxFee);
-            $transaction = $txbuilder->addOperation($paymentOperation)->addMemo(new Memo(1, 'TKG Stake Reward'))->build();
-            $transaction->sign($mainPair, $this->network);
-            $res = $this->sdk->submitTransaction($transaction);
-            return (object)['tx' => $res->getId(), 'amount' => $amount];
-        } catch (\Throwable $th) {
-            Log::info('Error in reward method', [
-                'invest_id' => $invest->id ?? null,
-                'public' => $invest->public ?? null,
-                'amount' => $amount,
-                'message' => $th->getMessage(),
-                'file' => $th->getFile(),
-                'line' => $th->getLine(),
+        if ($apy <= 0 || $days <= 0) {
+            Log::info('staking.reward.skip.non_positive_apy_or_days', [
+                'staking_id' => $invest->id,
+                'apy'        => $apy,
+                'days'       => $days
             ]);
+            return null;
+        }
+
+        $rewardAmount = round(
+            (float)$invest->amount * ($apy / 100.0) * ($days / 365.0),
+            7
+        );
+
+        if ($rewardAmount <= 0) {
+            Log::info('staking.reward.skip.zero_amount', [
+                'staking_id' => $invest->id,
+                'apy'        => $apy,
+                'amount'     => (float)$invest->amount,
+                'days'       => $days,
+                'reward'     => $rewardAmount,
+            ]);
+            return null;
+        }
+
+        try {
+            $toPk = $invest->user?->public_key;
+            if (!$toPk) {
+                Log::warning('staking.reward.skip.missing_public_key', [
+                    'staking_id' => $invest->id,
+                    'user_id'    => $invest->user_id
+                ]);
+                return null;
+            }
+
+            // Build and submit transaction
+            $rewardPair = KeyPair::fromSeed($this->stakingRewardWalletKey);
+            $fromAcct   = $this->sdk->requestAccount($rewardPair->getAccountId());
+            $toAcct     = $this->sdk->requestAccount($toPk);
+            $asset      = new AssetTypeCreditAlphanum4($this->assetCode, $this->assetIssuer);
+
+            $op = (new PaymentOperationBuilder($toAcct->getAccountId(), $asset, (string)$rewardAmount))->build();
+
+            $tx = (new TransactionBuilder($fromAcct))
+                ->setMaxOperationFee($this->maxFee)
+                ->addOperation($op)
+                ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'TKG stake reward'))
+                ->build();
+
+            // Don’t log XDR or secret
+            $tx->sign($rewardPair, $this->network);
+            $res = $this->sdk->submitTransaction($tx);
+
+            Log::info('staking.reward.horizon_ok', [
+                'staking_id' => $invest->id,
+                'tx'         => $res->getId(),
+                'reward'     => $rewardAmount
+            ]);
+
+            // If you want to capture XDRs for your audit record,
+            // you can add these safely (they don't include seeds):
+            $unsignedXdr = null;
+            $signedXdr   = null;
+
+            return (object) [
+                'tx'         => $res->getId(),
+                'amount'     => $rewardAmount,
+                'unsignedXdr' => $unsignedXdr,
+                'signedXdr'  => $signedXdr,
+                'horizon'    => [
+                    'result_xdr'  => $res->getExtras()?->getResultXdr(),
+                    'result_codes' => $res->getExtras()?->getResultCodes(),
+                ],
+            ];
+        } catch (HorizonRequestException $e) {
+            $err = method_exists($e, 'getHorizonErrorResponse') ? $e->getHorizonErrorResponse() : null;
+            Log::error('staking.reward.horizon_error', [
+                'staking_id'   => $invest->id,
+                'user_pk'      => $invest->user?->public_key,
+                'amount'       => (string)$invest->amount,
+                'reward'       => $rewardAmount,
+                'status_code'  => $e->getStatusCode(),
+                'horizon'      => $err,
+                'message'      => $e->getMessage(),
+            ]);
+            return null;
+        } catch (\Throwable $th) {
+            Log::error('staking.reward.exception', [
+                'staking_id' => $invest->id,
+                'user_pk'    => $invest->user?->public_key,
+                'days'       => $days,
+                'apy'        => $apy,
+                'amount'     => (string)$invest->amount,
+                'reward'     => $rewardAmount,
+                'message'    => $th->getMessage(),
+                'file'       => $th->getFile(),
+                'line'       => $th->getLine(),
+            ]);
+            return null;
         }
     }
 
@@ -452,7 +628,7 @@ class StakingController extends Controller
             ->select(['id', 'staking_asset_id', 'amount', 'apy', 'lock_days', 'unlock_at', 'created_at'])
             ->with(['asset:id,code']) // eager-load only what you need
             ->ForPublicKey($data['public_key'])
-            ->when(!$includeWithdrawn, fn($q) => $q->active())
+            ->whereNotNull('transaction_id')
             ->when($assetId, fn($q) => $q->where('staking_asset_id', $assetId))
             ->minAmount($this->minAmount)
             ->latest()

@@ -227,29 +227,29 @@ class GlobalController extends Controller
         // eager-load staking to get wallet address without N+1 queries
         $rows = StakingReward::query()
             ->with([
-                'staking' => fn($q) =>
-                $q->select('id', 'user_id')
+                'staking' => fn($q) => $q->select('id', 'user_id')
                     ->with(['user:id,public_key']),
             ])
+            ->whereHas('staking.user')                 // only rows that have a user
             ->latest('created_at')
-            ->take($limit)
+            ->limit($limit)
             ->get(['id', 'staking_id', 'amount', 'transaction_id', 'created_at']);
 
-        // shape for frontend table
         $out = $rows->map(function (StakingReward $r) {
             return [
-                'wallet_address' => $r->staking?->public,                   // from stakings.public
-                'reward'         => (float)$r->amount,                      // amount rewarded
-                'transaction'    => $r->transaction_id,                     // tx hash / id
+                'wallet_address' => $r->staking?->user?->public_key,   // <-- FIXED
+                'reward'         => (float) $r->amount,
+                'transaction'    => $r->transaction_id,
                 'at'             => optional($r->created_at)->toIso8601String(),
             ];
         });
 
         return response()->json([
-            'status' => 'success',
-            'stakingreward'   => $out,
+            'status'         => 'success',
+            'stakingreward'  => $out,
         ]);
     }
+
 
     // public function fetch_claimable_balance(Request $request)
     // {
