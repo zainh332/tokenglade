@@ -1,120 +1,56 @@
 <template>
     <TransitionRoot as="template" :show="props.modelValue">
-        <Dialog
-            id="connectWalletParent"
-            as="div"
-            class="relative z-10"
-            @close="closeModal"
-        >
-            <TransitionChild
-                as="template"
-                enter="ease-out duration-300"
-                enter-from="opacity-0"
-                enter-to="opacity-100"
-                leave="ease-in duration-200"
-                leave-from="opacity-100"
-                leave-to="opacity-0"
-            >
-                <div
-                    class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
-                />
+        <Dialog id="connectWalletParent" as="div" class="relative z-10" @close="closeModal">
+            <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
+                leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
+                <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" />
             </TransitionChild>
 
             <div class="fixed inset-0 z-50 w-screen overflow-y-auto">
-                <div
-                    class="flex items-end justify-center min-h-full p-2 text-center sm:items-center sm:p-0"
-                >
-                    <TransitionChild
-                        as="template"
-                        enter="ease-out duration-300"
+                <div class="flex items-end justify-center min-h-full p-2 text-center sm:items-center sm:p-0">
+                    <TransitionChild as="template" enter="ease-out duration-300"
                         enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        enter-to="opacity-100 translate-y-0 sm:scale-100"
-                        leave="ease-in duration-200"
+                        enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
                         leave-from="opacity-100 translate-y-0 sm:scale-100"
-                        leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                    >
+                        leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
                         <DialogPanel
-                            class="relative px-5 pt-5 overflow-hidden text-left transition-all transform bg-white rounded-lg shadow-xl"
-                        >
+                            class="relative px-5 pt-5 overflow-hidden text-left transition-all transform bg-white rounded-lg shadow-xl">
                             <!-- Close Button (X) -->
-                            <button
-                                @click="closeModal"
+                            <button @click="closeModal"
                                 class="absolute text-gray-500 top-2 right-2 hover:text-gray-800 focus:outline-none"
-                                aria-label="Close Modal"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    class="w-6 h-6"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
+                                aria-label="Close Modal">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
-                            <div
-                                :id="modalId"
-                                :data-bs-backdrop="backdrop"
-                                :data-bs-keyboard="keyboard"
-                                tabindex="-1"
-                                aria-labelledby="exampleModalLabel"
-                                :inert="!props.modelValue"
-                            >
+                            <div :id="modalId" :data-bs-backdrop="backdrop" :data-bs-keyboard="keyboard" tabindex="-1"
+                                aria-labelledby="exampleModalLabel" :inert="!props.modelValue">
                                 <div class="modal-dialog">
-                                    <div
-                                        class="sm:mx-auto sm:w-full sm:max-w-md"
-                                    >
-                                        <img
-                                            class="w-auto h-16 mx-auto mb-1"
-                                            :src="Logo"
-                                            alt="Your Company"
-                                        />
+                                    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+                                        <img class="w-auto h-16 mx-auto mb-1" :src="Logo" alt="Your Company" />
                                     </div>
                                     <div class="modal-content modal-wallet">
                                         <template v-if="!isWalletConnected">
-                                            <div
-                                                id="connectWalletModal"
-                                                class="modal-body mx-10"
-                                            >
+                                            <div id="connectWalletModal" class="modal-body mx-10">
                                                 <h1 class="mb-5">
                                                     Connect Your Wallet
                                                 </h1>
                                                 <div class="mb-3">
-                                                    <label
-                                                        for="selectedBlockchain"
-                                                        class="block text-sm font-medium text-black-700 mb-1"
-                                                    >
+                                                    <label for="selectedBlockchain"
+                                                        class="block text-sm font-medium text-black-700 mb-1">
                                                         Select Blockchain
                                                     </label>
-                                                    <select
-                                                        id="selectedBlockchain"
-                                                        name="selectedBlockchain"
-                                                        v-model="
-                                                            selectedBlockchain
+                                                    <select id="selectedBlockchain" name="selectedBlockchain" v-model="selectedBlockchain
                                                         "
-                                                        class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                                    >
-                                                        <option
-                                                            value=""
-                                                            disabled
-                                                            selected
-                                                        >
+                                                        class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                                                        <option value="" disabled selected>
                                                             Choose a blockchain
                                                         </option>
-                                                        <option
-                                                            v-for="blockchain in blockchainOptions"
-                                                            :key="
-                                                                blockchain.key
-                                                            "
-                                                            :value="
-                                                                blockchain.id
-                                                            "
-                                                        >
+                                                        <option v-for="blockchain in blockchainOptions" :key="blockchain.key
+                                                            " :value="blockchain.id
+                                                                ">
                                                             {{
                                                                 blockchain.name
                                                             }}
@@ -122,43 +58,26 @@
                                                     </select>
                                                 </div>
                                                 <div class="mb-3">
-                                                    <label
-                                                        for="selectedWallet"
-                                                        class="block text-sm font-medium text-black-700 mb-1"
-                                                    >
+                                                    <label for="selectedWallet"
+                                                        class="block text-sm font-medium text-black-700 mb-1">
                                                         Select Wallet
                                                     </label>
-                                                    <select
-                                                        id="selectedWallet"
-                                                        name="selectedWallet"
+                                                    <select id="selectedWallet" name="selectedWallet"
                                                         v-model="selectedWallet"
-                                                        class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                                    >
-                                                        <option
-                                                            value=""
-                                                            disabled
-                                                            selected
-                                                        >
+                                                        class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                                                        <option value="" disabled selected>
                                                             Choose your Wallet
                                                         </option>
-                                                        <option
-                                                            v-for="wallet in walletOptions"
-                                                            :key="wallet.key"
-                                                            :value="wallet.key"
-                                                        >
+                                                        <option v-for="wallet in walletOptions" :key="wallet.key"
+                                                            :value="wallet.key">
                                                             {{ wallet.name }}
                                                         </option>
                                                     </select>
                                                 </div>
 
                                                 <div class="mt-5">
-                                                    <button
-                                                        id="connectWalletButton"
-                                                        @click="handleConnect"
-                                                        type="button"
-                                                        class="walletconnect-btn"
-                                                        :disabled="isLoading"
-                                                    >
+                                                    <button id="connectWalletButton" @click="handleConnect"
+                                                        type="button" class="walletconnect-btn" :disabled="isLoading">
                                                         {{
                                                             isLoading
                                                                 ? "Connecting..."
@@ -171,33 +90,21 @@
 
                                         <!-- If connected -->
                                         <template v-else>
-                                            <div
-                                                class="modal-body"
-                                                style="word-break: break-all"
-                                            >
-                                                <h1
-                                                    id="public_key"
-                                                    style="font-size: 14px"
-                                                >
+                                            <div class="modal-body" style="word-break: break-all">
+                                                <h1 id="public_key" style="font-size: 14px">
                                                     {{ UserData.walletKey }}
                                                 </h1>
                                             </div>
                                             <div class="mt-5">
-                                                <button
-                                                    id="connectWalletButton"
-                                                    @click="disconnectWallet()"
-                                                    type="button"
-                                                    class="walletconnect-btn"
-                                                >
+                                                <button id="connectWalletButton" @click="disconnectWallet()"
+                                                    type="button" class="walletconnect-btn">
                                                     Disconnect Wallet
                                                 </button>
                                             </div>
                                         </template>
 
                                         <div class="mt-3 mx-3">
-                                            <p
-                                                class="text-center block text-sm font-medium text-gray-700 mb-1"
-                                            >
+                                            <p class="text-center block text-sm font-medium text-gray-700 mb-1">
                                                 We never store your wallet info.
                                                 Used only for on-chain
                                                 operations.
@@ -231,7 +138,7 @@ import xbull from "@/assets/xbull.png";
 import axios from "axios";
 import {
     isConnected,
-        isAllowed,
+    isAllowed,
     getPublicKey,
     requestAccess,
 } from "@stellar/freighter-api";
@@ -480,8 +387,8 @@ async function handleConnect() {
 }
 
 function getActiveWalletKey() {
-  const t = localStorage.getItem("wallet_type"); 
-  return String(t) === "2" ? "freighter" : (t ? "rabet" : null);
+    const t = localStorage.getItem("wallet_type");
+    return String(t) === "2" ? "freighter" : (t ? "rabet" : null);
 }
 
 async function checkConnection() {
@@ -496,7 +403,7 @@ async function checkConnection() {
     // } else if (active === "rabet") {
     //     conn = !!(window?.rabet && (window.rabet.account?.address || await window.rabet.isUnlocked().catch(() => false)));
     // }
-    
+
     isWalletConnected.value = !!conn;
     if (!conn) return;
     const publicKey = getCookie("public_key");
@@ -585,7 +492,7 @@ async function disconnectWallet() {
 async function watchWalletChanges() {
     setInterval(async () => {
         const frieghter = getCookie("wallet_type_id");
-        
+
         if (frieghter == 1 && localStorage.getItem("wallet_connect") === "true") {
             const current_public_key = await getPublicKey();
             const previous_public_key = getCookie("public_key");
