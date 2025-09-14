@@ -91,10 +91,10 @@ class StakingController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Wallet not connected!']);
         }
 
-        $public = $request->input('public_key');
+        $public = $_COOKIE['public_key'] ?? null;
+        $userId = $public ? User::where('public_key', $public)->value('id') : null;
 
-        $wallet = User::where('public_key', $public)->first();
-        if (!$wallet) {
+        if (!$userId) {
             return response()->json(['status' => 'error', 'message' => 'Wallet not found!']);
         }
 
@@ -172,13 +172,12 @@ class StakingController extends Controller
                 Log::info('Something went wrong during staking operation.');
             }
 
-            $existing_staking = Staking::where('public', $_COOKIE['public_key'])
-                ->where('is_withdrawn', false)
-                ->latest()
-                ->first();
+            $existing_staking = Staking::where('user_id', $userId)
+            ->where('is_withdrawn', false)
+            ->latest()
+            ->first();
 
             if ($existing_staking) {
-                // new total after this stake
                 $newTotal = (float)$existing_staking->amount + (float)$request->amount;
 
                 // compute tier + apy for TKG totals
@@ -197,7 +196,7 @@ class StakingController extends Controller
                 [$tier, $apy] = $this->tkgTierAndApy($startTotal);
 
                 $new_stake = new Staking();
-                $new_stake->public            = $_COOKIE['public_key'];
+                $new_stake->user_id = $userId;
                 $new_stake->staking_asset_id  = $staking_asset->id;
                 $new_stake->amount            = $startTotal;
                 $new_stake->tier              = $tier;
@@ -442,7 +441,7 @@ class StakingController extends Controller
         $rows = Staking::query()
             ->select(['id', 'staking_asset_id', 'amount', 'apy', 'lock_days', 'unlock_at', 'created_at'])
             ->with(['asset:id,code']) // eager-load only what you need
-            ->forPublic($data['public_key'])
+            ->ForPublicKey($data['public_key'])
             ->when(!$includeWithdrawn, fn($q) => $q->active())
             ->when($assetId, fn($q) => $q->where('staking_asset_id', $assetId))
             ->minAmount($this->minAmount)

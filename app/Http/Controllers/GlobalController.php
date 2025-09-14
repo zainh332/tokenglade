@@ -226,7 +226,11 @@ class GlobalController extends Controller
 
         // eager-load staking to get wallet address without N+1 queries
         $rows = StakingReward::query()
-            ->with(['staking:id,public'])                 // only need 'public' from parent
+            ->with([
+                'staking' => fn($q) =>
+                $q->select('id', 'user_id')
+                    ->with(['user:id,public_key']),
+            ])
             ->latest('created_at')
             ->take($limit)
             ->get(['id', 'staking_id', 'amount', 'transaction_id', 'created_at']);

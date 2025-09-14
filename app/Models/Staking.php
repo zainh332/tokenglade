@@ -23,9 +23,14 @@ class Staking extends Model
         return $this->belongsTo(StakingAsset::class, 'staking_asset_id');
     }
 
-    public function scopeForPublic(Builder $q, string $public): Builder
+    public function user()
     {
-        return $q->where('public', $public);
+        return $this->belongsTo(User::class);
+    }
+
+    public function scopeForPublicKey(Builder $q, string $publicKey): Builder
+    {
+        return $q->whereHas('user', fn ($uq) => $uq->where('public_key', $publicKey));
     }
 
     public function scopeActive(Builder $q): Builder
