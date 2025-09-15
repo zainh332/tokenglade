@@ -1,12 +1,8 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-a3e392a9.css",
+    "file": "assets/app-ae3d281a.css",
     "isEntry": true,
     "src": "resources/css/app.css"
-  },
-  "src/assets/albeto.png": {
-    "file": "assets/albeto-acc89022.png",
-    "src": "src/assets/albeto.png"
   },
   "src/assets/coin.png": {
     "file": "assets/coin-ab4d3c39.png",
@@ -15,10 +11,6 @@
   "src/assets/flower.png": {
     "file": "assets/flower-9bebdb58.png",
     "src": "src/assets/flower.png"
-  },
-  "src/assets/frighter.png": {
-    "file": "assets/frighter-56128358.png",
-    "src": "src/assets/frighter.png"
   },
   "src/assets/graph-1-card.png": {
     "file": "assets/graph-1-card-d1dd035f.png",
@@ -48,10 +40,6 @@
     "file": "assets/phone-592dc7ab.png",
     "src": "src/assets/phone.png"
   },
-  "src/assets/rabet.png": {
-    "file": "assets/rabet-b63626b7.png",
-    "src": "src/assets/rabet.png"
-  },
   "src/assets/token-glade-logo.png": {
     "file": "assets/token-glade-logo-14ce1d6b.png",
     "src": "src/assets/token-glade-logo.png"
@@ -60,12 +48,8 @@
     "file": "assets/wallet-3292a01f.jpg",
     "src": "src/assets/wallet.jpg"
   },
-  "src/assets/xbull.png": {
-    "file": "assets/xbull-0f319a8d.png",
-    "src": "src/assets/xbull.png"
-  },
   "src/main.css": {
-    "file": "assets/main-749a0dfe.css",
+    "file": "assets/main-d5b860b4.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -82,9 +66,9 @@
       "assets/graph-2-card-b87e8fad.png"
     ],
     "css": [
-      "assets/main-749a0dfe.css"
+      "assets/main-d5b860b4.css"
     ],
-    "file": "assets/main-d7a6b4ba.js",
+    "file": "assets/main-006f4c60.js",
     "isEntry": true,
     "src": "src/main.js"
   }
