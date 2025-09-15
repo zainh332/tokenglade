@@ -42,18 +42,19 @@
 
           <!-- Connect Wallet Button -->
           <div class="flex items-center gap-2 ">
-            <!-- <router-link to="/register" class="px-5 py-1.5 rounded-full hover-gradient hover:text-white hover:border-white text-t14 leading-[20px] border border-black/50">Sign up</router-link> -->
-            <!-- <router-link class="px-5 py-1.5 rounded-full text-t14 overflow-hidden leading-[20px] text-white bg-gradient  bg-cover" to="#">Sign in</router-link> -->
 
-
-            <button id="walletConnected" @click="OpenWalletModal" type="submit" class="text-xs text-white rounded-full btn-padding sm:text-t14 
-         bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]
-         bg-[length:200%_200%] bg-no-repeat animate-gradientMove">
+            <button v-if="!isConnected" @click="OpenWalletModal" class="text-xs text-white rounded-full btn-padding sm:text-t14
+           bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]
+           bg-[length:200%_200%] bg-no-repeat animate-gradientMove">
               Connect Wallet
             </button>
 
-            <ConnectWalletModal :open="ConnectWalletModals" @close="ConnectWalletModals = false" />
-      
+            <!-- When connected: show short address + menu -->
+            <button v-else @click="ConnectWalletModals = !ConnectWalletModals" class="text-xs text-white rounded-full btn-padding sm:text-t14
+           bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]
+           bg-[length:200%_200%] bg-no-repeat animate-gradientMove" :aria-expanded="ConnectWalletModals">
+              {{ shortMiddle(walletPk) }}
+            </button>
           </div>
         </div>
         <div class="flex items-center -mr-2 lg:hidden">
@@ -84,7 +85,9 @@
   </Disclosure>
 
   <Modal :open="signInModal" />
-  <ConnectWalletModal v-model="ConnectWalletModals" />
+<ConnectWalletModal
+  v-model="ConnectWalletModals"
+/>
 
 </template>
 
@@ -93,15 +96,17 @@ import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuIt
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import logo from '@/assets/logo.png';
 
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import Modal from '@/components/Modal.vue';
 import ConnectWalletModal from './ConnectWallet.vue';
 import { E, getCookie, hasLogin, saveToken } from "../utils/utils.js";
 
 const signInModal = ref(false);
 const ConnectWalletModals = ref(false);
+const walletPk = ref('')
 const emit = defineEmits(['wallet-status']);
-const isWalletConnected = ref(false);
+
+const isConnected = computed(() => !!walletPk.value)
 
 // Scroll hide/show functionality
 const hideHeader = ref(false);
@@ -118,7 +123,15 @@ const handleScroll = () => {
 
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
+  walletPk.value =
+    getCookie('public_key') ||
+    ''
 });
+
+function shortMiddle(str, head = 4, tail = 4) {
+  if (!str) return '—'
+  return str.length > head + tail ? `${str.slice(0, head)}…${str.slice(-tail)}` : str
+}
 
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
@@ -144,30 +157,4 @@ const Links = [
     href: 'https://lobstr.co/trade/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ',
   },
 ]
-
-//create listener to listen for connected changes
-hear('connected', async (status) => {
-  if (status) {
-    const walletKey = getCookie("public_key");
-
-    emit('wallet-status', {
-      connected: true,
-      walletKey,
-    });
-
-    //has been connected, do the needfull
-    if (E('walletConnected')) {
-      isWalletConnected.value = true;
-      E('walletConnected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
-    }
-  }
-  else {
-    //has disconnected
-    isWalletConnected.value = false;
-    emit('wallet-status', {
-      connected: false,
-    });
-    E('walletConnected').innerText = "Connect Wallet"
-  }
-})
 </script>

@@ -37,7 +37,7 @@
                     <div class="space-y-4">
                       <div>
                         <label for="distributor_wallet" class="block text-sm font-medium text-gray-700 mb-1">
-                          Distributor Wallet
+                          Connected Wallet
                           <span class="text-red-500">*</span>
                           <span class="relative ml-1">
                             <button type="button" @mouseover="DistributorHovered = true"
@@ -56,9 +56,12 @@
 
                         <button id="walletConnected" @click="OpenConnectWalletModal" type="button"
                           class="bg-gradient text-white rounded-full px-3 py-2 text-sm font-mono truncate w-[120px]">
-                          {{ walletKey ? walletKey.substring(0, 6) + '...' + walletKey.slice(-4) : 'Connect Wallet' }}
+                          {{ shortWallet }}
                         </button>
-                        <ConnectWalletModal :open="ConnectWalletModals" @close="ConnectWalletModals = false" />
+
+                        <ConnectWalletModal :open="ConnectWalletModals"
+                          @status="(e) => { isWalletConnected = !!e?.connected; if (e?.walletKey) walletKey = e.walletKey; }"
+                          @close="ConnectWalletModals = false" />
                       </div>
 
 
@@ -159,7 +162,7 @@
     </template>
 
 <script setup>
-import { ref, defineProps, defineEmits } from 'vue'
+import { ref, defineProps, defineEmits, onMounted, computed } from 'vue'
 import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import { Form, Field, ErrorMessage } from 'vee-validate';
 import Logo from '@/assets/token-glade-logo.png'
@@ -177,6 +180,11 @@ const isWalletConnected = ref(false);
 const ConnectWalletModals = ref(false);
 const { open } = defineProps({ open: Boolean, distributorWallet: String })
 
+const shortWallet = computed(() =>
+  walletKey.value
+    ? `${walletKey.value.slice(0, 6)}...${walletKey.value.slice(-4)}`
+    : 'Connect Wallet'
+);
 
 const OpenConnectWalletModal = () => { ConnectWalletModals.value = true }
 const toggleValue = ref(false);
@@ -338,24 +346,27 @@ const submitForm = async (form) => {
   }
 };
 
+onMounted(() => {
+  const pk = getCookie('public_key') || localStorage.getItem('public_key') || '';
+  walletKey.value = pk || '';
+  isWalletConnected.value = !!pk;
+});
 
+const walletKey = ref('');
 //create listener to listen for connected changes
-let walletKey = ref(null);
-hear('connected', async (status) => {
+hear('connected', (status, payload) => {
   if (status) {
-
-    //has been connected, do the needfull
-    if (E('walletConnected')) {
-      isWalletConnected.value = true;
-      walletKey = getCookie("public_key");
-
-      E('walletConnected').innerText = walletKey.substring(0, 6) + '...' + walletKey.substring(walletKey.length - 4)
-    }
-  }
-  else {
+    const pk =
+      payload?.walletKey ||
+      getCookie('public_key') ||
+      localStorage.getItem('public_key') ||
+      '';
+    walletKey.value = pk;
+    isWalletConnected.value = !!pk;
+  } else {
+    walletKey.value = '';
     isWalletConnected.value = false;
-    E('walletConnected').innerText = "----";
   }
-})
+});
 
 </script>

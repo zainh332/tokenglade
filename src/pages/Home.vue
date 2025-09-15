@@ -107,6 +107,8 @@
       <GenerateTokenModal :open="isTokenModalOpen" @close="isTokenModalOpen = false" />
         <ConnectWalletModal
           v-model="ConnectWalletModals"
+          :connected="isWalletConnected"
+          :walletKey="walletKey"
           @status="handleWalletStatus"
           @close="ConnectWalletModals = false"
         />
@@ -132,14 +134,22 @@ import axios from 'axios'
 import { ref, computed, defineProps, onMounted, watch } from "vue";
 import Swal from 'sweetalert2';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
+import { getCookie, apiHeaders } from "../utils/utils.js";
 
 const isWalletConnected = ref(false);
 const walletKey = ref('');
 const ConnectWalletModals = ref(false);
 
-function handleWalletStatus(event) {
-  isWalletConnected.value = event.connected;
-  walletKey.value = event.walletKey || '';
+function handleWalletStatus(e) {
+  // Expect { connected: boolean, walletKey?: string }
+  if (e && typeof e.connected === "boolean") {
+    isWalletConnected.value = e.connected;
+    if (e.walletKey) walletKey.value = e.walletKey;
+    // If connected from modal, you can auto-close:
+    if (e.connected) ConnectWalletModals.value = false;
+  }
+  // Always re-sync from storage/cookie just in case
+  refreshWalletState();
 }
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -180,7 +190,20 @@ async function fetchdata() {
   }
 }
 
+function readPk() {
+  const pk = getCookie("public_key") || localStorage.getItem("public_key");
+  if (!pk) return "";
+  const s = String(pk).trim();
+  return (s === "null" || s === "undefined") ? "" : s;
+}
+function refreshWalletState() {
+  const pk = readPk();
+  walletKey.value = pk || "";
+  isWalletConnected.value = !!(pk && pk.startsWith("G") && pk.length === 56);
+}
+
 onMounted(() => {
+  refreshWalletState();
   fetchdata()
 })
 

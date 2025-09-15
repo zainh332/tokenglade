@@ -126,19 +126,13 @@ import { ref, computed, defineProps, onMounted, watch } from "vue";
 import {
     Dialog,
     DialogPanel,
-    DialogTitle,
     TransitionChild,
     TransitionRoot,
 } from "@headlessui/vue";
 import Logo from "@/assets/token-glade-logo.png";
-import rabet from "@/assets/rabet.png";
-import frighter from "@/assets/frighter.png";
-import albeto from "@/assets/albeto.png";
-import xbull from "@/assets/xbull.png";
 import axios from "axios";
 import {
     isConnected,
-    isAllowed,
     getPublicKey,
     requestAccess,
 } from "@stellar/freighter-api";
@@ -151,8 +145,11 @@ const blockchainOptions = ref([]);
 const selectedWallet = ref("");
 const selectedBlockchain = ref("");
 const isLoading = ref(false);
-const isWalletConnected = ref(false);
-const props = defineProps({ modelValue: { type: Boolean, default: false } });
+const props = defineProps({
+  modelValue:   { type: Boolean, default: false }, // v-model for open/close
+  connected:    { type: Boolean, default: false }, // parent’s connection state
+  walletKey:    { type: String,  default: "" },    // parent’s wallet pk (optional)
+});
 
 const backdrop = computed(() => (!isWalletConnected.value ? "static" : ""));
 const keyboard = computed(() => (!isWalletConnected.value ? "false" : ""));
@@ -251,7 +248,7 @@ async function storeWallet(publicKey, walletTypeId, walletKey, blockchainTypeId)
 
     if (data?.status === 'success') {
       // mark connected
-      isWalletConnected.value = true;
+      setConnected(data.public ?? publicKey);
 
       // persist values
       localStorage.setItem('public_key', data.public ?? publicKey);
@@ -372,7 +369,7 @@ async function handleConnect() {
 
         // Update local state so UI reacts immediately (even if we reload)
         UserData.value.walletKey = result.publicKey;
-        isWalletConnected.value = true;
+        setConnected(result.publicKey);
 
         // Ensure any modal is closed before reload
         if (Swal.isVisible()) Swal.close();
@@ -391,63 +388,6 @@ async function handleConnect() {
     }
 }
 
-
-function getActiveWalletKey() {
-    const t = localStorage.getItem("wallet_type");
-    return String(t) === "2" ? "freighter" : (t ? "rabet" : null);
-}
-
-async function checkConnection() {
-    let isWalletConnectedBefore = localStorage.getItem("wallet_connect") === "true";
-    let conn = isWalletConnectedBefore && (await isConnected()) && (await isAllowed());
-
-    const active = getActiveWalletKey(); // "freighter" | "rabet" | null
-    // if (active === "freighter") {
-    //     const ok = await isConnected().catch(() => false);
-    //     const allowed = await isAllowed().catch(() => false);
-    //     conn = ok && allowed;
-    // } else if (active === "rabet") {
-    //     conn = !!(window?.rabet && (window.rabet.account?.address || await window.rabet.isUnlocked().catch(() => false)));
-    // }
-
-    isWalletConnected.value = !!conn;
-    if (!conn) return;
-    const publicKey = getCookie("public_key");
-    const walletTypeId = getCookie("wallet_type_id");
-    const blockchainId = getCookie("blockchain_id");
-
-    UserData.value.public_key = publicKey; // Set the public key in UserData
-    UserData.value.wallet_type_id = walletTypeId; // Set the selected wallet type ID in UserData
-    UserData.value.blockchain_id = blockchainId; // Set the selected wallet type ID in UserData
-
-    if (publicKey && walletTypeId && blockchainId) {
-        const response = await axios.post("/api/wallet/store", UserData.value);
-        if (response.data.status === "success") {
-            // If both are found, set UserData and mark connection as successful
-            UserData.value.walletKey = publicKey;
-            UserData.value.wallet_type_id = walletTypeId;
-            UserData.value.blockchain_id = blockchainId;
-            speak("connected", true); // Call speak function with the connected status
-        } else {
-            // Handle a failure response from the server (optional)
-            Swal.fire({
-                icon: "error",
-                title: "Error!",
-                text: "Failed to connect wallet.",
-            });
-            isWalletConnected.value = false;
-        }
-    } else {
-        // If either of them is missing, consider the connection incomplete or invalid
-        isWalletConnected.value = false;
-        Swal.fire({
-            icon: "error",
-            title: "Error!",
-            text: "Wallet data missing or incomplete. Please reconnect your wallet.",
-        });
-    }
-    // }
-}
 async function disconnectWallet() {
     try {
         const public_key = localStorage.getItem("public_key");
@@ -465,7 +405,6 @@ async function disconnectWallet() {
             localStorage.setItem("public_key", null);
             localStorage.setItem("wallet_key", null);
             localStorage.setItem("wallet_type", null);
-            isWalletConnected.value = false;
             speak("connected", false);
             document.cookie =
                 "public_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -475,6 +414,7 @@ async function disconnectWallet() {
                 "wallet_type_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             document.cookie =
                 "blockchain_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            setDisconnected();
             window.location.reload();
         } else {
             Swal.fire({
@@ -493,62 +433,45 @@ async function disconnectWallet() {
     }
 }
 
-// Watches wallet connection status and public key changes
-async function watchWalletChanges() {
-    setInterval(async () => {
-        const frieghter = getCookie("wallet_type_id");
 
-        if (frieghter == 1 && localStorage.getItem("wallet_connect") === "true") {
-            const current_public_key = await getPublicKey();
-            const previous_public_key = getCookie("public_key");
-            const wallet_type_id = getCookie("wallet_type_id");
-            const blockchain_id = getCookie("blockchain_id");
+const connectedLocal = ref(false);
+const localPk        = ref(getCookie("public_key") || localStorage.getItem("public_key") || "");
 
-            if (previous_public_key !== current_public_key) {
-                UserData.value.current_public_key = current_public_key; // Set the public key in UserData
-                UserData.value.previous_public_key = previous_public_key; // Set the selected wallet type ID in UserData
-                UserData.value.wallet_type_id = wallet_type_id; // freighter only
-                UserData.value.blockchain_id = blockchain_id;
-                const response = await axios.post(
-                    "/api/wallet/update",
-                    UserData.value,
-                    { headers: apiHeaders(), withCredentials: true }
-                );
-                if (response.data.status === "success") {
-                    window.location.reload();
-                } else {
-                    // await disconnectWallet(previous_public_key);
-                    // Handle a failure response from the server (optional)
-                    // Swal.fire({
-                    //     icon: "error",
-                    //     title: "Error!",
-                    //     text: "Failed to connect wallet.",
-                    // });
-                }
-            }
-        } else {
-        }
-    }, 3000); // Check every second
+
+function safeGet(v) {
+  if (!v) return "";
+  const s = String(v).trim().toLowerCase();
+  return (s === "null" || s === "undefined") ? "" : String(v);
 }
 
-// Watch `isWalletConnected` and trigger `watchWalletChanges` when it becomes true
-watch(
-    isWalletConnected,
-    (newVal) => {
-        if (newVal) {
-            watchWalletChanges();
-        }
-    },
-    { immediate: false } // Only trigger on actual changes, not immediately
+function readPk() {
+  return safeGet(getCookie("public_key") || localStorage.getItem("public_key"));
+}
+
+function setConnected(pk)   { connectedLocal.value = true;  localPk.value = pk || ""; }
+function setDisconnected()  { connectedLocal.value = false; localPk.value = ""; }
+
+
+const displayPk = computed(() =>
+  safeGet(props.walletKey) || localPk.value
 );
 
+const isWalletConnected = computed(() => {
+  const pk = displayPk.value;
+  return !!pk && pk.startsWith("G") && pk.length === 56;
+});
+
 onMounted(() => {
-    checkConnection();
     fetchWallets();
     fetchblockchains();
-    const previous_public_key = getCookie("public_key");
-    if (previous_public_key) {
-        watchWalletChanges(); // Call directly if `previous_public_key` is there
-    }
+    const pk = readPk();
+    if (pk) setConnected(pk); else setDisconnected();
+});
+
+watch(() => props.modelValue, (open) => {
+  if (open) {
+    const pk = readPk();
+    if (pk) setConnected(pk); else setDisconnected();
+  }
 });
 </script>
