@@ -52,94 +52,95 @@
 
                         <!-- If balance >= 1500: show staking fields -->
                         <!-- <template v-if="!loadingBalance && hasMinBalance"> -->
-                            <!-- Range -->
-                            <div class="relative w-full">
-                                <div class="flex items-center justify-between mb-1">
-                                    <label for="range_value" class="block text-sm font-medium text-gray-700">
+                        <!-- Range -->
+                        <div class="relative w-full">
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="range_value" class="block text-sm font-medium text-gray-700">
 
-                                    </label>
-                                    <span class="text-xs text-gray-500">
-                                        Min: <strong>1,500</strong> • Max: <strong>{{ formattedMaxStake }}</strong>
-                                    </span>
-                                </div>
-
-                                <!-- Tooltip -->
-                                <div class="absolute -top-[0] transform -translate-x-1/2 text-xs bg-[#43CDFF] text-white px-2 py-1 rounded-[5px] transition-all duration-200"
-                                    :style="{ left: `calc(${percentage}% - 1px)` }">
-                                    {{ rangeValue }}%
-                                </div>
-
-                                <!-- Range Input (0 → 100) -->
-                                <input type="range" id="range_value" name="range_value" min="0" max="100"
-                                    v-model="rangeValue" class="w-full h-2 rounded-lg appearance-none cursor-pointer"
-                                    :style="{
-                                        background:
-                                            'linear-gradient(90deg, rgba(220,25,224,1), rgba(67,205,255,1), rgba(0,254,254,1))'
-                                    }" />
-
-                                <!-- Scale helper -->
-                                <div class="flex justify-between text-[11px] text-gray-500 mt-1">
-                                    <span>0%</span>
-                                    <span>100%</span>
-                                </div>
-                            </div>
-
-                            <!-- Selected stake amount -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Stake amount
                                 </label>
-                                <input type="text" :value="selectedTokensFormatted"
-                                    class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3A3A3A]"
-                                    readonly />
+                                <span class="text-xs text-gray-500">
+                                    Min: <strong>1,500</strong> • Max: <strong>{{ formattedMaxStake }}</strong>
+                                </span>
                             </div>
 
-                            <div class="mt-2 rounded-xl border bg-gray-50 p-3">
-                                <!-- Projected tier / APY -->
-                                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                                    <div class="text-sm text-gray-600">
+                            <!-- Tooltip -->
+                            <div class="absolute -top-[0] transform -translate-x-1/2 text-xs bg-[#43CDFF] text-white px-2 py-1 rounded-[5px] transition-all duration-200"
+                                :style="{ left: `calc(${percentage}% - 1px)` }">
+                                {{ rangeValue }}%
+                            </div>
+
+                            <!-- Range Input (0 → 100) -->
+                            <input type="range" id="range_value" name="range_value" min="0" max="100"
+                                v-model="rangeValue" class="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                                :style="{
+                                    background:
+                                        'linear-gradient(90deg, rgba(220,25,224,1), rgba(67,205,255,1), rgba(0,254,254,1))'
+                                }" />
+
+                            <!-- Scale helper -->
+                            <div class="flex justify-between text-[11px] text-gray-500 mt-1">
+                                <span>0%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+
+                        <!-- Selected stake amount -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Stake amount
+                            </label>
+                            <input type="text" :value="selectedTokensFormatted"
+                                class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3A3A3A]"
+                                readonly />
+                        </div>
+
+                        <div class="mt-2 rounded-xl border bg-gray-50 p-3">
+                            <!-- Projected tier / APY -->
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                <div class="text-sm text-gray-600">
                                     Projected after stake:
                                     <strong>{{ fmtTKG(projectedTotal) }} TKG</strong>
-                                    </div>
-                                    <div class="text-sm">
-                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                                            :class="projected.tier === 3 ? 'bg-emerald-100 text-emerald-800'
-                                                : projected.tier === 2 ? 'bg-blue-100 text-blue-800'
+                                </div>
+                                <div class="text-sm">
+                                    <span
+                                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                                        :class="projected.tier === 3 ? 'bg-emerald-100 text-emerald-800'
+                                            : projected.tier === 2 ? 'bg-blue-100 text-blue-800'
                                                 : projected.tier === 1 ? 'bg-violet-100 text-violet-800'
-                                                : 'bg-gray-100 text-gray-600'">
+                                                    : 'bg-gray-100 text-gray-600'">
                                         Tier {{ projected.tier || '—' }} • {{ projected.apy.toFixed(2) }}% APY
                                     </span>
-                                    </div>
                                 </div>
-
-                                <!-- Reward chips -->
-                                <div class="grid grid-cols-3 gap-2 text-center">
-                                    <div class="rounded-lg bg-white border p-2">
-                                    <div class="text-[11px] text-gray-500">Est. Daily</div>
-                                    <div class="text-sm font-semibold">{{ fmtTKG(estDaily) }} TKG</div>
-                                    </div>
-                                    <div class="rounded-lg bg-white border p-2">
-                                    <div class="text-[11px] text-gray-500">Est. Monthly</div>
-                                    <div class="text-sm font-semibold">{{ fmtTKG(estMonthly) }} TKG</div>
-                                    </div>
-                                    <div class="rounded-lg bg-white border p-2">
-                                    <div class="text-[11px] text-gray-500">Est. Yearly</div>
-                                    <div class="text-sm font-semibold">{{ fmtTKG(estYearly) }} TKG</div>
-                                    </div>
-                                </div>
-
-                                <!-- Hint when below threshold -->
-                                <p v-if="projected.tier === 0" class="mt-2 text-xs text-amber-700">
-                                    Stake at least <strong>1,500 TKG</strong> to start earning rewards.
-                                </p>
                             </div>
 
-                            <button type="submit"
-                                class="w-full text-white py-2 rounded-[20px] hover:opacity-90 transition duration-300 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove"
-                                :disabled="stakeLoading || !hasMinBalance" :aria-busy="stakeLoading">
-                                <span v-if="stakeLoading">Staking…</span>
-                                <span v-else>Stake</span>
-                            </button>
+                            <!-- Reward chips -->
+                            <div class="grid grid-cols-3 gap-2 text-center">
+                                <div class="rounded-lg bg-white border p-2">
+                                    <div class="text-[11px] text-gray-500">Est. Daily</div>
+                                    <div class="text-sm font-semibold">{{ fmtTKG(estDaily) }} TKG</div>
+                                </div>
+                                <div class="rounded-lg bg-white border p-2">
+                                    <div class="text-[11px] text-gray-500">Est. Monthly</div>
+                                    <div class="text-sm font-semibold">{{ fmtTKG(estMonthly) }} TKG</div>
+                                </div>
+                                <div class="rounded-lg bg-white border p-2">
+                                    <div class="text-[11px] text-gray-500">Est. Yearly</div>
+                                    <div class="text-sm font-semibold">{{ fmtTKG(estYearly) }} TKG</div>
+                                </div>
+                            </div>
+
+                            <!-- Hint when below threshold -->
+                            <p v-if="projected.tier === 0" class="mt-2 text-xs text-amber-700">
+                                Stake at least <strong>1,500 TKG</strong> to start earning rewards.
+                            </p>
+                        </div>
+
+                        <button type="submit"
+                            class="w-full text-white py-2 rounded-[20px] hover:opacity-90 transition duration-300 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove"
+                            :disabled="stakeLoading || !hasMinBalance" :aria-busy="stakeLoading">
+                            <span v-if="stakeLoading">Staking…</span>
+                            <span v-else>Stake</span>
+                        </button>
                         <!-- </template> -->
 
                         <!-- <template v-else-if="!loadingBalance">
@@ -213,14 +214,10 @@
                                 </td>
 
                                 <td class="py-3 px-4 text-center">
-                                    <a
-                                        v-if="pos.transaction"
-                                        :href="txUrl(pos.transaction)"
-                                        target="_blank"
+                                    <a v-if="pos.transaction" :href="txUrl(pos.transaction)" target="_blank"
                                         rel="noopener"
                                         class="inline-block px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 font-mono text-xs hover:bg-gray-200 transition"
-                                        :title="pos.transaction"
-                                    >
+                                        :title="pos.transaction">
                                         {{ shortMiddle(pos.transaction, 6, 6) }}
                                     </a>
                                     <span v-else>—</span>
@@ -474,54 +471,54 @@ onMounted(async () => {
 });
 
 const existingTkgStaked = computed(() =>
-  (Array.isArray(positions?.value) ? positions.value : [])
-    // if you have a status flag, filter to active only; else just sum:
-    .filter(p => (p.asset_code || '').toUpperCase() === 'TKG')
-    .reduce((sum, p) => sum + Number(p.amount || 0), 0)
+    (Array.isArray(positions?.value) ? positions.value : [])
+        // if you have a status flag, filter to active only; else just sum:
+        .filter(p => (p.asset_code || '').toUpperCase() === 'TKG')
+        .reduce((sum, p) => sum + Number(p.amount || 0), 0)
 );
 
 // --- Tier & APY rules (mirrors backend tkgTierAndApy) ---
 function tierAndApy(total) {
-  if (total >= 100000) return { tier: 3, apy: 18.00 };
-  if (total >= 10000)  return { tier: 2, apy: 15.00 };
-  if (total >= 1500)   return { tier: 1, apy: 12.00 };
-  return { tier: 0, apy: 0.00 };
+    if (total >= 100000) return { tier: 3, apy: 18.00 };
+    if (total >= 10000) return { tier: 2, apy: 15.00 };
+    if (total >= 1500) return { tier: 1, apy: 12.00 };
+    return { tier: 0, apy: 0.00 };
 }
 
 function isEnded(pos) {
-  // Adjust if your backend already provides a boolean
-  return Number(pos.status_id) === 4 || Boolean(pos.is_withdrawn);
+    // Adjust if your backend already provides a boolean
+    return Number(pos.status_id) === 4 || Boolean(pos.is_withdrawn);
 }
 
 // Daily reward = amount × (APY / 100) / 365 (no compounding; matches backend logic)
 function dailyReward(pos) {
-  const apy = Number(pos.apy) || 0;
-  const amt = Number(pos.amount) || 0;
-  if (apy <= 0 || amt <= 0) return 0;
-  return +(amt * (apy / 100) / 365).toFixed(7); // 7dp to match on-chain precision
+    const apy = Number(pos.apy) || 0;
+    const amt = Number(pos.amount) || 0;
+    if (apy <= 0 || amt <= 0) return 0;
+    return +(amt * (apy / 100) / 365).toFixed(7); // 7dp to match on-chain precision
 }
 
 // Next reward time = (last_reward_at || start_at) + 24h
 function nextRewardAt(pos) {
-  const baseStr = pos.last_reward_at || pos.start_at;
-  const base = baseStr ? new Date(baseStr) : null;
-  if (!base || isNaN(+base)) return null;
-  return new Date(base.getTime() + 24 * 60 * 60 * 1000);
+    const baseStr = pos.last_reward_at || pos.start_at;
+    const base = baseStr ? new Date(baseStr) : null;
+    if (!base || isNaN(+base)) return null;
+    return new Date(base.getTime() + 24 * 60 * 60 * 1000);
 }
 
 // Human ETA like "in 5h 12m" / "in 2d 3h" / "due now"
 function etaString(dt) {
-  if (!dt) return '—';
-  const now = new Date();
-  const ms = dt - now;
-  if (ms <= 0) return 'due now';
-  const mins = Math.floor(ms / 60000);
-  const days = Math.floor(mins / (60 * 24));
-  const hours = Math.floor((mins - days * 24 * 60) / 60);
-  const m = mins % 60;
-  if (days > 0) return `in ${days}d ${hours}h`;
-  if (hours > 0) return `in ${hours}h ${m}m`;
-  return `in ${m}m`;
+    if (!dt) return '—';
+    const now = new Date();
+    const ms = dt - now;
+    if (ms <= 0) return 'due now';
+    const mins = Math.floor(ms / 60000);
+    const days = Math.floor(mins / (60 * 24));
+    const hours = Math.floor((mins - days * 24 * 60) / 60);
+    const m = mins % 60;
+    if (days > 0) return `in ${days}d ${hours}h`;
+    if (hours > 0) return `in ${hours}h ${m}m`;
+    return `in ${m}m`;
 }
 
 
@@ -530,14 +527,14 @@ const projectedTotal = computed(() => existingTkgStaked.value + Number(selectedT
 const projected = computed(() => tierAndApy(projectedTotal.value)); // { tier, apy }
 
 // --- Reward estimates for the *selected* amount at projected APY ---
-const estDaily   = computed(() => Number(selectedTokens.value) * (projected.value.apy / 100) / 365);
+const estDaily = computed(() => Number(selectedTokens.value) * (projected.value.apy / 100) / 365);
 const estMonthly = computed(() => estDaily.value * 30);   // simple 30-day month
-const estYearly  = computed(() => Number(selectedTokens.value) * (projected.value.apy / 100));
+const estYearly = computed(() => Number(selectedTokens.value) * (projected.value.apy / 100));
 
 // --- Helpers ---
 function fmtTKG(n, digits = 2) {
-  const num = Number(n || 0);
-  return num.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+    const num = Number(n || 0);
+    return num.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
 }
 
 async function onSubmit() {
@@ -677,9 +674,7 @@ async function signXdr(xdr, staking_id, testnet) {
 }
 
 async function submitStakingXdr(signedXdr, staking_id) {
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-    // Optional: update the loader text before submitting
     if (typeof updateLoader === "function") {
         updateLoader("Submitting", "Broadcasting signed transaction to Stellar…");
     }
@@ -698,13 +693,11 @@ async function submitStakingXdr(signedXdr, staking_id) {
             if (typeof updateLoader === "function") {
                 updateLoader("Finalizing", "Saving staking record…");
             }
-            // Close loader and show success (or just reload)
             if (Swal.isVisible()) Swal.close();
 
-            // Optional success toast/modal here
             Swal.fire({ icon: 'success', title: 'Staked!', text: 'Your TKG were staked successfully.' });
 
-            setTimeout(() => location.reload(), 800);
+            setTimeout(() => location.reload(), 1000);
         } else {
             if (Swal.isVisible()) Swal.close();
             Swal.fire({
@@ -723,11 +716,6 @@ async function submitStakingXdr(signedXdr, staking_id) {
         console.error('submitStakingXdr error:', err);
     }
 }
-
-// Aggregates for the User Staking tab KPIs
-const totalStaked = computed(() =>
-    positions.value.reduce((s, p) => s + Number(p.amount || 0), 0)
-);
 
 const unstaking = ref({});
 
