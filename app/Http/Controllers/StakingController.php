@@ -368,11 +368,11 @@ class StakingController extends Controller
         try {
             $invests = Staking::query()
                 ->with(['user:id,public_key'])
-                ->whereNotNull('transaction_id')                 // stake is “activated”
+                ->whereNotNull('transaction_id')
                 ->where('amount', '>=', $this->minAmount)
                 ->where('is_withdrawn', false)
-                ->where('staking_status_id', '<>', 4)            // not “Stopped”
-                // ->where('updated_at', '<=', now()->subHours(24)) // pay at most once a day
+                ->where('staking_status_id', '<>', 4)
+                ->where('updated_at', '<=', now()->subHours(24)) // pay at most once a day
                 ->get();
 
             if ($invests->isEmpty()) {
@@ -389,7 +389,6 @@ class StakingController extends Controller
             $processed = 0;
 
             foreach ($invests as $invest) {
-                // Always isolate each staking in its own try/catch so one failure doesn’t stop the batch
                 try {
                     $since = $invest->updated_at ?? $invest->created_at;
                     $days  = max(1, $since->diffInDays(now()));
@@ -407,7 +406,6 @@ class StakingController extends Controller
                     $result = $this->reward($invest, $days);
 
                     if ($result) {
-                        // Create reward record
                         $reward = StakingReward::create([
                             'staking_id'     => $invest->id,
                             'amount'         => $result->amount,
@@ -421,18 +419,16 @@ class StakingController extends Controller
                             'horizon_tx'       => $result->tx,
                         ]);
 
-                        // Your internal audit trail (do not pass secrets)
                         $this->addStakingTransactionRecord(
                             $invest->id,
                             $reward->id,
-                            $result->unsignedXdr ?? null,   // keep null if you’re not capturing it
-                            $result->signedXdr   ?? null,   // keep null if you’re not capturing it
+                            $result->unsignedXdr ?? null,  
+                            $result->signedXdr   ?? null,  
                             $result->tx,
-                            3, // e.g. 3 = Reward Distributed
+                            3, //Reward Distributed
                             ['days' => $days, 'apy' => (float)$invest->apy]
                         );
 
-                        // mark cadence
                         $invest->updated_at = now();
                         $invest->save();
 
@@ -448,9 +444,6 @@ class StakingController extends Controller
                             'user_id'    => $invest->user_id,
                             'reason'     => 'reward() returned null (see reward() logs for details)',
                         ]);
-                        // Even if failed, still advance updated_at to avoid tight loops? Usually no:
-                        // $invest->updated_at = now();
-                        // $invest->save();
                     }
                 } catch (\Throwable $e) {
                     Log::error('staking.reward_distribution.item_exception', [
