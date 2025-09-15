@@ -471,10 +471,9 @@ onMounted(async () => {
 });
 
 const existingTkgStaked = computed(() =>
-    (Array.isArray(positions?.value) ? positions.value : [])
-        // if you have a status flag, filter to active only; else just sum:
-        .filter(p => (p.asset_code || '').toUpperCase() === 'TKG')
-        .reduce((sum, p) => sum + Number(p.amount || 0), 0)
+  (positions.value || [])
+    .filter(p => p.asset_code === 'TKG' && (p.status === 'Active' || p.status === 'Topped Up'))
+    .reduce((s, p) => s + Number(p.amount || 0), 0)
 );
 
 // --- Tier & APY rules (mirrors backend tkgTierAndApy) ---
