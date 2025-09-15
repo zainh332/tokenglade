@@ -134,13 +134,33 @@ class GlobalController extends Controller
 
     public function blockchains()
     {
-        $blockchains = Blockchain::orderBy('name')->get();
+        try {
+            $blockchains = Blockchain::query()
+                ->orderBy('name')
+                ->get();
 
-        // Return the response
-        return response()->json([
-            'status' => 'success',
-            'blockchains' => $blockchains
-        ]);
+            return response()->json([
+                'status'      => 'success',
+                'blockchains' => $blockchains,
+            ], 200);
+        } catch (\Throwable $e) {
+            Log::error('Failed to fetch blockchains', [
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+            ]);
+
+            $payload = [
+                'status'  => 'error',
+                'message' => 'Failed to load blockchains. Please try again later.',
+            ];
+
+            if (config('app.debug')) {
+                $payload['debug'] = $e->getMessage();
+            }
+
+            return response()->json($payload, 500);
+        }
     }
 
 
