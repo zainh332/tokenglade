@@ -417,7 +417,7 @@ const stakeLoading = ref(false);
 
 // Staking min/max amounts
 const stakeMin = 1500;
-const stakeMax = computed(() => Number(tkgBalance.value));
+const stakeMax = computed(() => publicKey ? Number(tkgBalance.value) : 1_000_000);
 
 // Map slider percent → token amount [1500 → tkgBalance]
 const selectedTokens = computed(() => {
@@ -540,6 +540,12 @@ function fmtTKG(n, digits = 2) {
 async function onSubmit() {
     
     const stakingAssetId = isTestnet ? 2 : 1;
+
+    if (!publicKey) {
+        Swal.fire({ icon: "info", title: "Connect Wallet", text: "Please connect your wallet to stake." });
+        return;
+    }
+    
     if (!hasMinBalance.value) {
         Swal.fire({ icon: "warning", title: "Insufficient Balance", text: "You need at least 1,500 TKG to stake." });
         return;
@@ -557,13 +563,7 @@ async function onSubmit() {
         return;
     }
 
-    const pk = publicKey || localStorage.getItem("public_key");
-    const bearer = localStorage.getItem("token");
-
-    if (!pk || !bearer) {
-        Swal.fire({ icon: "info", title: "Connect Wallet", text: "Please connect your wallet and sign in before staking." });
-        return;
-    }
+    
 
     stakeLoading.value = true;
 
@@ -573,7 +573,7 @@ async function onSubmit() {
         const res = await axios.post(
             "/api/staking/start",
             {
-                public_key: pk,
+                public_key: publicKey,
                 amount,
                 staking_asset_id: stakingAssetId,
             },
