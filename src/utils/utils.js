@@ -247,3 +247,24 @@ export function apiHeaders(extra = {}) {
       "Authorization": `Bearer ${localStorage.getItem("token")}`,
     };
 }
+
+
+export function shortMiddle(str, left = 4, right = 4) {
+    if (!str) return '';
+    return str.length <= left + right ? str : `${str.slice(0, left)}…${str.slice(-right)}`;
+}
+
+
+export function statusClass(statusId) {
+    switch (Number(statusId)) {
+        case 1: // Staked
+        case 2: // Topped Up
+            return "bg-emerald-100 text-emerald-700";
+        case 3: // Rewarded (if you show this)
+            return "bg-blue-100 text-blue-700";
+        case 4: // Stopped
+            return "bg-gray-200 text-gray-700";
+        default:
+            return "bg-gray-100 text-gray-700";
+    }
+}

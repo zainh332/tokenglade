@@ -385,7 +385,7 @@ import graphCard1 from '@/assets/graph-1-card.png';
 import graph2 from '@/assets/graph-2.png';
 import graphCard2 from '@/assets/graph-2-card.png';
 import { ref, computed, onMounted } from "vue";
-import { checkTkgBalance, getCookie, updateLoader, apiHeaders } from "../utils/utils.js";
+import { checkTkgBalance, getCookie, updateLoader, apiHeaders, shortMiddle, statusClass } from "../utils/utils.js";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { signTransaction } from "@stellar/freighter-api";
@@ -445,10 +445,11 @@ const totalPages = computed(() => Math.max(1, Math.ceil(paginatedData.value.leng
 const pageRows = computed(() => paginatedData.value.slice(startIndex.value, endIndex.value));
 
 const network = (import.meta.env.VITE_STELLAR_ENVIRONMENT || "public").toLowerCase();
+const isTestnet   = network === 'testnet';
 
-const explorerBase = network === 'testnet'
-    ? 'https://stellar.expert/explorer/testnet'
-    : 'https://stellar.expert/explorer/public';
+const explorerBase = `https://stellar.expert/explorer/${isTestnet ? 'testnet' : 'public'}`;
+
+const txUrl = (tx) => `${explorerBase}/tx/${encodeURIComponent(tx)}`;
 
 // ---------------------
 // Initialize
@@ -537,7 +538,7 @@ function fmtTKG(n, digits = 2) {
 }
 
 async function onSubmit() {
-    const isTestnet = network === "testnet";
+    
     const stakingAssetId = isTestnet ? 2 : 1;
     if (!hasMinBalance.value) {
         Swal.fire({ icon: "warning", title: "Insufficient Balance", text: "You need at least 1,500 TKG to stake." });
@@ -732,19 +733,6 @@ function formatDate(d) {
 //   return Math.min(100, Math.max(0, ((now - s) / (u - s)) * 100)).toFixed(0);
 // }
 
-function statusClass(statusId) {
-    switch (Number(statusId)) {
-        case 1: // Staked
-        case 2: // Topped Up
-            return "bg-emerald-100 text-emerald-700";
-        case 3: // Rewarded (if you show this)
-            return "bg-blue-100 text-blue-700";
-        case 4: // Stopped
-            return "bg-gray-200 text-gray-700";
-        default:
-            return "bg-gray-100 text-gray-700";
-    }
-}
 
 async function fetchPositions() {
     if (!publicKey) return;
@@ -804,15 +792,7 @@ async function unstake(pos) {
     }
 }
 
-function shortMiddle(str, left = 4, right = 4) {
-    if (!str) return '';
-    return str.length <= left + right ? str : `${str.slice(0, left)}…${str.slice(-right)}`;
-}
 
-function txUrl(hash) {
-    if (!hash) return '#';
-    return `${explorerBase}/tx/${hash}`;
-}
 
 function fmtDate(d) {
     if (!d) return '—';
