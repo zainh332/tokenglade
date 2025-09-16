@@ -301,7 +301,7 @@
                     <div class="flex justify-between items-center px-4 py-3">
                         <div class="text-sm text-gray-600">
                             Showing {{ paginatedData.length ? (startIndex + 1) : 0 }}–{{ endIndex }} of {{
-                                paginatedData.length
+                            paginatedData.length
                             }}
                         </div>
                         <div class="flex gap-2">
@@ -445,7 +445,7 @@ const totalPages = computed(() => Math.max(1, Math.ceil(paginatedData.value.leng
 const pageRows = computed(() => paginatedData.value.slice(startIndex.value, endIndex.value));
 
 const network = (import.meta.env.VITE_STELLAR_ENVIRONMENT || "public").toLowerCase();
-const isTestnet   = network === 'testnet';
+const isTestnet = network === 'testnet';
 
 const explorerBase = `https://stellar.expert/explorer/${isTestnet ? 'testnet' : 'public'}`;
 
@@ -454,27 +454,32 @@ const txUrl = (tx) => `${explorerBase}/tx/${encodeURIComponent(tx)}`;
 // ---------------------
 // Initialize
 // ---------------------
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 onMounted(async () => {
-    try {
-        const pk = publicKey;
-        if (pk) {
-            const bal = await checkTkgBalance(pk);
-            tkgBalance.value = Number(bal) || 0;
-        }
-    } catch (e) {
-        tkgBalance.value = 0;
-    } finally {
-        loadingBalance.value = false;
+  try {
+    const pk = publicKey;
+    if (pk) {
+      let bal = Number(await checkTkgBalance(pk)) || 0;
+      if (bal === 0) {
+        await sleep(800);
+        bal = Number(await checkTkgBalance(pk)) || 0;
+      }
+      tkgBalance.value = bal;
     }
-    await fetchPositions();
-    await fetchrewards();
+  } catch {
+    tkgBalance.value = 0;
+  } finally {
+    loadingBalance.value = false;
+  }
 
+  await fetchPositions();
+  await fetchrewards();
 });
 
 const existingTkgStaked = computed(() =>
-  (positions.value || [])
-    .filter(p => p.asset_code === 'TKG' && (p.status === 'Active' || p.status === 'Topped Up'))
-    .reduce((s, p) => s + Number(p.amount || 0), 0)
+    (positions.value || [])
+        .filter(p => p.asset_code === 'TKG' && (p.status === 'Active' || p.status === 'Topped Up'))
+        .reduce((s, p) => s + Number(p.amount || 0), 0)
 );
 
 // --- Tier & APY rules (mirrors backend tkgTierAndApy) ---
@@ -538,14 +543,14 @@ function fmtTKG(n, digits = 2) {
 }
 
 async function onSubmit() {
-    
+
     const stakingAssetId = isTestnet ? 2 : 1;
 
     if (!publicKey) {
         Swal.fire({ icon: "info", title: "Connect Wallet", text: "Please connect your wallet to stake." });
         return;
     }
-    
+
     if (!hasMinBalance.value) {
         Swal.fire({ icon: "warning", title: "Insufficient Balance", text: "You need at least 1,500 TKG to stake." });
         return;
@@ -562,8 +567,6 @@ async function onSubmit() {
         });
         return;
     }
-
-    
 
     stakeLoading.value = true;
 
