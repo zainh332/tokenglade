@@ -625,6 +625,7 @@ class StakingController extends Controller
                 'lock_days',
                 'unlock_at',
                 'created_at',
+                'updated_at',
                 'transaction_id',
                 'staking_status_id',
             ])
@@ -636,7 +637,6 @@ class StakingController extends Controller
             // reward aggregates
             ->withSum('rewards as total_reward', 'amount')
             ->withCount('rewards as rewards_count')
-            ->withMax('rewards as last_reward_at', 'created_at')
 
             ->ForPublicKey($data['public_key'])
             ->whereNotNull('transaction_id')
@@ -660,7 +660,7 @@ class StakingController extends Controller
                 // rewards
                 'total_reward'  => (float) ($s->total_reward ?? 0),   // sum of rewards.amount
                 'rewards_count' => (int) ($s->rewards_count ?? 0),
-                'last_reward_at' => $s->last_reward_at ? \Illuminate\Support\Carbon::parse($s->last_reward_at)->toIso8601String() : null,
+                'last_reward_at' => $s->updated_at ? \Illuminate\Support\Carbon::parse($s->updated_at)->toIso8601String() : null,
 
                 // lock / dates
                 'lock_days'     => (int) $s->lock_days,
