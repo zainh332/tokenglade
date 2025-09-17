@@ -1,147 +1,133 @@
 <template>
-  <div class="bg-[#1B1B1B] max-w-full px-4 pt-40 mx-auto sm:pt-24 sm:px-6 lg:px-8 ">
-    <div class="w-full max-w-[80%] mx-auto bg-[#282826] p-4 rounded-md mb-20">
-      <div class="flex flex-col md:flex-row items-end justify-center gap-10 md:gap-20">
-        <!-- Text Column -->
-        <div class="md:w-1/2 p-4 text-center md:text-left">
-          <h1 class="text-[32px] sm:text-[48px] lg:text-[64px] font-normal leading-tight text-white mb-3">
-            <span class="block text-[36px] font-semibold leading-[1.4]">
-              Join Us
-            </span>
-          </h1>
-          <p class="text-[18px] sm:text-[20px] mt-4 text-white max-w-xl mx-auto lg:mx-0 leading-[1.2]">
-            Be part of the future with TokenGlade <br> Stake, earn, and grow with us
-          </p>
-        </div>
-        <!-- Image Column -->
-        <div class="md:w-1/2 p-4 flex flex-col items-center md:items-start justify-start gap-6">
-          <div class="flex w-full items-center justify-end gap-10">
-            <button class="flex items-center gap-2 bg-[#282826] text-white p-2 rounded-[20px] border border-white">
-              <GlobeAltIcon class="w-5 h-5" />
-              Tokenglade.com
-            </button>
-            <button class="flex items-center gap-2 bg-[#282826] text-white p-2 rounded-[20px] border border-white"> <svg
-                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-                <path
-                  d="M23 3a10.9 10.9 0 01-3.14 1.53A4.48 4.48 0 0022.4.36a9.1 9.1 0 01-2.88 1.1A4.52 4.52 0 0016 0c-2.5 0-4.5 2.02-4.5 4.5 0 .35.04.69.1 1A12.94 12.94 0 013 1.1a4.5 4.5 0 001.4 6A4.4 4.4 0 012 6v.05c0 2.2 1.57 4.03 3.67 4.45a4.52 4.52 0 01-2.03.08 4.5 4.5 0 004.2 3.12A9.06 9.06 0 010 19.54 12.8 12.8 0 006.92 21c8.3 0 12.84-6.88 12.84-12.85 0-.2 0-.4-.01-.6A9.22 9.22 0 0023 3z" />
-              </svg> @Tokenglade </button>
-          </div>
-        </div>
-      </div>
+  <div class="max-w-6xl px-4 pt-40 mx-auto sm:pt-24 sm:px-6 lg:px-8">
+    <!-- Footer -->
+    <div class="flex items-center justify-center max-w-xs mx-auto">
+      <img :src="footerLogo" alt="" />
     </div>
-    <div class="w-full max-w-[80%] mx-auto rounded-md">
-      <div class="flex flex-col md:flex-row items-end justify-center gap-10 md:gap-20 border-b-[1px] border-white">
-        <!-- Text Column -->
-        <div class="md:w-1/2 py-4 text-center md:text-left">
-          <div class="flex">
-            <div class="hidden lg:flex sm:space-x-6">
-              <template v-for="link in Links" :key="link.name">
-                <!-- Internal route -->
-                <router-link
-                  v-if="link.to"
-                  :to="link.to"
-                  class="inline-flex items-center px-1 pt-1 font-normal text-white text-t14"
-                >
-                  {{ link.name }}
-                </router-link>
 
-                <!-- External URL -->
-                <a
-                  v-else-if="link.href"
-                  :href="link.href"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="inline-flex items-center px-1 pt-1 font-normal text-white text-t14"
-                >
-                  {{ link.name }}
-                </a>
-              </template>
-            </div>
-          </div>
-        </div>
-        <!-- Image Column -->
-        <div class="md:w-1/2 py-4 flex flex-col items-center md:items-start justify-start gap-6">
-          <div class="flex w-full items-center justify-end gap-6 text-white">
-            <!-- Twitter -->
-            <a href="https://twitter.com/yourhandle" target="_blank" class="hover:opacity-80">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-                <path
-                  d="M23 3a10.9 10.9 0 01-3.14 1.53A4.48 4.48 0 0022.4.36a9.1 9.1 0 01-2.88 1.1A4.52 4.52 0 0016 0c-2.5 0-4.5 2.02-4.5 4.5 0 .35.04.69.1 1A12.94 12.94 0 013 1.1a4.5 4.5 0 001.4 6A4.4 4.4 0 012 6v.05c0 2.2 1.57 4.03 3.67 4.45a4.52 4.52 0 01-2.03.08 4.5 4.5 0 004.2 3.12A9.06 9.06 0 010 19.54 12.8 12.8 0 006.92 21c8.3 0 12.84-6.88 12.84-12.85 0-.2 0-.4-.01-.6A9.22 9.22 0 0023 3z" />
-              </svg>
-            </a>
-            <!-- Facebook -->
-            <a href="https://facebook.com/yourhandle" target="_blank" class="hover:opacity-80">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-                <path
-                  d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24h11.495v-9.294H9.691V11.01h3.129V8.309c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.464.099 2.797.143v3.243h-1.922c-1.51 0-1.804.718-1.804 1.77v2.333h3.606l-.47 3.696h-3.136V24h6.147C23.407 24 24 23.407 24 22.676V1.325C24 .593 23.407 0 22.675 0z" />
-              </svg>
-            </a>
-            <!-- Instagram -->
-            <a href="https://instagram.com/yourhandle" target="_blank" class="hover:opacity-80">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-                <path
-                  d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5A4.25 4.25 0 0 0 20.5 16.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm5.25-.88a1.12 1.12 0 1 1-2.25 0 1.12 1.12 0 0 1 2.25 0z" />
-              </svg>
-            </a>
-            <!-- GitHub -->
-            <a href="https://github.com/yourhandle" target="_blank" class="hover:opacity-80">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-                <path
-                  d="M12 .297a12 12 0 00-3.8 23.41c.6.11.82-.26.82-.58v-2.04c-3.34.73-4.04-1.61-4.04-1.61-.55-1.4-1.34-1.78-1.34-1.78-1.1-.74.08-.73.08-.73 1.22.09 1.87 1.25 1.87 1.25 1.08 1.86 2.83 1.32 3.52 1 .11-.78.42-1.32.76-1.63-2.66-.3-5.46-1.33-5.46-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.51.12-3.15 0 0 1-.32 3.3 1.23a11.5 11.5 0 016 0c2.3-1.55 3.3-1.23 3.3-1.23.66 1.64.24 2.85.12 3.15.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.63-5.47 5.93.43.38.81 1.12.81 2.26v3.35c0 .32.22.69.82.58A12 12 0 0012 .297z" />
-              </svg>
-            </a>
-          </div>
-        </div>
+    <!-- Footer Links -->
+
+    <div
+      class="flex flex-wrap items-center justify-center max-w-sm gap-6 mx-auto my-8"
+    >
+      <router-link class="font-normal text-t14" to="/">Home</router-link>
+      <router-link class="font-normal text-t14" to="/about-us">About us</router-link>
+      <router-link class="font-normal text-t14" to="/token-generator">Dashboard</router-link
+      >
+      <!-- <router-link class="font-normal text-t14" to="#"
+        >Dashboard</router-link
+      > -->
+      <!-- <router-link class="font-normal text-t14" to="#">Docs</router-link> -->
+    </div>
+
+    <!-- Logos -->
+    <div class="flex flex-wrap items-center justify-center max-w-sm gap-4 mx-auto">
+
+    <!-- Telegram -->
+      <div class="relative flex items-center justify-center w-12 h-12 rounded-full shadow drop-shadow-sm">
+        <a href="https://t.me/tokenglade" target="_blank" rel="noopener noreferrer" 
+        class="absolute top-0 left-0 w-full h-full"></a>
+        <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="19"
+        height="16"
+        viewBox="0 0 19 16"
+        fill="none"
+        >
+          <g clip-path="url(#clip0_131_377)">
+            <path
+              d="M17.1703 0.108255C17.1703 0.108255 18.8703 -0.591745 18.6703 1.00826C18.6703 1.70826 18.1703 4.00826 17.8703 6.50826L16.7703 13.9083C16.7703 13.9083 16.6703 15.0083 15.8703 15.2083C15.0703 15.4083 13.7703 14.5083 13.5703 14.4083C13.3703 14.3083 10.0703 12.1083 8.87033 11.1083C8.57033 10.8083 8.17033 10.3083 8.87033 9.60826L13.7703 4.90826C14.3703 4.30826 14.8703 3.00826 12.5703 4.60825L5.97033 9.00826C5.97033 9.00826 5.27033 9.50826 3.77033 9.00826L0.77033 8.10826C0.77033 8.10826 -0.32967 7.40825 1.57033 6.70825C6.27033 4.50826 12.0703 2.20825 17.1703 0.108255Z"
+              fill="#28A8EA"
+              />
+          </g>
+        </svg>
       </div>
-      <div class="flex flex-col md:flex-row items-end justify-center gap-10 md:gap-20">
-        <!-- Text Column -->
-        <div class="md:w-1/2 py-4 text-center md:text-left">
-          <div class="hidden lg:flex sm:space-x-6">
-            <p class="inline-flex items-center px-1 pt-1 font-normal text-white text-t14">
-              Copyright by 2025 - TokenGlade, All Rights Reserved
-            </p>
-          </div>
-        </div>
-        <!-- Image Column -->
-        <div class="md:w-1/2 py-4 flex flex-col items-center md:items-start justify-start gap-6">
-          <div class="flex w-full items-center justify-end gap-6 text-white">
-            <router-link v-for="link in FooterLinks" :key="link.name" :to="link.to">
-              {{ link.name }}
-            </router-link>
-          </div>
-        </div>
+      <!-- End Telegram -->
+      
+      <!-- Medium -->
+      <div class="relative flex items-center justify-center w-12 h-12 rounded-full shadow drop-shadow-sm">
+        <!-- <router-link
+        to="#"
+        class="absolute top-0 left-0 w-full h-full"
+        ></router-link> -->
+        
+        <a href="https://medium.com/@tokenglade" target="_blank" rel="noopener noreferrer" 
+        class="absolute top-0 left-0 w-full h-full"></a>
+        <svg
+        xmlns="http://www.w3.org/2000/svg"
+          width="21"
+          height="16"
+          viewBox="0 0 21 16"
+          fill="none"
+        >
+          <g clip-path="url(#clip0_131_383)">
+            <path
+              d="M0.317993 14.8083L2.71799 12.1083V2.7083L0.617993 0.408301V0.00830078H6.21799L10.718 9.5083L14.618 0.00830078H20.018V0.408301L18.218 2.0083V13.2083L20.018 14.8083V15.2083H12.218V14.8083L14.018 12.7083V4.3083L9.61799 15.2083H9.01799L3.81799 4.5083V12.0083L6.21799 14.8083V15.2083H0.317993V14.8083Z"
+              fill="black"
+            />
+          </g>
+          <defs>
+            <clipPath id="clip0_131_383">
+              <rect
+                width="19.7"
+                height="15.2"
+                fill="white"
+                transform="translate(0.317993 0.00830078)"
+              />
+            </clipPath>
+          </defs>
+        </svg>
       </div>
+      <!-- End Medium -->
+
+      <!-- Twitter -->
+      <div class="relative flex items-center justify-center w-12 h-12 rounded-full shadow drop-shadow-sm" >
+        <a href="https://twitter.com/TokenGlade" target="_blank" rel="noopener noreferrer" 
+        class="absolute top-0 left-0 w-full h-full"></a>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="16"
+          viewBox="0 0 20 16"
+          fill="none"
+        >
+          <g clip-path="url(#clip0_131_379)">
+            <path
+              d="M17.2156 3.8083C17.2156 4.0083 17.2156 4.1083 17.2156 4.3083C17.2156 9.4083 13.3156 15.2083 6.31565 15.2083C4.11565 15.2083 2.11565 14.6083 0.415649 13.5083C0.715649 13.5083 1.01565 13.6083 1.31565 13.6083C3.11565 13.6083 4.81565 13.0083 6.11565 12.0083C4.41565 12.0083 3.01565 10.9083 2.51565 9.3083C2.71565 9.3083 3.01565 9.4083 3.21565 9.4083C3.51565 9.4083 3.91565 9.4083 4.21565 9.3083C2.51565 8.8083 1.21565 7.3083 1.21565 5.4083C1.71565 5.7083 2.31565 5.9083 2.91565 5.9083C1.91565 5.1083 1.21565 4.0083 1.21565 2.6083C1.21565 1.9083 1.41565 1.2083 1.71565 0.708301C3.61565 3.0083 6.41565 4.6083 9.61565 4.7083C9.51565 4.4083 9.51565 4.1083 9.51565 3.8083C9.51565 1.7083 11.2156 0.00830078 13.3156 0.00830078C14.4156 0.00830078 15.4156 0.508301 16.1156 1.2083C17.0156 1.0083 17.8156 0.708301 18.5156 0.308301C18.2157 1.2083 17.6156 1.9083 16.8156 2.4083C17.6156 2.3083 18.3156 2.1083 19.0156 1.8083C18.6157 2.6083 17.9156 3.2083 17.2156 3.8083Z"
+              fill="#1D9BF0"
+            />
+          </g>
+          <defs>
+            <clipPath id="clip0_131_379">
+              <rect
+                width="18.7"
+                height="15.2"
+                fill="white"
+                transform="translate(0.415649 0.00830078)"
+              />
+            </clipPath>
+          </defs>
+        </svg>
+      </div>
+      <!-- End Twitter -->
+
+    </div>
+
+    <div class="flex flex-col items-center justify-center gap-6 mt-24 mb-8 md:flex-row md:justify-between">
+      <p class="font-normal text-t16">© Copyright by 2025 - TokenGlade</p>
+    
+      <div class="flex flex-col items-center gap-4 sm:flex-row">
+        <router-link class="font-normal text-t16" to="/privacy-policy">Privacy Policy</router-link>
+        <router-link class="font-normal text-t16" to="/terms-service">Terms of Service</router-link>
+        <router-link class="font-normal text-t16" to="#">Contact Us</router-link>
+      </div>
+
     </div>
   </div>
 </template>
 
 <script setup>
-import { GlobeAltIcon } from "@heroicons/vue/24/outline";
-
-const Links = [
-  {
-    name: 'About Us',
-    to: '/about-us'
-  },
-  {
-    name: 'Privacy Policy',
-    to: '/privacy-policy'
-  },
-  {
-    name: 'Buy TKG Tokens',
-    href: 'https://lobstr.co/trade/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ',
-  },
-]
-const FooterLinks = [
-  {
-    name: 'Privacy Policy',
-    to: '/privacy-policy'
-  },
-  {
-    name: 'Terms And Condition',
-    to: '#'
-  },
-]
+import footerLogo from "@/assets/footer-logo.png";
 </script>
 
 <style lang="scss" scoped></style>
