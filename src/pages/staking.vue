@@ -9,7 +9,7 @@
                     <h1 class="text-[32px] sm:text-[48px] lg:text-[64px] font-normal leading-tight text-white">
                         Stake Your
                         <span class="block font-semibold">
-                            $TKG, Earn More
+                            TKG, Earn More
                         </span>
                     </h1>
                     <p class="text-[18px] sm:text-[20px] mt-4 text-white max-w-xl mx-auto lg:mx-0">
@@ -47,7 +47,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <p v-if="loadingBalance" class="mt-2 text-xs text-gray-500">Fetching your $TKG balance…</p>
+                            <p v-if="loadingBalance" class="mt-2 text-xs text-gray-500">Fetching your TKG balance…</p>
                         </div>
 
                         <!-- If balance >= 1500: show staking fields -->
@@ -104,10 +104,11 @@
                                 <div class="text-sm">
                                     <span
                                         class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                                        :class="projected.tier === 3 ? 'bg-emerald-100 text-emerald-800'
-                                            : projected.tier === 2 ? 'bg-blue-100 text-blue-800'
-                                                : projected.tier === 1 ? 'bg-violet-100 text-violet-800'
-                                                    : 'bg-gray-100 text-gray-600'">
+                                        :class="projected.tier === 4 ? 'bg-emerald-100 text-emerald-800'
+                                            : projected.tier === 3 ? 'bg-teal-100 text-teal-800'
+                                                : projected.tier === 2 ? 'bg-blue-100 text-blue-800'
+                                                    : projected.tier === 1 ? 'bg-violet-100 text-violet-800'
+                                                        : 'bg-gray-100 text-gray-600'">
                                         Tier {{ projected.tier || '—' }} • {{ projected.apy.toFixed(2) }}% APY
                                     </span>
                                 </div>
@@ -146,12 +147,12 @@
                         <!-- <template v-else-if="!loadingBalance">
                             <div class="rounded-xl border border-amber-300 bg-amber-50 p-4">
                                 <p class="text-sm text-amber-800">
-                                    Your $TKG balance is less than <strong>1,500</strong>. You need at least 1,500 $TKG
+                                    Your TKG balance is less than <strong>1,500</strong>. You need at least 1,500 TKG
                                     to start staking.
                                 </p>
                                 <a href="https://lobstr.co/" target="_blank" rel="noopener"
                                     class="mt-3 inline-block underline text-blue-600 hover:text-blue-800">
-                                    Buy $TKG on LOBSTR
+                                    Buy TKG on LOBSTR
                                 </a>
                             </div>
                         </template> -->
@@ -301,7 +302,7 @@
                     <div class="flex justify-between items-center px-4 py-3">
                         <div class="text-sm text-gray-600">
                             Showing {{ paginatedData.length ? (startIndex + 1) : 0 }}–{{ endIndex }} of {{
-                            paginatedData.length
+                                paginatedData.length
                             }}
                         </div>
                         <div class="flex gap-2">
@@ -313,7 +314,7 @@
                     </div>
                 </div>
 
-                <div class="mt-20 pt-20 w-full max-w-[80%] mx-auto">
+                <div class="mt-20 pt-20 mb-20 w-full max-w-[80%] mx-auto">
                     <div class="flex flex-col md:flex-row justify-center gap-10 md:gap-20">
                         <!-- Text Column -->
                         <div class="md:w-1/2 p-4 text-center md:text-left">
@@ -328,16 +329,14 @@
                                 <strong>daily passive rewards</strong> and climb tiers for even higher APY.
                                 Up to <strong>18% annually</strong>, designed to reward conviction and long-term
                                 believers.
-                                Backed by a <strong>35M $TKG reserve</strong>, staking is built to be sustainable and
+                                Backed by a <strong>35M TKG reserve</strong>, staking is built to be sustainable and
                                 rewarding for years to come.
                             </p>
                         </div>
 
                         <!-- Image Column -->
                         <div class="md:w-1/2 p-4 flex flex-col items-center md:items-end justify-center gap-6">
-                            <img class="w-full max-w-md h-auto" :src="graph1" alt="graph-1" />
-                            <img class="w-[220px] h-auto relative top-[-10rem] right-[20rem] animate-float"
-                                :src="graphCard1" alt="graph-card-1" />
+                            <img class="w-full max-w-md h-auto rounded-lg" :src="graph1" alt="graph-1" />
                         </div>
                     </div>
                 </div>
@@ -345,10 +344,8 @@
                 <div class="w-full max-w-[80%] mx-auto">
                     <div class="flex flex-col md:flex-row justify-center gap-10 md:gap-20">
                         <!-- Image Column -->
-                        <div class="md:w-1/2 p-4 flex flex-col items-center md:items-start justify-start gap-6">
-                            <img class="w-full max-w-md h-auto" :src="graph2" alt="graph-1" />
-                            <img class="w-[90rem] h-auto relative top-[-15rem] right-[4rem] animate-float"
-                                :src="graphCard2" alt="graph-card-1" />
+                        <div class="md:w-1/2 p-4 flex flex-col items-center md:items-end justify-center gap-6">
+                            <img class="w-full max-w-md h-auto rounded-lg" :src="graph2" alt="graph-2" />
                         </div>
 
                         <!-- Text Column -->
@@ -380,9 +377,9 @@
 <script setup>
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
-import graph1 from '@/assets/graph-1.png';
+import graph1 from '@/assets/img1.png';
 import graphCard1 from '@/assets/graph-1-card.png';
-import graph2 from '@/assets/graph-2.png';
+import graph2 from '@/assets/img2.png';
 import graphCard2 from '@/assets/graph-2-card.png';
 import { ref, computed, onMounted } from "vue";
 import { checkTkgBalance, getCookie, updateLoader, apiHeaders, shortMiddle, statusClass } from "../utils/utils.js";
@@ -456,24 +453,24 @@ const txUrl = (tx) => `${explorerBase}/tx/${encodeURIComponent(tx)}`;
 // ---------------------
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 onMounted(async () => {
-  try {
-    const pk = publicKey;
-    if (pk) {
-      let bal = Number(await checkTkgBalance(pk)) || 0;
-      if (bal === 0) {
-        await sleep(800);
-        bal = Number(await checkTkgBalance(pk)) || 0;
-      }
-      tkgBalance.value = bal;
+    try {
+        const pk = publicKey;
+        if (pk) {
+            let bal = Number(await checkTkgBalance(pk)) || 0;
+            if (bal === 0) {
+                await sleep(800);
+                bal = Number(await checkTkgBalance(pk)) || 0;
+            }
+            tkgBalance.value = bal;
+        }
+    } catch {
+        tkgBalance.value = 0;
+    } finally {
+        loadingBalance.value = false;
     }
-  } catch {
-    tkgBalance.value = 0;
-  } finally {
-    loadingBalance.value = false;
-  }
 
-  await fetchPositions();
-  await fetchrewards();
+    await fetchPositions();
+    await fetchrewards();
 });
 
 const existingTkgStaked = computed(() =>
@@ -484,7 +481,8 @@ const existingTkgStaked = computed(() =>
 
 // --- Tier & APY rules (mirrors backend tkgTierAndApy) ---
 function tierAndApy(total) {
-    if (total >= 100000) return { tier: 3, apy: 18.00 };
+    if (total >= 100000) return { tier: 4, apy: 18.00 };
+    if (total >= 50000) return { tier: 3, apy: 16.00 };
     if (total >= 10000) return { tier: 2, apy: 15.00 };
     if (total >= 1500) return { tier: 1, apy: 12.00 };
     return { tier: 0, apy: 0.00 };

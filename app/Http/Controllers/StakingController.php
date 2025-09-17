@@ -422,8 +422,8 @@ class StakingController extends Controller
                         $this->addStakingTransactionRecord(
                             $invest->id,
                             $reward->id,
-                            $result->unsignedXdr ?? null,  
-                            $result->signedXdr   ?? null,  
+                            $result->unsignedXdr ?? null,
+                            $result->signedXdr   ?? null,
                             $result->tx,
                             3, //Reward Distributed
                             ['days' => $days, 'apy' => (float)$invest->apy]
@@ -584,14 +584,18 @@ class StakingController extends Controller
 
     private function tkgTierAndApy(float $total): array
     {
-        // Tier 3: 100,000+  => 18%
-        if ($total >= 100000) return [3, 18.00];
-
-        // Tier 2: 10,000–99,999 => 15%
-        if ($total >= 10000)   return [2, 15.00];
-
-        // Tier 1: 1,400–9,999  => 12%
-        if ($total >= 1400)    return [1, 12.00];
+        if ($total >= 100_000) {
+            return [4, 18.00];
+        }
+        if ($total >= 50_000) {
+            return [3, 16.00];
+        }
+        if ($total >= 10_000) {
+            return [2, 15.00];
+        }
+        if ($total >= 1_500) {
+            return [1, 12.00];
+        }
 
         // below tier threshold
         return [0, 0.00];
