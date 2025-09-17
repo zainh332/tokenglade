@@ -443,6 +443,7 @@ const pageRows = computed(() => paginatedData.value.slice(startIndex.value, endI
 
 const network = (import.meta.env.VITE_STELLAR_ENVIRONMENT || "public").toLowerCase();
 const isTestnet = network === 'testnet';
+console.log('[ENV] VITE_STELLAR_ENVIRONMENT =', isTestnet);
 
 const explorerBase = `https://stellar.expert/explorer/${isTestnet ? 'testnet' : 'public'}`;
 
@@ -543,7 +544,8 @@ function fmtTKG(n, digits = 2) {
 async function onSubmit() {
 
     const stakingAssetId = isTestnet ? 2 : 1;
-
+    console.log(stakingAssetId, isTestnet);
+    
     if (!publicKey) {
         Swal.fire({ icon: "info", title: "Connect Wallet", text: "Please connect your wallet to stake." });
         return;
