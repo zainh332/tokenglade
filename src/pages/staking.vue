@@ -441,8 +441,9 @@ const totalPages = computed(() => Math.max(1, Math.ceil(paginatedData.value.leng
 
 const pageRows = computed(() => paginatedData.value.slice(startIndex.value, endIndex.value));
 
-const raw = import.meta.env.VITE_STELLAR_ENVIRONMENT ?? 'public';
-const network = String(raw).trim().toLowerCase() === 'testnet' ? 'testnet' : 'public';
+// const raw = import.meta.env.VITE_STELLAR_ENVIRONMENT ?? 'public';
+// const network = String(raw).trim().toLowerCase() === 'testnet' ? 'testnet' : 'public';
+const network = 'public';
 const isTestnet = network === 'testnet';
 console.log('[ENV] VITE_STELLAR_ENVIRONMENT =', isTestnet);
 
