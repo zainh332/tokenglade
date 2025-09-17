@@ -49,7 +49,7 @@
     "src": "src/assets/wallet.jpg"
   },
   "src/main.css": {
-    "file": "assets/main-d5b860b4.css",
+    "file": "assets/main-dfec0149.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -66,9 +66,9 @@
       "assets/graph-2-card-b87e8fad.png"
     ],
     "css": [
-      "assets/main-d5b860b4.css"
+      "assets/main-dfec0149.css"
     ],
-    "file": "assets/main-006f4c60.js",
+    "file": "assets/main-a402c8f4.js",
     "isEntry": true,
     "src": "src/main.js"
   }
