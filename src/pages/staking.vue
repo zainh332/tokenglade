@@ -166,53 +166,130 @@
 
                 <!-- ===== Live Stats (Light + Gradient Accents) ===== -->
                 <div
-                    class="rounded-2xl bg-white/95 backdrop-blur border border-slate-200 shadow-[0_8px_30px_rgba(0,0,0,0.06)]">
-                    <!-- Thin gradient bar -->
+                    class="rounded-2xl bg-white/80 backdrop-blur border border-slate-200 shadow-[0_12px_40px_rgba(2,6,23,0.06)]">
+                    <!-- gradient hairline -->
                     <div class="h-1.5 w-full rounded-t-2xl bg-gradient-to-r from-fuchsia-500 via-sky-400 to-cyan-400">
                     </div>
 
                     <div class="p-6">
-                        <div class="flex items-start justify-between">
-                            <div>
-                                <h3 class="text-[18px] font-semibold text-slate-800">Live Staking Stats</h3>
-                                <p class="mt-1 text-xs text-slate-500">Updated {{ lastUpdatedAgo }}</p>
-                            </div>
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-[18px] font-semibold text-slate-800">Live Staking Stats</h3>
+                            <span class="text-xs text-slate-500">Updated {{ lastUpdatedAgo }}</span>
                         </div>
 
-                        <!-- 6 metric tiles -->
-                        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <!-- Total Staked -->
-                            <div class="rounded-xl border border-slate-200 p-4 bg-white">
-                                <div class="text-xs text-slate-500">Total TKG Staked</div>
-                                <div class="mt-1 text-xl sm:text-2xl font-semibold text-slate-900 break-words">
-                                    {{ totalStakedFormatted }}
+                        <!-- 2x2 grid -->
+                        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <!-- TILE -->
+                            <div
+                                class="rounded-2xl p-[1px] bg-gradient-to-r from-fuchsia-400/60 via-sky-400/60 to-cyan-400/60">
+                                <div class="rounded-2xl bg-white/95 p-4">
+                                    <div class="flex items-center gap-3">
+                                        <!-- icon -->
+                                        <span class="inline-flex h-9 w-9 items-center justify-center rounded-full
+                         bg-gradient-to-br from-fuchsia-500 to-sky-400 text-white">
+                                            <!-- coin -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                                    d="M12 6a9 4 0 100 12 9 4 0 000-12zM3 12a9 4 0 0018 0" />
+                                            </svg>
+                                        </span>
+
+                                        <div class="min-w-0">
+                                            <div class="text-[12px] uppercase tracking-wide text-slate-500">Total TKG
+                                                Staked
+                                            </div>
+                                            <div class="mt-0.5 font-semibold text-slate-900 text-xl sm:text-2xl whitespace-nowrap overflow-hidden text-ellipsis"
+                                                style="font-variant-numeric: tabular-nums;">
+                                                {{ totalStakedFormatted }}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Active Stakers -->
-                            <div class="rounded-xl border border-slate-200 p-4 bg-white">
-                                <div class="text-xs text-slate-500">Active Stakers</div>
-                                <div class="mt-1 text-2xl font-semibold text-slate-900">
-                                    {{ activeStakersFormatted }}
+                            <!-- TILE -->
+                            <div
+                                class="rounded-2xl p-[1px] bg-gradient-to-r from-fuchsia-400/60 via-sky-400/60 to-cyan-400/60">
+                                <div class="rounded-2xl bg-white/95 p-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="inline-flex h-9 w-9 items-center justify-center rounded-full
+                         bg-gradient-to-br from-sky-500 to-cyan-400 text-white">
+                                            <!-- users -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
+                                                fill="none" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                                    d="M16 14a4 4 0 10-8 0m12 4a6 6 0 00-12 0M12 8a4 4 0 110-8 4 4 0 010 8z" />
+                                            </svg>
+                                        </span>
+
+                                        <div class="min-w-0">
+                                            <div class="text-[12px] uppercase tracking-wide text-slate-500">Active
+                                                Stakers</div>
+                                            <div class="mt-0.5 font-semibold text-slate-900 text-xl sm:text-2xl"
+                                                style="font-variant-numeric: tabular-nums;">
+                                                {{ activeStakersFormatted }}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Rewards Paid (24h) -->
-                            <div class="rounded-xl border border-slate-200 p-4 bg-white">
-                                <div class="text-xs text-slate-500">Rewards Paid (24h)</div>
-                                <div class="mt-1 text-2xl font-semibold text-slate-900">
-                                    {{ fmtTKG(rewardsPaid24hTKG) }}
+                            <!-- TILE -->
+                            <div
+                                class="rounded-2xl p-[1px] bg-gradient-to-r from-fuchsia-400/60 via-sky-400/60 to-cyan-400/60">
+                                <div class="rounded-2xl bg-white/95 p-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="inline-flex h-9 w-9 items-center justify-center rounded-full
+                         bg-gradient-to-br from-cyan-500 to-fuchsia-500 text-white">
+                                            <!-- gift -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
+                                                fill="none" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                                    d="M20 12H4m0 0v7a2 2 0 002 2h12a2 2 0 002-2v-7M4 12l1.5-6H18.5L20 12M9 6V4a2 2 0 114 0v2" />
+                                            </svg>
+                                        </span>
+
+                                        <div class="min-w-0">
+                                            <div class="text-[12px] uppercase tracking-wide text-slate-500">Rewards Paid
+                                                (24h)
+                                            </div>
+                                            <div class="mt-0.5 font-semibold text-slate-900 text-xl sm:text-2xl whitespace-nowrap overflow-hidden text-ellipsis"
+                                                style="font-variant-numeric: tabular-nums;">
+                                                {{ fmtTKG(rewardsPaid24hTKG) }}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Total Payouts -->
-                            <div class="rounded-xl border border-slate-200 p-4 bg-white">
-                                <div class="text-xs text-slate-500">Total Payouts</div>
-                                <div class="mt-1 text-2xl font-semibold text-slate-900">
-                                    {{ totalPayoutsFormatted }}
+                            <!-- TILE -->
+                            <div
+                                class="rounded-2xl p-[1px] bg-gradient-to-r from-fuchsia-400/60 via-sky-400/60 to-cyan-400/60">
+                                <div class="rounded-2xl bg-white/95 p-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="inline-flex h-9 w-9 items-center justify-center rounded-full
+                         bg-gradient-to-br from-fuchsia-500 to-cyan-500 text-white">
+                                            <!-- receipt -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                                    d="M9 7h6M9 11h6M5 3h14v18l-3-2-4 2-4-2-3 2V3z" />
+                                            </svg>
+                                        </span>
+
+                                        <div class="min-w-0">
+                                            <div class="text-[12px] uppercase tracking-wide text-slate-500">Total
+                                                Payouts</div>
+                                            <div class="mt-0.5 font-semibold text-slate-900 text-xl sm:text-2xl"
+                                                style="font-variant-numeric: tabular-nums;">
+                                                {{ totalPayoutsFormatted }}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-
+                            <!-- /TILES -->
                         </div>
                     </div>
                 </div>
@@ -402,7 +479,7 @@
                     <div class="flex justify-between items-center px-4 py-3">
                         <div class="text-sm text-gray-600">
                             Showing {{ paginatedData.length ? (startIndex + 1) : 0 }}–{{ endIndex }} of {{
-                            paginatedData.length
+                                paginatedData.length
                             }}
                         </div>
                         <div class="flex gap-2">
