@@ -161,6 +161,106 @@
             </div>
         </div>
 
+        <section class="container mx-auto mt-12">
+            <div class="max-w-[80%] mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                <!-- ===== Live Stats (Light + Gradient Accents) ===== -->
+                <div
+                    class="rounded-2xl bg-white/95 backdrop-blur border border-slate-200 shadow-[0_8px_30px_rgba(0,0,0,0.06)]">
+                    <!-- Thin gradient bar -->
+                    <div class="h-1.5 w-full rounded-t-2xl bg-gradient-to-r from-fuchsia-500 via-sky-400 to-cyan-400">
+                    </div>
+
+                    <div class="p-6">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h3 class="text-[18px] font-semibold text-slate-800">Live Staking Stats</h3>
+                                <p class="mt-1 text-xs text-slate-500">Updated {{ lastUpdatedAgo }}</p>
+                            </div>
+                        </div>
+
+                        <!-- 6 metric tiles -->
+                        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Total Staked -->
+                            <div class="rounded-xl border border-slate-200 p-4 bg-white">
+                                <div class="text-xs text-slate-500">Total TKG Staked</div>
+                                <div class="mt-1 text-xl sm:text-2xl font-semibold text-slate-900 break-words">
+                                    {{ totalStakedFormatted }}
+                                </div>
+                            </div>
+
+                            <!-- Active Stakers -->
+                            <div class="rounded-xl border border-slate-200 p-4 bg-white">
+                                <div class="text-xs text-slate-500">Active Stakers</div>
+                                <div class="mt-1 text-2xl font-semibold text-slate-900">
+                                    {{ activeStakersFormatted }}
+                                </div>
+                            </div>
+
+                            <!-- Rewards Paid (24h) -->
+                            <div class="rounded-xl border border-slate-200 p-4 bg-white">
+                                <div class="text-xs text-slate-500">Rewards Paid (24h)</div>
+                                <div class="mt-1 text-2xl font-semibold text-slate-900">
+                                    {{ fmtTKG(rewardsPaid24hTKG) }}
+                                </div>
+                            </div>
+
+                            <!-- Total Payouts -->
+                            <div class="rounded-xl border border-slate-200 p-4 bg-white">
+                                <div class="text-xs text-slate-500">Total Payouts</div>
+                                <div class="mt-1 text-2xl font-semibold text-slate-900">
+                                    {{ totalPayoutsFormatted }}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== APY Tiers (Light Table, Soft Borders) ===== -->
+                <div
+                    class="rounded-2xl bg-white/95 backdrop-blur border border-slate-200 shadow-[0_8px_30px_rgba(0,0,0,0.06)] overflow-hidden">
+                    <div class="h-1.5 w-full rounded-t-2xl bg-gradient-to-r from-fuchsia-500 via-sky-400 to-cyan-400">
+                    </div>
+
+                    <div class="px-6 py-5">
+                        <h3 class="text-[18px] font-semibold text-slate-800">APY Tiers</h3>
+                        <p class="text-sm text-slate-500 mt-1">
+                            Rewards are calculated daily based on your tier.
+                        </p>
+                    </div>
+
+                    <div class="px-6 pb-6">
+                        <div class="overflow-hidden rounded-xl border border-slate-200">
+                            <table class="min-w-full text-left">
+                                <thead class="bg-slate-50/70 text-slate-600">
+                                    <tr class="text-sm">
+                                        <th class="py-3 px-4 font-medium">Tier</th>
+                                        <th class="py-3 px-4 font-medium">Amount Staked (TKG)</th>
+                                        <th class="py-3 px-4 font-medium">APY</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 text-slate-800">
+                                    <tr v-for="tier in apyTiers" :key="tier.tier" class="bg-white hover:bg-slate-50/60">
+                                        <td class="py-3 px-4 font-semibold">Tier {{ tier.tier }}</td>
+                                        <td class="py-3 px-4">{{ tier.range }}</td>
+                                        <td class="py-3 px-4">
+                                            <span
+                                                class="inline-flex items-center rounded-full bg-gradient-to-r from-fuchsia-50 via-sky-50 to-cyan-50 px-2.5 py-0.5 text-sm font-medium text-slate-800 border border-slate-200">
+                                                {{ tier.apy }}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
         <!-- Your Staking History -->
         <section v-if="hasPositions" id="your-stakes" class="container mx-auto mt-16 mb-10">
             <div class="container mx-auto pt-20">
@@ -302,7 +402,7 @@
                     <div class="flex justify-between items-center px-4 py-3">
                         <div class="text-sm text-gray-600">
                             Showing {{ paginatedData.length ? (startIndex + 1) : 0 }}–{{ endIndex }} of {{
-                                paginatedData.length
+                            paginatedData.length
                             }}
                         </div>
                         <div class="flex gap-2">
@@ -370,11 +470,41 @@
             </div>
         </div>
 
+        <section class="container mx-auto mt-16">
+            <div class="w-full max-w-[80%] mx-auto bg-white rounded-2xl shadow-md overflow-hidden">
+                <div class="px-6 py-5 border-b">
+                    <h3 class="text-xl font-semibold">Frequently Asked Questions</h3>
+                </div>
+
+                <div class="divide-y">
+                    <div v-for="(q, idx) in faq" :key="idx" class="group">
+                        <summary
+                            class="flex items-center justify-between cursor-pointer px-6 py-4 text-dark select-none"
+                            @click="toggleFaq(idx)">
+                            <span class="font-medium">{{ q.q }}</span>
+                            <span class="ml-4 h-4 w-4 text-sky-500 transition-transform duration-300"
+                                :class="{ 'rotate-180': openIndex === idx }">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" stroke-width="2" class="h-full w-full">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </span>
+                        </summary>
+
+                        <div v-show="openIndex === idx" class="px-6 pb-5 text-gray-700 leading-relaxed">
+                            <p v-html="q.a"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
         <Footer />
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
 import graph1 from '@/assets/img1.png';
@@ -474,6 +604,7 @@ onMounted(async () => {
 
     await fetchPositions();
     await fetchrewards();
+    await refreshStats();
 });
 
 const existingTkgStaked = computed(() =>
@@ -538,16 +669,16 @@ const estMonthly = computed(() => estDaily.value * 30);   // simple 30-day month
 const estYearly = computed(() => Number(selectedTokens.value) * (projected.value.apy / 100));
 
 // --- Helpers ---
-function fmtTKG(n, digits = 2) {
+function fmtTKG(n) {
     const num = Number(n || 0);
-    return num.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+    return num.toLocaleString(undefined, {
+        maximumFractionDigits: 0,
+    });
 }
 
 async function onSubmit() {
 
     const stakingAssetId = isTestnet ? 2 : 1;
-    console.log(stakingAssetId, isTestnet);
-    
     if (!publicKey) {
         Swal.fire({ icon: "info", title: "Connect Wallet", text: "Please connect your wallet to stake." });
         return;
@@ -831,6 +962,125 @@ async function fetchrewards() {
             title: "Error",
             text: error.response?.data?.message || "Failed to fetch wallet types. Please try again later.",
         });
+    }
+}
+
+const apyTiers = [
+    { tier: 1, range: '1,500 – 9,999', apy: 12 },
+    { tier: 2, range: '10,000 – 49,999', apy: 15 },
+    { tier: 3, range: '50,000 – 99,999', apy: 16 },
+    { tier: 4, range: '100,000+', apy: 18 },
+]
+
+const faq = [
+    {
+        q: "What’s the minimum stake?",
+        a: "You need at least <strong>1,500 TKG</strong> to start earning rewards."
+    },
+    {
+        q: "How often are rewards paid?",
+        a: "Rewards are <strong>distributed every 24 hours</strong>, calculated by your tier at the time of payout."
+    },
+    {
+        q: "Can I unstake anytime?",
+        a: "Yes — you can unstake at any time, and your <strong>TKG tokens will be sent back to your wallet</strong> immediately."
+    },
+    {
+        q: "Is there a fee for unstaking?",
+        a: "There’s <strong>no platform fee</strong> for unstaking. Standard network fees may apply."
+    },
+    {
+        q: "Where do rewards come from?",
+        a: "Rewards are funded from the <strong>35M TKG reserve</strong> allocated for staking sustainability."
+    }
+]
+
+const openIndex = ref<number | null>(null)
+
+function toggleFaq(idx: number) {
+    openIndex.value = openIndex.value === idx ? null : idx
+}
+
+// ====== HELPERS ==
+
+// ---------- Helpers ----------
+function fmtInt(n: number | string | undefined | null, digits = 0) {
+    const num = Number(n ?? 0)
+    return num.toLocaleString(undefined, {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits,
+    })
+}
+
+// ---------- Optional local fallback (remove if not needed) ----------
+// const positions = ref<Array<{ amount: number; wallet?: string }>>([])
+const localTotalStaked = computed(() =>
+    positions.value.reduce((sum, p) => sum + Number(p.amount || 0), 0)
+)
+const localActiveStakers = computed(() => {
+    const wallets = positions.value.map(p => p.wallet ?? `w-${Math.random()}`)
+    return new Set(wallets).size
+})
+
+// ---------- State ----------
+const statsLoading = ref(false)
+const lastUpdated = ref<Date | null>(null)
+const totalStakedTKG = ref(0)
+const activeStakers = ref(0)
+const rewardsPaid24hTKG = ref(0)
+const totalPayouts = ref(0)
+
+// ---------- Formatted values ----------
+const totalStakedFormatted = computed(() =>
+    fmtTKG(totalStakedTKG.value || localTotalStaked.value)
+)
+const activeStakersFormatted = computed(() =>
+    fmtInt(activeStakers.value || localActiveStakers.value)
+)
+const rewardsPaid24hFormatted = computed(() =>
+    fmtTKG(rewardsPaid24hTKG.value)
+)
+const totalPayoutsFormatted = computed(() =>
+    fmtInt(totalPayouts.value)
+)
+
+const lastUpdatedAgo = computed(() => {
+    if (!lastUpdated.value) return 'just now'
+    const diffMs = Date.now() - lastUpdated.value.getTime()
+    const mins = Math.floor(diffMs / 60000)
+    if (mins < 1) return 'just now'
+    if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`
+    const hours = Math.floor(mins / 60)
+    return `${hours} hour${hours === 1 ? '' : 's'} ago`
+})
+
+// ---------- Fetch / refresh ----------
+async function refreshStats() {
+    statsLoading.value = true
+    try {
+        const { data } = await axios.get('/api/global/stats')
+
+        // console.log(data);
+        const s = data?.stats ?? data
+
+
+        totalStakedTKG.value = Number(s?.total_staked ?? 0)
+        activeStakers.value = Number(s?.active_stakers ?? 0)
+        rewardsPaid24hTKG.value = Number(s?.rewards_paid ?? 0)
+        totalPayouts.value = Number(s?.total_payouts ?? 0)
+
+        // fallback if API didn’t return numbers
+        if (!totalStakedTKG.value) totalStakedTKG.value = localTotalStaked.value
+        if (!activeStakers.value) activeStakers.value = localActiveStakers.value
+    } catch (err) {
+        console.error('Failed to load staking stats', err)
+        totalStakedTKG.value = localTotalStaked.value
+        activeStakers.value = localActiveStakers.value
+        rewardsPaid24hTKG.value = 0
+        totalPayouts.value = 0
+    } finally {
+        lastUpdated.value = new Date()
+        statsLoading.value = false
     }
 }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Blockchain;
+use App\Models\Staking;
 use App\Models\StakingReward;
 use App\Models\StellarToken;
 use App\Models\Token;
@@ -267,6 +268,41 @@ class GlobalController extends Controller
         return response()->json([
             'status'         => 'success',
             'stakingreward'  => $out,
+        ]);
+    }
+
+    public function live_staking_stats()
+    {
+        // Total amount currently staked (sum of amounts)
+        $total_staked = Staking::where('is_withdrawn', 0)
+            ->whereNotNull('transaction_id')
+            ->where('staking_status_id', '!=', 4)
+            ->sum('amount');
+
+        // Active stakers (unique wallets, or just count rows)
+        $active_stakers = Staking::where('is_withdrawn', 0)
+            ->whereNotNull('transaction_id')
+            ->where('staking_status_id', '!=', 4)
+            ->distinct('user_id')
+            ->count('user_id');
+
+        // Rewards paid in the last 24h
+        $rewards_paid = StakingReward::where('created_at', '>=', now()->subDay())
+            ->sum('amount');
+
+        // Total payouts ever
+        $total_payouts = StakingReward::sum('amount');
+
+        $stats = [
+            'total_staked'   => (float) $total_staked,
+            'active_stakers' => $active_stakers,
+            'rewards_paid'   => (float) $rewards_paid,
+            'total_payouts'  => (float) $total_payouts,
+        ];
+
+        return response()->json([
+            'status' => 'success',
+            'stats'  => $stats,
         ]);
     }
 

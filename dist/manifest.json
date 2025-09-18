@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-9aee21fb.css",
+    "file": "assets/app-4d6a0f52.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
@@ -15,14 +15,6 @@
   "src/assets/footer-logo.png": {
     "file": "assets/footer-logo-47ce9443.png",
     "src": "src/assets/footer-logo.png"
-  },
-  "src/assets/graph-1-card.png": {
-    "file": "assets/graph-1-card-d1dd035f.png",
-    "src": "src/assets/graph-1-card.png"
-  },
-  "src/assets/graph-2-card.png": {
-    "file": "assets/graph-2-card-b87e8fad.png",
-    "src": "src/assets/graph-2-card.png"
   },
   "src/assets/img1.png": {
     "file": "assets/img1-49d7ec2a.png",
@@ -53,7 +45,7 @@
     "src": "src/assets/wallet.jpg"
   },
   "src/main.css": {
-    "file": "assets/main-23b57c42.css",
+    "file": "assets/main-dd235455.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -69,9 +61,9 @@
       "assets/img2-3db14237.png"
     ],
     "css": [
-      "assets/main-23b57c42.css"
+      "assets/main-dd235455.css"
     ],
-    "file": "assets/main-bceaac83.js",
+    "file": "assets/main-1d344512.js",
     "isEntry": true,
     "src": "src/main.js"
   }
