@@ -140,14 +140,14 @@ onUnmounted(() => {
 const OpenWalletModal = () => { ConnectWalletModals.value = true; };
 
 const Links = [
-  {
-    name: 'About Us',
-    to: '/about-us'
-  },
-  {
-    name: 'Privacy Policy',
-    to: '/privacy-policy'
-  },
+  // {
+  //   name: 'About Us',
+  //   to: '/about-us'
+  // },
+  // {
+  //   name: 'Privacy Policy',
+  //   to: '/privacy-policy'
+  // },
   {
     name: 'Stake',
     to: '/stake'
