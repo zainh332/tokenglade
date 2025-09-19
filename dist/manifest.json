@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-90612f23.css",
+    "file": "assets/app-3dd52a54.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
@@ -45,7 +45,7 @@
     "src": "src/assets/wallet.jpg"
   },
   "src/main.css": {
-    "file": "assets/main-4c44ddbb.css",
+    "file": "assets/main-913758e6.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -61,9 +61,9 @@
       "assets/img2-3db14237.png"
     ],
     "css": [
-      "assets/main-4c44ddbb.css"
+      "assets/main-913758e6.css"
     ],
-    "file": "assets/main-dbe429bc.js",
+    "file": "assets/main-feda1288.js",
     "isEntry": true,
     "src": "src/main.js"
   }
