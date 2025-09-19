@@ -1091,13 +1091,13 @@ function fmtInt(n: number | string | undefined | null, digits = 0) {
 
 // ---------- Optional local fallback (remove if not needed) ----------
 // const positions = ref<Array<{ amount: number; wallet?: string }>>([])
-const localTotalStaked = computed(() =>
-    positions.value.reduce((sum, p) => sum + Number(p.amount || 0), 0)
-)
-const localActiveStakers = computed(() => {
-    const wallets = positions.value.map(p => p.wallet ?? `w-${Math.random()}`)
-    return new Set(wallets).size
-})
+// const localTotalStaked = computed(() =>
+//     positions.value.reduce((sum, p) => sum + Number(p.amount || 0), 0)
+// )
+// const localActiveStakers = computed(() => {
+//     const wallets = positions.value.map(p => p.wallet ?? `w-${Math.random()}`)
+//     return new Set(wallets).size
+// })
 
 // ---------- State ----------
 const statsLoading = ref(false)
@@ -1144,13 +1144,10 @@ async function refreshStats() {
         rewardsPaid24hTKG.value = Number(s?.rewards_paid ?? 0)
         totalPayouts.value = Number(s?.total_payouts ?? 0)
 
-        // fallback if API didn’t return numbers
-        if (!totalStakedTKG.value) totalStakedTKG.value = localTotalStaked.value
-        if (!activeStakers.value) activeStakers.value = localActiveStakers.value
     } catch (err) {
         console.error('Failed to load staking stats', err)
-        totalStakedTKG.value = localTotalStaked.value
-        activeStakers.value = localActiveStakers.value
+        totalStakedTKG.value = 0
+        activeStakers.value = 0
         rewardsPaid24hTKG.value = 0
         totalPayouts.value = 0
     } finally {
