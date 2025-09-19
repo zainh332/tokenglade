@@ -1114,6 +1114,7 @@ const totalStakedFormatted = computed(() =>
 const activeStakersFormatted = computed(() =>
     fmtInt(activeStakers.value)
 )
+
 const totalPayoutsFormatted = computed(() =>
     fmtInt(totalPayouts.value)
 )
