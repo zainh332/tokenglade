@@ -1109,13 +1109,10 @@ const totalPayouts = ref(0)
 
 // ---------- Formatted values ----------
 const totalStakedFormatted = computed(() =>
-    fmtTKG(totalStakedTKG.value || localTotalStaked.value)
+    fmtTKG(totalStakedTKG.value )
 )
 const activeStakersFormatted = computed(() =>
-    fmtInt(activeStakers.value || localActiveStakers.value)
-)
-const rewardsPaid24hFormatted = computed(() =>
-    fmtTKG(rewardsPaid24hTKG.value)
+    fmtInt(activeStakers.value)
 )
 const totalPayoutsFormatted = computed(() =>
     fmtInt(totalPayouts.value)
