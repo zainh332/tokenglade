@@ -235,14 +235,13 @@
                                 </div>
                             </div>
 
-                            <!-- TILE -->
+                            <!-- Rewards Paid 24h TKG -->
                             <div
                                 class="rounded-2xl p-[1px] bg-gradient-to-r from-fuchsia-400/60 via-sky-400/60 to-cyan-400/60">
                                 <div class="rounded-2xl bg-white/95 p-4">
                                     <div class="flex items-center gap-3">
                                         <span class="inline-flex h-9 w-9 items-center justify-center rounded-full
-                         bg-gradient-to-br from-cyan-500 to-fuchsia-500 text-white">
-                                            <!-- gift -->
+                   bg-gradient-to-br from-cyan-500 to-fuchsia-500 text-white">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
                                                 fill="none" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
@@ -250,27 +249,32 @@
                                             </svg>
                                         </span>
 
-                                        <div class="min-w-0">
-                                            <div class="text-[12px] uppercase tracking-wide text-slate-500">Rewards Paid
-                                                (24h)
+                                        <div class="min-w-0 w-full">
+                                            <div class="text-[12px] uppercase tracking-wide text-slate-500">
+                                                Rewards Paid (24h)
                                             </div>
-                                            <div class="mt-0.5 font-semibold text-slate-900 text-xl sm:text-2xl whitespace-nowrap overflow-hidden text-ellipsis"
-                                                style="font-variant-numeric: tabular-nums;">
-                                                {{ fmtTKG(rewardsPaid24hTKG) }}
+
+                                            <!-- value row: number truncates, unit never wraps -->
+                                            <div class="mt-0.5 flex items-baseline gap-1 sm:gap-1.5 text-slate-900">
+                                                <span class="font-semibold text-xl sm:text-2xl truncate"
+                                                    style="font-variant-numeric: tabular-nums;">{{
+                                                    fmtNum(rewardsPaid24hTKG, 2)
+                                                    }}</span>
+                                                <span class="text-sm sm:text-base text-slate-500 shrink-0">TKG</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- TILE -->
+
+                            <!-- Total Payouts -->
                             <div
                                 class="rounded-2xl p-[1px] bg-gradient-to-r from-fuchsia-400/60 via-sky-400/60 to-cyan-400/60">
                                 <div class="rounded-2xl bg-white/95 p-4">
                                     <div class="flex items-center gap-3">
                                         <span class="inline-flex h-9 w-9 items-center justify-center rounded-full
-                         bg-gradient-to-br from-fuchsia-500 to-cyan-500 text-white">
-                                            <!-- receipt -->
+                   bg-gradient-to-br from-fuchsia-500 to-cyan-500 text-white">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
@@ -278,18 +282,22 @@
                                             </svg>
                                         </span>
 
-                                        <div class="min-w-0">
+                                        <div class="min-w-0 w-full">
                                             <div class="text-[12px] uppercase tracking-wide text-slate-500">Total
                                                 Payouts</div>
-                                            <div class="mt-0.5 font-semibold text-slate-900 text-xl sm:text-2xl"
-                                                style="font-variant-numeric: tabular-nums;">
-                                                {{ totalPayoutsFormatted }}
+
+                                            <div class="mt-0.5 flex items-baseline gap-1 sm:gap-1.5 text-slate-900">
+                                                <span class="font-semibold text-xl sm:text-2xl truncate"
+                                                    style="font-variant-numeric: tabular-nums;">{{ fmtNum(totalPayouts,
+                                                    2)
+                                                    }}</span>
+                                                <span class="text-sm sm:text-base text-slate-500 shrink-0">TKG</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <!-- /TILES -->
+                            <!-- /Total Payouts -->
                         </div>
                     </div>
                 </div>
@@ -753,6 +761,14 @@ function fmtTKG(n) {
     });
 }
 
+function fmtNum(n, digits = 2) {
+    const num = Number(n ?? 0)
+    return num.toLocaleString(undefined, {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits,
+    })
+}
+
 async function onSubmit() {
 
     const stakingAssetId = isTestnet ? 2 : 1;
@@ -1109,14 +1125,10 @@ const totalPayouts = ref(0)
 
 // ---------- Formatted values ----------
 const totalStakedFormatted = computed(() =>
-    fmtTKG(totalStakedTKG.value )
+    fmtTKG(totalStakedTKG.value)
 )
 const activeStakersFormatted = computed(() =>
     fmtInt(activeStakers.value)
-)
-
-const totalPayoutsFormatted = computed(() =>
-    fmtInt(totalPayouts.value)
 )
 
 const lastUpdatedAgo = computed(() => {
