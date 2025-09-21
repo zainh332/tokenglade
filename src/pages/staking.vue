@@ -254,13 +254,12 @@
                                                 Rewards Paid (24h)
                                             </div>
 
-                                            <!-- value row: number truncates, unit never wraps -->
+                                            <!-- value row: number, unit never wraps -->
                                             <div class="mt-0.5 flex items-baseline gap-1 sm:gap-1.5 text-slate-900">
-                                                <span class="font-semibold text-xl sm:text-2xl truncate"
+                                                <span class="font-semibold text-xl sm:text-2xl"
                                                     style="font-variant-numeric: tabular-nums;">{{
                                                     fmtNum(rewardsPaid24hTKG, 2)
                                                     }}</span>
-                                                <span class="text-sm sm:text-base text-slate-500 shrink-0">TKG</span>
                                             </div>
                                         </div>
                                     </div>
@@ -287,11 +286,10 @@
                                                 Payouts</div>
 
                                             <div class="mt-0.5 flex items-baseline gap-1 sm:gap-1.5 text-slate-900">
-                                                <span class="font-semibold text-xl sm:text-2xl truncate"
+                                                <span class="font-semibold text-xl sm:text-2xl"
                                                     style="font-variant-numeric: tabular-nums;">{{ fmtNum(totalPayouts,
                                                     2)
                                                     }}</span>
-                                                <span class="text-sm sm:text-base text-slate-500 shrink-0">TKG</span>
                                             </div>
                                         </div>
                                     </div>
