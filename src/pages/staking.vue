@@ -433,7 +433,6 @@
             </div>
         </section>
 
-
         <div class="container mx-auto pt-20">
             <div class="mx-auto">
                 <div class="table-section pb-10">
@@ -473,11 +472,26 @@
                                     </td>
                                     <td class="py-4 px-4 text-dark text-center">
                                         <a v-if="row.transaction" :href="txUrl(row.transaction)" target="_blank"
-                                            rel="noopener noreferrer"
-                                            class="underline text-blue-600 hover:text-blue-800"
-                                            :title="row.transaction">Link</a>
+                                            rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5
+           rounded-full border border-gray-200 bg-gray-100 text-gray-700
+           hover:bg-gray-200 hover:border-gray-300
+           focus:outline-none focus:ring-2 focus:ring-gray-300/60 transition"
+                                            :title="`View transaction ${row.transaction} on the explorer`"
+                                            aria-label="View on Explorer">
+                                            <!-- icon -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
+                                                fill="currentColor" aria-hidden="true">
+                                                <path
+                                                    d="M12.5 3H17v4.5a1 1 0 11-2 0V6.414l-6.793 6.793a1 1 0 01-1.414-1.414L13.586 5H12.5a1 1 0 110-2z" />
+                                                <path
+                                                    d="M5 5h4a1 1 0 110 2H6v7h7v-3a1 1 0 112 0v4a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
+                                            </svg>
+                                            <span class="text-sm font-medium">View on Explorer</span>
+                                            <span class="sr-only"> Tx: {{ row.transaction }}</span>
+                                        </a>
                                         <span v-else>—</span>
                                     </td>
+
                                     <td class="py-4 px-4 text-dark text-center">
                                         {{ fmtDate(row.at) }}
                                     </td>
@@ -490,7 +504,7 @@
                     <div class="flex justify-between items-center px-4 py-3">
                         <div class="text-sm text-gray-600">
                             Showing {{ paginatedData.length ? (startIndex + 1) : 0 }}–{{ endIndex }} of {{
-                            paginatedData.length
+                                paginatedData.length
                             }}
                         </div>
                         <div class="flex gap-2">
@@ -501,63 +515,62 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
+        <section class="container mx-auto mt-16 py-10 ">
+            <div class="w-full max-w-[80%] mx-auto bg-white rounded-2xl shadow-md overflow-hidden text-center">
+                <h2 class="text-3xl font-bold mb-2 mt-8">How Staking Works</h2>
+                <p class="text-sm text-gray-600 mb-10">Earn rewards every 24 hours by staking $TKG</p>
 
-                <div class="mt-20 pt-20 mb-20 w-full max-w-[80%] mx-auto">
-                    <div class="flex flex-col md:flex-row justify-center gap-10 md:gap-20">
-                        <!-- Text Column -->
-                        <div class="md:w-1/2 p-4 text-center md:text-left">
-                            <h1
-                                class="text-[32px] sm:text-[48px] lg:text-[64px] font-normal leading-tight text-dark mb-3">
-                                <span class="block text-[36px] font-semibold bg-dark leading-[1.4]">
-                                    Don’t just hold, Make your tokens work
-                                </span>
-                            </h1>
-                            <p class="text-[18px] sm:text-[20px] mt-4 text-dark max-w-xl mx-auto lg:mx-0 leading-[1.7]">
-                                With TokenGlade’s staking module, earn
-                                <strong>daily passive rewards</strong> and climb tiers for even higher APY.
-                                Up to <strong>18% annually</strong>, designed to reward conviction and long-term
-                                believers.
-                                Backed by a <strong>35M TKG reserve</strong>, staking is built to be sustainable and
-                                rewarding for years to come.
-                            </p>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-10 max-w-6xl mx-auto px-6 md:px-0 pb-10">
+                    <!-- Step 1: Connect Wallet -->
+                    <div class="flex flex-col items-center">
+                        <div class="bg-green-100 p-4 rounded-full mb-4 animate-pulseSoft">
+                            <img :src="Wallet" alt="Connect Wallet" class="w-12 h-12" />
                         </div>
-
-                        <!-- Image Column -->
-                        <div class="md:w-1/2 p-4 flex flex-col items-center md:items-end justify-center gap-6">
-                            <img class="w-full max-w-md h-auto rounded-lg" :src="graph1" alt="graph-1" />
-                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Connect Wallet</h3>
+                        <p class="text-dark text-sm">
+                            Connect your Stellar wallet to TokenGlade<br />
+                        </p>
                     </div>
-                </div>
 
-                <div class="w-full max-w-[80%] mx-auto">
-                    <div class="flex flex-col md:flex-row justify-center gap-10 md:gap-20">
-                        <!-- Image Column -->
-                        <div class="md:w-1/2 p-4 flex flex-col items-center md:items-end justify-center gap-6">
-                            <img class="w-full max-w-md h-auto rounded-lg" :src="graph2" alt="graph-2" />
+                    <!-- Step 2: Start Staking -->
+                    <div class="flex flex-col items-center">
+                        <div class="bg-blue-100 p-4 rounded-full mb-4 animate-pulseSoft">
+                            <img :src="Coin" alt="Start Staking" class="w-12 h-12" />
                         </div>
+                        <h3 class="text-xl font-semibold mb-2">Start Staking</h3>
+                        <p class="text-dark text-sm">
+                            Choose the amount of <strong>TKG</strong> to stake and confirm<br />
+                        </p>
+                    </div>
 
-                        <!-- Text Column -->
-                        <div class="md:w-1/2 p-4 text-center md:text-left">
-                            <h1
-                                class="text-[32px] sm:text-[48px] lg:text-[64px] font-normal leading-tight text-dark mb-3">
-                                <span class="block text-[36px] font-semibold bg-dark leading-[1.4]">
-                                    TokenGlade — Built for Speed & Reliability
-                                </span>
-                            </h1>
-                            <p class="text-[18px] sm:text-[20px] mt-4 text-dark max-w-xl mx-auto lg:mx-0 leading-[1.7]">
-                                Powered by the <strong>Stellar Blockchain</strong>, TokenGlade delivers lightning-fast
-                                transactions and near-zero fees.
-                                From staking to transfers, every action is seamless, secure, and efficient.
-                                Stellar’s proven infrastructure makes TokenGlade a <strong>future-ready
-                                    platform</strong> built
-                                to scale with global demand.
-                            </p>
+                    <!-- Step 3: Rewards Every 24h -->
+                    <div class="flex flex-col items-center">
+                        <div class="bg-yellow-100 p-4 rounded-full mb-4 animate-pulseSoft">
+                            <img :src="reward" alt="Rewards" class="w-12 h-12" />
                         </div>
+                        <h3 class="text-xl font-semibold mb-2">Earn Rewards (24h)</h3>
+                        <p class="text-dark text-sm">
+                            Rewards will be distributed every <strong>24 hours</strong>
+                        </p>
+                    </div>
+
+                    <!-- Step 4: Unstake Anytime -->
+                    <div class="flex flex-col items-center">
+                        <div class="bg-rose-100 p-4 rounded-full mb-4 animate-pulseSoft">
+                            <img :src="stop" alt="Unstake Anytime" class="w-12 h-12" />
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Unstake Anytime</h3>
+                        <p class="text-dark text-sm">
+                            Stop staking whenever you like<br />
+                        </p>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
+
 
         <section class="container mx-auto mt-16">
             <div class="w-full max-w-[80%] mx-auto bg-white rounded-2xl shadow-md overflow-hidden">
@@ -605,6 +618,10 @@ import { checkTkgBalance, getCookie, updateLoader, apiHeaders, shortMiddle, stat
 import Swal from "sweetalert2";
 import axios from "axios";
 import { signTransaction } from "@stellar/freighter-api";
+import Coin from "@/assets/coin.png";
+import reward from "@/assets/reward.png";
+import Wallet from "@/assets/wallet.jpg";
+import stop from "@/assets/stop.png";
 
 // ---------------------
 // Slider state (0 → 100)

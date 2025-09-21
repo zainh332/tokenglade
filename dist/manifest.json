@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-aeabd4bf.css",
+    "file": "assets/app-b151bc71.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
@@ -16,14 +16,6 @@
     "file": "assets/footer-logo-47ce9443.png",
     "src": "src/assets/footer-logo.png"
   },
-  "src/assets/img1.png": {
-    "file": "assets/img1-49d7ec2a.png",
-    "src": "src/assets/img1.png"
-  },
-  "src/assets/img2.png": {
-    "file": "assets/img2-3db14237.png",
-    "src": "src/assets/img2.png"
-  },
   "src/assets/lights.png": {
     "file": "assets/lights-c425c569.png",
     "src": "src/assets/lights.png"
@@ -36,6 +28,14 @@
     "file": "assets/phone-592dc7ab.png",
     "src": "src/assets/phone.png"
   },
+  "src/assets/reward.png": {
+    "file": "assets/reward-41a90c65.png",
+    "src": "src/assets/reward.png"
+  },
+  "src/assets/stop.png": {
+    "file": "assets/stop-982e1938.png",
+    "src": "src/assets/stop.png"
+  },
   "src/assets/token-glade-logo.png": {
     "file": "assets/token-glade-logo-14ce1d6b.png",
     "src": "src/assets/token-glade-logo.png"
@@ -45,7 +45,7 @@
     "src": "src/assets/wallet.jpg"
   },
   "src/main.css": {
-    "file": "assets/main-65356d55.css",
+    "file": "assets/main-e24c2978.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -57,13 +57,13 @@
       "assets/coin-ab4d3c39.png",
       "assets/phone-592dc7ab.png",
       "assets/wallet-3292a01f.jpg",
-      "assets/img1-49d7ec2a.png",
-      "assets/img2-3db14237.png"
+      "assets/reward-41a90c65.png",
+      "assets/stop-982e1938.png"
     ],
     "css": [
-      "assets/main-65356d55.css"
+      "assets/main-e24c2978.css"
     ],
-    "file": "assets/main-7d1d739b.js",
+    "file": "assets/main-56c37bf8.js",
     "isEntry": true,
     "src": "src/main.js"
   }
