@@ -69,17 +69,26 @@
       </div>
     </div>
 
-    <DisclosurePanel class="lg:hidden">
-      <div class="pt-5 pb-20 space-y-1 bg-white ">
-        <router-link v-for="link in Links" :key="link.name" :to="link.to"
-          class="block py-2 pl-3 pr-4 text-base font-medium text-gray-500 border-l-4 border-transparent hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700">
-          {{ link.name }}
-        </router-link>
-        <!-- Add Connect Wallet button for mobile -->
-      <button id="walletConnected" @click="OpenWalletModal" type="submit"
-        class="w-full px-4 py-2 mt-2 text-base font-medium text-white rounded-md bg-gradient hover:bg-blue-700">
-        Connect Wallet
-      </button>
+    <DisclosurePanel class="lg:hidden fixed inset-x-0 top-[calc(1rem+5rem)] z-50 w-screen">
+      <div class="bg-white shadow-xl">
+        <div class="max-w-6xl mx-auto px-4 py-3">
+          <!-- render both internal + external links -->
+          <template v-for="link in Links" :key="link.name">
+            <router-link v-if="link.to" :to="link.to"
+              class="block py-3 px-3 text-base font-medium text-gray-800 hover:bg-gray-50 rounded-lg">
+              {{ link.name }}
+            </router-link>
+            <a v-else :href="link.href" target="_blank" rel="noopener noreferrer"
+              class="block py-3 px-3 text-base font-medium text-gray-800 hover:bg-gray-50 rounded-lg">
+              {{ link.name }}
+            </a>
+          </template>
+
+          <button id="walletConnected" @click="OpenWalletModal" type="button" class="w-full py-3 mt-2 text-base font-medium text-white rounded-lg
+               bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]">
+            Connect Wallet
+          </button>
+        </div>
       </div>
     </DisclosurePanel>
   </Disclosure>
@@ -108,15 +117,14 @@ const emit = defineEmits(['wallet-status']);
 
 const isConnected = computed(() => !!walletPk.value)
 
-// Scroll hide/show functionality
 const hideHeader = ref(false);
 let lastScrollY = 0;
 
 const handleScroll = () => {
   if (window.scrollY > lastScrollY && window.scrollY > 20) {
-    hideHeader.value = true; // scrolling down → hide
+    hideHeader.value = true;
   } else {
-    hideHeader.value = false; // scrolling up → show
+    hideHeader.value = false;
   }
   lastScrollY = window.scrollY;
 };
@@ -140,14 +148,6 @@ onUnmounted(() => {
 const OpenWalletModal = () => { ConnectWalletModals.value = true; };
 
 const Links = [
-  // {
-  //   name: 'About Us',
-  //   to: '/about-us'
-  // },
-  // {
-  //   name: 'Privacy Policy',
-  //   to: '/privacy-policy'
-  // },
   {
     name: 'Stake',
     to: '/stake'
