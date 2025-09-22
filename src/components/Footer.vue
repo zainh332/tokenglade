@@ -9,6 +9,9 @@
     <div class="flex flex-wrap items-center justify-center max-w-sm gap-6 mx-auto my-8">
       <router-link class="font-normal text-t14" to="/">Home</router-link>
       <router-link class="font-normal text-t14" to="/about-us">About us</router-link>
+      <a href="/whitepaper.pdf" target="_blank" rel="noopener" class="font-normal text-t14">
+        Whitepaper
+      </a>
     </div>
 
     <!-- Logos -->
