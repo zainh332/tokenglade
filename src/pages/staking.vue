@@ -52,8 +52,6 @@
                                 </p>
                             </div>
 
-                            <!-- If balance >= 1500: show staking fields -->
-                            <!-- <template v-if="!loadingBalance && hasMinBalance"> -->
                             <!-- Range -->
                             <div class="relative w-full">
                                 <div class="flex items-center justify-between mb-1">
@@ -180,7 +178,6 @@
                             <span class="text-xs text-slate-500">Updated {{ lastUpdatedAgo }}</span>
                         </div>
 
-                        <!-- 2x2 grid -->
                         <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <!-- TILE -->
                             <div
@@ -202,9 +199,10 @@
                                             <div class="text-[12px] uppercase tracking-wide text-slate-500">Total TKG
                                                 Staked
                                             </div>
-                                            <div class="mt-0.5 font-semibold text-slate-900 text-xl sm:text-2xl whitespace-nowrap overflow-hidden text-ellipsis"
+                                            <div class="mt-0.5 font-semibold text-slate-900 text-xl sm:text-2xl"
                                                 style="font-variant-numeric: tabular-nums;">
-                                                {{ totalStakedFormatted }}
+                                                <span v-if="totalStakedTKG === null">Loading...</span>
+                                                <span v-else>{{ totalStakedFormatted }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -231,7 +229,8 @@
                                                 Stakers</div>
                                             <div class="mt-0.5 font-semibold text-slate-900 text-xl sm:text-2xl"
                                                 style="font-variant-numeric: tabular-nums;">
-                                                {{ activeStakersFormatted }}
+                                                <span v-if="activeStakers === null">Loading...</span>
+                                                <span v-else>{{ activeStakersFormatted }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -259,10 +258,11 @@
 
                                             <!-- value row: number, unit never wraps -->
                                             <div class="mt-0.5 flex items-baseline gap-1 sm:gap-1.5 text-slate-900">
-                                                <span class="font-semibold text-xl sm:text-2xl"
-                                                    style="font-variant-numeric: tabular-nums;">{{
-                                                        fmtNum(rewardsPaid24hTKG, 2)
-                                                    }}</span>
+                                                <div class="mt-0.5 font-semibold text-slate-900 text-xl sm:text-2xl"
+                                                    style="font-variant-numeric: tabular-nums;">
+                                                    <span v-if="rewards24hFormatted === null">Loading...</span>
+                                                    <span v-else>{{ rewards24hFormatted }}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -289,10 +289,11 @@
                                                 Payouts</div>
 
                                             <div class="mt-0.5 flex items-baseline gap-1 sm:gap-1.5 text-slate-900">
-                                                <span class="font-semibold text-xl sm:text-2xl"
-                                                    style="font-variant-numeric: tabular-nums;">{{ fmtNum(totalPayouts,
-                                                        2)
-                                                    }}</span>
+                                                <div class="mt-0.5 font-semibold text-slate-900 text-xl sm:text-2xl"
+                                                    style="font-variant-numeric: tabular-nums;">
+                                                    <span v-if="totalPayoutsFormatted === null">Loading...</span>
+                                                    <span v-else>{{ totalPayoutsFormatted }}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -455,14 +456,14 @@
                             </thead>
                             <tbody>
                                 <tr v-if="pageRows.length === 0">
-                                    <td colspan="4" class="py-6 text-center text-gray-500">No rewards yet.</td>
+                                    <td colspan="4" class="py-6 text-center text-gray-500">Loading rewards</td>
                                 </tr>
 
                                 <tr v-for="(row, index) in pageRows" :key="index"
                                     class="bg-white border-b border-[#EBEBEB]">
                                     <td class="py-4 px-4 text-dark text-center">
                                         <span :title="row.wallet_address">{{ shortMiddle(row.wallet_address, 6, 6)
-                                            }}</span>
+                                        }}</span>
                                     </td>
                                     <td class="py-4 px-4">
                                         <span
@@ -609,11 +610,7 @@
 <script setup lang="ts">
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
-import graph1 from '@/assets/img1.png';
-import graphCard1 from '@/assets/graph-1-card.png';
-import graph2 from '@/assets/img2.png';
-import graphCard2 from '@/assets/graph-2-card.png';
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { checkTkgBalance, getCookie, updateLoader, apiHeaders, shortMiddle, statusClass } from "../utils/utils.js";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -677,6 +674,14 @@ const totalPages = computed(() => Math.max(1, Math.ceil(paginatedData.value.leng
 
 const pageRows = computed(() => paginatedData.value.slice(startIndex.value, endIndex.value));
 
+const prevPage = () => {
+    if (currentPage.value > 1) currentPage.value--;
+};
+
+const nextPage = () => {
+    if (currentPage.value < totalPages.value) currentPage.value++;
+};
+
 // const raw = import.meta.env.VITE_STELLAR_ENVIRONMENT ?? 'public';
 // const network = String(raw).trim().toLowerCase() === 'testnet' ? 'testnet' : 'public';
 const network = 'public';
@@ -711,6 +716,10 @@ onMounted(async () => {
     await fetchPositions();
     await fetchrewards();
     await refreshStats();
+});
+
+watch(paginatedData, () => {
+    currentPage.value = 1;
 });
 
 const existingTkgStaked = computed(() =>
@@ -773,22 +782,6 @@ const projected = computed(() => tierAndApy(projectedTotal.value)); // { tier, a
 const estDaily = computed(() => Number(selectedTokens.value) * (projected.value.apy / 100) / 365);
 const estMonthly = computed(() => estDaily.value * 30);   // simple 30-day month
 const estYearly = computed(() => Number(selectedTokens.value) * (projected.value.apy / 100));
-
-// --- Helpers ---
-function fmtTKG(n) {
-    const num = Number(n || 0);
-    return num.toLocaleString(undefined, {
-        maximumFractionDigits: 0,
-    });
-}
-
-function fmtNum(n, digits = 2) {
-    const num = Number(n ?? 0)
-    return num.toLocaleString(undefined, {
-        minimumFractionDigits: digits,
-        maximumFractionDigits: digits,
-    })
-}
 
 async function onSubmit() {
 
@@ -977,13 +970,6 @@ function formatDate(d) {
     return Number.isNaN(dt.getTime()) ? '-' : dt.toLocaleDateString();
 }
 
-// function lockProgress(pos) {
-//   const s = new Date(pos.start_at), u = new Date(pos.unlock_at), now = new Date();
-//   if (isNaN(+s) || isNaN(+u) || u <= s) return 0;
-//   return Math.min(100, Math.max(0, ((now - s) / (u - s)) * 100)).toFixed(0);
-// }
-
-
 async function fetchPositions() {
     if (!publicKey) return;
     try {
@@ -1041,8 +1027,6 @@ async function unstake(pos) {
         unstaking.value[pos.id] = false;
     }
 }
-
-
 
 function fmtDate(d) {
     if (!d) return '—';
@@ -1115,42 +1099,38 @@ function toggleFaq(idx: number) {
     openIndex.value = openIndex.value === idx ? null : idx
 }
 
-// ====== HELPERS ==
-
-// ---------- Helpers ----------
-function fmtInt(n: number | string | undefined | null, digits = 0) {
-    const num = Number(n ?? 0)
-    return num.toLocaleString(undefined, {
-        minimumFractionDigits: digits,
-        maximumFractionDigits: digits,
-    })
+// --- Helpers ---
+function fmtNum(n: number | string | null | undefined, digits = 0) {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return null; // signal "no value"
+  return Number(n).toLocaleString(undefined, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  });
 }
 
-// ---------- Optional local fallback (remove if not needed) ----------
-// const positions = ref<Array<{ amount: number; wallet?: string }>>([])
-// const localTotalStaked = computed(() =>
-//     positions.value.reduce((sum, p) => sum + Number(p.amount || 0), 0)
-// )
-// const localActiveStakers = computed(() => {
-//     const wallets = positions.value.map(p => p.wallet ?? `w-${Math.random()}`)
-//     return new Set(wallets).size
-// })
+function fmtInt(n: number | string | null | undefined, digits = 0) {
+  return fmtNum(n, digits);
+}
+
+
+function fmtTKG(n: number | string | null | undefined, digits = 2) {
+  const val = fmtNum(n, digits);
+  return val === null ? null : `${val}`;
+}
 
 // ---------- State ----------
 const statsLoading = ref(false)
 const lastUpdated = ref<Date | null>(null)
-const totalStakedTKG = ref(0)
-const activeStakers = ref(0)
-const rewardsPaid24hTKG = ref(0)
-const totalPayouts = ref(0)
+const totalStakedTKG = ref<number | null>(null)
+const activeStakers = ref<number | null>(null)
+const rewardsPaid24hTKG = ref<number | null>(null)
+const totalPayouts = ref<number | null>(null)
 
 // ---------- Formatted values ----------
-const totalStakedFormatted = computed(() =>
-    fmtTKG(totalStakedTKG.value)
-)
-const activeStakersFormatted = computed(() =>
-    fmtInt(activeStakers.value)
-)
+const totalStakedFormatted = computed(() => fmtTKG(totalStakedTKG.value, 2));
+const activeStakersFormatted = computed(() => fmtInt(activeStakers.value));
+const rewards24hFormatted    = computed(() => fmtTKG(rewardsPaid24hTKG.value, 2));
+const totalPayoutsFormatted  = computed(() => fmtTKG(totalPayouts.value, 2));
 
 const lastUpdatedAgo = computed(() => {
     if (!lastUpdated.value) return 'just now'
@@ -1163,26 +1143,25 @@ const lastUpdatedAgo = computed(() => {
 })
 
 // ---------- Fetch / refresh ----------
+const statsError = ref(false);
+
 async function refreshStats() {
-    statsLoading.value = true
-    try {
-        const { data } = await axios.get('/api/global/stats')
-
-        // console.log(data);
-        const s = data?.stats ?? data
-
-
-        totalStakedTKG.value = Number(s?.total_staked ?? 0)
-        activeStakers.value = Number(s?.active_stakers ?? 0)
-        rewardsPaid24hTKG.value = Number(s?.rewards_paid ?? 0)
-        totalPayouts.value = Number(s?.total_payouts ?? 0)
-
-    } catch (err) {
-        console.error('Failed to load staking stats', err)
-        totalStakedTKG.value = 0
-        activeStakers.value = 0
-        rewardsPaid24hTKG.value = 0
-        totalPayouts.value = 0
+  statsLoading.value = true;
+  statsError.value = false;
+  try {
+    const { data } = await axios.get('/api/global/stats');
+    const s = data?.stats ?? data
+    totalStakedTKG.value   = Number(s?.total_staked   ?? 0);
+    activeStakers.value    = Number(s?.active_stakers ?? 0);
+    rewardsPaid24hTKG.value= Number(s?.rewards_paid   ?? 0);
+    totalPayouts.value     = Number(s?.total_payouts  ?? 0);
+  } catch (err) {
+    console.error('Failed to load staking stats', err)
+    totalStakedTKG.value    = null
+    activeStakers.value     = null
+    rewardsPaid24hTKG.value = null
+    totalPayouts.value      = null
+    statsError.value = true;
     } finally {
         lastUpdated.value = new Date()
         statsLoading.value = false
