@@ -682,12 +682,8 @@ const nextPage = () => {
     if (currentPage.value < totalPages.value) currentPage.value++;
 };
 
-// const raw = import.meta.env.VITE_STELLAR_ENVIRONMENT ?? 'public';
-// const network = String(raw).trim().toLowerCase() === 'testnet' ? 'testnet' : 'public';
-const network = 'public';
+const network = 'testnet';
 const isTestnet = network === 'testnet';
-console.log('[ENV] VITE_STELLAR_ENVIRONMENT =', isTestnet);
-
 const explorerBase = `https://stellar.expert/explorer/${isTestnet ? 'testnet' : 'public'}`;
 
 const txUrl = (tx) => `${explorerBase}/tx/${encodeURIComponent(tx)}`;
@@ -854,63 +850,78 @@ async function onSubmit() {
 }
 
 async function signXdr(xdr, staking_id, testnet) {
-    let active = localStorage.getItem("wallet_key");
+  if (typeof xdr !== 'string' || !/^[A-Za-z0-9+/=]+$/.test(xdr)) {
+    Swal.fire({ icon:'error', title:'Invalid XDR', text:'Unsigned XDR is not a base64 envelope.' });
+    throw new Error('unsigned XDR not base64');
+  }
 
-    switch (active) {
-        case "rabet":
-            rabet
-                .sign(xdr, testnet ? "testnet" : "mainnet")
-                .then(function (result) {
-                    const xdr = result.xdr;
-                    submitStakingXdr(xdr, staking_id);
-                })
-                .catch(function (error) {
-                    // toastr.error("Rejected!", "Rabbet Wallet");
-                });
-            break;
+  const net = {
+    freighter: testnet ? 'TESTNET' : 'PUBLIC',
+    albedo:    testnet ? 'testnet' : 'public',
+    rabet:     testnet ? 'testnet' : 'mainnet',
+    xbull:     testnet ? 'testnet' : 'public'
+  };
 
-        case "freighter":
-            await signTransaction(xdr, testnet ? "TESTNET" : "PUBLIC")
-                .then(function (result) {
-                    const xdr = result;
-                    submitStakingXdr(xdr, staking_id);
-                })
-                .catch(function (error) {
-                    // toastr.error("Rejected!", "Freighter Wallet");
-                });
-            break;
+  const active = (localStorage.getItem('wallet_key') || '').toLowerCase();
 
-        case "albeto":
-            albedo
-                .tx({
-                    xdr: xdr,
-                    network: "public",
-                })
-                .then(function (result) {
-                    const xdr = result.signed_envelope_xdr;
-                    if (!xdr) {
-                        console.error("Albedo did not return a signed XDR");
-                        return;
-                    }
-                    submitStakingXdr(xdr, staking_id);
-                })
-                .catch(function (error) {
-                    console.error("Albedo Wallet Error:", error);
-                    // toastr.error("Rejected!", "Albeto Wallet");
-                });
+  switch (active) {
+    case 'rabet': {
+      try {
+        const result = await rabet.sign(xdr, net.rabet);
+        await submitStakingXdr(result.xdr, staking_id);
+      } catch (e) {
+        Swal.fire({ icon:'error', title:'Rabet', text:'Signing was rejected or failed.' });
+        throw e;
+      }
+      return;
+    }
 
-            break;
-        case "xbull":
-            xBullSDK
-                .signXDR(xdr)
-                .then(function (result) {
-                    const xdr = result;
-                    submitStakingXdr(xdr, staking_id);
-                })
-                .catch(function (error) {
-                    // toastr.error("Rejected!", "xBull Wallet");
-                });
-            break;
+    case 'freighter': {
+      try {
+        const signed = await signTransaction(xdr, net.freighter);
+        await submitStakingXdr(signed, staking_id);
+      } catch (e) {
+        Swal.fire({ icon:'error', title:'Freighter', text:'Signing was rejected or failed.' });
+        throw e;
+      }
+      return;
+    }
+
+    case 'albedo': {
+      try {
+        const res = await window.albedo.tx({
+          xdr,                 
+          network: net.albedo
+        });
+        
+        const signedXdr = res.signed_envelope_xdr;
+        
+        if (!signedXdr) {
+          Swal.fire({ icon:'error', title:'Albedo', text:'No signed XDR returned.' });
+          return;
+        }
+        await submitStakingXdr(signedXdr, staking_id);
+      } catch (err) {
+        const msg = (err && (err.message || err.error || err.code)) || '';
+        const hint = /cancel|denied|not selected/i.test(msg)
+          ? 'Request cancelled. Open Albedo, select an account, and try again.'
+          : 'Could not sign the transaction.';
+        Swal.fire({ icon:'error', title:'Albedo', text:hint });
+        throw err;
+      }
+      return;
+    }
+
+    case 'xbull': {
+      try {
+        const result = await xBullSDK.signXDR(xdr);
+        await submitStakingXdr(result, staking_id);
+      } catch (e) {
+        Swal.fire({ icon:'error', title:'xBull', text:'Signing was rejected or failed.' });
+        throw e;
+      }
+      return;
+    }
         default:
             throw new Error("No wallet selected. Connect a wallet first.");
     }

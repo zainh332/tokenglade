@@ -238,13 +238,13 @@ async function storeWallet(publicKey, walletTypeId, walletKey, blockchainTypeId)
       {
         public_key: publicKey,
         wallet_type_id: walletTypeId,
-        wallet_key: walletKey,           // only if your API expects it
+        wallet_key: walletKey || null,
         blockchain_id: blockchainTypeId,
       },
       { headers: apiHeaders(), withCredentials: true }
     );
 
-    const { status, data } = resp;
+    const { data } = resp;
 
     if (data?.status === 'success') {
       // mark connected
@@ -285,6 +285,10 @@ function hasRabet() {
     return typeof window !== "undefined" && !!window.rabet;
 }
 
+function hasAlbedo() {
+  return typeof window !== "undefined" && !!window.albedo && typeof window.albedo.publicKey === "function";
+}
+
 async function connectWallet(wallet) {
     const candidate =
         typeof wallet === "string" ? wallet : selectedWallet.value;
@@ -320,6 +324,28 @@ async function connectWallet(wallet) {
                 return { publicKey: res.publicKey, wallet: "rabet" };
             } catch {
                 throw new Error("Rabet connection rejected");
+            }
+        }
+        case "albedo": {
+            if (!hasAlbedo()) throw new Error("Albedo SDK not loaded");
+            try {
+                const res = await window.albedo.publicKey({ network: 'testnet' });
+                if (!res?.pubkey) throw new Error('No public key returned');
+                return {
+                    publicKey: res.pubkey,
+                    wallet: "albedo",
+                    proof: {
+                        token: res.token,
+                        signed_message: res.signed_message,
+                        signature: res.signature,
+                    },
+                };
+            } catch (e) {
+                const msg = (e && (e.message || e.error || e.code)) || '';
+                const hint = /not selected|cancel|denied/i.test(msg)
+                    ? 'Open Albedo and select (or create) an account, then try again.'
+                    : 'Could not get a public key.';
+                Swal.fire({ icon: 'error', title: 'Albedo', text: hint });
             }
         }
         default:

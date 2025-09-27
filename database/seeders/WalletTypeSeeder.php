@@ -29,9 +29,14 @@ class WalletTypeSeeder extends Seeder
                 'status' => 1,
                 'blockchain_id' => 1,
             ],
+            [
+                'name' => 'Albedo',
+                'key' => 'albedo',
+                'status' => 1,
+                'blockchain_id' => 1,
+            ],
         ];
 
-        // Insert wallet types into the database
         foreach ($wallets as $wallet) {
             WalletType::create($wallet);
         }
