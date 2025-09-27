@@ -45,7 +45,7 @@
     "src": "src/assets/wallet.jpg"
   },
   "src/main.css": {
-    "file": "assets/main-4d5341c7.css",
+    "file": "assets/main-d87eaee0.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -61,9 +61,9 @@
       "assets/stop-982e1938.png"
     ],
     "css": [
-      "assets/main-4d5341c7.css"
+      "assets/main-d87eaee0.css"
     ],
-    "file": "assets/main-101c1042.js",
+    "file": "assets/main-40ae13b7.js",
     "isEntry": true,
     "src": "src/main.js"
   }
