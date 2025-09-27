@@ -913,13 +913,15 @@ async function signXdr(xdr, staking_id, testnet) {
     }
 
     case 'xbull': {
-      try {
+    //   try {
         const result = await xBullSDK.signXDR(xdr);
+        console.log(result);
+        
         await submitStakingXdr(result, staking_id);
-      } catch (e) {
-        Swal.fire({ icon:'error', title:'xBull', text:'Signing was rejected or failed.' });
-        throw e;
-      }
+    //   } catch (e) {
+    //     Swal.fire({ icon:'error', title:'xBull', text:'Signing was rejected or failed.' });
+    //     throw e;
+    //   }
       return;
     }
         default:
