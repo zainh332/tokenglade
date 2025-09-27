@@ -1,7 +1,6 @@
 
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "./pages/Home.vue";
-import TokenGenerator from "./pages/TokenGenerator.vue";
 import TokenTransfer from "./pages/TokenTransfer.vue";
 import ClaimableBalance from "./pages/ClaimableBalance.vue";
 import ReclaimClaimableBalance from "./pages/ReclaimClaimableBalance.vue";
@@ -9,6 +8,7 @@ import TomlFileGenerator from "./pages/TomlFileGenerator.vue";
 import aboutus from "./pages/about-us.vue";
 import privacypolicy from "./pages/privacy-policy.vue";
 import termsofservice from "./pages/terms-of-service.vue";
+import Staking from "./pages/Staking.vue";
 
 function hasRequiredCookies() {
     const public_key = getCookie('public_key');
@@ -32,21 +32,6 @@ const routes = [
             description: "TokenGlade is a no-code platform that lets you create and launch tokens instantly on the Stellar blockchain. More blockchains like Ripple and Ethereum coming soon. Fast, secure, and developer-free token generation."
         },
     },
-    // {
-    //     path: "/token-generator",
-    //     component: TokenGenerator,
-    //     meta: {
-    //         title: "Token Generator",
-    //         description: "Create custom tokens effortlessly with TokenGlade's intuitive token generator. Make your mark in the token economy on the Stellar blockchain."
-    //     },
-    //     beforeEnter: (to, from, next) => {
-    //         if (hasRequiredCookies()) {
-    //             next(); // allow access if cookies exist
-    //         } else {
-    //             next('/'); // redirect to home page if cookies are missing
-    //         }
-    //     }
-    // },
     // {
     //     path: "/claimable-balance",
     //     component: ClaimableBalance,
@@ -99,6 +84,14 @@ const routes = [
         meta: {
             title: "Terms of Service — TokenGlade",
             description: "Read the Terms of Service for TokenGlade. Understand your rights, responsibilities, and the rules that govern the use of our blockchain token generation platform."
+        },
+    },
+    {
+        path: "/stake",
+        component: Staking,
+        meta: {
+            title: "Stake $TKG Tokens",
+            description: ""
         },
     },
 ];

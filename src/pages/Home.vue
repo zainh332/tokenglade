@@ -2,13 +2,16 @@
   <div>
     <Header @wallet-status="handleWalletStatus" />
     <div>
-      <div class="container mx-auto py-10">
+      <div class="container mx-auto pt-[8rem] pb-10 relative top-0 z-0">
         <div class="flex flex-col lg:flex-row items-center justify-between gap-12">
           <!-- Text Content -->
           <div class="text-center mx-auto lg:text-left max-w-3xl">
             <h1 class="text-[32px] sm:text-[48px] lg:text-[64px] font-normal leading-tight text-dark">
               Effortless Blockchain
-              <span class="block font-semibold">Token Creation</span>
+              <span
+                class="block font-semibold bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]  bg-clip-text text-transparent  bg-[length:200%_200%]  animate-gradientMove">
+                Token Creation
+              </span>
             </h1>
             <p class="text-[18px] sm:text-[20px] mt-4 text-dark max-w-xl mx-auto lg:mx-0">
               Easily generate blockchain tokens across multiple networks with our intuitive platform.
@@ -37,7 +40,7 @@
           </div>
 
           <!-- Image -->
-          <div class="hidden lg:block flex-shrink-0">
+          <div class="hidden lg:block flex-shrink-0 animate-float">
             <img class="w-[340px] h-[400px] xl:w-[500px] object-contain" :src="flower" alt="Decorative Flower" />
           </div>
         </div>
@@ -51,7 +54,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
           <!-- Step 1 -->
           <div class="flex flex-col items-center">
-            <div class="bg-blue-100 p-4 rounded-full mb-4">
+            <div class="bg-blue-100 p-4 rounded-full mb-4 animate-pulseSoft">
               <img :src="Phone" alt="Choose Blockchain" class="w-12 h-12" />
             </div>
             <h3 class="text-xl font-semibold mb-2">Choose Your Blockchain</h3>
@@ -62,7 +65,7 @@
 
           <!-- Step 2 -->
           <div class="flex flex-col items-center">
-            <div class="bg-green-100 p-4 rounded-full mb-4">
+            <div class="bg-green-100 p-4 rounded-full mb-4 animate-pulseSoft">
               <img :src="Wallet" alt="Connect Wallet" class="w-12 h-12" />
             </div>
             <h3 class="text-xl font-semibold mb-2">Connect Your Wallet</h3>
@@ -74,7 +77,7 @@
 
           <!-- Step 3 -->
           <div class="flex flex-col items-center">
-            <div class="bg-yellow-100 p-4 rounded-full mb-4">
+            <div class="bg-yellow-100 p-4 rounded-full mb-4 animate-pulseSoft">
               <img :src="Coin" alt="Mint Token" class="w-12 h-12" />
             </div>
             <h3 class="text-xl font-semibold mb-2">Mint Your Token</h3>
@@ -104,6 +107,8 @@
       <GenerateTokenModal :open="isTokenModalOpen" @close="isTokenModalOpen = false" />
         <ConnectWalletModal
           v-model="ConnectWalletModals"
+          :connected="isWalletConnected"
+          :walletKey="walletKey"
           @status="handleWalletStatus"
           @close="ConnectWalletModals = false"
         />
@@ -129,14 +134,22 @@ import axios from 'axios'
 import { ref, computed, defineProps, onMounted, watch } from "vue";
 import Swal from 'sweetalert2';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
+import { getCookie, apiHeaders } from "../utils/utils.js";
 
 const isWalletConnected = ref(false);
 const walletKey = ref('');
 const ConnectWalletModals = ref(false);
 
-function handleWalletStatus(event) {
-  isWalletConnected.value = event.connected;
-  walletKey.value = event.walletKey || '';
+function handleWalletStatus(e) {
+  // Expect { connected: boolean, walletKey?: string }
+  if (e && typeof e.connected === "boolean") {
+    isWalletConnected.value = e.connected;
+    if (e.walletKey) walletKey.value = e.walletKey;
+    // If connected from modal, you can auto-close:
+    if (e.connected) ConnectWalletModals.value = false;
+  }
+  // Always re-sync from storage/cookie just in case
+  refreshWalletState();
 }
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -147,13 +160,11 @@ const openConnectWalletModal = () => { ConnectWalletModals.value = true }
 
 const data = ref({
   total_tokens: 0,
-  total_claimablebalance: 0,
-  total_claimablebalance_users: 0
 });
 
 async function fetchdata() {
   try {
-    const response = await axios.get('/api/count_data', {
+    const response = await axios.get('/api/global/count_data', {
       headers: {
         'X-CSRF-TOKEN': csrfToken
       }
@@ -161,8 +172,6 @@ async function fetchdata() {
     if (response.data.status === "success") {
       data.value = {
         total_tokens: response.data.total_tokens,
-        total_claimablebalance: response.data.total_claimablebalance,
-        total_claimablebalance_users: response.data.total_claimablebalance_users
       };
     } else {
       Swal.fire({
@@ -181,7 +190,20 @@ async function fetchdata() {
   }
 }
 
+function readPk() {
+  const pk = getCookie("public_key") || localStorage.getItem("public_key");
+  if (!pk) return "";
+  const s = String(pk).trim();
+  return (s === "null" || s === "undefined") ? "" : s;
+}
+function refreshWalletState() {
+  const pk = readPk();
+  walletKey.value = pk || "";
+  isWalletConnected.value = !!(pk && pk.startsWith("G") && pk.length === 56);
+}
+
 onMounted(() => {
+  refreshWalletState();
   fetchdata()
 })
 

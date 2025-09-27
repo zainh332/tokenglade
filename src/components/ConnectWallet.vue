@@ -1,120 +1,56 @@
 <template>
     <TransitionRoot as="template" :show="props.modelValue">
-        <Dialog
-            id="connectWalletParent"
-            as="div"
-            class="relative z-10"
-            @close="closeModal"
-        >
-            <TransitionChild
-                as="template"
-                enter="ease-out duration-300"
-                enter-from="opacity-0"
-                enter-to="opacity-100"
-                leave="ease-in duration-200"
-                leave-from="opacity-100"
-                leave-to="opacity-0"
-            >
-                <div
-                    class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
-                />
+        <Dialog id="connectWalletParent" as="div" class="relative z-10" @close="closeModal">
+            <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
+                leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
+                <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" />
             </TransitionChild>
 
             <div class="fixed inset-0 z-50 w-screen overflow-y-auto">
-                <div
-                    class="flex items-end justify-center min-h-full p-2 text-center sm:items-center sm:p-0"
-                >
-                    <TransitionChild
-                        as="template"
-                        enter="ease-out duration-300"
+                <div class="flex items-end justify-center min-h-full p-2 text-center sm:items-center sm:p-0">
+                    <TransitionChild as="template" enter="ease-out duration-300"
                         enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                        enter-to="opacity-100 translate-y-0 sm:scale-100"
-                        leave="ease-in duration-200"
+                        enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
                         leave-from="opacity-100 translate-y-0 sm:scale-100"
-                        leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                    >
+                        leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
                         <DialogPanel
-                            class="relative px-5 pt-5 overflow-hidden text-left transition-all transform bg-white rounded-lg shadow-xl"
-                        >
+                            class="relative px-5 pt-5 overflow-hidden text-left transition-all transform bg-white rounded-lg shadow-xl">
                             <!-- Close Button (X) -->
-                            <button
-                                @click="closeModal"
+                            <button @click="closeModal"
                                 class="absolute text-gray-500 top-2 right-2 hover:text-gray-800 focus:outline-none"
-                                aria-label="Close Modal"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    class="w-6 h-6"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
+                                aria-label="Close Modal">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
-                            <div
-                                :id="modalId"
-                                :data-bs-backdrop="backdrop"
-                                :data-bs-keyboard="keyboard"
-                                tabindex="-1"
-                                aria-labelledby="exampleModalLabel"
-                                :inert="!props.modelValue"
-                            >
+                            <div :id="modalId" :data-bs-backdrop="backdrop" :data-bs-keyboard="keyboard" tabindex="-1"
+                                aria-labelledby="exampleModalLabel" :inert="!props.modelValue">
                                 <div class="modal-dialog">
-                                    <div
-                                        class="sm:mx-auto sm:w-full sm:max-w-md"
-                                    >
-                                        <img
-                                            class="w-auto h-16 mx-auto mb-1"
-                                            :src="Logo"
-                                            alt="Your Company"
-                                        />
+                                    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+                                        <img class="w-auto h-16 mx-auto mb-1" :src="Logo" alt="Your Company" />
                                     </div>
                                     <div class="modal-content modal-wallet">
                                         <template v-if="!isWalletConnected">
-                                            <div
-                                                id="connectWalletModal"
-                                                class="modal-body mx-10"
-                                            >
+                                            <div id="connectWalletModal" class="modal-body mx-10">
                                                 <h1 class="mb-5">
                                                     Connect Your Wallet
                                                 </h1>
                                                 <div class="mb-3">
-                                                    <label
-                                                        for="selectedBlockchain"
-                                                        class="block text-sm font-medium text-black-700 mb-1"
-                                                    >
+                                                    <label for="selectedBlockchain"
+                                                        class="block text-sm font-medium text-black-700 mb-1">
                                                         Select Blockchain
                                                     </label>
-                                                    <select
-                                                        id="selectedBlockchain"
-                                                        name="selectedBlockchain"
-                                                        v-model="
-                                                            selectedBlockchain
+                                                    <select id="selectedBlockchain" name="selectedBlockchain" v-model="selectedBlockchain
                                                         "
-                                                        class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                                    >
-                                                        <option
-                                                            value=""
-                                                            disabled
-                                                            selected
-                                                        >
+                                                        class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                                                        <option value="" disabled selected>
                                                             Choose a blockchain
                                                         </option>
-                                                        <option
-                                                            v-for="blockchain in blockchainOptions"
-                                                            :key="
-                                                                blockchain.key
-                                                            "
-                                                            :value="
-                                                                blockchain.id
-                                                            "
-                                                        >
+                                                        <option v-for="blockchain in blockchainOptions" :key="blockchain.key
+                                                            " :value="blockchain.id
+                                                                ">
                                                             {{
                                                                 blockchain.name
                                                             }}
@@ -122,43 +58,26 @@
                                                     </select>
                                                 </div>
                                                 <div class="mb-3">
-                                                    <label
-                                                        for="selectedWallet"
-                                                        class="block text-sm font-medium text-black-700 mb-1"
-                                                    >
+                                                    <label for="selectedWallet"
+                                                        class="block text-sm font-medium text-black-700 mb-1">
                                                         Select Wallet
                                                     </label>
-                                                    <select
-                                                        id="selectedWallet"
-                                                        name="selectedWallet"
+                                                    <select id="selectedWallet" name="selectedWallet"
                                                         v-model="selectedWallet"
-                                                        class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                                    >
-                                                        <option
-                                                            value=""
-                                                            disabled
-                                                            selected
-                                                        >
+                                                        class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                                                        <option value="" disabled selected>
                                                             Choose your Wallet
                                                         </option>
-                                                        <option
-                                                            v-for="wallet in walletOptions"
-                                                            :key="wallet.key"
-                                                            :value="wallet.key"
-                                                        >
+                                                        <option v-for="wallet in walletOptions" :key="wallet.key"
+                                                            :value="wallet.key">
                                                             {{ wallet.name }}
                                                         </option>
                                                     </select>
                                                 </div>
 
                                                 <div class="mt-5">
-                                                    <button
-                                                        id="connectWalletButton"
-                                                        @click="handleConnect"
-                                                        type="button"
-                                                        class="walletconnect-btn"
-                                                        :disabled="isLoading"
-                                                    >
+                                                    <button id="connectWalletButton" @click="handleConnect"
+                                                        type="button" class="walletconnect-btn" :disabled="isLoading">
                                                         {{
                                                             isLoading
                                                                 ? "Connecting..."
@@ -171,33 +90,21 @@
 
                                         <!-- If connected -->
                                         <template v-else>
-                                            <div
-                                                class="modal-body"
-                                                style="word-break: break-all"
-                                            >
-                                                <h1
-                                                    id="public_key"
-                                                    style="font-size: 14px"
-                                                >
+                                            <div class="modal-body" style="word-break: break-all">
+                                                <h1 id="public_key" style="font-size: 14px">
                                                     {{ UserData.walletKey }}
                                                 </h1>
                                             </div>
                                             <div class="mt-5">
-                                                <button
-                                                    id="connectWalletButton"
-                                                    @click="wallet_disconnected()"
-                                                    type="button"
-                                                    class="walletconnect-btn"
-                                                >
+                                                <button id="connectWalletButton" @click="disconnectWallet()"
+                                                    type="button" class="walletconnect-btn">
                                                     Disconnect Wallet
                                                 </button>
                                             </div>
                                         </template>
 
                                         <div class="mt-3 mx-3">
-                                            <p
-                                                class="text-center block text-sm font-medium text-gray-700 mb-1"
-                                            >
+                                            <p class="text-center block text-sm font-medium text-gray-700 mb-1">
                                                 We never store your wallet info.
                                                 Used only for on-chain
                                                 operations.
@@ -219,24 +126,18 @@ import { ref, computed, defineProps, onMounted, watch } from "vue";
 import {
     Dialog,
     DialogPanel,
-    DialogTitle,
     TransitionChild,
     TransitionRoot,
 } from "@headlessui/vue";
 import Logo from "@/assets/token-glade-logo.png";
-import rabet from "@/assets/rabet.png";
-import frighter from "@/assets/frighter.png";
-import albeto from "@/assets/albeto.png";
-import xbull from "@/assets/xbull.png";
 import axios from "axios";
 import {
     isConnected,
-    isAllowed,
     getPublicKey,
     requestAccess,
 } from "@stellar/freighter-api";
 import Swal from "sweetalert2";
-import { getCookie } from "../utils/utils.js";
+import { getCookie, apiHeaders } from "../utils/utils.js";
 
 const modalId = "ConnectWallet";
 const walletOptions = ref([]);
@@ -244,8 +145,11 @@ const blockchainOptions = ref([]);
 const selectedWallet = ref("");
 const selectedBlockchain = ref("");
 const isLoading = ref(false);
-const isWalletConnected = ref(false);
-const props = defineProps({ modelValue: { type: Boolean, default: false } });
+const props = defineProps({
+  modelValue:   { type: Boolean, default: false }, // v-model for open/close
+  connected:    { type: Boolean, default: false }, // parent’s connection state
+  walletKey:    { type: String,  default: "" },    // parent’s wallet pk (optional)
+});
 
 const backdrop = computed(() => (!isWalletConnected.value ? "static" : ""));
 const keyboard = computed(() => (!isWalletConnected.value ? "false" : ""));
@@ -266,7 +170,7 @@ const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute
 // Fetch available blockchains from the server
 async function fetchblockchains() {
     try {
-        const response = await axios.get("/api/fetch_blockchains", {});
+        const response = await axios.get("/api/global/blockchains", {});
 
         if (response.data.status === "success") {
             blockchainOptions.value = response.data.blockchains;
@@ -290,7 +194,7 @@ async function fetchblockchains() {
 }
 async function fetchWallets() {
     try {
-        const response = await axios.get("/api/fetch_wallet_types", {});
+        const response = await axios.get("/api/global/wallet_types", {});
         if (response.data.status === "success") {
             walletOptions.value = response.data.wallets;
         } else {
@@ -327,75 +231,66 @@ function getSelectedWalletMeta() {
     };
 }
 
-async function storeWallet(publicKey, walletTypeId, key, blockchainTypeId) {
-    if (publicKey && walletTypeId && key && blockchainTypeId) {
-        // Save public key and wallet type in UserData
-        UserData.value.public_key = publicKey; // Set the public key in UserData
-        UserData.value.wallet_type_id = walletTypeId; // Set the selected wallet type ID in UserData
-        UserData.value.blockchain_id = blockchainTypeId; // Set the blockchain ID in UserData
-      console.log(csrfToken);
-      console.log(window.Laravel.csrfToken);
-        try {
-            const response = await axios.post(
-                "/api/store_wallet",
-                UserData.value,
-                {
-                    headers: {
-                        'X-CSRF-TOKEN': window.Laravel.csrfToken,
-                    },
-                }
-            );
-            if (response.data.status === "success") {
-                // Set the 'isWalletConnected' flag to true for the different if conditions
-                isWalletConnected.value = true;
+async function storeWallet(publicKey, walletTypeId, walletKey, blockchainTypeId) {
+  try {
+    const resp = await axios.post(
+      '/api/wallet/store',
+      {
+        public_key: publicKey,
+        wallet_type_id: walletTypeId,
+        wallet_key: walletKey || null,
+        blockchain_id: blockchainTypeId,
+      },
+      { headers: apiHeaders(), withCredentials: true }
+    );
 
-                // Save wallet connection status in localStorage
-                localStorage.setItem("public_key", publicKey);
-                localStorage.setItem("wallet_connect", "true");
+    const { data } = resp;
 
-                // Set the token
-                localStorage.setItem("token", response.data.token);
+    if (data?.status === 'success') {
+      // mark connected
+      setConnected(data.public ?? publicKey);
 
-                // Save wallet connection status in localStorage
-                localStorage.setItem("wallet_type", walletTypeId);
+      // persist values
+      localStorage.setItem('public_key', data.public ?? publicKey);
+      localStorage.setItem('wallet_connect', 'true');
+      if (data.token) localStorage.setItem('token', data.token);
+      localStorage.setItem('wallet_type', String(walletTypeId));
+      if (walletKey)  localStorage.setItem('wallet_key', walletKey);
 
-                // Save wallet connection status in localStorage
-                localStorage.setItem("wallet_key", key);
+      // optional UX
+      if (typeof speak === 'function') speak('connected', true);
 
-                // Notify the user of successful connection
-                speak("connected", true);
-            } else {
-                // Handle a failure response from the server (optional)
-                Swal.fire({
-                    icon: "error",
-                    title: "Error!",
-                    text: "Failed to connect wallet.",
-                });
-            }
-        } catch (error) {
-            Swal.fire({
-                icon: "error",
-                title: "Error!",
-                text:
-                    error.response?.data?.message ||
-                    "Failed to connect wallet.",
-            });
-        }
-    } else {
-        // Trigger the 'speak' function with a disconnected status
-        speak("connected", false);
-
-        // Show an error if no wallet is selected
-        Swal.fire({
-            icon: "error",
-            title: "Wallet Error!",
-            text: "Please select a wallet to connect.",
-        });
+      return true; // <-- important
     }
+
+    Swal.fire({ icon: 'error', title: 'Error!', text: data?.message || 'Failed to connect wallet.' });
+    return false;
+  } catch (err) {
+    const resp = err?.response;
+    console.error('[storeWallet] error:', {
+      status: resp?.status,
+      data: resp?.data,
+      headers: resp?.headers,
+    });
+    Swal.fire({
+      icon: 'error',
+      title: 'Could not save wallet',
+      text: resp?.data?.message || resp?.data?.error || `Request failed (${resp?.status || 'network'})`,
+    });
+    return false;
+  }
 }
 
 function hasRabet() {
     return typeof window !== "undefined" && !!window.rabet;
+}
+
+function hasAlbedo() {
+  return typeof window !== "undefined" && !!window.albedo && typeof window.albedo.publicKey === "function";
+}
+
+function hasXbull() {
+  return typeof window !== 'undefined' && (!!window.xBullSDK || !!window.xBull);
 }
 
 async function connectWallet(wallet) {
@@ -435,6 +330,39 @@ async function connectWallet(wallet) {
                 throw new Error("Rabet connection rejected");
             }
         }
+        case "albedo": {
+            if (!hasAlbedo()) throw new Error("Albedo SDK not loaded");
+            try {
+                const res = await window.albedo.publicKey({ network: 'public' });
+                if (!res?.pubkey) throw new Error('No public key returned');
+                return {
+                    publicKey: res.pubkey,
+                    wallet: "albedo",
+                    proof: {
+                        token: res.token,
+                        signed_message: res.signed_message,
+                        signature: res.signature,
+                    },
+                };
+            } catch (e) {
+                const msg = (e && (e.message || e.error || e.code)) || '';
+                const hint = /not selected|cancel|denied/i.test(msg)
+                    ? 'Open Albedo and select (or create) an account, then try again.'
+                    : 'Could not get a public key.';
+                Swal.fire({ icon: 'error', title: 'Albedo', text: hint });
+            }
+        }
+        case "xbull": {
+            if (!hasXbull()) throw new Error("xBull not installed");
+            try {
+                await window.xBullSDK.connect({ canRequestPublicKey: true, canRequestSign: false });
+                const publicKey = await window.xBullSDK.getPublicKey();
+                if (!publicKey) throw new Error("No public key from xBull");
+                return { publicKey, wallet: "xbull" };
+            } catch (e) {
+                throw new Error("xBull connection rejected");
+            }
+        }
         default:
             throw new Error("Unsupported wallet");
     }
@@ -443,24 +371,23 @@ async function connectWallet(wallet) {
 async function handleConnect() {
     if (!selectedWallet.value) {
         Swal.fire({
-            icon: "warning",
-            title: "Select a wallet",
-            text: "Choose Freighter or Rabet.",
+            icon: 'warning',
+            title: 'Select a wallet',
+            text: 'Choose Freighter or Rabet.',
         });
         return;
     }
 
     isLoading.value = true;
+
     try {
-        // 1) connect to extension → { publicKey, wallet: "freighter" | "rabet" }
         const result = await connectWallet(selectedWallet.value);
 
-        // 2) derive numeric IDs from your walletOptions
         const meta = getSelectedWalletMeta();
 
         if (!meta?.walletTypeId || !meta?.blockchainTypeId) {
             throw new Error(
-                "Could not resolve wallet_type_id / blockchain_id from walletOptions."
+                'Could not resolve wallet_type_id / blockchain_id from walletOptions.'
             );
         }
 
@@ -471,109 +398,54 @@ async function handleConnect() {
             meta.key,
             meta.blockchainTypeId
         );
-        
+        if (ok !== true) {
+            // Don’t silently bail — show a clear error so you know why it didn’t reload.
+            Swal.fire({
+                icon: 'error',
+                title: 'Could not save wallet',
+                text: 'Your wallet was connected locally but could not be saved on the server.',
+            });
+            return;
+        }
+
+        // Update local state so UI reacts immediately (even if we reload)
         UserData.value.walletKey = result.publicKey;
-        isWalletConnected.value = true;
+        setConnected(result.publicKey);
+
+        // Ensure any modal is closed before reload
+        if (Swal.isVisible()) Swal.close();
+
+        // Give the browser a tick to flush storage/cookies
+        setTimeout(() => {
+            // Use replace() to avoid storing the pre-login page in history
+            window.location.replace(window.location.href);
+            // fallback (some browsers): window.location.reload();
+        }, 150);
     } catch (e) {
-        Swal.fire({ icon: "error", title: "Wallet Error", text: e.message });
+        console.error('[handleConnect] error:', e);
+        Swal.fire({ icon: 'error', title: 'Wallet Error', text: e?.message || 'Failed to connect wallet.' });
     } finally {
         isLoading.value = false;
     }
 }
 
-function getActiveWalletKey() {
-  // however you store it: cookie/localStorage/etc.
-  // return "freighter" | "rabet" | null
-  const t = getCookie("wallet_type_id"); // e.g. "2" = freighter in your app
-  return String(t) === "2" ? "freighter" : (t ? "rabet" : null);
-}
-
-async function checkConnection() {
-    const hadSession = localStorage.getItem("wallet_connect") === "true";
-    if (!hadSession) { isWalletConnected.value = false; return; }
-
-    const active = getActiveWalletKey(); // "freighter" | "rabet" | null
-    let conn = false;
-
-    if (active === "freighter") {
-        const ok = await isConnected().catch(() => false);
-        const allowed = await isAllowed().catch(() => false);
-        conn = ok && allowed;
-    } else if (active === "rabet") {
-        conn = !!(window?.rabet && (window.rabet.account?.address || await window.rabet.isUnlocked().catch(() => false)));
-    }
-
-    isWalletConnected.value = !!conn;
-    if (!conn) return;
-    const publicKey = getCookie("public_key");
-    // const cookie_public_key = getCookie("public_key"); // Assumes you have a function getCookie(name)
-    const walletTypeId = getCookie("wallet_type_id");
-    const blockchainId = getCookie("blockchain_id");
-
-    // //it mean user have updated its wallet from frieghter wallet
-    // if (publicKey != cookie_public_key) {
-    // }
-
-    UserData.value.public_key = publicKey; // Set the public key in UserData
-    UserData.value.wallet_type_id = walletTypeId; // Set the selected wallet type ID in UserData
-    UserData.value.blockchain_id = blockchainId; // Set the selected wallet type ID in UserData
-
-    if (publicKey && walletTypeId && blockchainId) {
-        const response = await axios.post("/api/store_wallet", {
-                headers: {
-                    "X-CSRF-TOKEN": csrfToken,
-                },
-            },
-            UserData.value);
-        if (response.data.status === "success") {
-            // If both are found, set UserData and mark connection as successful
-            UserData.value.walletKey = publicKey;
-            UserData.value.wallet_type_id = walletTypeId;
-            UserData.value.blockchain_id = blockchainId;
-            speak("connected", true); // Call speak function with the connected status
-        } else {
-            // Handle a failure response from the server (optional)
-            Swal.fire({
-                icon: "error",
-                title: "Error!",
-                text: "Failed to connect wallet.",
-            });
-            isWalletConnected.value = false;
-        }
-    } else {
-        // If either of them is missing, consider the connection incomplete or invalid
-        isWalletConnected.value = false;
-        Swal.fire({
-            icon: "error",
-            title: "Error!",
-            text: "Wallet data missing or incomplete. Please reconnect your wallet.",
-        });
-    }
-    // }
-}
-async function wallet_disconnected() {
+async function disconnectWallet() {
     try {
         const public_key = localStorage.getItem("public_key");
         const response = await axios.post(
-            "/api/disconnect_wallet",
+            "/api/wallet/disconnect",
             { public_key },
-            {
-                headers: {
-                    "X-CSRF-TOKEN": window.Laravel.csrfToken,
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-            }
+            { headers: apiHeaders(), withCredentials: true }
         );
         if (response.data.status === "success") {
             closeModal();
 
             //clear everthing from cookies
-            localStorage.setItem("public_key", "false");
             localStorage.setItem("wallet_connect", "false");
-            localStorage.setItem("wallet_key", "false");
-            localStorage.setItem("token", "false");
-            localStorage.setItem("wallet_type", "false");
-            isWalletConnected.value = false;
+            localStorage.setItem("token", null);
+            localStorage.setItem("public_key", null);
+            localStorage.setItem("wallet_key", null);
+            localStorage.setItem("wallet_type", null);
             speak("connected", false);
             document.cookie =
                 "public_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -583,6 +455,7 @@ async function wallet_disconnected() {
                 "wallet_type_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             document.cookie =
                 "blockchain_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            setDisconnected();
             window.location.reload();
         } else {
             Swal.fire({
@@ -601,72 +474,45 @@ async function wallet_disconnected() {
     }
 }
 
-// Watches wallet connection status and public key changes
-async function watchWalletChanges() {
-    // setInterval(async () => {
-    //     const connected = await isConnected();
-    //     if (connected) {
-    //         const current_public_key = await getPublicKey();
-    //         const previous_public_key = getCookie("public_key");
-    //         const wallet_type_id = getCookie("wallet_type_id");
-    //         const blockchain_id = getCookie("blockchain_id");
 
-    //         if (previous_public_key !== current_public_key) {
-    //             UserData.value.current_public_key = current_public_key; // Set the public key in UserData
-    //             UserData.value.previous_public_key = previous_public_key; // Set the selected wallet type ID in UserData
-    //             UserData.value.wallet_type_id = wallet_type_id; // freighter only
-    //             UserData.value.blockchain_id = blockchain_id;
-    //             const response = await axios.post(
-    //                 "/api/update_wallet",
-    //                 UserData.value,
-    //                 {
-    //                     headers: {
-    //                         "X-CSRF-TOKEN": window.Laravel.csrfToken,
-    //                         Authorization: `Bearer ${localStorage.getItem(
-    //                             "token"
-    //                         )}`,
-    //                     },
-    //                 }
-    //             );
-    //             if (response.data.status === "success") {
-    //                 window.location.reload();
-    //             } else {
-    //                 // Handle a failure response from the server (optional)
-    //                 // Swal.fire({
-    //                 //     icon: "error",
-    //                 //     title: "Error!",
-    //                 //     text: "Failed to connect wallet.",
-    //                 // });
-    //             }
-    //         }
-    // } else {
-    //         // Pass the stored public key to disconnect if no longer connected
-    //         const previous_public_key = getCookie("public_key");
-    //         if (previous_public_key) {
-    //             await wallet_disconnected(previous_public_key);
-    // }
-    //     }
-    // }, 3000); // Check every second
+const connectedLocal = ref(false);
+const localPk        = ref(getCookie("public_key") || localStorage.getItem("public_key") || "");
+
+
+function safeGet(v) {
+  if (!v) return "";
+  const s = String(v).trim().toLowerCase();
+  return (s === "null" || s === "undefined") ? "" : String(v);
 }
 
-// Watch `isWalletConnected` and trigger `watchWalletChanges` when it becomes true
-watch(
-    isWalletConnected,
-    (newVal) => {
-        if (newVal) {
-            watchWalletChanges();
-        }
-    },
-    { immediate: false } // Only trigger on actual changes, not immediately
+function readPk() {
+  return safeGet(getCookie("public_key") || localStorage.getItem("public_key"));
+}
+
+function setConnected(pk)   { connectedLocal.value = true;  localPk.value = pk || ""; }
+function setDisconnected()  { connectedLocal.value = false; localPk.value = ""; }
+
+
+const displayPk = computed(() =>
+  safeGet(props.walletKey) || localPk.value
 );
 
+const isWalletConnected = computed(() => {
+  const pk = displayPk.value;
+  return !!pk && pk.startsWith("G") && pk.length === 56;
+});
+
 onMounted(() => {
-    checkConnection();
     fetchWallets();
     fetchblockchains();
-    const previous_public_key = getCookie("public_key");
-    if (previous_public_key) {
-        watchWalletChanges(); // Call directly if `previous_public_key` is there
-    }
+    const pk = readPk();
+    if (pk) setConnected(pk); else setDisconnected();
+});
+
+watch(() => props.modelValue, (open) => {
+  if (open) {
+    const pk = readPk();
+    if (pk) setConnected(pk); else setDisconnected();
+  }
 });
 </script>

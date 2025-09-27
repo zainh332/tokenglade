@@ -1,12 +1,8 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-f3a98047.css",
+    "file": "assets/app-a7389ff1.css",
     "isEntry": true,
     "src": "resources/css/app.css"
-  },
-  "src/assets/albeto.png": {
-    "file": "assets/albeto-acc89022.png",
-    "src": "src/assets/albeto.png"
   },
   "src/assets/coin.png": {
     "file": "assets/coin-ab4d3c39.png",
@@ -20,10 +16,6 @@
     "file": "assets/footer-logo-47ce9443.png",
     "src": "src/assets/footer-logo.png"
   },
-  "src/assets/frighter.png": {
-    "file": "assets/frighter-56128358.png",
-    "src": "src/assets/frighter.png"
-  },
   "src/assets/lights.png": {
     "file": "assets/lights-c425c569.png",
     "src": "src/assets/lights.png"
@@ -36,9 +28,13 @@
     "file": "assets/phone-592dc7ab.png",
     "src": "src/assets/phone.png"
   },
-  "src/assets/rabet.png": {
-    "file": "assets/rabet-b63626b7.png",
-    "src": "src/assets/rabet.png"
+  "src/assets/reward.png": {
+    "file": "assets/reward-41a90c65.png",
+    "src": "src/assets/reward.png"
+  },
+  "src/assets/stop.png": {
+    "file": "assets/stop-982e1938.png",
+    "src": "src/assets/stop.png"
   },
   "src/assets/token-glade-logo.png": {
     "file": "assets/token-glade-logo-14ce1d6b.png",
@@ -48,12 +44,8 @@
     "file": "assets/wallet-3292a01f.jpg",
     "src": "src/assets/wallet.jpg"
   },
-  "src/assets/xbull.png": {
-    "file": "assets/xbull-0f319a8d.png",
-    "src": "src/assets/xbull.png"
-  },
   "src/main.css": {
-    "file": "assets/main-36451d53.css",
+    "file": "assets/main-4d5341c7.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -64,12 +56,14 @@
       "assets/footer-logo-47ce9443.png",
       "assets/coin-ab4d3c39.png",
       "assets/phone-592dc7ab.png",
-      "assets/wallet-3292a01f.jpg"
+      "assets/wallet-3292a01f.jpg",
+      "assets/reward-41a90c65.png",
+      "assets/stop-982e1938.png"
     ],
     "css": [
-      "assets/main-36451d53.css"
+      "assets/main-4d5341c7.css"
     ],
-    "file": "assets/main-118cb08a.js",
+    "file": "assets/main-101c1042.js",
     "isEntry": true,
     "src": "src/main.js"
   }
