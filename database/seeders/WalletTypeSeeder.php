@@ -35,6 +35,12 @@ class WalletTypeSeeder extends Seeder
                 'status' => 1,
                 'blockchain_id' => 1,
             ],
+            [
+                'name' => 'xBull',
+                'key' => 'xbull',
+                'status' => 1,
+                'blockchain_id' => 1,
+            ],
         ];
 
         foreach ($wallets as $wallet) {

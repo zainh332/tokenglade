@@ -289,6 +289,10 @@ function hasAlbedo() {
   return typeof window !== "undefined" && !!window.albedo && typeof window.albedo.publicKey === "function";
 }
 
+function hasXbull() {
+  return typeof window !== 'undefined' && (!!window.xBullSDK || !!window.xBull);
+}
+
 async function connectWallet(wallet) {
     const candidate =
         typeof wallet === "string" ? wallet : selectedWallet.value;
@@ -346,6 +350,17 @@ async function connectWallet(wallet) {
                     ? 'Open Albedo and select (or create) an account, then try again.'
                     : 'Could not get a public key.';
                 Swal.fire({ icon: 'error', title: 'Albedo', text: hint });
+            }
+        }
+        case "xbull": {
+            if (!hasXbull()) throw new Error("xBull not installed");
+            try {
+                await window.xBullSDK.connect({ canRequestPublicKey: true, canRequestSign: false });
+                const publicKey = await window.xBullSDK.getPublicKey();
+                if (!publicKey) throw new Error("No public key from xBull");
+                return { publicKey, wallet: "xbull" };
+            } catch (e) {
+                throw new Error("xBull connection rejected");
             }
         }
         default:
