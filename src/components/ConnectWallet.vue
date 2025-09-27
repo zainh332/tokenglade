@@ -333,7 +333,7 @@ async function connectWallet(wallet) {
         case "albedo": {
             if (!hasAlbedo()) throw new Error("Albedo SDK not loaded");
             try {
-                const res = await window.albedo.publicKey({ network: 'testnet' });
+                const res = await window.albedo.publicKey({ network: 'public' });
                 if (!res?.pubkey) throw new Error('No public key returned');
                 return {
                     publicKey: res.pubkey,

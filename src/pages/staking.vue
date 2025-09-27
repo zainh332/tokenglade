@@ -682,7 +682,7 @@ const nextPage = () => {
     if (currentPage.value < totalPages.value) currentPage.value++;
 };
 
-const network = 'testnet';
+const network = 'public';
 const isTestnet = network === 'testnet';
 const explorerBase = `https://stellar.expert/explorer/${isTestnet ? 'testnet' : 'public'}`;
 
