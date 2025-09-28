@@ -244,19 +244,25 @@ export async function checkTkgBalance(public_address) {
 }
 
 export function updateLoader(title, text) {
+  const opts = {
+    title,
+    html: `<div style="font-size:14px">${text}</div>`,
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    showConfirmButton: false,
+    didOpen: () => Swal.showLoading(),
+
+    // 👇 keep popup narrow & detached from your modal DOM
+    target: document.body,
+    width: 420,                          // or '28rem'
+    customClass: { popup: 'swal-compact' },
+    backdrop: true,
+  };
+
   if (!Swal.isVisible()) {
-    Swal.fire({
-      title,
-      html: `<div style="font-size:14px">${text}</div>`,
-      allowOutsideClick: false,
-      showConfirmButton: false,
-      didOpen: () => Swal.showLoading(),
-    });
+    Swal.fire(opts);
   } else {
-    Swal.update({
-      title,
-      html: `<div style="font-size:14px">${text}</div>`,
-    });
+    Swal.update(opts);
     Swal.showLoading();
   }
 }
