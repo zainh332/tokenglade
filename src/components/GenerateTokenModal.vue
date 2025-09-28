@@ -64,6 +64,113 @@
                           @close="ConnectWalletModals = false" />
                       </div>
 
+                      <!-- Name -->
+                      <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+                          Name
+                          <span class="text-red-500">*</span>
+                          <span class="relative ml-1">
+                            <button type="button" @mouseover="NameCodeHovered = true"
+                              @mouseleave="NameCodeHovered = false"
+                              class="text-gray-400 hover:text-gray-600 focus:outline-none" title="Asset Code Info">
+                              ?
+                            </button>
+                            <div v-if="NameCodeHovered"
+                              class="absolute z-10 mt-1 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-2 text-sm text-gray-700">
+                              The name of your token/project. For example, Stellar Lumens.
+                            </div>
+                          </span>
+                        </label>
+
+                        <Field id="name" name="name" v-model="form.name" type="text"
+                          class="block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+
+                        <ErrorMessage class="text-sm font-normal text-red-500" name="name" />
+                      </div>
+
+                      <!-- Description -->
+                      <div>
+                        <label for="desc" class="block text-sm font-medium text-gray-700 mb-1">
+                          Description
+                          <span class="text-red-500">*</span>
+                          <span class="relative ml-1">
+                            <button type="button" @mouseover="DescriptionHovered = true"
+                              @mouseleave="DescriptionHovered = false"
+                              class="text-gray-400 hover:text-gray-600 focus:outline-none" title="Asset Code Info">
+                              ?
+                            </button>
+                            <div v-if="DescriptionHovered"
+                              class="absolute z-10 mt-1 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-2 text-sm text-gray-700">
+                              The asset code can be anything the issuer wants, but it's typically a short and memorable
+                              string. For example, Stellar Lumens uses “XLM”.
+                            </div>
+                          </span>
+                        </label>
+
+                        <Field id="desc" name="desc" v-model="form.desc" type="text"
+                          class="block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+
+                        <ErrorMessage class="text-sm font-normal text-red-500" name="desc" />
+                      </div>
+
+                      <!-- Website Url -->
+                      <div>
+                        <label for="website_url" class="block text-sm font-medium text-gray-700 mb-1">
+                          Website Url
+                          <span class="relative ml-1">
+                            <button type="button" @mouseover="UrlHovered = true" @mouseleave="UrlHovered = false"
+                              class="text-gray-400 hover:text-gray-600 focus:outline-none" title="Asset Code Info">
+                              ?
+                            </button>
+                            <div v-if="UrlHovered"
+                              class="absolute z-10 mt-1 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-2 text-sm text-gray-700">
+                              The asset code can be anything the issuer wants, but it's typically a short and memorable
+                              string. For example, Stellar Lumens uses “XLM”.
+                            </div>
+                          </span>
+                        </label>
+
+                        <Field id="website_url" name="website_url" v-model="form.website_url" type="text"
+                          class="block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+
+                        <ErrorMessage class="text-sm font-normal text-red-500" name="website_url" />
+                      </div>
+
+                      <!-- Logo Upload -->
+                      <div>
+                        <label for="logo" class="block text-sm font-medium text-gray-700 mb-1">
+                          Logo
+                          <span class="text-red-500">*</span>
+                          <span class="relative ml-1">
+                            <button formton type="button" @mouseover="LogoHovered = true" @mouseleave="LogoHovered = false"
+                              class="text-gray-400 hover:text-gray-600 focus:outline-none" title="Logo Info">
+                              ?
+                            </button>
+                            <div v-if="LogoHovered"
+                              class="absolute z-10 mt-1 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-2 text-sm text-gray-700">
+                              Upload a square logo (PNG/SVG/JPG, ≤ 2MB). Recommended 512×512 with transparent
+                              background.
+                            </div>
+                          </span>
+                        </label>
+
+                        <!-- Use Field slot to control <input type="file"> -->
+                        <Field name="logo" v-slot="{ handleChange, errors }">
+                          <input id="logo" name="logo" type="file"
+                            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                            class="block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:bg-gray-100 file:text-gray-700 file:text-sm"
+                            @change="e => onLogoChange(e, handleChange)" />
+                        </Field>
+
+                        <!-- Preview -->
+                        <div v-if="logoPreview" class="mt-3">
+                          <img :src="logoPreview" alt="Logo preview"
+                            class="h-16 w-16 rounded-md border border-gray-200 object-contain bg-white" />
+                        </div>
+
+                        <ErrorMessage class="text-sm font-normal text-red-500" name="logo" />
+                      </div>
+
 
                       <!-- Asset Code -->
                       <div>
@@ -138,7 +245,7 @@
 
                       <!-- Warning -->
                       <div class="bg-yellow-100 border border-yellow-300 text-yellow-800 px-4 py-2 rounded-md text-sm">
-                        ⚠ Please ensure your wallet has at least 10 XLM before proceeding. The created token will be
+                        ⚠ Please ensure your wallet has at least 50 XLM before proceeding. The created token will be
                         sent to your connected wallet.
                       </div>
 
@@ -172,6 +279,10 @@ import { E, signXdrWithWallet, getCookie, updateLoader } from "../utils/utils.js
 import axios from 'axios';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
 
+const NameCodeHovered = ref(false);
+const DescriptionHovered = ref(false);
+const UrlHovered = ref(false);
+const LogoHovered = ref(false);
 const AssetCodeHovered = ref(false);
 const TotalSupplyHovered = ref(false);
 const DistributorHovered = ref(false);
@@ -195,10 +306,38 @@ const emit = defineEmits(['close'])
 const isLoading = ref(false)
 
 const form = ref({
+  name: '',
+  desc: '',
+  website_url: '',
+  logo: '',
   asset_code: '',
   total_supply: '',
-  lockIssuer: false
-})
+  lockIssuer: false,
+  logoFile: null,    
+});
+
+const logoPreview = ref('');
+
+function onLogoChange(e, handleChange) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const allowed = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+  if (!allowed.includes(file.type)) {
+    handleChange(null);
+    Swal.fire('Invalid file', 'Please upload PNG, JPG, WEBP, or SVG.', 'error');
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    handleChange(null);
+    Swal.fire('Too large', 'Max file size is 5MB.', 'error');
+    return;
+  }
+
+  logoPreview.value = URL.createObjectURL(file);
+  form.value.logoFile = file;
+  handleChange(file);
+}
 
 const schema = Yup.object({
   asset_code: Yup.string()
@@ -221,33 +360,11 @@ const closeModal = () => emit('close')
 const network = 'public';
 const isTestnet = network === "testnet";
 
-const maxValue = 922337203685; // The maximum allowed value
-const maxValueExceeded = ref(false); // Tracks if the value exceeds the max
-
-// Function to allow only numeric input and enforce the maximum value
-const onlyNumberInput = (event) => {
-  // Replace non-numeric characters
-  let input = event.target.value.replace(/\D/g, '');
-
-  // Convert the input into an integer and check if it exceeds the max value
-  const value = parseInt(input, 10);
-
-  if (value > maxValue) {
-    maxValueExceeded.value = true;
-    input = maxValue.toString(); // Set input to the maximum allowed value
-  } else {
-    maxValueExceeded.value = false;
-  }
-
-  // Update the input field and the reactive form data
-  event.target.value = input;
-  form.total_supply = input;
-};
-
-const submitForm = async (form) => {
+const submitForm = async (values) => {
+  
   try {
     // Show loading indicator
-    form.lock_status = toggleValue.value;
+    values.lock_status = toggleValue.value;
 
     // Get the distributor's public key from Freighter
     const distributor_wallet_key = getCookie("public_key");
@@ -258,14 +375,29 @@ const submitForm = async (form) => {
 
     updateLoader("Generating Token", "Preparing fee transaction XDR…");
 
+    const fd = new FormData();
+    fd.append('name', values.name ?? '');
+    fd.append('desc', values.desc ?? '');
+    fd.append('website_url', values.website_url ?? '');
+    fd.append('asset_code', values.asset_code);
+    fd.append('total_supply', values.total_supply);
+    fd.append('lock_status', values.lock_status ? '1' : '0');
+    fd.append('distributor_wallet_key', distributor_wallet_key);
+
+    if (values.logo instanceof File) {
+      fd.append('logo', values.logo);          // $request->file('logo')
+    } else if (typeof values.logo === 'string' && values.logo) {
+      fd.append('logo_url', values.logo);      // $request->input('logo_url')
+    }
+
     // Prepare the payload for generating the unsigned transaction
     const payload = {
-      ...form,
+      ...values,
       distributor_wallet_key,
     };
 
     // Step 1: Request the unsigned transaction from the backend
-    const generateResponse = await axios.post("api/token/generate", payload, { headers });
+    const generateResponse = await axios.post("api/token/generate", fd, { headers });
 
     if (generateResponse.data.status !== "success") {
       Swal.close();
@@ -276,6 +408,7 @@ const submitForm = async (form) => {
     const unsignedXdr = generateResponse.data.unsigned_token_creation_fee_transaction;
     updateLoader("Sign in Wallet", "Please approve the fee transaction in your wallet…");
     const feeSignedXdr = await signXdrWithWallet(localStorage.getItem("wallet_key"), unsignedXdr, isTestnet);
+console.log(feeSignedXdr);
 
     updateLoader("Submitting", "Submitting fee transaction to Stellar…");
     //Submit the signed transaction to the backend for submission to Stellar
@@ -304,7 +437,7 @@ const submitForm = async (form) => {
       type: 3,
       payload: {
         distributor_wallet_key,
-        asset_code: form.asset_code,
+        asset_code: values.asset_code,
       },
     }, { headers });
 
@@ -330,8 +463,12 @@ const submitForm = async (form) => {
         confirmButtonText: 'I’ve saved the keys',
         allowOutsideClick: false
       }).then(() => {
-        form.asset_code = "";
-        form.total_supply = "";
+        values.name = "";
+        values.desc = "";
+        values.website_url = "";
+        values.logo = "";
+        values.asset_code = "";
+        values.total_supply = "";
       });
     }, 200);
 
@@ -352,6 +489,30 @@ onMounted(() => {
   walletKey.value = pk || '';
   isWalletConnected.value = !!pk;
 });
+
+//Helper
+const maxValue = 922337203685; // The maximum allowed value
+const maxValueExceeded = ref(false); // Tracks if the value exceeds the max
+
+// Function to allow only numeric input and enforce the maximum value
+const onlyNumberInput = (event) => {
+  // Replace non-numeric characters
+  let input = event.target.value.replace(/\D/g, '');
+
+  // Convert the input into an integer and check if it exceeds the max value
+  const value = parseInt(input, 10);
+
+  if (value > maxValue) {
+    maxValueExceeded.value = true;
+    input = maxValue.toString(); // Set input to the maximum allowed value
+  } else {
+    maxValueExceeded.value = false;
+  }
+
+  // Update the input field and the reactive form data
+  event.target.value = input;
+  form.total_supply = input;
+};
 
 const walletKey = ref('');
 //create listener to listen for connected changes

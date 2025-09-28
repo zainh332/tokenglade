@@ -37,7 +37,7 @@ use Soneso\StellarSDK\CreateAccountOperationBuilder;
 class TokenController extends Controller
 {
     private $sdk, $maxFee, $network, $token_creation_fee;
-    private $xlm_funding_wallet, $xlm_funding_wallet_key, $issuer_wallet_amount;
+    private $xlm_funding_wallet, $xlm_funding_wallet_key, $issuer_wallet_amount, $stakingPublicWallet, $stakingPublicWalletKey, $tkgIssuer, $assetCode;
     private WalletService $wallet;
 
     public function __construct(WalletService $wallet)
@@ -49,14 +49,21 @@ class TokenController extends Controller
             $this->sdk = StellarSDK::getPublicNetInstance();
             $this->xlm_funding_wallet = env('XLM_FUNDING_WALLET');
             $this->xlm_funding_wallet_key = env('XLM_FUNDING_WALLET_KEY');
+            $this->stakingPublicWallet = env('STAKING_PUBLIC_WALLET');
+            $this->stakingPublicWalletKey = env('STAKING_PUBLIC_WALLET_KEY');
+            $this->tkgIssuer = env('TKG_ISSUER_PUBLIC');
             $this->network = Network::public();
         } else {
             $this->sdk = StellarSDK::getTestNetInstance();
             $this->network = Network::testnet();
             $this->xlm_funding_wallet = env('XLM_FUNDING_WALLET_TESTNET');
             $this->xlm_funding_wallet_key = env('XLM_FUNDING_WALLET_KEY_TESTNET');
+            $this->stakingPublicWallet = env('STAKING_PUBLIC_WALLET_TESTNET');
+            $this->stakingPublicWalletKey = env('STAKING_PUBLIC_WALLET_KEY_TESTNET');
+            $this->tkgIssuer = env('TKG_ISSUER_TESTNET');
         }
 
+        $this->assetCode = env('ASSET_CODE');
         $this->maxFee = 30;
         $this->token_creation_fee = 50; //XLM
         $this->issuer_wallet_amount = 4; //XLM
@@ -65,10 +72,14 @@ class TokenController extends Controller
     public function generate_token(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'distributor_wallet_key' => 'required',
-            'asset_code' => 'required',
-            'total_supply' => 'required',
-            'lock_status' => 'required',
+            'distributor_wallet_key' => 'required|string',
+            'asset_code' => 'required|string|max:12',
+            'total_supply' => 'required|integer|min:1',
+            'name' => 'required|string|max:255',
+            'desc' => 'required|string',
+            'website_url'            => 'nullable|url|max:255',
+            'logo' => 'required|file|mimes:png,jpg,jpeg,webp,svg|max:5120',
+            'lock_status'            => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -79,6 +90,9 @@ class TokenController extends Controller
         }
 
         $distributor_wallet_key = $request->input('distributor_wallet_key');
+        $name = $request->input('name');
+        $desc = $request->input('desc');
+        $website_url = $request->input('website_url');
         $asset_code = $request->input('asset_code');
         $total_supply = $request->input('total_supply');
         $memo = $request->input('memo');
@@ -102,7 +116,17 @@ class TokenController extends Controller
             ], 500);
         }
 
+        $logoUrl = null;
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('logos', 'public');
+            $logoUrl = asset('storage/' . $path);
+        }
+
         $token_creation = new StellarToken();
+        $token_creation->name = $name;
+        $token_creation->desc = $desc;
+        $token_creation->website_url = $website_url;
+        $token_creation->logo = $logoUrl;
         $token_creation->asset_code = $asset_code;
         $token_creation->total_supply = $total_supply;
         $token_creation->user_wallet_address = $distributor_wallet_key;
@@ -303,6 +327,32 @@ class TokenController extends Controller
                 $token_created->current_stellar_transaction_id = $created_tokens_transfer_transaction->id;
                 $token_created->created_token_transfer_status = 1;
                 $token_created->save();
+
+                $directory = public_path('.well-known');
+                if (!is_dir($directory)) {
+                    mkdir($directory, 0755, true);
+                }
+
+                $tomlPath = $directory . '/stellar.toml';
+
+                $tomlContent = <<<EOT
+                [[CURRENCIES]]
+                code="{$token_created->asset_code}"
+                issuer="{$token_created->issuer_public_key}"
+                display_decimals={$token_created->display_decimals}
+                name="{$token_created->name}"
+                desc="{$token_created->desc}"
+                image="{$token_created->logo}"
+                fixed_number="{$token_created->total_supply}"
+                status="live"
+
+                EOT;
+
+                if (file_exists($tomlPath)) {
+                    file_put_contents($tomlPath, "\n" . $tomlContent, FILE_APPEND);
+                } else {
+                    file_put_contents($tomlPath, $tomlContent);
+                }
 
                 return response()->json([
                     'status' => 'success',
