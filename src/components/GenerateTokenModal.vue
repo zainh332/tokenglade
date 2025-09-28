@@ -248,7 +248,7 @@ const emit = defineEmits(['close'])
 // State
 const isLoading = ref(false)
 
-const form = ref({
+const defaultForm = {
   name: '',
   desc: '',
   website_url: '',
@@ -257,7 +257,9 @@ const form = ref({
   total_supply: '',
   lockIssuer: false,
   logoFile: null,
-});
+};
+
+const form = ref({ ...defaultForm });
 
 // Put near your other imports
 const SUPPORTED_LOGO_TYPES = [
@@ -312,10 +314,14 @@ const schema = Yup.object({
 });
 
 
-// Close modal
-const closeModal = () => emit('close')
+// Close modal and reset fields
+const closeModal = () => {
+  form.value = { ...defaultForm }; 
+  logoPreview.value = '';          
+  emit('close');
+};
 // const network = (import.meta.env.VITE_STELLAR_ENVIRONMENT || "public").toLowerCase();
-const network = 'public';
+const network = 'testnet';
 const isTestnet = network === "testnet";
 
 const submitForm = async (values) => {
