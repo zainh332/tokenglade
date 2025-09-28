@@ -411,6 +411,7 @@ const submitForm = async (values) => {
     }
     updateLoader("Finalizing", "Saving token details…");
     Swal.close();
+    closeModal();
 
     setTimeout(() => {
       Swal.fire({
@@ -433,7 +434,6 @@ const submitForm = async (values) => {
         values.logo = "";
         values.asset_code = "";
         values.total_supply = "";
-        closeModal();
       });
     }, 200);
 
