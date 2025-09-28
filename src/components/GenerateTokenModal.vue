@@ -421,7 +421,7 @@ const submitForm = async (values) => {
               <p style="margin-top: 10px;"><b>Issuer Public Key:</b><br>${submitResponse2.data.issuerPublicKey}</p>
               <p style="margin-top: 10px;"><b>Issuer Secret Key:</b><br>${submitResponse2.data.issuerSecretKey}</p>
               <p style="color: red; font-weight: bold; margin-top: 20px;">
-                ⚠ Please copy and save these keys before closing this modal!
+                ⚠ Please copy and save these keys before closing this pop up!
               </p>
             `,
         confirmButtonText: 'I’ve saved the keys',
@@ -433,6 +433,7 @@ const submitForm = async (values) => {
         values.logo = "";
         values.asset_code = "";
         values.total_supply = "";
+        closeModal();
       });
     }, 200);
 
