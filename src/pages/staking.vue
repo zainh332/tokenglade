@@ -912,30 +912,95 @@ async function signXdr(xdr, staking_id, testnet) {
       return;
     }
 
-    case 'xbull': {
-        const xbull = window.xBullSDK || window.xBull;
-        if (!xbull) throw new Error('xBull not installed');
+        case 'xbull': {
+            const xbull = window.xBullSDK || window.xBull;
+            console.log('[xbull] object:', { hasSDK: !!window.xBullSDK, hasLegacy: !!window.xBull, xbull });
 
-        try {
-            await xbull.connect({
-            canRequestPublicKey: true,
-            canRequestSign: true,
+            if (!xbull) {
+                console.error('[xbull] not injected');
+                throw new Error('xBull not installed');
+            }
+
+            // quick sanity on inputs
+            console.log('[xbull] inputs:', {
+                staking_id,
+                xdrType: typeof xdr,
+                xdrHead: typeof xdr === 'string' ? xdr.slice(0, 32) + '…' : xdr,
+                networkMapped: net?.xbull
             });
 
-            const pubkey = await xbull.getPublicKey();
-            if (!pubkey) throw new Error('No public key from xBull');
+            if (typeof xdr !== 'string' || !/^[A-Za-z0-9+/=]+$/.test(xdr)) {
+                console.error('[xbull] invalid unsigned XDR (not base64 string):', xdr);
+                throw new Error('Unsigned XDR must be a base64 envelope string');
+            }
 
-            const signedXdr = await xbull.signXDR(xdr, {
-            network: net.xbull,
-            });
+            const t0 = performance.now();
 
-            await submitStakingXdr(signedXdr, staking_id);
+            // 1) CONNECT (with sign permission)
+            console.log('[xbull] connect() start');
+            try {
+                await xbull.connect({ canRequestPublicKey: true, canRequestSign: true });
+                console.log('[xbull] connect() ok');
+            } catch (e) {
+                console.error('[xbull] connect() error:', e);
+                Swal.fire({ icon: 'error', title: 'xBull', text: e?.message || 'Connect permission rejected.' });
+                throw e;
+            }
+
+            // 2) GET PUBLIC KEY (diagnostic)
+            let pubkey;
+            console.log('[xbull] getPublicKey() start');
+            try {
+                pubkey = await xbull.getPublicKey();
+                console.log('[xbull] getPublicKey() ok:', pubkey);
+                if (!pubkey) throw new Error('No public key from xBull');
+            } catch (e) {
+                console.error('[xbull] getPublicKey() error:', e);
+                Swal.fire({ icon: 'error', title: 'xBull', text: e?.message || 'Could not read public key.' });
+                throw e;
+            }
+
+            // 3) SIGN XDR
+            const network = net?.xbull || 'testnet'; // fallback if your mapper missing
+            console.log('[xbull] signXDR() start:', { network });
+            let signedXdr;
+            try {
+                signedXdr = await xbull.signXDR(xdr, { network });
+                console.log('[xbull] signXDR() ok, length:', signedXdr?.length, 'head:', signedXdr?.slice?.(0, 32) + '…');
+                if (typeof signedXdr !== 'string' || !/^[A-Za-z0-9+/=]+$/.test(signedXdr)) {
+                    throw new Error('xBull returned invalid signed XDR');
+                }
+            } catch (e) {
+                console.error('[xbull] signXDR() error:', {
+                    message: e?.message, code: e?.code, name: e?.name, stack: e?.stack, raw: e
+                });
+                const hint = /authorized|permission|not authorized/i.test(e?.message || '')
+                    ? 'xBull did not grant signing permission. Remove this site in xBull → Connected dApps, then reconnect with “canRequestSign: true”.'
+                    : /network|passphrase/i.test(e?.message || '')
+                        ? 'Network mismatch. Ensure the unsigned XDR is built for the same network (testnet/public) you passed to xBull.'
+                        : /xdr|base64|decode/i.test(e?.message || '')
+                            ? 'Invalid XDR. Ensure you are passing a base64 envelope XDR, not JSON.'
+                            : 'Signing was rejected or failed.';
+                Swal.fire({ icon: 'error', title: 'xBull', text: hint });
+                throw e;
+            }
+
+            // 4) SUBMIT TO BACKEND
+            console.log('[xbull] submitStakingXdr() start → staking_id:', staking_id);
+            try {
+                const resp = await submitStakingXdr(signedXdr, staking_id);
+                console.log('[xbull] submitStakingXdr() ok:', resp);
+            } catch (e) {
+                console.error('[xbull] submitStakingXdr() error:', e);
+                Swal.fire({ icon: 'error', title: 'Submit error', text: e?.message || 'Failed to submit signed transaction.' });
+                throw e;
+            }
+
+            const dt = (performance.now() - t0).toFixed(1);
+            console.log('[xbull] done in', dt, 'ms');
             return;
-        } catch (e) {
-            Swal.fire({ icon: 'error', title: 'xBull', text: e?.message || 'Signing was rejected or failed.' });
-            throw e;
         }
-    }
+
         default:
             throw new Error("No wallet selected. Connect a wallet first.");
     }
