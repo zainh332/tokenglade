@@ -463,7 +463,7 @@
                                     class="bg-white border-b border-[#EBEBEB]">
                                     <td class="py-4 px-4 text-dark text-center">
                                         <span :title="row.wallet_address">{{ shortMiddle(row.wallet_address, 6, 6)
-                                            }}</span>
+                                        }}</span>
                                     </td>
                                     <td class="py-4 px-4">
                                         <span
@@ -915,29 +915,17 @@ async function signXdr(xdr, staking_id, testnet) {
         case 'xbull': {
             const xbull = window.xBullSDK || window.xBull;
             if (!xbull) throw new Error('xBull not installed');
-
-            // 1) Connect with signing permission
             await xbull.connect({ canRequestPublicKey: true, canRequestSign: true });
-
-            // 2) Verify wallet account
-            const pubkey = await xbull.getPublicKey();
-            console.log('[xbull] pubkey', pubkey);
 
             let signedXdr;
             try {
-                signedXdr = await xbull.signXDR(xdr, 'public'); // <- STRING
+                signedXdr = await xbull.signXDR(xdr, 'public');
             } catch (e1) {
                 console.warn('[xbull] signXDR(public string) failed:', e1);
                 try {
-                    signedXdr = await xbull.signXDR(xdr); // <- no arg
+                    signedXdr = await xbull.signXDR(xdr);
                 } catch (e2) {
                     console.error('[xbull] signXDR() error:', e2);
-                    const hint =
-                        /authorize|permission|denied/i.test(e2?.message || '') ? 'xBull did not grant signing permission.' :
-                            /network|passphrase/i.test(e2?.message || '') ? 'Network mismatch. Build the XDR for Public and sign on Public.' :
-                                /xdr|base64|decode/i.test(e2?.message || '') ? 'Invalid XDR. Must be a base64 envelope string.' :
-                                    'Signing was rejected or failed.';
-                    Swal.fire({ icon: 'error', title: 'xBull', text: hint });
                     throw e2;
                 }
             }
@@ -945,8 +933,6 @@ async function signXdr(xdr, staking_id, testnet) {
             await submitStakingXdr(signedXdr, staking_id);
             return;
         }
-
-
         default:
             throw new Error("No wallet selected. Connect a wallet first.");
     }
