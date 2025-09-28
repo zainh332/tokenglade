@@ -66,9 +66,9 @@
                 </div>
 
                 <!-- Form -->
-                <Form @submit="submitForm" :validationSchema="schema" class="space-y-4">
+                <Form @submit="submitForm" :validationSchema="schema" class="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <!-- Name -->
-                  <div>
+                  <div class="col-span-1">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700">
                       Name <span class="text-red-500">*</span>
                     </label>
@@ -78,19 +78,8 @@
                     <ErrorMessage class="mt-1 text-xs text-red-500" name="name" />
                   </div>
 
-                  <!-- Description -->
-                  <div>
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700">
-                      Description <span class="text-red-500">*</span>
-                    </label>
-                    <Field id="desc" name="desc" v-model="form.desc" type="text"
-                      class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                      placeholder="A short summary of your token/project" />
-                    <ErrorMessage class="mt-1 text-xs text-red-500" name="desc" />
-                  </div>
-
                   <!-- Website -->
-                  <div>
+                  <div class="col-span-1">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700">
                       Website
                     </label>
@@ -100,8 +89,19 @@
                     <ErrorMessage class="mt-1 text-xs text-red-500" name="website_url" />
                   </div>
 
+                  <!-- Description (full width) -->
+                  <div class="col-span-1 md:col-span-2">
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700">
+                      Description <span class="text-red-500">*</span>
+                    </label>
+                    <Field id="desc" name="desc" v-model="form.desc" as="textarea" rows="2"
+                      class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                      placeholder="A short summary of your token/project" />
+                    <ErrorMessage class="mt-1 text-xs text-red-500" name="desc" />
+                  </div>
+
                   <!-- Logo -->
-                  <div>
+                  <div class="col-span-1 md:col-span-2">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700">
                       Logo <span class="text-red-500">*</span>
                     </label>
@@ -136,7 +136,7 @@
                   </div>
 
                   <!-- Asset Code -->
-                  <div>
+                  <div class="col-span-1">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700">
                       Asset Code <span class="text-red-500">*</span>
                     </label>
@@ -153,7 +153,7 @@
                   </div>
 
                   <!-- Total Supply -->
-                  <div>
+                  <div class="col-span-1">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700">
                       Total Supply <span class="text-red-500">*</span>
                     </label>
@@ -168,29 +168,33 @@
                   </div>
 
                   <!-- Lock Issuer Wallet -->
-                  <div
-                    class="flex items-center justify-between rounded-xl bg-gray-50 px-3.5 py-3 ring-1 ring-inset ring-gray-200">
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700">Lock Issuer Wallet</label>
-                      <p class="text-xs text-gray-500">Disables future minting. Irreversible.</p>
+                  <div class="col-span-1 md:col-span-2">
+                    <div
+                      class="flex items-center justify-between rounded-xl bg-gray-50 px-3.5 py-3 ring-1 ring-inset ring-gray-200">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700">Lock Issuer Wallet</label>
+                        <p class="text-xs text-gray-500">Disables future minting. Irreversible.</p>
+                      </div>
+                      <button type="button" role="switch" :aria-checked="form.lockIssuer"
+                        @click="form.lockIssuer = !form.lockIssuer"
+                        class="relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-300"
+                        :class="form.lockIssuer ? 'bg-indigo-600' : 'bg-gray-300'">
+                        <span class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-300"
+                          :class="form.lockIssuer ? 'translate-x-7' : 'translate-x-1'" />
+                      </button>
                     </div>
-                    <button type="button" role="switch" :aria-checked="form.lockIssuer"
-                      @click="form.lockIssuer = !form.lockIssuer"
-                      class="relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-300"
-                      :class="form.lockIssuer ? 'bg-indigo-600' : 'bg-gray-300'">
-                      <span class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-300"
-                        :class="form.lockIssuer ? 'translate-x-7' : 'translate-x-1'" />
-                    </button>
                   </div>
 
                   <!-- Notice -->
-                  <div class="rounded-xl border border-yellow-200 bg-yellow-50 px-3.5 py-2.5 text-sm text-yellow-800">
-                    ⚠ Please ensure your wallet has at least <span class="font-medium">50 XLM</span> before proceeding.
-                    The created token will be sent to your connected wallet.
+                  <div class="col-span-1 md:col-span-2">
+                    <div class="rounded-xl border border-yellow-200 bg-yellow-50 px-3.5 py-2.5 text-sm text-yellow-800">
+                      ⚠ Please ensure your wallet has at least <span class="font-medium">50 XLM</span> before proceeding.
+                      The created token will be sent to your connected wallet.
+                    </div>
                   </div>
 
                   <!-- Submit -->
-                  <div class="pt-1">
+                  <div class="col-span-1 md:col-span-2 pt-1">
                     <button type="submit" :disabled="isLoading"
                       class="w-full rounded-full bg-gradient px-4 py-2.5 text-sm font-semibold text-white shadow hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-60">
                       <span v-if="isLoading">Generating…</span>
