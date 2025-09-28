@@ -2,21 +2,22 @@
   <TransitionRoot as="template" :show="open">
     <Dialog as="div" class="relative z-50" @close="closeModal">
       <!-- Dimmed / blurred backdrop -->
-      <TransitionChild as="template" enter="ease-out duration-200" enter-from="opacity-0" enter-to="opacity-100"
-        leave="ease-in duration-150" leave-from="opacity-100" leave-to="opacity-0">
-        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+      <TransitionChild as="template" enter="ease-out duration-150" enter-from="opacity-0" enter-to="opacity-100"
+        leave="ease-in duration-120" leave-from="opacity-100" leave-to="opacity-0">
+        <div class="fixed inset-0 bg-black/50" />
       </TransitionChild>
 
       <div class="fixed inset-0 z-50 overflow-y-auto">
         <div class="flex min-h-full items-center justify-center p-4 sm:p-6">
           <!-- Panel -->
-          <TransitionChild as="template" enter="ease-out duration-200"
+          <TransitionChild as="template" enter="ease-out duration-150"
             enter-from="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-95"
-            enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-150"
+            enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-120"
             leave-from="opacity-100 translate-y-0 sm:scale-100"
             leave-to="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-95">
             <DialogPanel
-              class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-white/95 shadow-2xl ring-1 ring-black/5 backdrop-blur-md">
+              class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-white/95 shadow-lg
++        transform-gpu will-change-[transform,opacity]">
               <!-- Close -->
               <div class="h-1 bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-pink-500"></div>
 
@@ -35,7 +36,7 @@
                 <div class="flex items-center gap-3">
                   <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 ring-1 ring-inset ring-indigo-100">
-                    <img :src="Logo" alt="TokenGlade" class="h-6 w-6 object-contain" />
+                    <img :src="Logo" alt="TokenGlade" class="h-6 w-6 object-contain" width="24" height="24" decoding="async" />
                   </div>
                   <div class="min-w-0">
                     <DialogTitle class="text-base font-semibold text-gray-900">
