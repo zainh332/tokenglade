@@ -1,216 +1,216 @@
-    <template>
-      <TransitionRoot as="template" :show="open">
-        <Dialog as="div" class="relative z-10" @close="closeModal">
-          <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
-            leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-          </TransitionChild>
+<template>
+  <TransitionRoot as="template" :show="open">
+    <Dialog as="div" class="relative z-50" @close="closeModal">
+      <!-- Dimmed / blurred backdrop -->
+      <TransitionChild as="template" enter="ease-out duration-200" enter-from="opacity-0" enter-to="opacity-100"
+        leave="ease-in duration-150" leave-from="opacity-100" leave-to="opacity-0">
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+      </TransitionChild>
 
-          <div class="fixed inset-0 z-50 overflow-y-auto">
-            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-              <TransitionChild as="template" enter="ease-out duration-300"
-                enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
-                leave-from="opacity-100 translate-y-0 sm:scale-100"
-                leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
-                <DialogPanel
-                  class="relative overflow-hidden rounded-lg bg-white px-6 pt-6 pb-4 shadow-xl transition-all w-full max-w-md text-left">
+      <div class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 sm:p-6">
+          <!-- Panel -->
+          <TransitionChild as="template" enter="ease-out duration-200"
+            enter-from="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-95"
+            enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-150"
+            leave-from="opacity-100 translate-y-0 sm:scale-100"
+            leave-to="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-95">
+            <DialogPanel
+              class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-white/95 shadow-2xl ring-1 ring-black/5 backdrop-blur-md">
+              <!-- Close -->
+              <div class="h-1 bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-pink-500"></div>
 
-                  <!-- Close -->
-                  <button @click="closeModal" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                      stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+              <!-- Close -->
+              <button @click="closeModal"
+                class="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/80 text-gray-600 shadow-sm ring-1 ring-black/5 hover:bg-white"
+                aria-label="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
 
-                  <!-- Logo + Title -->
-                  <div class="mb-4 text-center">
-                    <img class="h-12 mx-auto" :src="Logo" alt="Stellar Logo" />
-                    <h2 class="text-xl font-semibold mt-2">Create Your Token on Stellar</h2>
-                    <p class="text-sm text-gray-500">Easily mint tokens on Stellar using your connected
-                      wallet.</p>
+              <!-- Header -->
+              <header class="px-6 pt-5 pb-4">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 ring-1 ring-inset ring-indigo-100">
+                    <img :src="Logo" alt="TokenGlade" class="h-6 w-6 object-contain" />
+                  </div>
+                  <div class="min-w-0">
+                    <DialogTitle class="text-base font-semibold text-gray-900">
+                      Create Your Token on Stellar
+                    </DialogTitle>
+                    <p class="mt-0.5 text-sm text-gray-500">
+                      Easily mint tokens using your connected wallet.
+                    </p>
+                  </div>
+                </div>
+              </header>
+
+              <!-- Subtle divider -->
+              <hr class="border-t border-gray-100" />
+
+              <!-- Body -->
+              <div class="px-6 pb-5">
+                <!-- Connected Wallet row -->
+                <div class="mb-4 flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-200"
+                      title="This wallet will receive your tokens once the transaction succeeds.">
+                      <span class="h-2 w-2 rounded-full bg-indigo-600"></span>
+                      {{ shortWallet }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Form -->
+                <Form @submit="submitForm" :validationSchema="schema" class="space-y-4">
+                  <!-- Name -->
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700">
+                      Name <span class="text-red-500">*</span>
+                    </label>
+                    <Field id="name" name="name" v-model="form.name" type="text"
+                      class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                      placeholder="e.g., TokenGlade" />
+                    <ErrorMessage class="mt-1 text-xs text-red-500" name="name" />
                   </div>
 
-                  <!-- Form -->
-                  <Form @submit="submitForm" :validationSchema="schema">
-                    <div class="space-y-4">
-                      <div>
+                  <!-- Description -->
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700">
+                      Description <span class="text-red-500">*</span>
+                    </label>
+                    <Field id="desc" name="desc" v-model="form.desc" type="text"
+                      class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                      placeholder="A short summary of your token/project" />
+                    <ErrorMessage class="mt-1 text-xs text-red-500" name="desc" />
+                  </div>
 
-                        <span class="text-gray-400 cursor-help"
-                          title="This wallet will receive your tokens once the transaction is successfully processed.">
-                          <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Connected Wallet
-                            <span class="text-red-500">*</span>
-                          </label>
-                        </span>
+                  <!-- Website -->
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700">
+                      Website
+                    </label>
+                    <Field id="website_url" name="website_url" v-model="form.website_url" type="text"
+                      class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                      placeholder="https://example.com" />
+                    <ErrorMessage class="mt-1 text-xs text-red-500" name="website_url" />
+                  </div>
 
+                  <!-- Logo -->
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700">
+                      Logo <span class="text-red-500">*</span>
+                    </label>
 
-                        <button id="walletConnected" @click="OpenConnectWalletModal" type="button"
-                          class="bg-gradient text-white rounded-full px-3 py-2 text-sm font-mono truncate w-[120px]">
-                          {{ shortWallet }}
-                        </button>
-
-                        <ConnectWalletModal :open="ConnectWalletModals"
-                          @status="(e) => { isWalletConnected = !!e?.connected; if (e?.walletKey) walletKey = e.walletKey; }"
-                          @close="ConnectWalletModals = false" />
-                      </div>
-
-                      <!-- Name -->
-                      <div>
-                        <span class="text-gray-400 cursor-help" title="Enter name of your project">
-                          <label class="block text-sm font-medium text-gray-700">
-                            Name
-                            <span class="text-red-500">*</span>
-                          </label>
-                        </span>
-
-
-                        <Field id="name" name="name" v-model="form.name" type="text"
-                          class="block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500" />
-
-                        <ErrorMessage class="text-sm font-normal text-red-500" name="name" />
-                      </div>
-
-                      <!-- Description -->
-                      <div>
-
-                        <span class="text-gray-400 cursor-help" title="Enter short description of your project">
-                          <label class="block text-sm font-medium text-gray-700">
-                            Description
-                            <span class="text-red-500">*</span>
-                          </label>
-                        </span>
-
-                        <Field id="desc" name="desc" v-model="form.desc" type="text"
-                          class="block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500" />
-
-                        <ErrorMessage class="text-sm font-normal text-red-500" name="desc" />
-                      </div>
-
-                      <!-- Website Url -->
-                      <div>
-                        <span class="text-gray-400 cursor-help" title="Your website url">
-                          <label class="block text-sm font-medium text-gray-700">
-                            Website
-                          </label>
-                        </span>
-
-                        <Field id="website_url" name="website_url" v-model="form.website_url" type="text"
-                          class="block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500" />
-
-                        <ErrorMessage class="text-sm font-normal text-red-500" name="website_url" />
-                      </div>
-
-                      <!-- Logo Upload -->
-                      <div>
-                        <span class="text-gray-400 cursor-help" title="Logo of the token/project">
-                          <label class="block text-sm font-medium text-gray-700">
-                            Logo
-                            <span class="text-red-500">*</span>
-                          </label>
-                        </span>
-
-                        <!-- Use Field slot to control <input type="file"> -->
-                        <Field name="logo" v-slot="{ handleChange, errors }">
+                    <div
+                      class="rounded-2xl border-2 border-dashed border-gray-300 bg-white/70 p-4 transition hover:border-indigo-300">
+                      <div class="flex items-center gap-4">
+                        <div class="h-16 w-16 overflow-hidden rounded-xl border bg-white">
+                          <img v-if="logoPreview" :src="logoPreview" alt="Logo preview"
+                            class="h-full w-full object-contain" />
+                          <div v-else class="flex h-full w-full items-center justify-center text-gray-400">🖼️</div>
+                        </div>
+                        <div class="flex-1">
+                          <p class="text-sm text-gray-700">
+                            Drag & drop or
+                            <label for="logo"
+                              class="cursor-pointer font-medium text-indigo-600 hover:underline">browse</label>
+                            (PNG, JPG, WEBP, SVG, ≤ 5 MB)
+                          </p>
+                          <p class="text-xs text-gray-500">Tip: square 512×512 looks best.</p>
+                        </div>
+                        <!-- Native file input -->
+                        <Field name="logo" v-slot="{ handleChange }">
                           <input id="logo" name="logo" type="file"
-                            accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                            class="block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:bg-gray-100 file:text-gray-700 file:text-sm"
+                            accept="image/png,image/jpeg,image/webp,image/svg+xml" class="hidden"
                             @change="e => onLogoChange(e, handleChange)" />
                         </Field>
-
-                        <!-- Preview -->
-                        <div v-if="logoPreview" class="mt-3">
-                          <img :src="logoPreview" alt="Logo preview"
-                            class="h-16 w-16 rounded-md border border-gray-200 object-contain bg-white" />
-                        </div>
-
-                        <ErrorMessage class="text-sm font-normal text-red-500" name="logo" />
-                      </div>
-
-
-                      <!-- Asset Code -->
-                      <div>
-                        <span class="text-gray-400 cursor-help" title="The asset code can be anything the issuer wants, but it's typically a short and memorable
-                              string. For example, Stellar Lumens uses “XLM”.">
-                          <label class="block text-sm font-medium text-gray-700">
-                            Asset Code
-                            <span class="text-red-500">*</span>
-                          </label>
-                        </span>
-
-                        <Field id="asset_code" name="asset_code" v-model="form.asset_code" type="text"
-                          class="block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500" />
-
-                        <ErrorMessage class="text-sm font-normal text-red-500" name="asset_code" />
-                      </div>
-
-                      <!-- Total Supply -->
-                      <div>
-                        <span class="text-gray-400 cursor-help"
-                          title="Initial amount of tokens to mint. For Stellar, the maximum allowed is 922,337,203,685.">
-                          <label class="block text-sm font-medium text-gray-700">
-                            Total Supply
-                            <span class="text-red-500">*</span>
-                          </label>
-                        </span>
-
-                        <Field id="total_supply" name="total_supply" v-model="form.total_supply" type="text"
-                          @input="onlyNumberInput"
-                          class="block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500" />
-
-                        <ErrorMessage class="text-sm font-normal text-red-500" name="total_supply" />
-
-                        <p v-if="maxValueExceeded" class="text-sm font-normal text-red-500">
-                          Total supply cannot exceed 922,337,203,685 in Stellar blockchain
-                        </p>
-                      </div>
-
-
-                      <!-- Lock Issuer Wallet -->
-                      <div class="">
-                        <span class="text-gray-400 cursor-help" title="Disables future minting. Irreversible.">
-                          <label class="block text-sm font-medium text-gray-700">
-                            Lock Issuer Wallet
-                          </label>
-                        </span>
-                        <button type="button" role="switch" :aria-checked="form.lockIssuer"
-                          @click="form.lockIssuer = !form.lockIssuer"
-                          class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300"
-                          :class="form.lockIssuer ? 'bg-gradient' : 'bg-gray-300'">
-                          <span class="inline-block h-4 w-4 transform rounded-full bg-white transition duration-300"
-                            :class="form.lockIssuer ? 'translate-x-6' : 'translate-x-1'" />
-                        </button>
-                      </div>
-
-                      <!-- Warning -->
-                      <div class="bg-yellow-100 border border-yellow-300 text-yellow-800 px-4 py-2 rounded-md text-sm">
-                        ⚠ Please ensure your wallet has at least 50 XLM before proceeding. The created token will be
-                        sent to your connected wallet.
-                      </div>
-
-                      <!-- Submit -->
-                      <div class="pt-2">
-                        <button type="submit" :disabled="isLoading"
-                          class="w-full rounded-full bg-gradient px-4 py-2 text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                          <span v-if="isLoading">Generating...</span>
-                          <span v-else>Generate Token</span>
-                        </button>
                       </div>
                     </div>
-                  </Form>
-                </DialogPanel>
-              </TransitionChild>
-            </div>
-          </div>
-        </Dialog>
-      </TransitionRoot>
-      <ConnectWalletModal :open="ConnectWalletModals" />
-    </template>
+
+                    <ErrorMessage class="mt-1 text-xs text-red-500" name="logo" />
+                  </div>
+
+                  <!-- Asset Code -->
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700">
+                      Asset Code <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <Field id="asset_code" name="asset_code" v-model="form.asset_code" type="text" maxlength="12"
+                        class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 pr-16 text-sm tracking-wider shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                        placeholder="e.g., XLM" />
+                      <span
+                        class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-gray-400">
+                        {{ 12 - (form.asset_code?.length || 0) }} left
+                      </span>
+                    </div>
+                    <ErrorMessage class="mt-1 text-xs text-red-500" name="asset_code" />
+                  </div>
+
+                  <!-- Total Supply -->
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700">
+                      Total Supply <span class="text-red-500">*</span>
+                    </label>
+                    <Field id="total_supply" name="total_supply" v-model="form.total_supply" type="text"
+                      @input="onlyNumberInput"
+                      class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                      placeholder="e.g., 1000000" />
+                    <ErrorMessage class="mt-1 text-xs text-red-500" name="total_supply" />
+                    <p v-if="maxValueExceeded" class="mt-1 text-xs text-red-500">
+                      Total supply cannot exceed 922,337,203,685 in Stellar blockchain
+                    </p>
+                  </div>
+
+                  <!-- Lock Issuer Wallet -->
+                  <div
+                    class="flex items-center justify-between rounded-xl bg-gray-50 px-3.5 py-3 ring-1 ring-inset ring-gray-200">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">Lock Issuer Wallet</label>
+                      <p class="text-xs text-gray-500">Disables future minting. Irreversible.</p>
+                    </div>
+                    <button type="button" role="switch" :aria-checked="form.lockIssuer"
+                      @click="form.lockIssuer = !form.lockIssuer"
+                      class="relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-300"
+                      :class="form.lockIssuer ? 'bg-indigo-600' : 'bg-gray-300'">
+                      <span class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-300"
+                        :class="form.lockIssuer ? 'translate-x-7' : 'translate-x-1'" />
+                    </button>
+                  </div>
+
+                  <!-- Notice -->
+                  <div class="rounded-xl border border-yellow-200 bg-yellow-50 px-3.5 py-2.5 text-sm text-yellow-800">
+                    ⚠ Please ensure your wallet has at least <span class="font-medium">50 XLM</span> before proceeding.
+                    The created token will be sent to your connected wallet.
+                  </div>
+
+                  <!-- Submit -->
+                  <div class="pt-1">
+                    <button type="submit" :disabled="isLoading"
+                      class="w-full rounded-full bg-gradient px-4 py-2.5 text-sm font-semibold text-white shadow hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-60">
+                      <span v-if="isLoading">Generating…</span>
+                      <span v-else>Generate Token</span>
+                    </button>
+                  </div>
+                </Form>
+              </div>
+            </DialogPanel>
+          </TransitionChild>
+        </div>
+      </div>
+    </Dialog>
+  </TransitionRoot>
+  <ConnectWalletModal :open="ConnectWalletModals" />
+</template>
 
 <script setup>
 import { ref, defineProps, defineEmits, onMounted, computed } from 'vue'
-import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from '@headlessui/vue'
+import { Dialog, DialogPanel, TransitionChild, TransitionRoot, DialogTitle } from '@headlessui/vue'
 import { Form, Field, ErrorMessage } from 'vee-validate';
 import Logo from '@/assets/token-glade-logo.png'
 import * as Yup from "yup";
