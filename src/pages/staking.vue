@@ -913,16 +913,28 @@ async function signXdr(xdr, staking_id, testnet) {
     }
 
     case 'xbull': {
-    //   try {
-        const result = await xBullSDK.signXDR(xdr);
-        console.log(result);
-        
-        await submitStakingXdr(result, staking_id);
-    //   } catch (e) {
-    //     Swal.fire({ icon:'error', title:'xBull', text:'Signing was rejected or failed.' });
-    //     throw e;
-    //   }
-      return;
+        const xbull = window.xBullSDK || window.xBull;
+        if (!xbull) throw new Error('xBull not installed');
+
+        try {
+            await xbull.connect({
+            canRequestPublicKey: true,
+            canRequestSign: true,
+            });
+
+            const pubkey = await xbull.getPublicKey();
+            if (!pubkey) throw new Error('No public key from xBull');
+
+            const signedXdr = await xbull.signXDR(xdr, {
+            network: net.xbull,
+            });
+
+            await submitStakingXdr(signedXdr, staking_id);
+            return;
+        } catch (e) {
+            Swal.fire({ icon: 'error', title: 'xBull', text: e?.message || 'Signing was rejected or failed.' });
+            throw e;
+        }
     }
         default:
             throw new Error("No wallet selected. Connect a wallet first.");
