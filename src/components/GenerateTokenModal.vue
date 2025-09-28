@@ -36,22 +36,14 @@
                   <Form @submit="submitForm" :validationSchema="schema">
                     <div class="space-y-4">
                       <div>
-                        <label for="distributor_wallet" class="block text-sm font-medium text-gray-700 mb-1">
-                          Connected Wallet
-                          <span class="text-red-500">*</span>
-                          <span class="relative ml-1">
-                            <button type="button" @mouseover="DistributorHovered = true"
-                              @mouseleave="DistributorHovered = false"
-                              class="text-gray-400 hover:text-gray-600 focus:outline-none"
-                              title="Distributor Wallet Info">
-                              ?
-                            </button>
-                            <div v-if="DistributorHovered"
-                              class="absolute z-10 mt-1 w-72 bg-white border border-gray-300 rounded-md shadow-lg p-2 text-sm text-gray-700">
-                              This wallet will receive your tokens once the transaction is successfully processed.
-                            </div>
-                          </span>
-                        </label>
+
+                        <span class="text-gray-400 cursor-help"
+                          title="This wallet will receive your tokens once the transaction is successfully processed.">
+                          <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Connected Wallet
+                            <span class="text-red-500">*</span>
+                          </label>
+                        </span>
 
 
                         <button id="walletConnected" @click="OpenConnectWalletModal" type="button"
@@ -66,21 +58,13 @@
 
                       <!-- Name -->
                       <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
-                          Name
-                          <span class="text-red-500">*</span>
-                          <span class="relative ml-1">
-                            <button type="button" @mouseover="NameCodeHovered = true"
-                              @mouseleave="NameCodeHovered = false"
-                              class="text-gray-400 hover:text-gray-600 focus:outline-none" title="Asset Code Info">
-                              ?
-                            </button>
-                            <div v-if="NameCodeHovered"
-                              class="absolute z-10 mt-1 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-2 text-sm text-gray-700">
-                              The name of your token/project. For example, Stellar Lumens.
-                            </div>
-                          </span>
-                        </label>
+                        <span class="text-gray-400 cursor-help" title="Enter name of your project">
+                          <label class="block text-sm font-medium text-gray-700">
+                            Name
+                            <span class="text-red-500">*</span>
+                          </label>
+                        </span>
+
 
                         <Field id="name" name="name" v-model="form.name" type="text"
                           class="block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500" />
@@ -90,22 +74,13 @@
 
                       <!-- Description -->
                       <div>
-                        <label for="desc" class="block text-sm font-medium text-gray-700 mb-1">
-                          Description
-                          <span class="text-red-500">*</span>
-                          <span class="relative ml-1">
-                            <button type="button" @mouseover="DescriptionHovered = true"
-                              @mouseleave="DescriptionHovered = false"
-                              class="text-gray-400 hover:text-gray-600 focus:outline-none" title="Asset Code Info">
-                              ?
-                            </button>
-                            <div v-if="DescriptionHovered"
-                              class="absolute z-10 mt-1 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-2 text-sm text-gray-700">
-                              The asset code can be anything the issuer wants, but it's typically a short and memorable
-                              string. For example, Stellar Lumens uses “XLM”.
-                            </div>
-                          </span>
-                        </label>
+
+                        <span class="text-gray-400 cursor-help" title="Enter short description of your project">
+                          <label class="block text-sm font-medium text-gray-700">
+                            Description
+                            <span class="text-red-500">*</span>
+                          </label>
+                        </span>
 
                         <Field id="desc" name="desc" v-model="form.desc" type="text"
                           class="block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500" />
@@ -115,20 +90,11 @@
 
                       <!-- Website Url -->
                       <div>
-                        <label for="website_url" class="block text-sm font-medium text-gray-700 mb-1">
-                          Website Url
-                          <span class="relative ml-1">
-                            <button type="button" @mouseover="UrlHovered = true" @mouseleave="UrlHovered = false"
-                              class="text-gray-400 hover:text-gray-600 focus:outline-none" title="Asset Code Info">
-                              ?
-                            </button>
-                            <div v-if="UrlHovered"
-                              class="absolute z-10 mt-1 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-2 text-sm text-gray-700">
-                              The asset code can be anything the issuer wants, but it's typically a short and memorable
-                              string. For example, Stellar Lumens uses “XLM”.
-                            </div>
-                          </span>
-                        </label>
+                        <span class="text-gray-400 cursor-help" title="Your website url">
+                          <label class="block text-sm font-medium text-gray-700">
+                            Website
+                          </label>
+                        </span>
 
                         <Field id="website_url" name="website_url" v-model="form.website_url" type="text"
                           class="block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500" />
@@ -138,21 +104,12 @@
 
                       <!-- Logo Upload -->
                       <div>
-                        <label for="logo" class="block text-sm font-medium text-gray-700 mb-1">
-                          Logo
-                          <span class="text-red-500">*</span>
-                          <span class="relative ml-1">
-                            <button formton type="button" @mouseover="LogoHovered = true" @mouseleave="LogoHovered = false"
-                              class="text-gray-400 hover:text-gray-600 focus:outline-none" title="Logo Info">
-                              ?
-                            </button>
-                            <div v-if="LogoHovered"
-                              class="absolute z-10 mt-1 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-2 text-sm text-gray-700">
-                              Upload a square logo (PNG/SVG/JPG, ≤ 2MB). Recommended 512×512 with transparent
-                              background.
-                            </div>
-                          </span>
-                        </label>
+                        <span class="text-gray-400 cursor-help" title="Logo of the token/project">
+                          <label class="block text-sm font-medium text-gray-700">
+                            Logo
+                            <span class="text-red-500">*</span>
+                          </label>
+                        </span>
 
                         <!-- Use Field slot to control <input type="file"> -->
                         <Field name="logo" v-slot="{ handleChange, errors }">
@@ -174,22 +131,13 @@
 
                       <!-- Asset Code -->
                       <div>
-                        <label for="asset_code" class="block text-sm font-medium text-gray-700 mb-1">
-                          Asset Code
-                          <span class="text-red-500">*</span>
-                          <span class="relative ml-1">
-                            <button type="button" @mouseover="AssetCodeHovered = true"
-                              @mouseleave="AssetCodeHovered = false"
-                              class="text-gray-400 hover:text-gray-600 focus:outline-none" title="Asset Code Info">
-                              ?
-                            </button>
-                            <div v-if="AssetCodeHovered"
-                              class="absolute z-10 mt-1 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-2 text-sm text-gray-700">
-                              The asset code can be anything the issuer wants, but it's typically a short and memorable
-                              string. For example, Stellar Lumens uses “XLM”.
-                            </div>
-                          </span>
-                        </label>
+                        <span class="text-gray-400 cursor-help" title="The asset code can be anything the issuer wants, but it's typically a short and memorable
+                              string. For example, Stellar Lumens uses “XLM”.">
+                          <label class="block text-sm font-medium text-gray-700">
+                            Asset Code
+                            <span class="text-red-500">*</span>
+                          </label>
+                        </span>
 
                         <Field id="asset_code" name="asset_code" v-model="form.asset_code" type="text"
                           class="block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm focus:ring-indigo-500 focus:border-indigo-500" />
@@ -199,21 +147,13 @@
 
                       <!-- Total Supply -->
                       <div>
-                        <label for="total_supply" class="block text-sm font-medium text-gray-700 mb-1">
-                          Total Supply
-                          <span class="text-red-500">*</span>
-                          <span class="relative ml-1">
-                            <button type="button" @mouseover="TotalSupplyHovered = true"
-                              @mouseleave="TotalSupplyHovered = false"
-                              class="text-gray-400 hover:text-gray-600 focus:outline-none" title="Total Supply Info">
-                              ?
-                            </button>
-                            <div v-if="TotalSupplyHovered"
-                              class="absolute z-10 mt-1 w-72 bg-white border border-gray-300 rounded-md shadow-lg p-2 text-sm text-gray-700">
-                              Initial amount of tokens to mint. For Stellar, the maximum allowed is 922,337,203,685.
-                            </div>
-                          </span>
-                        </label>
+                        <span class="text-gray-400 cursor-help"
+                          title="Initial amount of tokens to mint. For Stellar, the maximum allowed is 922,337,203,685.">
+                          <label class="block text-sm font-medium text-gray-700">
+                            Total Supply
+                            <span class="text-red-500">*</span>
+                          </label>
+                        </span>
 
                         <Field id="total_supply" name="total_supply" v-model="form.total_supply" type="text"
                           @input="onlyNumberInput"
@@ -229,11 +169,11 @@
 
                       <!-- Lock Issuer Wallet -->
                       <div class="">
-                        <label class="block text-sm font-medium text-gray-700">
-                          Lock Issuer Wallet
-                          <span class="text-gray-400 cursor-help"
-                            title="Disables future minting. Irreversible.">?</span>
-                        </label>
+                        <span class="text-gray-400 cursor-help" title="Disables future minting. Irreversible.">
+                          <label class="block text-sm font-medium text-gray-700">
+                            Lock Issuer Wallet
+                          </label>
+                        </span>
                         <button type="button" role="switch" :aria-checked="form.lockIssuer"
                           @click="form.lockIssuer = !form.lockIssuer"
                           class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300"
@@ -279,14 +219,6 @@ import { E, signXdrWithWallet, getCookie, updateLoader } from "../utils/utils.js
 import axios from 'axios';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
 
-const NameCodeHovered = ref(false);
-const DescriptionHovered = ref(false);
-const UrlHovered = ref(false);
-const LogoHovered = ref(false);
-const AssetCodeHovered = ref(false);
-const TotalSupplyHovered = ref(false);
-const DistributorHovered = ref(false);
-const LockIssuerHovered = ref(false);
 const isWalletConnected = ref(false);
 const ConnectWalletModals = ref(false);
 const { open } = defineProps({ open: Boolean, distributorWallet: String })
@@ -313,7 +245,7 @@ const form = ref({
   asset_code: '',
   total_supply: '',
   lockIssuer: false,
-  logoFile: null,    
+  logoFile: null,
 });
 
 const logoPreview = ref('');
@@ -361,7 +293,7 @@ const network = 'public';
 const isTestnet = network === "testnet";
 
 const submitForm = async (values) => {
-  
+
   try {
     // Show loading indicator
     values.lock_status = toggleValue.value;
@@ -408,7 +340,6 @@ const submitForm = async (values) => {
     const unsignedXdr = generateResponse.data.unsigned_token_creation_fee_transaction;
     updateLoader("Sign in Wallet", "Please approve the fee transaction in your wallet…");
     const feeSignedXdr = await signXdrWithWallet(localStorage.getItem("wallet_key"), unsignedXdr, isTestnet);
-console.log(feeSignedXdr);
 
     updateLoader("Submitting", "Submitting fee transaction to Stellar…");
     //Submit the signed transaction to the backend for submission to Stellar
