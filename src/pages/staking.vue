@@ -463,7 +463,7 @@
                                     class="bg-white border-b border-[#EBEBEB]">
                                     <td class="py-4 px-4 text-dark text-center">
                                         <span :title="row.wallet_address">{{ shortMiddle(row.wallet_address, 6, 6)
-                                        }}</span>
+                                            }}</span>
                                     </td>
                                     <td class="py-4 px-4">
                                         <span
@@ -850,156 +850,102 @@ async function onSubmit() {
 }
 
 async function signXdr(xdr, staking_id, testnet) {
-  if (typeof xdr !== 'string' || !/^[A-Za-z0-9+/=]+$/.test(xdr)) {
-    Swal.fire({ icon:'error', title:'Invalid XDR', text:'Unsigned XDR is not a base64 envelope.' });
-    throw new Error('unsigned XDR not base64');
-  }
-
-  const net = {
-    freighter: testnet ? 'TESTNET' : 'PUBLIC',
-    albedo:    testnet ? 'testnet' : 'public',
-    rabet:     testnet ? 'testnet' : 'mainnet',
-    xbull:     testnet ? 'testnet' : 'public'
-  };
-
-  const active = (localStorage.getItem('wallet_key') || '').toLowerCase();
-
-  switch (active) {
-    case 'rabet': {
-      try {
-        const result = await rabet.sign(xdr, net.rabet);
-        await submitStakingXdr(result.xdr, staking_id);
-      } catch (e) {
-        Swal.fire({ icon:'error', title:'Rabet', text:'Signing was rejected or failed.' });
-        throw e;
-      }
-      return;
+    if (typeof xdr !== 'string' || !/^[A-Za-z0-9+/=]+$/.test(xdr)) {
+        Swal.fire({ icon: 'error', title: 'Invalid XDR', text: 'Unsigned XDR is not a base64 envelope.' });
+        throw new Error('unsigned XDR not base64');
     }
 
-    case 'freighter': {
-      try {
-        const signed = await signTransaction(xdr, net.freighter);
-        await submitStakingXdr(signed, staking_id);
-      } catch (e) {
-        Swal.fire({ icon:'error', title:'Freighter', text:'Signing was rejected or failed.' });
-        throw e;
-      }
-      return;
-    }
+    const net = {
+        freighter: testnet ? 'TESTNET' : 'PUBLIC',
+        albedo: testnet ? 'testnet' : 'public',
+        rabet: testnet ? 'testnet' : 'mainnet',
+        xbull: testnet ? 'testnet' : 'public'
+    };
 
-    case 'albedo': {
-      try {
-        const res = await window.albedo.tx({
-          xdr,                 
-          network: net.albedo
-        });
-        
-        const signedXdr = res.signed_envelope_xdr;
-        
-        if (!signedXdr) {
-          Swal.fire({ icon:'error', title:'Albedo', text:'No signed XDR returned.' });
-          return;
+    const active = (localStorage.getItem('wallet_key') || '').toLowerCase();
+
+    switch (active) {
+        case 'rabet': {
+            try {
+                const result = await rabet.sign(xdr, net.rabet);
+                await submitStakingXdr(result.xdr, staking_id);
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'Rabet', text: 'Signing was rejected or failed.' });
+                throw e;
+            }
+            return;
         }
-        await submitStakingXdr(signedXdr, staking_id);
-      } catch (err) {
-        const msg = (err && (err.message || err.error || err.code)) || '';
-        const hint = /cancel|denied|not selected/i.test(msg)
-          ? 'Request cancelled. Open Albedo, select an account, and try again.'
-          : 'Could not sign the transaction.';
-        Swal.fire({ icon:'error', title:'Albedo', text:hint });
-        throw err;
-      }
-      return;
-    }
+
+        case 'freighter': {
+            try {
+                const signed = await signTransaction(xdr, net.freighter);
+                await submitStakingXdr(signed, staking_id);
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'Freighter', text: 'Signing was rejected or failed.' });
+                throw e;
+            }
+            return;
+        }
+
+        case 'albedo': {
+            try {
+                const res = await window.albedo.tx({
+                    xdr,
+                    network: net.albedo
+                });
+
+                const signedXdr = res.signed_envelope_xdr;
+
+                if (!signedXdr) {
+                    Swal.fire({ icon: 'error', title: 'Albedo', text: 'No signed XDR returned.' });
+                    return;
+                }
+                await submitStakingXdr(signedXdr, staking_id);
+            } catch (err) {
+                const msg = (err && (err.message || err.error || err.code)) || '';
+                const hint = /cancel|denied|not selected/i.test(msg)
+                    ? 'Request cancelled. Open Albedo, select an account, and try again.'
+                    : 'Could not sign the transaction.';
+                Swal.fire({ icon: 'error', title: 'Albedo', text: hint });
+                throw err;
+            }
+            return;
+        }
 
         case 'xbull': {
             const xbull = window.xBullSDK || window.xBull;
-            console.log('[xbull] object:', { hasSDK: !!window.xBullSDK, hasLegacy: !!window.xBull, xbull });
+            if (!xbull) throw new Error('xBull not installed');
 
-            if (!xbull) {
-                console.error('[xbull] not injected');
-                throw new Error('xBull not installed');
-            }
+            // 1) Connect with signing permission
+            await xbull.connect({ canRequestPublicKey: true, canRequestSign: true });
 
-            // quick sanity on inputs
-            console.log('[xbull] inputs:', {
-                staking_id,
-                xdrType: typeof xdr,
-                xdrHead: typeof xdr === 'string' ? xdr.slice(0, 32) + '…' : xdr,
-                networkMapped: net?.xbull
-            });
+            // 2) Verify wallet account
+            const pubkey = await xbull.getPublicKey();
+            console.log('[xbull] pubkey', pubkey);
 
-            if (typeof xdr !== 'string' || !/^[A-Za-z0-9+/=]+$/.test(xdr)) {
-                console.error('[xbull] invalid unsigned XDR (not base64 string):', xdr);
-                throw new Error('Unsigned XDR must be a base64 envelope string');
-            }
-
-            const t0 = performance.now();
-
-            // 1) CONNECT (with sign permission)
-            console.log('[xbull] connect() start');
-            try {
-                await xbull.connect({ canRequestPublicKey: true, canRequestSign: true });
-                console.log('[xbull] connect() ok');
-            } catch (e) {
-                console.error('[xbull] connect() error:', e);
-                Swal.fire({ icon: 'error', title: 'xBull', text: e?.message || 'Connect permission rejected.' });
-                throw e;
-            }
-
-            // 2) GET PUBLIC KEY (diagnostic)
-            let pubkey;
-            console.log('[xbull] getPublicKey() start');
-            try {
-                pubkey = await xbull.getPublicKey();
-                console.log('[xbull] getPublicKey() ok:', pubkey);
-                if (!pubkey) throw new Error('No public key from xBull');
-            } catch (e) {
-                console.error('[xbull] getPublicKey() error:', e);
-                Swal.fire({ icon: 'error', title: 'xBull', text: e?.message || 'Could not read public key.' });
-                throw e;
-            }
-
-            // 3) SIGN XDR
-            const network = net?.xbull || 'testnet'; // fallback if your mapper missing
-            console.log('[xbull] signXDR() start:', { network });
             let signedXdr;
             try {
-                signedXdr = await xbull.signXDR(xdr, { network });
-                console.log('[xbull] signXDR() ok, length:', signedXdr?.length, 'head:', signedXdr?.slice?.(0, 32) + '…');
-                if (typeof signedXdr !== 'string' || !/^[A-Za-z0-9+/=]+$/.test(signedXdr)) {
-                    throw new Error('xBull returned invalid signed XDR');
+                signedXdr = await xbull.signXDR(xdr, 'public'); // <- STRING
+            } catch (e1) {
+                console.warn('[xbull] signXDR(public string) failed:', e1);
+                try {
+                    signedXdr = await xbull.signXDR(xdr); // <- no arg
+                } catch (e2) {
+                    console.error('[xbull] signXDR() error:', e2);
+                    const hint =
+                        /authorize|permission|denied/i.test(e2?.message || '') ? 'xBull did not grant signing permission.' :
+                            /network|passphrase/i.test(e2?.message || '') ? 'Network mismatch. Build the XDR for Public and sign on Public.' :
+                                /xdr|base64|decode/i.test(e2?.message || '') ? 'Invalid XDR. Must be a base64 envelope string.' :
+                                    'Signing was rejected or failed.';
+                    Swal.fire({ icon: 'error', title: 'xBull', text: hint });
+                    throw e2;
                 }
-            } catch (e) {
-                console.error('[xbull] signXDR() error:', {
-                    message: e?.message, code: e?.code, name: e?.name, stack: e?.stack, raw: e
-                });
-                const hint = /authorized|permission|not authorized/i.test(e?.message || '')
-                    ? 'xBull did not grant signing permission. Remove this site in xBull → Connected dApps, then reconnect with “canRequestSign: true”.'
-                    : /network|passphrase/i.test(e?.message || '')
-                        ? 'Network mismatch. Ensure the unsigned XDR is built for the same network (testnet/public) you passed to xBull.'
-                        : /xdr|base64|decode/i.test(e?.message || '')
-                            ? 'Invalid XDR. Ensure you are passing a base64 envelope XDR, not JSON.'
-                            : 'Signing was rejected or failed.';
-                Swal.fire({ icon: 'error', title: 'xBull', text: hint });
-                throw e;
             }
 
-            // 4) SUBMIT TO BACKEND
-            console.log('[xbull] submitStakingXdr() start → staking_id:', staking_id);
-            try {
-                const resp = await submitStakingXdr(signedXdr, staking_id);
-                console.log('[xbull] submitStakingXdr() ok:', resp);
-            } catch (e) {
-                console.error('[xbull] submitStakingXdr() error:', e);
-                Swal.fire({ icon: 'error', title: 'Submit error', text: e?.message || 'Failed to submit signed transaction.' });
-                throw e;
-            }
-
-            const dt = (performance.now() - t0).toFixed(1);
-            console.log('[xbull] done in', dt, 'ms');
+            await submitStakingXdr(signedXdr, staking_id);
             return;
         }
+
 
         default:
             throw new Error("No wallet selected. Connect a wallet first.");
@@ -1191,21 +1137,21 @@ function toggleFaq(idx: number) {
 
 // --- Helpers ---
 function fmtNum(n: number | string | null | undefined, digits = 0) {
-  if (n === null || n === undefined || Number.isNaN(Number(n))) return null; // signal "no value"
-  return Number(n).toLocaleString(undefined, {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  });
+    if (n === null || n === undefined || Number.isNaN(Number(n))) return null; // signal "no value"
+    return Number(n).toLocaleString(undefined, {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits,
+    });
 }
 
 function fmtInt(n: number | string | null | undefined, digits = 0) {
-  return fmtNum(n, digits);
+    return fmtNum(n, digits);
 }
 
 
 function fmtTKG(n: number | string | null | undefined, digits = 2) {
-  const val = fmtNum(n, digits);
-  return val === null ? null : `${val}`;
+    const val = fmtNum(n, digits);
+    return val === null ? null : `${val}`;
 }
 
 // ---------- State ----------
@@ -1219,8 +1165,8 @@ const totalPayouts = ref<number | null>(null)
 // ---------- Formatted values ----------
 const totalStakedFormatted = computed(() => fmtInt(totalStakedTKG.value));
 const activeStakersFormatted = computed(() => fmtInt(activeStakers.value));
-const rewards24hFormatted    = computed(() => fmtTKG(rewardsPaid24hTKG.value, 2));
-const totalPayoutsFormatted  = computed(() => fmtTKG(totalPayouts.value, 2));
+const rewards24hFormatted = computed(() => fmtTKG(rewardsPaid24hTKG.value, 2));
+const totalPayoutsFormatted = computed(() => fmtTKG(totalPayouts.value, 2));
 
 const lastUpdatedAgo = computed(() => {
     if (!lastUpdated.value) return 'just now'
@@ -1236,22 +1182,22 @@ const lastUpdatedAgo = computed(() => {
 const statsError = ref(false);
 
 async function refreshStats() {
-  statsLoading.value = true;
-  statsError.value = false;
-  try {
-    const { data } = await axios.get('/api/global/stats');
-    const s = data?.stats ?? data
-    totalStakedTKG.value   = Number(s?.total_staked   ?? 0);
-    activeStakers.value    = Number(s?.active_stakers ?? 0);
-    rewardsPaid24hTKG.value= Number(s?.rewards_paid   ?? 0);
-    totalPayouts.value     = Number(s?.total_payouts  ?? 0);
-  } catch (err) {
-    console.error('Failed to load staking stats', err)
-    totalStakedTKG.value    = null
-    activeStakers.value     = null
-    rewardsPaid24hTKG.value = null
-    totalPayouts.value      = null
-    statsError.value = true;
+    statsLoading.value = true;
+    statsError.value = false;
+    try {
+        const { data } = await axios.get('/api/global/stats');
+        const s = data?.stats ?? data
+        totalStakedTKG.value = Number(s?.total_staked ?? 0);
+        activeStakers.value = Number(s?.active_stakers ?? 0);
+        rewardsPaid24hTKG.value = Number(s?.rewards_paid ?? 0);
+        totalPayouts.value = Number(s?.total_payouts ?? 0);
+    } catch (err) {
+        console.error('Failed to load staking stats', err)
+        totalStakedTKG.value = null
+        activeStakers.value = null
+        rewardsPaid24hTKG.value = null
+        totalPayouts.value = null
+        statsError.value = true;
     } finally {
         lastUpdated.value = new Date()
         statsLoading.value = false
