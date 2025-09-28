@@ -294,4 +294,8 @@ ul.dropdown-menu.show {
   margin-left: 5px;
 }
 
+html {
+  scrollbar-gutter: stable both-edges;
+}
+
 /* Wallet Modal */
