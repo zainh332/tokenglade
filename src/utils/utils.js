@@ -173,25 +173,56 @@ export const fAddr = (_address, n = 14) => {
 export async function signXdrWithWallet(wallet, xdr, isTestnet) {
     const key = (wallet || "").toString().trim().toLowerCase();
 
-    switch (key) {
-        case "freighter": {
-            const res = await signTransaction(
-                xdr,
-                isTestnet ? "TESTNET" : "PUBLIC"
-            );
-            return res;
-        }
-        case "rabet": {
-            if (!window.rabet) throw new Error("Rabet not installed");
-            const res = await window.rabet.sign(
-                xdr,
-                isTestnet ? "testnet" : "mainnet"
-            );
-            return res;
-        }
-        default:
-            throw new Error("Unsupported wallet for signing");
+  if (typeof xdr !== "string" || !/^[A-Za-z0-9+/=]+$/.test(xdr)) {
+    throw new Error("Unsigned XDR must be a base64 envelope string");
+  }
+
+  const net = {
+    freighter: isTestnet ? "TESTNET" : "PUBLIC",
+    rabet:     isTestnet ? "testnet" : "mainnet",
+    albedo:    isTestnet ? "testnet" : "public",
+    xbull:     isTestnet ? "testnet" : "public",
+  };
+
+  switch (key) {
+    case "freighter": {
+      const res = await signTransaction(xdr, net.freighter);
+      return res;
     }
+
+    case "rabet": {
+      if (!window.rabet) throw new Error("Rabet not installed");
+      const res = await window.rabet.sign(xdr, net.rabet);
+      return res?.xdr ?? res;
+    }
+
+    case "albedo": {
+      if (!window.albedo?.tx) throw new Error("Albedo SDK not loaded");
+      const res = await window.albedo.tx({ xdr, network: net.albedo });
+      const out = res?.signed_envelope_xdr;
+      if (!out) throw new Error("Albedo returned no signed XDR");
+      return out;
+    }
+
+    case "xbull": {
+      const xbull = window.xBullSDK || window.xBull;
+      if (!xbull) throw new Error("xBull not installed");
+
+      await xbull.connect({ canRequestPublicKey: true, canRequestSign: true });
+
+      try {
+        const out = await xbull.signXDR(xdr, net.xbull);
+        if (typeof out === "string") return out;
+      } catch (_) {
+      }
+      const out2 = await xbull.signXDR(xdr);
+      if (typeof out2 !== "string") throw new Error("xBull returned no signed XDR");
+      return out2;
+    }
+
+    default:
+      throw new Error("Unsupported wallet for signing");
+  }
 }
 
 export async function checkTkgBalance(public_address) {

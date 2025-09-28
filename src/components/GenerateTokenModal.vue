@@ -217,7 +217,8 @@ const schema = Yup.object({
 
 // Close modal
 const closeModal = () => emit('close')
-const network = (import.meta.env.VITE_STELLAR_ENVIRONMENT || "public").toLowerCase();
+// const network = (import.meta.env.VITE_STELLAR_ENVIRONMENT || "public").toLowerCase();
+const network = 'public';
 const isTestnet = network === "testnet";
 
 const maxValue = 922337203685; // The maximum allowed value
