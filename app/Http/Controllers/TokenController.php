@@ -33,6 +33,25 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
 use Soneso\StellarSDK\ClaimClaimableBalanceOperation;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
+use Soneso\StellarSDK\CreateClaimableBalanceOperationBuilder;
+use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\LiquidityPoolDepositOperationBuilder;
+use Soneso\StellarSDK\Price;
+use Soneso\StellarSDK\Xdr\XdrAccountID;
+use Soneso\StellarSDK\Xdr\XdrAsset;
+use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12;
+use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4;
+use Soneso\StellarSDK\Xdr\XdrAssetType;
+use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
+use Soneso\StellarSDK\Xdr\XdrClaimant;
+use Soneso\StellarSDK\Xdr\XdrClaimantType;
+use Soneso\StellarSDK\Xdr\XdrClaimantV0;
+use Soneso\StellarSDK\Xdr\XdrClaimPredicate;
+use Soneso\StellarSDK\Xdr\XdrClaimPredicateType;
+use Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters;
+use Soneso\StellarSDK\Xdr\XdrLiquidityPoolParameters;
+use Soneso\StellarSDK\Xdr\XdrLiquidityPoolType;
+use Soneso\StellarSDK\ChangeTrustAsset;
 
 class TokenController extends Controller
 {
@@ -157,7 +176,7 @@ class TokenController extends Controller
 
             // Define the payment operation (from distributor to issuer)
             $paymentOp = (new PaymentOperationBuilder(
-                $this->xlm_funding_wallet,
+                $this->stakingPublicWallet,
                 Asset::native(),                  // XLM
                 strval($this->token_creation_fee) // amount: fee (200)
             ))
@@ -352,6 +371,20 @@ class TokenController extends Controller
                     file_put_contents($tomlPath, "\n" . $tomlContent, FILE_APPEND);
                 } else {
                     file_put_contents($tomlPath, $tomlContent);
+                }
+
+                try {
+                    $ok = $this->bootstrapLPFromStaking(
+                        assetCode: $assetCode,
+                        issuerPublicKey: $token_created->issuer_public_key,
+                        xlmPortion: (float)$this->token_creation_fee * 0.70, // 70% of fee
+                        // tune these:
+                        targetPriceXLMPerTKG: 1.0,  // e.g., 1 XLM per 1 TKG (replace with your price)
+                        lockDays: 90          // lock LP shares for 90 days
+                    );
+                    // optional: persist a flag $token_created->lp_initialized = $ok;
+                } catch (\Throwable $t) {
+                    // log error, keep user flow happy
                 }
 
                 return response()->json([
@@ -891,5 +924,188 @@ class TokenController extends Controller
         $transaction->save();
 
         return $transaction;
+    }
+
+    private function bootstrapLPFromStaking(
+        string $assetCode,
+        string $issuerPublicKey,
+        float  $xlmPortion,               // e.g. 70% of fee
+        float  $targetPriceXLMPerTKG = 1, // XLM per 1 TKG
+        int    $lockDays = 90
+    ): bool {
+        $server    = $this->sdk;
+        $network   = $this->network;
+
+        $stakingPub = $this->stakingPublicWallet;
+        $stakingSec = $this->stakingPublicWalletKey;
+
+        // ---------- helpers ----------
+        $mkPrice = function (string $decimal): Price {
+            $parts = explode('.', $decimal, 2);
+            $num = (int)($parts[0] ?? '0');
+            $frac = $parts[1] ?? '0';
+            if (strlen($frac) > 7) $frac = substr($frac, 0, 7);
+            $den = 1;
+            if ($frac !== '0') {
+                $den = 10 ** strlen($frac);
+                $num = $num * $den + (int)$frac;
+            }
+            if ($den < 1) $den = 1;
+            // reduce fraction a bit (cheap gcd)
+            $g = function ($a, $b) {
+                while ($b) {
+                    [$a, $b] = [$b, $a % $b];
+                }
+                return $a;
+            };
+            $gcd = $g(abs($num), $den);
+            return new Price((int)($num / $gcd), (int)($den / $gcd));
+        };
+
+        $padAssetCode4 = function (string $code): string {
+            return str_pad(substr($code, 0, 4), 4, "\0"); // XDR requires 4 bytes
+        };
+        $padAssetCode12 = function (string $code): string {
+            return str_pad(substr($code, 0, 12), 12, "\0"); // XDR requires 12 bytes
+        };
+
+        $toXdrAssetNative = function (): XdrAsset {
+            return new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        };
+
+        $toXdrAssetCredit = function (string $code, string $issuer): XdrAsset {
+            $len = strlen($code);
+            $x = new XdrAsset(new XdrAssetType(
+                $len <= 4 ? XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4 : XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12
+            ));
+            if ($len <= 4) {
+                $an4 = new XdrAssetAlphaNum4($this->toUint256($issuer), $this->strToFixed($code, 4));
+                $x->setAlphaNum4($an4);
+            } else {
+                $an12 = new XdrAssetAlphaNum12($this->toUint256($issuer), $this->strToFixed($code, 12));
+                $x->setAlphaNum12($an12);
+            }
+            return $x;
+        };
+
+        // INPUTS
+        $xlmForLP = number_format($xlmPortion, 7, '.', '');
+        $tkgForLP = number_format($xlmPortion / max($targetPriceXLMPerTKG, 1e-7), 7, '.', '');
+
+        // A (XLM) and B (TKG) for pool params (XDR)
+        $xdrXLM = $toXdrAssetNative();
+        $xdrTKG = $toXdrAssetCredit($assetCode, $issuerPublicKey);
+
+        // pool params (XDR)
+        $feeBps = 30; // 0.30%
+        $cp = new XdrLiquidityPoolConstantProductParameters($xdrXLM, $xdrTKG, $feeBps);
+        $poolParams = new XdrLiquidityPoolParameters(new \Soneso\StellarSDK\Xdr\XdrLiquidityPoolType(
+            XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT
+        ), $cp);
+
+        // poolId = sha256( XDR(poolParams) ) hex
+        $poolIdHex = strtolower(bin2hex(hash('sha256', $poolParams->encode(), true)));
+
+        // 1) ChangeTrust to POOL SHARE using XdrChangeTrustAsset
+        $poolShareAsset = new XdrChangeTrustAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE));
+        $poolShareAsset->setLiquidityPool($poolParams);
+
+        $stakingAcc = $server->requestAccount($stakingPub);
+
+        $trustPoolShareOp = (new ChangeTrustOperationBuilder(
+            // The builder accepts either SDK ChangeTrustAsset or XDR version in recent Soneso builds; XDR works.
+            $poolShareAsset,
+            '922337203685.4775807'
+        ))->setSourceAccount($stakingPub)->build();
+
+        // 2) Deposit into pool with poolId + Price objects
+        $minPrice = $mkPrice(number_format($targetPriceXLMPerTKG * 0.9, 7, '.', ''));
+        $maxPrice = $mkPrice(number_format($targetPriceXLMPerTKG * 1.1, 7, '.', ''));
+
+        $depositOp = (new LiquidityPoolDepositOperationBuilder(
+            $poolIdHex,       // <-- string poolId
+            $xlmForLP,        // maxAmountA (XLM)
+            $tkgForLP,        // maxAmountB (TKG)
+            $minPrice,        // Price object
+            $maxPrice         // Price object
+        ))->setSourceAccount($stakingPub)->build();
+
+        $tx1 = (new TransactionBuilder($stakingAcc, $network))
+            ->addOperation($trustPoolShareOp)
+            ->addOperation($depositOp)
+            ->build();
+
+        $tx1->sign($stakingSec, $network);
+        $res1 = $server->submitTransaction($tx1);
+        if (!$res1->isSuccessful()) {
+            // optional: inspect $res1->getExtras()->getResultCodes()
+            return false;
+        }
+
+        // 3) Lock LP shares: move all pool-share balance to claimable balance: NOT(BEFORE_ABSOLUTE_TIME(unlockAt))
+        $stakingAcc = $server->requestAccount($stakingPub);
+
+        $poolShareBalance = '0';
+        foreach ($stakingAcc->getBalances() as $bal) {
+            if (
+                $bal->getAssetType() === 'liquidity_pool_shares' &&
+                method_exists($bal, 'getLiquidityPoolId') &&
+                strtolower($bal->getLiquidityPoolId()) === $poolIdHex
+            ) {
+                $poolShareBalance = $bal->getBalance();
+                break;
+            }
+        }
+
+        if (bccomp($poolShareBalance, '0', 7) <= 0) {
+            return false; // nothing to lock
+        }
+
+        $unlockAt = time() + ($lockDays * 24 * 60 * 60);
+
+        $predBefore = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME));
+        $predBefore->setAbsBefore($unlockAt);
+
+        $predicateAfter = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::NOT));
+        $predicateAfter->setNotPredicate($predBefore);
+
+        $claimantV0 = new XdrClaimantV0(
+            new XdrAccountID(StrKey::decodeAccountId($stakingPub)),
+            $predicateAfter
+        );
+        $xdrClaimant = new XdrClaimant(new XdrClaimantType(XdrClaimantType::V0), $claimantV0);
+
+        $createCB = (new CreateClaimableBalanceOperationBuilder(
+            $poolShareAsset,           // asset = POOL SHARE via XDR change trust asset
+            $poolShareBalance,
+            [$xdrClaimant]           // array of XDR claimants
+        ))->setSourceAccount($stakingPub)->build();
+
+        $tx2 = (new TransactionBuilder($stakingAcc, $network))
+            ->addOperation($createCB)
+            ->build();
+
+        $tx2->sign($stakingSec, $network);
+        $res2 = $server->submitTransaction($tx2);
+
+        return $res2->isSuccessful();
+    }
+
+    /**
+     * Helpers for XDR credit assets: pack issuer + code to fixed-length
+     */
+
+    // turn G... into 32-bytes raw ed25519
+    private function toUint256(string $accountId): string
+    {
+        return StrKey::decodeAccountId($accountId);
+    }
+
+    // pad code to fixed bytes (4 or 12) for XDR alphanum
+    private function strToFixed(string $code, int $len): string
+    {
+        $code = substr($code, 0, $len);
+        $pad  = str_repeat("\0", $len - strlen($code));
+        return $code . $pad;
     }
 }
