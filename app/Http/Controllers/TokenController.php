@@ -12,6 +12,7 @@ use App\Services\WalletService;
 use Carbon\Carbon;
 use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -34,8 +35,13 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
 use Soneso\StellarSDK\ClaimClaimableBalanceOperation;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
+use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\LiquidityPoolDepositOperationBuilder;
 use Soneso\StellarSDK\Price;
+use Soneso\StellarSDK\Xdr\XdrAssetType;
+use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
+use Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters;
+use Soneso\StellarSDK\Xdr\XdrLiquidityPoolParameters;
 
 class TokenController extends Controller
 {
@@ -359,14 +365,14 @@ class TokenController extends Controller
                 }
 
                 try {
-                $liquidityDepositTransaction = $this->tokenCreationLiquidityDepositTransaction();
-                if ($liquidityDepositTransaction['status'] !== 'success') {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => $liquidityDepositTransaction['message'],
-                        'error' => $liquidityDepositTransaction['error'] ?? 'Unknown error'
-                    ], 500);
-                }
+                    $liquidityDepositTransaction = $this->tokenCreationLiquidityDepositTransaction();
+                    if ($liquidityDepositTransaction['status'] !== 'success') {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => $liquidityDepositTransaction['message'],
+                            'error' => $liquidityDepositTransaction['error'] ?? 'Unknown error'
+                        ], 500);
+                    }
                 } catch (\Throwable $t) {
                     // log error, keep user flow happy
                 }
@@ -917,26 +923,54 @@ class TokenController extends Controller
         $feePercentageForLP = 0.7;
 
         try {
-            // 1. Load the STAKING ACCOUNT (Source of the LP Deposit)
+            Log::info('Starting tokenCreationLiquidityDepositTransaction', [
+                'stakingPublicWallet' => $this->stakingPublicWallet,
+                'assetCode' => $this->assetCode,
+                'isTestnet' => $this->isTestnet ?? true,
+            ]);
+
             $stakingAccountPublicKey = $this->stakingPublicWallet;
             $stakingAccount = $this->sdk->requestAccount($stakingAccountPublicKey);
 
-            // Calculate the Liquidity Pool ID. The LiquidityPoolDepositOperationBuilder you use 
-            $poolId = $this->getPoolIdFromHorizon($this->assetCode, $this->stakingPublicWallet, $this->isTestnet ?? false);
+            Log::debug('Fetched staking account from SDK', [
+                'accountId' => $stakingAccountPublicKey,
+                'sequence' => $stakingAccount->getSequenceNumber(),
+            ]);
+
+            $poolId = $this->getPoolIdFromHorizon(
+                $this->assetCode,
+                $this->tkgIssuer,
+                $this->isTestnet ?? true
+            );
+            Log::info('Queried poolId from Horizon', [
+                'assetCode' => $this->assetCode,
+                'issuer' => $this->tkgIssuer,
+                'poolId' => $poolId,
+            ]);
+
             if (!$poolId) {
-                throw new \RuntimeException('Liquidity pool not found yet on Horizon. Create first deposit or compute PoolID deterministically.');
+                Log::error('Liquidity pool not found on Horizon', [
+                    'assetCode' => $this->assetCode,
+                    'issuer' => $this->tkgIssuer,
+                ]);
+                throw new \RuntimeException('Liquidity pool not found yet on Horizon.');
             }
 
-            // 3. Define the Deposit Amounts
-            $xlmLiquidityAmount = strval($this->token_creation_fee * $feePercentageForLP);
-            // Calculate TKG amount based on the defined ratio
-            $tkgLiquidityAmount = strval($xlmLiquidityAmount * $this->tkgDepositRatio);
+            $xlmLiquidityAmount = number_format($this->token_creation_fee * $feePercentageForLP, 7, '.', '');
+            $tkgLiquidityAmount = number_format(
+                (float)$xlmLiquidityAmount * (float)$this->tkgDepositRatio,
+                7,
+                '.',
+                ''
+            );
+            Log::debug('Computed liquidity amounts', [
+                'xlmLiquidityAmount' => $xlmLiquidityAmount,
+                'tkgLiquidityAmount' => $tkgLiquidityAmount,
+            ]);
 
-            // Instantiate Price objects
             $minPrice = new Price(1, 100000000);
             $maxPrice = new Price(100000000, 1);
 
-            // --- 2. Build Operation and Transaction ---
             $depositOp = (new LiquidityPoolDepositOperationBuilder(
                 $poolId,
                 $xlmLiquidityAmount,
@@ -944,39 +978,79 @@ class TokenController extends Controller
                 $minPrice,
                 $maxPrice
             ))->build();
+            Log::debug('Built LiquidityPoolDepositOperation', [
+                'poolId' => $poolId,
+            ]);
 
             $transaction = (new TransactionBuilder($stakingAccount, $this->network))
                 ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Initial Liquidity Deposit'))
                 ->addOperation($depositOp)
                 ->build();
+            Log::debug('Built transaction XDR', [
+                'txXdr' => $transaction->toEnvelopeXdrBase64(),
+            ]);
+
+            Log::info('stakingPublicWalletKey', [
+                'stakingPublicWalletKey' => $this->stakingPublicWalletKey,
+            ]);
 
             $stakingKeyPair = KeyPair::fromSeed($this->stakingPublicWalletKey);
+            Log::info('stakingKeyPair', [
+                'stakingKeyPair' => $stakingKeyPair,
+            ]);
             $transaction->sign($stakingKeyPair, $this->network);
+            Log::info('Transaction signed', [
+                'network' => $this->network,
+            ]);
 
-            // --- 4. Submit the Transaction to Stellar ---
             $response = $this->sdk->submitTransaction($transaction);
+            Log::info('Submitted transaction to Horizon', [
+                'hash' => $response->getHash(),
+                'successful' => $response->isSuccessful(),
+            ]);
 
             if ($response->isSuccessful()) {
-                // Return the hash of the successfully submitted transaction
                 return [
                     'status' => 'success',
                     'message' => 'Liquidity Pool Deposit transaction successfully submitted.',
                     'transaction_hash' => $response->getHash()
                 ];
             } else {
-                // Submission failed
+                $codes = $response->getExtras()->getResultCodes();
+                Log::error('Liquidity Pool Deposit failed', [
+                    'result_codes' => $codes,
+                ]);
                 return [
                     'status' => 'error',
                     'message' => 'Liquidity Pool Deposit submission failed.',
-                    'error' => $response->getExtras()->getResultCodes()
+                    'error' => $codes
                 ];
             }
-        } catch (\Exception $e) {
-            // Handle exceptions during transaction creation
+        } catch (HorizonRequestException $hex) {
+            // Soneso wraps the underlying Guzzle exception; pull the body
+            $prev = $hex->getPrevious();
+            $body = null;
+            if ($prev instanceof ClientException && $prev->getResponse()) {
+                $body = (string)$prev->getResponse()->getBody();
+            }
+            Log::error('HorizonRequestException on submitTransaction', [
+                'horizon_message' => $hex->getMessage(),
+                'horizon_body'    => $body, // contains extras.result_codes.{transaction,operations}
+            ]);
             return [
-                'status' => 'error',
-                'message' => 'Could not create liquidity pool deposit transaction',
-                'error' => $e->getMessage()
+                'status'  => 'error',
+                'message' => 'Horizon rejected transaction',
+                'error'   => $body ?: $hex->getMessage(),
+            ];
+        } catch (\Throwable $e) {
+            Log::critical('Unexpected exception submitting tx', [
+                'exception' => $e->getMessage(),
+                'trace'     => $e->getTraceAsString(),
+            ]);
+            return [
+                'status'  => 'error',
+                'message' => 'Unexpected exception',
+                'error'   => $e->getMessage(),
             ];
         }
     }
