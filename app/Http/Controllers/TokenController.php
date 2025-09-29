@@ -11,7 +11,8 @@ use App\Models\Token;
 use App\Services\WalletService;
 use Carbon\Carbon;
 use Exception;
-
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -33,30 +34,13 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
 use Soneso\StellarSDK\ClaimClaimableBalanceOperation;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
-use Soneso\StellarSDK\CreateClaimableBalanceOperationBuilder;
-use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\LiquidityPoolDepositOperationBuilder;
 use Soneso\StellarSDK\Price;
-use Soneso\StellarSDK\Xdr\XdrAccountID;
-use Soneso\StellarSDK\Xdr\XdrAsset;
-use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12;
-use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4;
-use Soneso\StellarSDK\Xdr\XdrAssetType;
-use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
-use Soneso\StellarSDK\Xdr\XdrClaimant;
-use Soneso\StellarSDK\Xdr\XdrClaimantType;
-use Soneso\StellarSDK\Xdr\XdrClaimantV0;
-use Soneso\StellarSDK\Xdr\XdrClaimPredicate;
-use Soneso\StellarSDK\Xdr\XdrClaimPredicateType;
-use Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters;
-use Soneso\StellarSDK\Xdr\XdrLiquidityPoolParameters;
-use Soneso\StellarSDK\Xdr\XdrLiquidityPoolType;
-use Soneso\StellarSDK\ChangeTrustAsset;
 
 class TokenController extends Controller
 {
     private $sdk, $maxFee, $network, $token_creation_fee;
-    private $xlm_funding_wallet, $xlm_funding_wallet_key, $issuer_wallet_amount, $stakingPublicWallet, $stakingPublicWalletKey, $tkgIssuer, $assetCode;
+    private $xlm_funding_wallet, $xlm_funding_wallet_key, $issuer_wallet_amount, $stakingPublicWallet, $stakingPublicWalletKey, $tkgIssuer, $assetCode, $tkgDepositRatio;
     private WalletService $wallet;
 
     public function __construct(WalletService $wallet)
@@ -86,6 +70,7 @@ class TokenController extends Controller
         $this->maxFee = 30;
         $this->token_creation_fee = 50; //XLM
         $this->issuer_wallet_amount = 4; //XLM
+        $this->tkgDepositRatio = 10;
     }
 
     public function generate_token(Request $request)
@@ -374,15 +359,14 @@ class TokenController extends Controller
                 }
 
                 try {
-                    $ok = $this->bootstrapLPFromStaking(
-                        assetCode: $assetCode,
-                        issuerPublicKey: $token_created->issuer_public_key,
-                        xlmPortion: (float)$this->token_creation_fee * 0.70, // 70% of fee
-                        // tune these:
-                        targetPriceXLMPerTKG: 1.0,  // e.g., 1 XLM per 1 TKG (replace with your price)
-                        lockDays: 90          // lock LP shares for 90 days
-                    );
-                    // optional: persist a flag $token_created->lp_initialized = $ok;
+                $liquidityDepositTransaction = $this->tokenCreationLiquidityDepositTransaction();
+                if ($liquidityDepositTransaction['status'] !== 'success') {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => $liquidityDepositTransaction['message'],
+                        'error' => $liquidityDepositTransaction['error'] ?? 'Unknown error'
+                    ], 500);
+                }
                 } catch (\Throwable $t) {
                     // log error, keep user flow happy
                 }
@@ -911,6 +895,7 @@ class TokenController extends Controller
         }
     }
 
+
     private function addStellarTransactionRecord($stellar_token_id, $wallet, $type_id, $unsigned_xdr, $signed_xdr, $tx_hash, $status)
     {
         $transaction = new StellarTransactions();
@@ -926,186 +911,128 @@ class TokenController extends Controller
         return $transaction;
     }
 
-    private function bootstrapLPFromStaking(
-        string $assetCode,
-        string $issuerPublicKey,
-        float  $xlmPortion,               // e.g. 70% of fee
-        float  $targetPriceXLMPerTKG = 1, // XLM per 1 TKG
-        int    $lockDays = 90
-    ): bool {
-        $server    = $this->sdk;
-        $network   = $this->network;
+    private function tokenCreationLiquidityDepositTransaction()
+    {
+        // 70% of the token creation fee goes into the LP as XLM (Asset A)
+        $feePercentageForLP = 0.7;
 
-        $stakingPub = $this->stakingPublicWallet;
-        $stakingSec = $this->stakingPublicWalletKey;
+        try {
+            // 1. Load the STAKING ACCOUNT (Source of the LP Deposit)
+            $stakingAccountPublicKey = $this->stakingPublicWallet;
+            $stakingAccount = $this->sdk->requestAccount($stakingAccountPublicKey);
 
-        // ---------- helpers ----------
-        $mkPrice = function (string $decimal): Price {
-            $parts = explode('.', $decimal, 2);
-            $num = (int)($parts[0] ?? '0');
-            $frac = $parts[1] ?? '0';
-            if (strlen($frac) > 7) $frac = substr($frac, 0, 7);
-            $den = 1;
-            if ($frac !== '0') {
-                $den = 10 ** strlen($frac);
-                $num = $num * $den + (int)$frac;
+            // Calculate the Liquidity Pool ID. The LiquidityPoolDepositOperationBuilder you use 
+            $poolId = $this->getPoolIdFromHorizon($this->assetCode, $this->stakingPublicWallet, $this->isTestnet ?? false);
+            if (!$poolId) {
+                throw new \RuntimeException('Liquidity pool not found yet on Horizon. Create first deposit or compute PoolID deterministically.');
             }
-            if ($den < 1) $den = 1;
-            // reduce fraction a bit (cheap gcd)
-            $g = function ($a, $b) {
-                while ($b) {
-                    [$a, $b] = [$b, $a % $b];
-                }
-                return $a;
-            };
-            $gcd = $g(abs($num), $den);
-            return new Price((int)($num / $gcd), (int)($den / $gcd));
-        };
 
-        $padAssetCode4 = function (string $code): string {
-            return str_pad(substr($code, 0, 4), 4, "\0"); // XDR requires 4 bytes
-        };
-        $padAssetCode12 = function (string $code): string {
-            return str_pad(substr($code, 0, 12), 12, "\0"); // XDR requires 12 bytes
-        };
+            // 3. Define the Deposit Amounts
+            $xlmLiquidityAmount = strval($this->token_creation_fee * $feePercentageForLP);
+            // Calculate TKG amount based on the defined ratio
+            $tkgLiquidityAmount = strval($xlmLiquidityAmount * $this->tkgDepositRatio);
 
-        $toXdrAssetNative = function (): XdrAsset {
-            return new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
-        };
+            // Instantiate Price objects
+            $minPrice = new Price(1, 100000000);
+            $maxPrice = new Price(100000000, 1);
 
-        $toXdrAssetCredit = function (string $code, string $issuer): XdrAsset {
-            $len = strlen($code);
-            $x = new XdrAsset(new XdrAssetType(
-                $len <= 4 ? XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4 : XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12
-            ));
-            if ($len <= 4) {
-                $an4 = new XdrAssetAlphaNum4($this->toUint256($issuer), $this->strToFixed($code, 4));
-                $x->setAlphaNum4($an4);
+            // --- 2. Build Operation and Transaction ---
+            $depositOp = (new LiquidityPoolDepositOperationBuilder(
+                $poolId,
+                $xlmLiquidityAmount,
+                $tkgLiquidityAmount,
+                $minPrice,
+                $maxPrice
+            ))->build();
+
+            $transaction = (new TransactionBuilder($stakingAccount, $this->network))
+                ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Initial Liquidity Deposit'))
+                ->addOperation($depositOp)
+                ->build();
+
+            $stakingKeyPair = KeyPair::fromSeed($this->stakingPublicWalletKey);
+            $transaction->sign($stakingKeyPair, $this->network);
+
+            // --- 4. Submit the Transaction to Stellar ---
+            $response = $this->sdk->submitTransaction($transaction);
+
+            if ($response->isSuccessful()) {
+                // Return the hash of the successfully submitted transaction
+                return [
+                    'status' => 'success',
+                    'message' => 'Liquidity Pool Deposit transaction successfully submitted.',
+                    'transaction_hash' => $response->getHash()
+                ];
             } else {
-                $an12 = new XdrAssetAlphaNum12($this->toUint256($issuer), $this->strToFixed($code, 12));
-                $x->setAlphaNum12($an12);
+                // Submission failed
+                return [
+                    'status' => 'error',
+                    'message' => 'Liquidity Pool Deposit submission failed.',
+                    'error' => $response->getExtras()->getResultCodes()
+                ];
             }
-            return $x;
-        };
-
-        // INPUTS
-        $xlmForLP = number_format($xlmPortion, 7, '.', '');
-        $tkgForLP = number_format($xlmPortion / max($targetPriceXLMPerTKG, 1e-7), 7, '.', '');
-
-        // A (XLM) and B (TKG) for pool params (XDR)
-        $xdrXLM = $toXdrAssetNative();
-        $xdrTKG = $toXdrAssetCredit($assetCode, $issuerPublicKey);
-
-        // pool params (XDR)
-        $feeBps = 30; // 0.30%
-        $cp = new XdrLiquidityPoolConstantProductParameters($xdrXLM, $xdrTKG, $feeBps);
-        $poolParams = new XdrLiquidityPoolParameters(new \Soneso\StellarSDK\Xdr\XdrLiquidityPoolType(
-            XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT
-        ), $cp);
-
-        // poolId = sha256( XDR(poolParams) ) hex
-        $poolIdHex = strtolower(bin2hex(hash('sha256', $poolParams->encode(), true)));
-
-        // 1) ChangeTrust to POOL SHARE using XdrChangeTrustAsset
-        $poolShareAsset = new XdrChangeTrustAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE));
-        $poolShareAsset->setLiquidityPool($poolParams);
-
-        $stakingAcc = $server->requestAccount($stakingPub);
-
-        $trustPoolShareOp = (new ChangeTrustOperationBuilder(
-            // The builder accepts either SDK ChangeTrustAsset or XDR version in recent Soneso builds; XDR works.
-            $poolShareAsset,
-            '922337203685.4775807'
-        ))->setSourceAccount($stakingPub)->build();
-
-        // 2) Deposit into pool with poolId + Price objects
-        $minPrice = $mkPrice(number_format($targetPriceXLMPerTKG * 0.9, 7, '.', ''));
-        $maxPrice = $mkPrice(number_format($targetPriceXLMPerTKG * 1.1, 7, '.', ''));
-
-        $depositOp = (new LiquidityPoolDepositOperationBuilder(
-            $poolIdHex,       // <-- string poolId
-            $xlmForLP,        // maxAmountA (XLM)
-            $tkgForLP,        // maxAmountB (TKG)
-            $minPrice,        // Price object
-            $maxPrice         // Price object
-        ))->setSourceAccount($stakingPub)->build();
-
-        $tx1 = (new TransactionBuilder($stakingAcc, $network))
-            ->addOperation($trustPoolShareOp)
-            ->addOperation($depositOp)
-            ->build();
-
-        $tx1->sign($stakingSec, $network);
-        $res1 = $server->submitTransaction($tx1);
-        if (!$res1->isSuccessful()) {
-            // optional: inspect $res1->getExtras()->getResultCodes()
-            return false;
+        } catch (\Exception $e) {
+            // Handle exceptions during transaction creation
+            return [
+                'status' => 'error',
+                'message' => 'Could not create liquidity pool deposit transaction',
+                'error' => $e->getMessage()
+            ];
         }
+    }
 
-        // 3) Lock LP shares: move all pool-share balance to claimable balance: NOT(BEFORE_ABSOLUTE_TIME(unlockAt))
-        $stakingAcc = $server->requestAccount($stakingPub);
+    private function getPoolIdFromHorizon(string $codeB, string $issuerB, bool $testnet = false): ?string
+    {
+        $base = $testnet
+            ? 'https://horizon-testnet.stellar.org'
+            : 'https://horizon.stellar.org';
 
-        $poolShareBalance = '0';
-        foreach ($stakingAcc->getBalances() as $bal) {
-            if (
-                $bal->getAssetType() === 'liquidity_pool_shares' &&
-                method_exists($bal, 'getLiquidityPoolId') &&
-                strtolower($bal->getLiquidityPoolId()) === $poolIdHex
-            ) {
-                $poolShareBalance = $bal->getBalance();
-                break;
+        // Try repeated-reserves style first
+        $url1 = $base
+            . '/liquidity_pools'
+            . '?reserves=native'
+            . '&reserves=' . rawurlencode($codeB . ':' . $issuerB)
+            . '&limit=1&order=asc';
+
+        // Also prepare a fallback comma-separated style
+        $url2 = $base
+            . '/liquidity_pools'
+            . '?reserves=' . rawurlencode('native,' . $codeB . ':' . $issuerB)
+            . '&limit=1&order=asc';
+
+        $client = new Client(['timeout' => 10]);
+
+        foreach ([$url1, $url2] as $url) {
+            try {
+                $res = $client->get($url);
+                $status = $res->getStatusCode();
+                if ($status !== 200) {
+                    // not successful, skip this attempt
+                    continue;
+                }
+                $body = (string)$res->getBody();
+                $json = json_decode($body, true);
+                if (!is_array($json) || !isset($json['_embedded']['records'])) {
+                    continue;
+                }
+                $records = $json['_embedded']['records'];
+                if (count($records) === 0) {
+                    continue;
+                }
+                $rec = $records[0];
+                if (isset($rec['id'])) {
+                    return $rec['id'];
+                }
+            } catch (RequestException $ex) {
+                // optionally log $ex->getMessage()
+                continue;
+            } catch (\Exception $ex) {
+                // other errors
+                continue;
             }
         }
 
-        if (bccomp($poolShareBalance, '0', 7) <= 0) {
-            return false; // nothing to lock
-        }
-
-        $unlockAt = time() + ($lockDays * 24 * 60 * 60);
-
-        $predBefore = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME));
-        $predBefore->setAbsBefore($unlockAt);
-
-        $predicateAfter = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::NOT));
-        $predicateAfter->setNotPredicate($predBefore);
-
-        $claimantV0 = new XdrClaimantV0(
-            new XdrAccountID(StrKey::decodeAccountId($stakingPub)),
-            $predicateAfter
-        );
-        $xdrClaimant = new XdrClaimant(new XdrClaimantType(XdrClaimantType::V0), $claimantV0);
-
-        $createCB = (new CreateClaimableBalanceOperationBuilder(
-            $poolShareAsset,           // asset = POOL SHARE via XDR change trust asset
-            $poolShareBalance,
-            [$xdrClaimant]           // array of XDR claimants
-        ))->setSourceAccount($stakingPub)->build();
-
-        $tx2 = (new TransactionBuilder($stakingAcc, $network))
-            ->addOperation($createCB)
-            ->build();
-
-        $tx2->sign($stakingSec, $network);
-        $res2 = $server->submitTransaction($tx2);
-
-        return $res2->isSuccessful();
-    }
-
-    /**
-     * Helpers for XDR credit assets: pack issuer + code to fixed-length
-     */
-
-    // turn G... into 32-bytes raw ed25519
-    private function toUint256(string $accountId): string
-    {
-        return StrKey::decodeAccountId($accountId);
-    }
-
-    // pad code to fixed bytes (4 or 12) for XDR alphanum
-    private function strToFixed(string $code, int $len): string
-    {
-        $code = substr($code, 0, $len);
-        $pad  = str_repeat("\0", $len - strlen($code));
-        return $code . $pad;
+        // If none worked or pool not found
+        return null;
     }
 }
