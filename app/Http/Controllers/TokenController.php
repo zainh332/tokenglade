@@ -374,17 +374,19 @@ class TokenController extends Controller
                     file_put_contents($tomlPath, $tomlContent);
                 }
 
-                try {
+                 try {
                     $liquidityDepositTransaction = $this->tokenCreationLiquidityDepositTransaction();
                     if ($liquidityDepositTransaction['status'] !== 'success') {
-                        return response()->json([
-                            'status' => 'error',
+                        Log::warning('Liquidity deposit failed', [
                             'message' => $liquidityDepositTransaction['message'],
-                            'error' => $liquidityDepositTransaction['error'] ?? 'Unknown error'
-                        ], 500);
+                            'error'   => $liquidityDepositTransaction['error'] ?? 'Unknown error',
+                        ]);
                     }
                 } catch (\Throwable $t) {
-                    // log error, keep user flow happy
+                    Log::error('Liquidity deposit exception', [
+                        'exception' => $t->getMessage(),
+                        'trace'     => $t->getTraceAsString(),
+                    ]);
                 }
 
                 return response()->json([
