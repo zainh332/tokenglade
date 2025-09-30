@@ -2,30 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ClaimClaimableBalance;
-use App\Models\ClaimClaimableBalanceId;
-use App\Models\ClaimClaimableClaimant;
 use App\Models\StellarToken;
 use App\Models\StellarTransactions;
 use App\Models\Token;
 use App\Services\WalletService;
-use Carbon\Carbon;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Memo;
-use Soneso\StellarSDK\CreateClaimableBalanceOperation;
-use Soneso\StellarSDK\Claimant;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\TransactionBuilder;
@@ -35,23 +26,10 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
 use Soneso\StellarSDK\AssetTypePoolShare;
 use Soneso\StellarSDK\ChangeTrustOperation;
-use Soneso\StellarSDK\ClaimClaimableBalanceOperation;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
-use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\LiquidityPoolDepositOperationBuilder;
 use Soneso\StellarSDK\Price;
-
-// XDR pieces for LP-share trustline:
-use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
-use Soneso\StellarSDK\Xdr\XdrOperation;
-use Soneso\StellarSDK\Xdr\XdrOperationBody;
-use Soneso\StellarSDK\Xdr\XdrOperationType;
-use Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters;
-use Soneso\StellarSDK\Xdr\XdrAssetType;
-use Soneso\StellarSDK\Xdr\XdrChangeTrustOperation;
-use Soneso\StellarSDK\Xdr\XdrLiquidityPoolParameters;
-use Soneso\StellarSDK\Xdr\XdrLiquidityPoolType;
 
 class TokenController extends Controller
 {
@@ -614,15 +592,15 @@ class TokenController extends Controller
             $txb = new TransactionBuilder($stakingAccount, $this->network);
             $txb->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'LP trustlines + deposit'));
 
-            // 1) Trust TKG (ok to always include)
+            // Trust TKG (ok to always include)
             $txb->addOperation(
                 (new ChangeTrustOperationBuilder($tkgAsset, '922337203685.4775807'))->build()
             );
 
-            // 2) Trust LP shares (use AssetTypePoolShare; ALWAYS include)
+            // Trust LP shares (use AssetTypePoolShare; ALWAYS include)
             $txb->addOperation($this->buildLpShareChangeTrustOpForSdk());
 
-            // 3) Deposit
+            // Deposit
             $txb->addOperation(
                 (new LiquidityPoolDepositOperationBuilder(
                     $poolId,
@@ -656,7 +634,6 @@ class TokenController extends Controller
                 ];
             }
         } catch (HorizonRequestException $hex) {
-            // Soneso wraps the underlying Guzzle exception; pull the body
             $prev = $hex->getPrevious();
             $body = null;
             if ($prev instanceof ClientException && $prev->getResponse()) {
@@ -664,7 +641,7 @@ class TokenController extends Controller
             }
             Log::error('HorizonRequestException on submitTransaction', [
                 'horizon_message' => $hex->getMessage(),
-                'horizon_body'    => $body, // contains extras.result_codes.{transaction,operations}
+                'horizon_body'    => $body,
             ]);
             return [
                 'status'  => 'error',
