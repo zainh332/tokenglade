@@ -53,8 +53,6 @@ Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
     Route::prefix('token')->group(function () {
         Route::post('generate', 'TokenController@generate_token')->name('token.generate');
         Route::post('submit_transaction', 'TokenController@submit_transaction')->name('token.submitTransaction');
-        Route::post('claimable-balance', 'TokenController@claimable_balance')->name('token.claimableBalance');
-        Route::post('reclaim-claimable-balance', 'TokenController@reclaim_claimable_balance')->name('token.reclaimClaimableBalance');
     });
 
     // ==========================
