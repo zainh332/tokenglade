@@ -19,7 +19,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-
+use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -33,15 +33,25 @@ use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
+use Soneso\StellarSDK\AssetTypePoolShare;
+use Soneso\StellarSDK\ChangeTrustOperation;
 use Soneso\StellarSDK\ClaimClaimableBalanceOperation;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\LiquidityPoolDepositOperationBuilder;
 use Soneso\StellarSDK\Price;
-use Soneso\StellarSDK\Xdr\XdrAssetType;
+
+// XDR pieces for LP-share trustline:
 use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
+use Soneso\StellarSDK\Xdr\XdrOperation;
+use Soneso\StellarSDK\Xdr\XdrOperationBody;
+use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters;
+use Soneso\StellarSDK\Xdr\XdrAssetType;
+use Soneso\StellarSDK\Xdr\XdrChangeTrustOperation;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolParameters;
+use Soneso\StellarSDK\Xdr\XdrLiquidityPoolType;
 
 class TokenController extends Controller
 {
@@ -923,30 +933,14 @@ class TokenController extends Controller
         $feePercentageForLP = 0.7;
 
         try {
-            Log::info('Starting tokenCreationLiquidityDepositTransaction', [
-                'stakingPublicWallet' => $this->stakingPublicWallet,
-                'assetCode' => $this->assetCode,
-                'isTestnet' => $this->isTestnet ?? true,
-            ]);
-
             $stakingAccountPublicKey = $this->stakingPublicWallet;
             $stakingAccount = $this->sdk->requestAccount($stakingAccountPublicKey);
-
-            Log::debug('Fetched staking account from SDK', [
-                'accountId' => $stakingAccountPublicKey,
-                'sequence' => $stakingAccount->getSequenceNumber(),
-            ]);
 
             $poolId = $this->getPoolIdFromHorizon(
                 $this->assetCode,
                 $this->tkgIssuer,
                 $this->isTestnet ?? true
             );
-            Log::info('Queried poolId from Horizon', [
-                'assetCode' => $this->assetCode,
-                'issuer' => $this->tkgIssuer,
-                'poolId' => $poolId,
-            ]);
 
             if (!$poolId) {
                 Log::error('Liquidity pool not found on Horizon', [
@@ -963,51 +957,38 @@ class TokenController extends Controller
                 '.',
                 ''
             );
-            Log::debug('Computed liquidity amounts', [
-                'xlmLiquidityAmount' => $xlmLiquidityAmount,
-                'tkgLiquidityAmount' => $tkgLiquidityAmount,
-            ]);
-
+            
             $minPrice = new Price(1, 100000000);
             $maxPrice = new Price(100000000, 1);
 
-            $depositOp = (new LiquidityPoolDepositOperationBuilder(
-                $poolId,
-                $xlmLiquidityAmount,
-                $tkgLiquidityAmount,
-                $minPrice,
-                $maxPrice
-            ))->build();
-            Log::debug('Built LiquidityPoolDepositOperation', [
-                'poolId' => $poolId,
-            ]);
+            $tkgAsset = Asset::createNonNativeAsset($this->assetCode, $this->tkgIssuer);
 
-            $transaction = (new TransactionBuilder($stakingAccount, $this->network))
-                ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Initial Liquidity Deposit'))
-                ->addOperation($depositOp)
-                ->build();
-            Log::debug('Built transaction XDR', [
-                'txXdr' => $transaction->toEnvelopeXdrBase64(),
-            ]);
+            $txb = new TransactionBuilder($stakingAccount, $this->network);
+            $txb->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'LP trustlines + deposit'));
 
-            Log::info('stakingPublicWalletKey', [
-                'stakingPublicWalletKey' => $this->stakingPublicWalletKey,
-            ]);
+            // 1) Trust TKG (ok to always include)
+            $txb->addOperation(
+                (new ChangeTrustOperationBuilder($tkgAsset, '922337203685.4775807'))->build()
+            );
 
-            $stakingKeyPair = KeyPair::fromSeed($this->stakingPublicWalletKey);
-            Log::info('stakingKeyPair', [
-                'stakingKeyPair' => $stakingKeyPair,
-            ]);
-            $transaction->sign($stakingKeyPair, $this->network);
-            Log::info('Transaction signed', [
-                'network' => $this->network,
-            ]);
+            // 2) Trust LP shares (use AssetTypePoolShare; ALWAYS include)
+            $txb->addOperation($this->buildLpShareChangeTrustOpForSdk());
 
-            $response = $this->sdk->submitTransaction($transaction);
-            Log::info('Submitted transaction to Horizon', [
-                'hash' => $response->getHash(),
-                'successful' => $response->isSuccessful(),
-            ]);
+            // 3) Deposit
+            $txb->addOperation(
+                (new LiquidityPoolDepositOperationBuilder(
+                    $poolId,
+                    $xlmLiquidityAmount,
+                    $tkgLiquidityAmount,
+                    $minPrice,
+                    $maxPrice
+                ))->build()
+            );
+
+            $tx = $txb->build();
+            $kp = KeyPair::fromSeed($this->stakingPublicWalletKey);
+            $tx->sign($kp, $this->network);
+            $response = $this->sdk->submitTransaction($tx);
 
             if ($response->isSuccessful()) {
                 return [
@@ -1053,6 +1034,37 @@ class TokenController extends Controller
                 'error'   => $e->getMessage(),
             ];
         }
+    }
+
+    private function buildLpShareChangeTrustOpForSdk(): ChangeTrustOperation
+    {
+        $xlm = Asset::native();
+        $tkg = Asset::createNonNativeAsset($this->assetCode, $this->tkgIssuer);
+
+        $a = $xlm;
+        $b = $tkg;
+        $rank = function (Asset $as): int {
+            return $as->getType() === Asset::TYPE_NATIVE ? 0
+                : ($as->getType() === Asset::TYPE_CREDIT_ALPHANUM_4 ? 1
+                    : ($as->getType() === Asset::TYPE_CREDIT_ALPHANUM_12 ? 2 : 3));
+        };
+        $swap = false;
+        if ($rank($a) > $rank($b)) $swap = true;
+        elseif (
+            $rank($a) === $rank($b)
+            && $a instanceof \Soneso\StellarSDK\AssetTypeCreditAlphanum
+            && $b instanceof \Soneso\StellarSDK\AssetTypeCreditAlphanum
+        ) {
+            $codeCmp = strcmp($a->getCode(), $b->getCode());
+            if ($codeCmp > 0 || ($codeCmp === 0 && strcmp($a->getIssuer(), $b->getIssuer()) > 0)) $swap = true;
+        }
+        if ($swap) {
+            [$a, $b] = [$b, $a];
+        }
+
+        $poolShareAsset = new AssetTypePoolShare($a, $b);
+
+        return new ChangeTrustOperation($poolShareAsset, '922337203685.4775807');
     }
 
     private function getPoolIdFromHorizon(string $codeB, string $issuerB, bool $testnet = false): ?string
