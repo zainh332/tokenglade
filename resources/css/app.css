@@ -294,13 +294,10 @@ ul.dropdown-menu.show {
   margin-left: 5px;
 }
 
-@media (min-width: 1024px) {
-  html { scrollbar-gutter: stable; }
-}
+html { scrollbar-gutter: stable; }
+@media (max-width: 768px){ html { scrollbar-gutter: auto !important; } }
+@supports not (scrollbar-gutter: stable) { body { overflow-y: scroll; } }
 
-@supports not (scrollbar-gutter: stable) {
-  body { overflow-y: scroll; }
-}
 
 .swal2-container { padding: 1.25rem !important; }
 

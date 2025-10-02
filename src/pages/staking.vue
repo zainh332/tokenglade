@@ -6,7 +6,7 @@
             <div
                 class="pt-32 pb-24 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove">
                 <!-- keep content aligned to site width -->
-                <div class="responsive-container hero-no-pad max-w-screen-xl mx-auto">
+                <div class="max-w-screen-xl mx-auto px-4 sm:px-6">
                     <div class="grid w-full items-center gap-12 lg:grid-cols-2">
                         <!-- Text Content -->
                         <div class="text-center lg:text-left max-w-3xl">
@@ -1239,16 +1239,16 @@ async function refreshStats() {
 }
 
 .hero-no-pad {
-  padding-left: 0;
-  padding-right: 0;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 
   @media (min-width: 640px) {
-    padding-left: 0;
-    padding-right: 0;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
   @media (min-width: 1024px) {
-    padding-left: 0;
-    padding-right: 0;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 }
 </style>
