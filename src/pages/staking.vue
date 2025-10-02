@@ -4,9 +4,9 @@
         <!-- <div class="h-20"></div> -->
         <div class="-mx-[calc(50vw-50%)] overflow-x-clip">
             <div
-                class="relative z-0 pt-32 pb-24 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove">
+                class="pt-32 pb-24 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove">
                 <!-- keep content aligned to site width -->
-                <div class="max-w-screen-xl mx-auto px-4 sm:px-6">
+                <div class="responsive-container hero-no-pad max-w-screen-xl mx-auto">
                     <div class="grid w-full items-center gap-12 lg:grid-cols-2">
                         <!-- Text Content -->
                         <div class="text-center lg:text-left max-w-3xl">
@@ -1236,5 +1236,19 @@ async function refreshStats() {
     line-height: 50px;
     text-align: center;
     text-transform: capitalize;
+}
+
+.hero-no-pad {
+  padding-left: 0;
+  padding-right: 0;
+
+  @media (min-width: 640px) {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  @media (min-width: 1024px) {
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 </style>
