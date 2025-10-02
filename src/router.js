@@ -8,7 +8,7 @@ import TomlFileGenerator from "./pages/TomlFileGenerator.vue";
 import aboutus from "./pages/about-us.vue";
 import privacypolicy from "./pages/privacy-policy.vue";
 import termsofservice from "./pages/terms-of-service.vue";
-import Staking from "./pages/Staking.vue";
+import Staking from "./pages/staking.vue";
 
 function hasRequiredCookies() {
     const public_key = getCookie('public_key');
