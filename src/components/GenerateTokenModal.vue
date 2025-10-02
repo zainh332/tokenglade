@@ -2,21 +2,22 @@
   <TransitionRoot as="template" :show="open">
     <Dialog as="div" class="relative z-50" @close="closeModal">
       <!-- Dimmed / blurred backdrop -->
-      <TransitionChild as="template" enter="ease-out duration-200" enter-from="opacity-0" enter-to="opacity-100"
-        leave="ease-in duration-150" leave-from="opacity-100" leave-to="opacity-0">
-        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+      <TransitionChild as="template" enter="ease-out duration-150" enter-from="opacity-0" enter-to="opacity-100"
+        leave="ease-in duration-120" leave-from="opacity-100" leave-to="opacity-0">
+        <div class="fixed inset-0 bg-black/50" />
       </TransitionChild>
 
       <div class="fixed inset-0 z-50 overflow-y-auto">
         <div class="flex min-h-full items-center justify-center p-4 sm:p-6">
           <!-- Panel -->
-          <TransitionChild as="template" enter="ease-out duration-200"
+          <TransitionChild as="template" enter="ease-out duration-150"
             enter-from="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-95"
-            enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-150"
+            enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-120"
             leave-from="opacity-100 translate-y-0 sm:scale-100"
             leave-to="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-95">
             <DialogPanel
-              class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-white/95 shadow-2xl ring-1 ring-black/5 backdrop-blur-md">
+              class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-white/95 shadow-lg
++        transform-gpu will-change-[transform,opacity]">
               <!-- Close -->
               <div class="h-1 bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-pink-500"></div>
 
@@ -35,7 +36,7 @@
                 <div class="flex items-center gap-3">
                   <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 ring-1 ring-inset ring-indigo-100">
-                    <img :src="Logo" alt="TokenGlade" class="h-6 w-6 object-contain" />
+                    <img :src="Logo" alt="TokenGlade" class="h-6 w-6 object-contain" width="24" height="24" decoding="async" />
                   </div>
                   <div class="min-w-0">
                     <DialogTitle class="text-base font-semibold text-gray-900">
@@ -66,9 +67,9 @@
                 </div>
 
                 <!-- Form -->
-                <Form @submit="submitForm" :validationSchema="schema" class="space-y-4">
+                <Form @submit="submitForm" :validationSchema="schema" class="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <!-- Name -->
-                  <div>
+                  <div class="col-span-1">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700">
                       Name <span class="text-red-500">*</span>
                     </label>
@@ -78,19 +79,8 @@
                     <ErrorMessage class="mt-1 text-xs text-red-500" name="name" />
                   </div>
 
-                  <!-- Description -->
-                  <div>
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700">
-                      Description <span class="text-red-500">*</span>
-                    </label>
-                    <Field id="desc" name="desc" v-model="form.desc" type="text"
-                      class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                      placeholder="A short summary of your token/project" />
-                    <ErrorMessage class="mt-1 text-xs text-red-500" name="desc" />
-                  </div>
-
                   <!-- Website -->
-                  <div>
+                  <div class="col-span-1">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700">
                       Website
                     </label>
@@ -100,8 +90,25 @@
                     <ErrorMessage class="mt-1 text-xs text-red-500" name="website_url" />
                   </div>
 
+                  <!-- Description (full width) -->
+                  <div class="col-span-1 md:col-span-2">
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700">
+                      Description <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <Field id="desc" name="desc" v-model="form.desc" as="textarea" rows="3" maxlength="200"
+                        class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 pr-16 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                        placeholder="Brief description of your token" />
+                      <!-- Counter -->
+                      <span class="absolute bottom-2 right-3 text-xs text-gray-400">
+                        {{ form.desc?.length || 0 }}/200
+                      </span>
+                    </div>
+                    <ErrorMessage class="mt-1 text-xs text-red-500" name="desc" />
+                  </div>
+
                   <!-- Logo -->
-                  <div>
+                  <div class="col-span-1 md:col-span-2">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700">
                       Logo <span class="text-red-500">*</span>
                     </label>
@@ -136,7 +143,7 @@
                   </div>
 
                   <!-- Asset Code -->
-                  <div>
+                  <div class="col-span-1">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700">
                       Asset Code <span class="text-red-500">*</span>
                     </label>
@@ -153,7 +160,7 @@
                   </div>
 
                   <!-- Total Supply -->
-                  <div>
+                  <div class="col-span-1">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700">
                       Total Supply <span class="text-red-500">*</span>
                     </label>
@@ -168,29 +175,35 @@
                   </div>
 
                   <!-- Lock Issuer Wallet -->
-                  <div
-                    class="flex items-center justify-between rounded-xl bg-gray-50 px-3.5 py-3 ring-1 ring-inset ring-gray-200">
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700">Lock Issuer Wallet</label>
-                      <p class="text-xs text-gray-500">Disables future minting. Irreversible.</p>
+                  <div class="col-span-1 md:col-span-2">
+                    <div
+                      class="flex items-center justify-between rounded-xl bg-gray-50 px-3.5 py-3 ring-1 ring-inset ring-gray-200">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700">Lock Issuer Wallet</label>
+                        <p class="text-xs text-gray-500">Disables future minting. Irreversible.</p>
+                      </div>
+                      <button type="button" role="switch" :aria-checked="form.lockIssuer"
+                        @click="form.lockIssuer = !form.lockIssuer"
+                        class="relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-300"
+                        :class="form.lockIssuer ? 'bg-indigo-600' : 'bg-gray-300'">
+                        <span
+                          class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-300"
+                          :class="form.lockIssuer ? 'translate-x-7' : 'translate-x-1'" />
+                      </button>
                     </div>
-                    <button type="button" role="switch" :aria-checked="form.lockIssuer"
-                      @click="form.lockIssuer = !form.lockIssuer"
-                      class="relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-300"
-                      :class="form.lockIssuer ? 'bg-indigo-600' : 'bg-gray-300'">
-                      <span class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-300"
-                        :class="form.lockIssuer ? 'translate-x-7' : 'translate-x-1'" />
-                    </button>
                   </div>
 
                   <!-- Notice -->
-                  <div class="rounded-xl border border-yellow-200 bg-yellow-50 px-3.5 py-2.5 text-sm text-yellow-800">
-                    ⚠ Please ensure your wallet has at least <span class="font-medium">50 XLM</span> before proceeding.
-                    The created token will be sent to your connected wallet.
+                  <div class="col-span-1 md:col-span-2">
+                    <div class="rounded-xl border border-yellow-200 bg-yellow-50 px-3.5 py-2.5 text-sm text-yellow-800">
+                      ⚠ Please ensure your wallet has at least <span class="font-medium">50 XLM</span> before
+                      proceeding.
+                      The created token will be sent to your connected wallet.
+                    </div>
                   </div>
 
                   <!-- Submit -->
-                  <div class="pt-1">
+                  <div class="col-span-1 md:col-span-2 pt-1">
                     <button type="submit" :disabled="isLoading"
                       class="w-full rounded-full bg-gradient px-4 py-2.5 text-sm font-semibold text-white shadow hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-60">
                       <span v-if="isLoading">Generating…</span>
@@ -221,6 +234,7 @@ import ConnectWalletModal from '@/components/ConnectWallet.vue';
 
 const isWalletConnected = ref(false);
 const ConnectWalletModals = ref(false);
+const logoPreview = ref('');
 const { open } = defineProps({ open: Boolean, distributorWallet: String })
 
 const shortWallet = computed(() =>
@@ -228,8 +242,6 @@ const shortWallet = computed(() =>
     ? `${walletKey.value.slice(0, 6)}...${walletKey.value.slice(-4)}`
     : 'Connect Wallet'
 );
-
-const OpenConnectWalletModal = () => { ConnectWalletModals.value = true }
 const toggleValue = ref(false);
 
 const emit = defineEmits(['close'])
@@ -237,7 +249,7 @@ const emit = defineEmits(['close'])
 // State
 const isLoading = ref(false)
 
-const form = ref({
+const defaultForm = {
   name: '',
   desc: '',
   website_url: '',
@@ -246,50 +258,71 @@ const form = ref({
   total_supply: '',
   lockIssuer: false,
   logoFile: null,
-});
+};
 
-const logoPreview = ref('');
+const form = ref({ ...defaultForm });
 
-function onLogoChange(e, handleChange) {
-  const file = e.target.files?.[0];
-  if (!file) return;
+// Put near your other imports
+const SUPPORTED_LOGO_TYPES = [
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+  'image/svg+xml',
+];
 
-  const allowed = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
-  if (!allowed.includes(file.type)) {
-    handleChange(null);
-    Swal.fire('Invalid file', 'Please upload PNG, JPG, WEBP, or SVG.', 'error');
-    return;
-  }
-  if (file.size > 5 * 1024 * 1024) {
-    handleChange(null);
-    Swal.fire('Too large', 'Max file size is 5MB.', 'error');
-    return;
-  }
-
-  logoPreview.value = URL.createObjectURL(file);
-  form.value.logoFile = file;
-  handleChange(file);
-}
+// Transform helpers
+const toNullIfEmpty = (v, o) => (o.originalValue === '' ? null : v);
+const trimUpper = (v) => (typeof v === 'string' ? v.trim().toUpperCase() : v);
 
 const schema = Yup.object({
+  name: Yup.string()
+    .required('Name is required')
+    .max(255, 'Name must be at most 255 characters')
+    .trim(),
+
+  desc: Yup.string()
+    .required('Description is required')
+    .max(200, 'Description must be at most 200 characters')
+    .trim(),
+
+  website_url: Yup.string()
+    .transform(toNullIfEmpty)
+    .nullable()
+    .url('Enter a valid URL (e.g., https://example.com)')
+    .max(255, 'Website URL must be at most 255 characters'),
+
   asset_code: Yup.string()
     .required('Asset Code is required')
     .max(12, 'Asset Code should not exceed 12 characters')
-    .label('Asset Code'),
+    .transform(trimUpper),
 
   total_supply: Yup.number()
     .typeError('Total Supply must be a number')
     .required('Total Supply is required')
-    .positive('Total Supply must be a positive number')
     .integer('Total Supply must be an integer')
-    .label('Total Supply'),
+    .min(1, 'Total Supply must be at least 1'),
+
+  logo: Yup.mixed()
+    .required('Logo is required')
+    .test('fileType', 'Allowed types: PNG, JPG, WEBP, or SVG', (file) =>
+      file instanceof File ? SUPPORTED_LOGO_TYPES.includes(file.type) : false
+    )
+    .test('fileSize', 'Max file size is 5MB', (file) =>
+      file instanceof File ? file.size <= 5 * 1024 * 1024 : false
+    ),
+
+  lockIssuer: Yup.boolean().nullable(),
 });
 
 
-// Close modal
-const closeModal = () => emit('close')
+// Close modal and reset fields
+const closeModal = () => {
+  form.value = { ...defaultForm }; 
+  logoPreview.value = '';          
+  emit('close');
+};
 // const network = (import.meta.env.VITE_STELLAR_ENVIRONMENT || "public").toLowerCase();
-const network = 'public';
+const network = 'testnet';
 const isTestnet = network === "testnet";
 
 const submitForm = async (values) => {
@@ -378,6 +411,7 @@ const submitForm = async (values) => {
     }
     updateLoader("Finalizing", "Saving token details…");
     Swal.close();
+    closeModal();
 
     setTimeout(() => {
       Swal.fire({
@@ -388,7 +422,7 @@ const submitForm = async (values) => {
               <p style="margin-top: 10px;"><b>Issuer Public Key:</b><br>${submitResponse2.data.issuerPublicKey}</p>
               <p style="margin-top: 10px;"><b>Issuer Secret Key:</b><br>${submitResponse2.data.issuerSecretKey}</p>
               <p style="color: red; font-weight: bold; margin-top: 20px;">
-                ⚠ Please copy and save these keys before closing this modal!
+                ⚠ Please copy and save these keys before closing this pop up!
               </p>
             `,
         confirmButtonText: 'I’ve saved the keys',
@@ -444,6 +478,27 @@ const onlyNumberInput = (event) => {
   event.target.value = input;
   form.total_supply = input;
 };
+
+function onLogoChange(e, handleChange) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const allowed = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+  if (!allowed.includes(file.type)) {
+    handleChange(null);
+    Swal.fire('Invalid file', 'Please upload PNG, JPG, WEBP, or SVG.', 'error');
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    handleChange(null);
+    Swal.fire('Too large', 'Max file size is 5MB.', 'error');
+    return;
+  }
+
+  logoPreview.value = URL.createObjectURL(file);
+  form.value.logoFile = file;
+  handleChange(file);
+}
 
 const walletKey = ref('');
 //create listener to listen for connected changes
