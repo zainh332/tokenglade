@@ -6,7 +6,10 @@
         }" v-slot="{ open }">
 
 
-    <div class="max-w-6xl px-4 mx-auto sm:px-6 lg:px-8 rounded-[10rem] shadow-lg bg-white">
+    <div class="mx-auto box-border px-4 sm:px-6 lg:px-8
+         w-[calc(100vw-2rem)] sm:w-auto
+         max-w-[min(100%,theme(maxWidth.6xl))]
+         rounded-[3rem] shadow-lg bg-white overflow-hidden">
       <div class="flex justify-between h-20">
         <div class="flex">
           <div class="flex items-center flex-shrink-0">
@@ -60,7 +63,7 @@
       </div>
     </div>
 
-    <DisclosurePanel class="lg:hidden fixed inset-x-0 top-[calc(1rem+5rem)] z-50 w-screen">
+    <DisclosurePanel class="lg:hidden fixed inset-x-0 top-[calc(1rem+5rem)] z-50 w-full overflow-x-clip">
       <div class="bg-white shadow-xl">
         <div class="max-w-6xl mx-auto px-4 py-3">
           <!-- render both internal + external links -->
