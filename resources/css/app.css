@@ -294,7 +294,7 @@ ul.dropdown-menu.show {
   margin-left: 5px;
 }
 
-html { scrollbar-gutter: stable both-edges; }
+/* html { scrollbar-gutter: stable both-edges; }
 @supports not (scrollbar-gutter: stable) {
   body { overflow-y: scroll; }
 }
@@ -308,6 +308,6 @@ html { scrollbar-gutter: stable both-edges; }
 }
 
 .swal-compact .swal2-title { font-size: 1.125rem; }
-.swal-compact .swal2-html-container { font-size: .9rem; color: #6b7280; }
+.swal-compact .swal2-html-container { font-size: .9rem; color: #6b7280; } */
 
 /* Wallet Modal */
