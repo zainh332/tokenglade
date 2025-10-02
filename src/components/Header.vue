@@ -1,15 +1,13 @@
 <template>
-  <Disclosure as="nav" class="fixed top-4 inset-x-0 z-[1] overflow-x-clip
-         transition-transform duration-700 ease-[cubic-bezier(0.68,-0.55,0.27,1.55)] origin-top" :class="{
-          '-translate-y-[120%] scale-y-90': hideHeader,
-          'translate-y-0 scale-y-100': !hideHeader
-        }" v-slot="{ open }">
+  <Disclosure as="nav"
+    class="fixed top-[1rem] left-0 w-full z-[1] transition-transform duration-700 ease-[cubic-bezier(0.68,-0.55,0.27,1.55)] origin-top"
+    :class="{
+      '-translate-y-[120%] scale-y-90': hideHeader,
+      'translate-y-0 scale-y-100': !hideHeader
+    }" v-slot="{ open }">
 
 
-    <div class="mx-auto box-border px-4 sm:px-6 lg:px-8
-         w-[calc(100vw-2rem)] sm:w-auto
-         max-w-[min(100%,theme(maxWidth.6xl))]
-         rounded-[3rem] shadow-lg bg-white overflow-hidden">
+    <div class="max-w-6xl px-4 mx-auto sm:px-6 lg:px-8 rounded-[10rem] shadow-lg bg-white">
       <div class="flex justify-between h-20">
         <div class="flex">
           <div class="flex items-center flex-shrink-0">
@@ -19,13 +17,21 @@
           </div>
           <div class="hidden sm:ml-6 lg:flex sm:space-x-6">
             <template v-for="link in Links" :key="link.name">
-              <router-link v-if="link.to" :to="link.to"
-                class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
+              <router-link
+                v-if="link.to"
+                :to="link.to"
+                class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14"
+              >
                 {{ link.name }}
               </router-link>
 
-              <a v-else :href="link.href" target="_blank" rel="noopener noreferrer"
-                class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
+              <a
+                v-else
+                :href="link.href"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14"
+              >
                 {{ link.name }}
               </a>
             </template>
@@ -63,7 +69,7 @@
       </div>
     </div>
 
-    <DisclosurePanel class="lg:hidden fixed inset-x-0 top-[calc(1rem+5rem)] z-50 w-full overflow-x-clip">
+    <DisclosurePanel class="lg:hidden fixed inset-x-0 top-[calc(1rem+5rem)] z-50 w-screen">
       <div class="bg-white shadow-xl">
         <div class="max-w-6xl mx-auto px-4 py-3">
           <!-- render both internal + external links -->
