@@ -464,7 +464,7 @@
                                     class="bg-white border-b border-[#EBEBEB]">
                                     <td class="py-4 px-4 text-dark text-center">
                                         <span :title="row.wallet_address">{{ shortMiddle(row.wallet_address, 6, 6)
-                                        }}</span>
+                                            }}</span>
                                     </td>
                                     <td class="py-4 px-4">
                                         <span
@@ -581,10 +581,10 @@
                 </div>
 
                 <div class="divide-y">
-                    <div v-for="(q, idx) in faq" :key="idx" class="group">
+                    <details v-for="(q, idx) in faq" :key="idx" class="group" :open="openIndex === idx"
+                        @toggle="(e) => openIndex = e.target.open ? idx : null">
                         <summary
-                            class="flex items-center justify-between cursor-pointer px-6 py-4 text-dark select-none"
-                            @click="toggleFaq(idx)">
+                            class="flex items-center justify-between cursor-pointer px-6 py-4 text-dark select-none list-none">
                             <span class="font-medium">{{ q.q }}</span>
                             <span class="ml-4 h-4 w-4 text-sky-500 transition-transform duration-300"
                                 :class="{ 'rotate-180': openIndex === idx }">
@@ -595,10 +595,10 @@
                             </span>
                         </summary>
 
-                        <div v-show="openIndex === idx" class="px-6 pb-5 text-gray-700 leading-relaxed">
+                        <div class="px-6 pb-5 text-gray-700 leading-relaxed">
                             <p v-html="q.a"></p>
                         </div>
-                    </div>
+                    </details>
                 </div>
             </div>
         </section>
