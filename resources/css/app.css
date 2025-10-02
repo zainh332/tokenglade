@@ -294,7 +294,10 @@ ul.dropdown-menu.show {
   margin-left: 5px;
 }
 
-html { scrollbar-gutter: stable both-edges; }
+@media (min-width: 1024px) {
+  html { scrollbar-gutter: stable; }
+}
+
 @supports not (scrollbar-gutter: stable) {
   body { overflow-y: scroll; }
 }

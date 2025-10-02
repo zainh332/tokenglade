@@ -1,9 +1,9 @@
 <template>
     <div>
         <Header />
-        <div class="h-20"></div>
+        <!-- <div class="h-20"></div> -->
         <div
-            class="w-full mx-auto pt-24 pb-24 relative z-0 overflow-hidden bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove">
+            class="w-full mx-auto pt-32 pb-24 relative z-0 overflow-hidden bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove">
             <div class="flex flex-col lg:flex-row items-center justify-center gap-12">
                 <!-- Text Content -->
                 <div class="text-center lg:text-left max-w-3xl">
