@@ -443,8 +443,8 @@
                     </h1>
                 </div>
                 <!-- Here is the problem  -->
-                <div class="w-full sm:max-w-[80%] mx-auto bg-white rounded-xl shadow-md overflow-hidden">
-                    <div class="overflow-x-auto overscroll-x-contain touch-pan-x px-4 sm:px-0">
+                <div class="w-full max-w-full sm:max-w-[80%] min-w-0 mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="w-full max-w-full min-w-0 overflow-x-auto overscroll-x-contain touch-pan-x">
                         <table class="w-full min-w-[720px] border-collapse">
                             <thead class="bg-[#43CDFF] text-white">
                                 <tr>
@@ -489,9 +489,7 @@
                                         </a>
                                         <span v-else>—</span>
                                     </td>
-                                    <td class="py-4 px-4 text-dark text-center">
-                                        {{ fmtDate(row.at) }}
-                                    </td>
+                                    <td class="py-4 px-4 text-dark text-center">{{ fmtDate(row.at) }}</td>
                                 </tr>
                             </tbody>
                         </table>
