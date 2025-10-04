@@ -244,24 +244,26 @@ export async function checkTkgBalance(public_address) {
 }
 
 export function updateLoader(title, text) {
-  const opts = {
+  const baseOpts = {
     title,
     html: `<div style="font-size:14px">${text}</div>`,
     allowOutsideClick: false,
     allowEscapeKey: false,
     showConfirmButton: false,
-    didOpen: () => Swal.showLoading(),
-
-    // 👇 keep popup narrow & detached from your modal DOM
-    target: document.body,
-    width: 420,                          // or '28rem'
+    width: 420,
     customClass: { popup: 'swal-compact' },
-    backdrop: true,
   };
 
   if (!Swal.isVisible()) {
-    Swal.fire(opts);
+    // first show — include target & backdrop & didOpen
+    Swal.fire({
+      ...baseOpts,
+      backdrop: true,
+      target: document.body, // only allowed at creation
+      didOpen: () => Swal.showLoading(),
+    });
   } else {
+    // updating — only include parameters allowed by Swal.update()
     Swal.update({
       title: baseOpts.title,
       html: baseOpts.html,
