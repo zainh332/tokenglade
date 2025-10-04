@@ -1,6 +1,6 @@
 <template>
     <div>
-        <!-- <Header /> -->
+        <Header />
         <div
             class="container-fluid mx-auto pt-[8rem] pb-[6rem] relative top-0 z-0 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove">
             <div class="flex flex-col lg:flex-row items-center justify-center gap-12">
@@ -162,13 +162,12 @@
             </div>
         </div>
 
-        <section class="container mx-auto mt-12">
+        <!-- <section class="container mx-auto mt-12">
             <div class="max-w-[80%] mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
 
-                <!-- ===== Live Stats (Light + Gradient Accents) ===== -->
                 <div
                     class="rounded-2xl bg-white/80 backdrop-blur border border-slate-200 shadow-[0_12px_40px_rgba(2,6,23,0.06)]">
-                    <!-- gradient hairline -->
+
                     <div class="h-1.5 w-full rounded-t-2xl bg-gradient-to-r from-fuchsia-500 via-sky-400 to-cyan-400">
                     </div>
 
@@ -179,15 +178,13 @@
                         </div>
 
                         <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            <!-- TILE -->
+                      
                             <div
                                 class="rounded-2xl p-[1px] bg-gradient-to-r from-fuchsia-400/60 via-sky-400/60 to-cyan-400/60">
                                 <div class="rounded-2xl bg-white/95 p-4">
                                     <div class="flex items-center gap-3">
-                                        <!-- icon -->
                                         <span class="inline-flex h-9 w-9 items-center justify-center rounded-full
                          bg-gradient-to-br from-fuchsia-500 to-sky-400 text-white">
-                                            <!-- coin -->
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
@@ -209,14 +206,12 @@
                                 </div>
                             </div>
 
-                            <!-- TILE -->
                             <div
                                 class="rounded-2xl p-[1px] bg-gradient-to-r from-fuchsia-400/60 via-sky-400/60 to-cyan-400/60">
                                 <div class="rounded-2xl bg-white/95 p-4">
                                     <div class="flex items-center gap-3">
                                         <span class="inline-flex h-9 w-9 items-center justify-center rounded-full
                          bg-gradient-to-br from-sky-500 to-cyan-400 text-white">
-                                            <!-- users -->
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
                                                 fill="none" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
@@ -236,8 +231,6 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Rewards Paid 24h TKG -->
                             <div
                                 class="rounded-2xl p-[1px] bg-gradient-to-r from-fuchsia-400/60 via-sky-400/60 to-cyan-400/60">
                                 <div class="rounded-2xl bg-white/95 p-4">
@@ -256,7 +249,6 @@
                                                 Rewards Paid (24h)
                                             </div>
 
-                                            <!-- value row: number, unit never wraps -->
                                             <div class="mt-0.5 flex items-baseline gap-1 sm:gap-1.5 text-slate-900">
                                                 <div class="mt-0.5 font-semibold text-slate-900 text-xl sm:text-2xl"
                                                     style="font-variant-numeric: tabular-nums;">
@@ -270,7 +262,6 @@
                             </div>
 
 
-                            <!-- Total Payouts -->
                             <div
                                 class="rounded-2xl p-[1px] bg-gradient-to-r from-fuchsia-400/60 via-sky-400/60 to-cyan-400/60">
                                 <div class="rounded-2xl bg-white/95 p-4">
@@ -299,12 +290,10 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- /Total Payouts -->
                         </div>
                     </div>
                 </div>
 
-                <!-- ===== APY Tiers (Light Table, Soft Borders) ===== -->
                 <div
                     class="rounded-2xl bg-white/95 backdrop-blur border border-slate-200 shadow-[0_8px_30px_rgba(0,0,0,0.06)] overflow-hidden">
                     <div class="h-1.5 w-full rounded-t-2xl bg-gradient-to-r from-fuchsia-500 via-sky-400 to-cyan-400">
@@ -347,8 +336,6 @@
             </div>
         </section>
 
-
-        <!-- Your Staking History -->
         <section v-if="hasPositions" id="your-stakes" class="container mx-auto mt-16 mb-10">
             <div class="container mx-auto pt-20">
                 <h2 class="text-2xl font-semibold text-center mb-6">Your Staking History</h2>
@@ -432,7 +419,7 @@
                     </table>
                 </div>
             </div>
-        </section>
+        </section> -->
 
         <div class="container mx-auto pt-20">
             <div class="mx-auto">
