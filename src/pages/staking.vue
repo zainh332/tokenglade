@@ -442,10 +442,10 @@
                         Latest Staking Reward <br /> Transactions
                     </h1>
                 </div>
-                <!-- Here is the problem  -->
                 <div class="w-full max-w-full sm:max-w-[80%] min-w-0 mx-auto bg-white rounded-xl shadow-md overflow-hidden">
-                    <!-- <div class="w-full max-w-full min-w-0 overflow-x-auto overscroll-x-contain touch-pan-x">
-                        <table class="w-full min-w-[720px] border-collapse">
+                    <!-- Here is the problem  -->
+                    <div class="table-scroll w-full max-w-full min-w-0 overscroll-x-contain touch-pan-x">
+                        <table class="w-full min-w-[720px] table-fixed border-collapse">
                             <thead class="bg-[#43CDFF] text-white">
                                 <tr>
                                     <th class="py-4 px-4 text-center">Wallet Address</th>
@@ -493,7 +493,8 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div> -->
+                    </div>
+                    <!-- Here is the problem  -->
 
                     <div class="flex justify-between items-center px-4 py-3">
                         <div class="text-sm text-gray-600">
@@ -509,7 +510,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Here is the problem  -->
             </div>
         </div>
 
@@ -1219,5 +1219,23 @@ async function refreshStats() {
     line-height: 50px;
     text-align: center;
     text-transform: capitalize;
+}
+
+html, body {
+  overflow-x: hidden;       
+  scrollbar-gutter: auto;  
+}
+
+@media (min-width: 769px) {
+  body {
+    overflow-y: auto;                
+    scrollbar-gutter: stable both-edges;  
+  }
+}
+
+.table-scroll {
+  overflow-x: auto;
+  max-width: 100vw;                   
+  scrollbar-gutter: stable both-edges;
 }
 </style>
