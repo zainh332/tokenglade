@@ -434,7 +434,7 @@
             </div>
         </section>
 
-        <!-- yahan masla hai -->
+
         <div class="container mx-auto pt-20">
             <div class="mx-auto">
                 <div class="table-section pb-10">
@@ -442,10 +442,10 @@
                         Latest Staking Reward <br /> Transactions
                     </h1>
                 </div>
-
-                <!-- <div class="w-full max-w-[80%] mx-auto bg-white rounded-xl shadow-md overflow-hidden">
-                    <div class="overflow-x-auto overscroll-x-contain touch-pan-x -mx-4 sm:mx-0">
-                        <table class="min-w-max w-[720px] sm:w-full border-collapse">
+                <!-- Here is the problem  -->
+                <div class="w-full sm:max-w-[80%] mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="overflow-x-auto overscroll-x-contain touch-pan-x px-4 sm:px-0">
+                        <table class="w-full min-w-[720px] border-collapse">
                             <thead class="bg-[#43CDFF] text-white">
                                 <tr>
                                     <th class="py-4 px-4 text-center">Wallet Address</th>
@@ -459,10 +459,11 @@
                                     <td colspan="4" class="py-6 text-center text-gray-500">Loading rewards</td>
                                 </tr>
 
-                                <tr v-for="(row, index) in pageRows" :key="index" class="bg-white border-b border-[#EBEBEB]">
+                                <tr v-for="(row, index) in pageRows" :key="index"
+                                    class="bg-white border-b border-[#EBEBEB]">
                                     <td class="py-4 px-4 text-dark text-center">
                                         <span :title="row.wallet_address">{{ shortMiddle(row.wallet_address, 6, 6)
-                                        }}</span>
+                                            }}</span>
                                     </td>
                                     <td class="py-4 px-4">
                                         <span
@@ -472,10 +473,8 @@
                                     </td>
                                     <td class="py-4 px-4 text-dark text-center">
                                         <a v-if="row.transaction" :href="txUrl(row.transaction)" target="_blank"
-                                            rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5
-           rounded-full border border-gray-200 bg-gray-100 text-gray-700
-           hover:bg-gray-200 hover:border-gray-300
-           focus:outline-none focus:ring-2 focus:ring-gray-300/60 transition"
+                                            rel="noopener noreferrer"
+                                            class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300/60 transition"
                                             :title="`View transaction ${row.transaction} on the explorer`"
                                             aria-label="View on Explorer">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
@@ -490,7 +489,6 @@
                                         </a>
                                         <span v-else>—</span>
                                     </td>
-
                                     <td class="py-4 px-4 text-dark text-center">
                                         {{ fmtDate(row.at) }}
                                     </td>
@@ -502,7 +500,7 @@
                     <div class="flex justify-between items-center px-4 py-3">
                         <div class="text-sm text-gray-600">
                             Showing {{ paginatedData.length ? (startIndex + 1) : 0 }}–{{ endIndex }} of {{
-                                paginatedData.length
+                            paginatedData.length
                             }}
                         </div>
                         <div class="flex gap-2">
@@ -512,7 +510,8 @@
                                 class="px-3 py-1 text-sm border rounded-lg disabled:opacity-50">Next</button>
                         </div>
                     </div>
-                </div> -->
+                </div>
+                <!-- Here is the problem  -->
             </div>
         </div>
 
