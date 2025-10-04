@@ -269,7 +269,6 @@ export function updateLoader(title, text) {
       html: baseOpts.html,
       showConfirmButton: baseOpts.showConfirmButton,
       customClass: baseOpts.customClass,
-      width: baseOpts.width,
     });
     Swal.showLoading();
   }
