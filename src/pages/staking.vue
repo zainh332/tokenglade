@@ -434,7 +434,8 @@
             </div>
         </section>
 
-        <!-- <div class="container mx-auto pt-20">
+        <!-- yahan masla hai -->
+        <div class="container mx-auto pt-20">
             <div class="mx-auto">
                 <div class="table-section pb-10">
                     <h1>
@@ -442,7 +443,7 @@
                     </h1>
                 </div>
 
-                <div class="w-full max-w-[80%] mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                <!-- <div class="w-full max-w-[80%] mx-auto bg-white rounded-xl shadow-md overflow-hidden">
                     <div class="overflow-x-auto overscroll-x-contain touch-pan-x -mx-4 sm:mx-0">
                         <table class="min-w-max w-[720px] sm:w-full border-collapse">
                             <thead class="bg-[#43CDFF] text-white">
@@ -458,11 +459,10 @@
                                     <td colspan="4" class="py-6 text-center text-gray-500">Loading rewards</td>
                                 </tr>
 
-                                <tr v-for="(row, index) in pageRows" :key="index"
-                                    class="bg-white border-b border-[#EBEBEB]">
+                                <tr v-for="(row, index) in pageRows" :key="index" class="bg-white border-b border-[#EBEBEB]">
                                     <td class="py-4 px-4 text-dark text-center">
                                         <span :title="row.wallet_address">{{ shortMiddle(row.wallet_address, 6, 6)
-                                            }}</span>
+                                        }}</span>
                                     </td>
                                     <td class="py-4 px-4">
                                         <span
@@ -512,9 +512,9 @@
                                 class="px-3 py-1 text-sm border rounded-lg disabled:opacity-50">Next</button>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
-        </div> -->
+        </div>
 
         <section class="container mx-auto mt-16 py-10 ">
             <div class="w-full max-w-[80%] mx-auto bg-white rounded-2xl shadow-md overflow-hidden text-center">
@@ -563,7 +563,7 @@
                     </div>
                 </div>
             </div>
-        </section> 
+        </section>
 
 
         <section class="container mx-auto mt-16">
