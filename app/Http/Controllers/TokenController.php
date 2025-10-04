@@ -36,11 +36,13 @@ class TokenController extends Controller
     private $sdk, $maxFee, $network, $token_creation_fee;
     private $xlm_funding_wallet, $xlm_funding_wallet_key, $issuer_wallet_amount, $stakingPublicWallet, $stakingPublicWalletKey, $tkgIssuer, $assetCode, $tkgDepositRatio;
     private WalletService $wallet;
+    private bool $isTestnet;
 
     public function __construct(WalletService $wallet)
     {
         $this->wallet = $wallet;
         $stellarEnv = env('VITE_STELLAR_ENVIRONMENT');
+        $this->isTestnet = strtolower($stellarEnv) !== 'public';
 
         if ($stellarEnv === 'public') {
             $this->sdk = StellarSDK::getPublicNetInstance();
@@ -76,7 +78,7 @@ class TokenController extends Controller
             'name' => 'required|string|max:255',
             'desc' => 'required|string',
             'website_url'            => 'nullable|url|max:255',
-            'logo' => 'required|file|mimes:png,jpg,jpeg,webp,svg|max:5120',
+            'logo' => 'required|file|mimes:png,jpg,jpeg|max:5120',
             'lock_status'            => 'nullable|boolean',
         ]);
 
@@ -93,7 +95,6 @@ class TokenController extends Controller
         $website_url = $request->input('website_url');
         $asset_code = $request->input('asset_code');
         $total_supply = $request->input('total_supply');
-        $memo = $request->input('memo');
         $lock_status = $request->input('lock_status');
         $distributor_wallet_xlm_balance = $this->wallet->getXlmBalance($distributor_wallet_key);
 
@@ -106,7 +107,7 @@ class TokenController extends Controller
 
 
         //charge token creation fee
-        $token_creation_charges = $this->tokenCreationXLMFeeTransaction($distributor_wallet_key, $asset_code, $total_supply, $memo, $lock_status);
+        $token_creation_charges = $this->tokenCreationXLMFeeTransaction($distributor_wallet_key, $asset_code, $total_supply, $lock_status);
         if (!$token_creation_charges) {
             return response()->json([
                 'status' => 'error',
@@ -128,7 +129,6 @@ class TokenController extends Controller
         $token_creation->asset_code = $asset_code;
         $token_creation->total_supply = $total_supply;
         $token_creation->user_wallet_address = $distributor_wallet_key;
-        $token_creation->memo = $memo;
         $token_creation->lock_status = $lock_status;
         $token_creation->save();
 
@@ -565,7 +565,7 @@ class TokenController extends Controller
             $poolId = $this->getPoolIdFromHorizon(
                 $this->assetCode,
                 $this->tkgIssuer,
-                $this->isTestnet ?? true
+                $this->isTestnet,
             );
 
             if (!$poolId) {
