@@ -608,7 +608,7 @@
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
 import { ref, computed, onMounted, watch } from "vue";
-import { checkTkgBalance, getCookie, updateLoader, apiHeaders, shortMiddle, statusClass } from "../utils/utils.js";
+import { checkTkgBalance, getCookie, updateLoader, apiHeaders, shortMiddle, statusClass, getNetwork } from "../utils/utils.js";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { signTransaction } from "@stellar/freighter-api";
@@ -679,7 +679,9 @@ const nextPage = () => {
     if (currentPage.value < totalPages.value) currentPage.value++;
 };
 
-const network = 'public';
+const network = await getNetwork();
+console.log(network);
+
 const isTestnet = network === 'testnet';
 const explorerBase = `https://stellar.expert/explorer/${isTestnet ? 'testnet' : 'public'}`;
 

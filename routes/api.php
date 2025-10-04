@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/env', fn() => ['stellar_env' => env('VITE_STELLAR_ENVIRONMENT', 'public')]);
+
 // ==========================
 // GlobalController
 // ==========================

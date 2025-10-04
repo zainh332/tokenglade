@@ -228,7 +228,7 @@ import { Form, Field, ErrorMessage } from 'vee-validate';
 import Logo from '@/assets/token-glade-logo.png'
 import * as Yup from "yup";
 import Swal from 'sweetalert2';
-import { E, signXdrWithWallet, getCookie, updateLoader } from "../utils/utils.js";
+import { E, signXdrWithWallet, getCookie, updateLoader, getNetwork } from "../utils/utils.js";
 import axios from 'axios';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
 
@@ -321,8 +321,7 @@ const closeModal = () => {
   logoPreview.value = '';          
   emit('close');
 };
-// const network = (import.meta.env.VITE_STELLAR_ENVIRONMENT || "public").toLowerCase();
-const network = 'testnet';
+const network = await getNetwork();
 const isTestnet = network === "testnet";
 
 const submitForm = async (values) => {

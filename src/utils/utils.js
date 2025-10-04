@@ -305,3 +305,9 @@ export function statusClass(statusId) {
             return "bg-gray-100 text-gray-700";
     }
 }
+
+export const getNetwork = async () => {
+  const res = await fetch('/api/env');
+  const data = await res.json();
+  return (data.stellar_env || 'public').toLowerCase();
+};
