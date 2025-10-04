@@ -482,7 +482,7 @@
                                                 <td class="py-4 px-4 text-dark text-center">
                                                     <span :title="row.wallet_address">{{ shortMiddle(row.wallet_address,
                                                         6, 6)
-                                                    }}</span>
+                                                        }}</span>
                                                 </td>
                                                 <td class="py-4 px-4">
                                                     <span
@@ -679,10 +679,8 @@ const nextPage = () => {
     if (currentPage.value < totalPages.value) currentPage.value++;
 };
 
-const network = await getNetwork();
-console.log(network);
-
-const isTestnet = network === 'testnet';
+const network = ref('public')
+const isTestnet = computed(() => network.value === 'testnet')
 const explorerBase = `https://stellar.expert/explorer/${isTestnet ? 'testnet' : 'public'}`;
 
 const txUrl = (tx) => `${explorerBase}/tx/${encodeURIComponent(tx)}`;
@@ -711,6 +709,13 @@ onMounted(async () => {
     await fetchPositions();
     await fetchrewards();
     await refreshStats();
+
+    try {
+        network.value = await getNetwork()
+    } catch (e) {
+        console.error('getNetwork failed:', e)
+        network.value = 'public'
+    }
 });
 
 watch(paginatedData, () => {

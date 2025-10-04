@@ -321,8 +321,8 @@ const closeModal = () => {
   logoPreview.value = '';          
   emit('close');
 };
-const network = await getNetwork();
-const isTestnet = network === "testnet";
+const network = ref('public')
+const isTestnet = computed(() => network.value === 'testnet')
 
 const submitForm = async (values) => {
 
@@ -448,10 +448,16 @@ const submitForm = async (values) => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   const pk = getCookie('public_key') || localStorage.getItem('public_key') || '';
   walletKey.value = pk || '';
   isWalletConnected.value = !!pk;
+  try {
+        network.value = await getNetwork()
+    } catch (e) {
+        console.error('getNetwork failed:', e)
+        network.value = 'public'
+    }
 });
 
 //Helper

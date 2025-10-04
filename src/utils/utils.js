@@ -306,8 +306,26 @@ export function statusClass(statusId) {
     }
 }
 
-export const getNetwork = async () => {
-  const res = await fetch('/api/env');
-  const data = await res.json();
-  return (data.stellar_env || 'public').toLowerCase();
-};
+export async function getNetwork() {
+  let network = 'public';
+
+  try {
+    const res = await fetch('/api/env', {
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      network = (data.stellar_env || 'public').toLowerCase();
+    } else {
+      console.warn('[getNetwork] Non-200 response:', res.status);
+    }
+  } catch (error) {
+    console.error('[getNetwork] Fetch failed:', error);
+  }
+  console.log('Detected Stellar network =', network);
+  return network;
+}
