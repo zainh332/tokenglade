@@ -306,3 +306,17 @@ ul.dropdown-menu.show {
 .swal-compact .swal2-html-container { font-size: .9rem; color: #6b7280; }
 
 /* Wallet Modal */
+
+@media screen and (max-width: 600px) {
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        position: relative;
+        z-index: 1;
+    }
+
+    .table-wrapper {
+        position: relative;
+        z-index: 1;
+    }
+}
