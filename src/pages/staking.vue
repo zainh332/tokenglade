@@ -1,6 +1,6 @@
 <template>
     <div>
-        <Header />
+        <!-- <Header /> -->
         <div
             class="container-fluid mx-auto pt-[8rem] pb-[6rem] relative top-0 z-0 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove">
             <div class="flex flex-col lg:flex-row items-center justify-center gap-12">
