@@ -294,17 +294,6 @@ ul.dropdown-menu.show {
   margin-left: 5px;
 }
 
-.swal2-container { padding: 1.25rem !important; }
-
-.swal-compact.swal2-popup {
-  width: min(420px, calc(100vw - 3rem)) !important;
-  border-radius: 14px;
-  padding: 18px 22px;
-}
-
-.swal-compact .swal2-title { font-size: 1.125rem; }
-.swal-compact .swal2-html-container { font-size: .9rem; color: #6b7280; }
-
 /* Wallet Modal */
 
 @media screen and (max-width: 600px) {

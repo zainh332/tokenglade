@@ -33,7 +33,7 @@ use Soneso\StellarSDK\Price;
 
 class TokenController extends Controller
 {
-    private $sdk, $maxFee, $network, $token_creation_fee;
+    private $sdk, $network, $token_creation_fee;
     private $feePercentageForLP, $xlm_funding_wallet, $xlm_funding_wallet_key, $issuer_wallet_amount, $stakingPublicWallet, $stakingPublicWalletKey, $tkgIssuer, $assetCode, $tkgDepositRatio;
     private WalletService $wallet;
     private bool $isTestnet;
@@ -63,7 +63,6 @@ class TokenController extends Controller
         }
 
         $this->assetCode = env('ASSET_CODE');
-        $this->maxFee = 30;
         $this->token_creation_fee = 50; //XLM
         $this->issuer_wallet_amount = 4; //XLM
         $this->tkgDepositRatio = 10;
