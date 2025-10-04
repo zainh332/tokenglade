@@ -34,7 +34,7 @@ use Soneso\StellarSDK\Price;
 class TokenController extends Controller
 {
     private $sdk, $maxFee, $network, $token_creation_fee;
-    private $xlm_funding_wallet, $xlm_funding_wallet_key, $issuer_wallet_amount, $stakingPublicWallet, $stakingPublicWalletKey, $tkgIssuer, $assetCode, $tkgDepositRatio;
+    private $feePercentageForLP, $xlm_funding_wallet, $xlm_funding_wallet_key, $issuer_wallet_amount, $stakingPublicWallet, $stakingPublicWalletKey, $tkgIssuer, $assetCode, $tkgDepositRatio;
     private WalletService $wallet;
     private bool $isTestnet;
 
@@ -67,6 +67,7 @@ class TokenController extends Controller
         $this->token_creation_fee = 50; //XLM
         $this->issuer_wallet_amount = 4; //XLM
         $this->tkgDepositRatio = 10;
+        $this->feePercentageForLP = 0.7;
     }
 
     public function generate_token(Request $request)
@@ -223,117 +224,117 @@ class TokenController extends Controller
 
         // Check if the transaction was successful
         if ($response && $response->isSuccessful()) {
-            // try {
-            if ($type == 1) //tokenCreationFeeTransaction
-            {
-                $token_created = StellarToken::where('user_wallet_address', $distributor_wallet_key)
-                    ->where('asset_code', $assetCode)
-                    ->where('issuer_wallet_status', 0)
-                    ->where('created_token_transfer_status', 0)
-                    ->whereNotNull('current_stellar_transaction_id')
-                    ->latest()->first();
+            try {
+                if ($type == 1) //tokenCreationFeeTransaction
+                {
+                    $token_created = StellarToken::where('user_wallet_address', $distributor_wallet_key)
+                        ->where('asset_code', $assetCode)
+                        ->where('issuer_wallet_status', 0)
+                        ->where('created_token_transfer_status', 0)
+                        ->whereNotNull('current_stellar_transaction_id')
+                        ->latest()->first();
 
-                if (!$token_created) {
+                    if (!$token_created) {
+                        return response()->json([
+                            'success' => false,
+                            'error' => 'Token creation record not found for this wallet and asset code.',
+                        ], 404);
+                    }
+
+                    $generate_issuer_wallet_transaction = $this->addStellarTransactionRecord($token_created->id, $distributor_wallet_key, 1, '', $signedXdr, $response->getHash(), true);
+                    if (!$generate_issuer_wallet_transaction) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Creating stellar transaction failed while token creation fee.'
+                        ], 500);
+                    }
+
+                    // Update the token creation record with the new transaction ID
+                    $token_created->current_stellar_transaction_id = $generate_issuer_wallet_transaction->id;
+                    $token_created->save();
+
+                    $current_transaction_id = $this->generateIssuerWallet($distributor_wallet_key, $token_created->current_stellar_transaction_id);
+
+                    if (!$current_transaction_id) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Issuer wallet generation failed.'
+                        ], 500);
+                    }
+
+                    $issuer_wallet_distributor_wallet_trustline_transaction = $this->issuer_wallet_distributor_wallet_trustline_transaction($distributor_wallet_key, $current_transaction_id);
+                    if (!$issuer_wallet_distributor_wallet_trustline_transaction) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => $trustlineResult['message'] ?? 'Trustline Transaction failed',
+                        ], 500);
+                    }
                     return response()->json([
-                        'success' => false,
-                        'error' => 'Token creation record not found for this wallet and asset code.',
-                    ], 404);
-                }
+                        'status' => 'success',
+                        'unsigned_trustline_transaction' => $issuer_wallet_distributor_wallet_trustline_transaction['unsigned_trustline_transaction'],
+                    ], 200);
+                } else if ($type == 3) //Issuer Wallet Distributor Wallet Trustline transaction
+                {
+                    $token_created = StellarToken::where('user_wallet_address', $distributor_wallet_key)
+                        ->where('asset_code', $assetCode)
+                        ->whereNotNull('current_stellar_transaction_id')
+                        ->whereNotNull('issuer_public_key')
+                        ->whereNotNull('issuer_secret_key')
+                        ->where('issuer_wallet_status', 1)
+                        ->where('created_token_transfer_status', 0)
+                        ->latest()
+                        ->first();
 
-                $generate_issuer_wallet_transaction = $this->addStellarTransactionRecord($token_created->id, $distributor_wallet_key, 1, '', $signedXdr, $response->getHash(), true);
-                if (!$generate_issuer_wallet_transaction) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Creating stellar transaction failed while token creation fee.'
-                    ], 500);
-                }
+                    if (!$token_created) {
+                        return response()->json([
+                            'success' => false,
+                            'error' => 'Token creation record not found for this wallet and asset code.',
+                        ], 404);
+                    }
 
-                // Update the token creation record with the new transaction ID
-                $token_created->current_stellar_transaction_id = $generate_issuer_wallet_transaction->id;
-                $token_created->save();
+                    $Issuer_wallet_distributor_wallet_trustline_transaction = $this->addStellarTransactionRecord($token_created->id, $distributor_wallet_key, 3, '', $signedXdr, $response->getHash(), true);
 
-                $current_transaction_id = $this->generateIssuerWallet($distributor_wallet_key, $token_created->current_stellar_transaction_id);
+                    if (!$Issuer_wallet_distributor_wallet_trustline_transaction) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Creating stellar transaction failed.'
+                        ], 500);
+                    }
 
-                if (!$current_transaction_id) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Issuer wallet generation failed.'
-                    ], 500);
-                }
+                    // Update the token creation record with the new transaction ID
+                    $token_created->current_stellar_transaction_id = $Issuer_wallet_distributor_wallet_trustline_transaction->id;
+                    $token_created->save();
 
-                $issuer_wallet_distributor_wallet_trustline_transaction = $this->issuer_wallet_distributor_wallet_trustline_transaction($distributor_wallet_key, $current_transaction_id);
-                if (!$issuer_wallet_distributor_wallet_trustline_transaction) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => $trustlineResult['message'] ?? 'Trustline Transaction failed',
-                    ], 500);
-                }
-                return response()->json([
-                    'status' => 'success',
-                    'unsigned_trustline_transaction' => $issuer_wallet_distributor_wallet_trustline_transaction['unsigned_trustline_transaction'],
-                ], 200);
-            } else if ($type == 3) //Issuer Wallet Distributor Wallet Trustline transaction
-            {
-                $token_created = StellarToken::where('user_wallet_address', $distributor_wallet_key)
-                    ->where('asset_code', $assetCode)
-                    ->whereNotNull('current_stellar_transaction_id')
-                    ->whereNotNull('issuer_public_key')
-                    ->whereNotNull('issuer_secret_key')
-                    ->where('issuer_wallet_status', 1)
-                    ->where('created_token_transfer_status', 0)
-                    ->latest()
-                    ->first();
+                    $generate_token = $this->transfer_created_tokens($distributor_wallet_key, $assetCode, $token_created->issuer_public_key, $token_created->issuer_secret_key, $token_created->total_supply);
+                    if (!$generate_token) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Token generation failed.'
+                        ], 500);
+                    }
 
-                if (!$token_created) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Token creation record not found for this wallet and asset code.',
-                    ], 404);
-                }
+                    $created_tokens_transfer_transaction = $this->addStellarTransactionRecord($token_created->id, $distributor_wallet_key, 4, '', $generate_token['signed_xdr'], $generate_token['tx_hash'], true);
 
-                $Issuer_wallet_distributor_wallet_trustline_transaction = $this->addStellarTransactionRecord($token_created->id, $distributor_wallet_key, 3, '', $signedXdr, $response->getHash(), true);
+                    if (!$created_tokens_transfer_transaction) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Creating stellar transaction failed while tokens transfer.'
+                        ], 500);
+                    }
 
-                if (!$Issuer_wallet_distributor_wallet_trustline_transaction) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Creating stellar transaction failed.'
-                    ], 500);
-                }
+                    // Update the token creation record with the new transaction ID
+                    $token_created->current_stellar_transaction_id = $created_tokens_transfer_transaction->id;
+                    $token_created->created_token_transfer_status = 1;
+                    $token_created->save();
 
-                // Update the token creation record with the new transaction ID
-                $token_created->current_stellar_transaction_id = $Issuer_wallet_distributor_wallet_trustline_transaction->id;
-                $token_created->save();
+                    $directory = public_path('.well-known');
+                    if (!is_dir($directory)) {
+                        mkdir($directory, 0755, true);
+                    }
 
-                $generate_token = $this->transfer_created_tokens($distributor_wallet_key, $assetCode, $token_created->issuer_public_key, $token_created->issuer_secret_key, $token_created->total_supply);
-                if (!$generate_token) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Token generation failed.'
-                    ], 500);
-                }
+                    $tomlPath = $directory . '/stellar.toml';
 
-                $created_tokens_transfer_transaction = $this->addStellarTransactionRecord($token_created->id, $distributor_wallet_key, 4, '', $generate_token['signed_xdr'], $generate_token['tx_hash'], true);
-
-                if (!$created_tokens_transfer_transaction) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Creating stellar transaction failed while tokens transfer.'
-                    ], 500);
-                }
-
-                // Update the token creation record with the new transaction ID
-                $token_created->current_stellar_transaction_id = $created_tokens_transfer_transaction->id;
-                $token_created->created_token_transfer_status = 1;
-                $token_created->save();
-
-                $directory = public_path('.well-known');
-                if (!is_dir($directory)) {
-                    mkdir($directory, 0755, true);
-                }
-
-                $tomlPath = $directory . '/stellar.toml';
-
-                $tomlContent = <<<EOT
+                    $tomlContent = <<<EOT
                 [[CURRENCIES]]
                 code="{$token_created->asset_code}"
                 issuer="{$token_created->issuer_public_key}"
@@ -346,42 +347,42 @@ class TokenController extends Controller
 
                 EOT;
 
-                if (file_exists($tomlPath)) {
-                    file_put_contents($tomlPath, "\n" . $tomlContent, FILE_APPEND);
-                } else {
-                    file_put_contents($tomlPath, $tomlContent);
-                }
+                    if (file_exists($tomlPath)) {
+                        file_put_contents($tomlPath, "\n" . $tomlContent, FILE_APPEND);
+                    } else {
+                        file_put_contents($tomlPath, $tomlContent);
+                    }
 
-                 try {
-                    $liquidityDepositTransaction = $this->tokenCreationLiquidityDepositTransaction();
-                    if ($liquidityDepositTransaction['status'] !== 'success') {
-                        Log::warning('Liquidity deposit failed', [
-                            'message' => $liquidityDepositTransaction['message'],
-                            'error'   => $liquidityDepositTransaction['error'] ?? 'Unknown error',
+                    try {
+                        $liquidityDepositTransaction = $this->tokenCreationLiquidityDepositTransaction();
+                        if ($liquidityDepositTransaction['status'] !== 'success') {
+                            Log::warning('Liquidity deposit failed', [
+                                'message' => $liquidityDepositTransaction['message'],
+                                'error'   => $liquidityDepositTransaction['error'] ?? 'Unknown error',
+                            ]);
+                        }
+                    } catch (\Throwable $t) {
+                        Log::error('Liquidity deposit exception', [
+                            'exception' => $t->getMessage(),
+                            'trace'     => $t->getTraceAsString(),
                         ]);
                     }
-                } catch (\Throwable $t) {
-                    Log::error('Liquidity deposit exception', [
-                        'exception' => $t->getMessage(),
-                        'trace'     => $t->getTraceAsString(),
-                    ]);
-                }
 
-                return response()->json([
-                    'status' => 'success',
-                    'assetCode' => $assetCode,
-                    'issuerPublicKey' => $token_created->issuer_public_key,
-                    'issuerSecretKey' => $token_created->issuer_secret_key
-                ], 200);
-            } else {
-                return response()->json([
-                    'success' => 'error',
-                    'message' => 'Transaction type not found',
-                ], 404);
+                    return response()->json([
+                        'status' => 'success',
+                        'assetCode' => $assetCode,
+                        'issuerPublicKey' => $token_created->issuer_public_key,
+                        'issuerSecretKey' => $token_created->issuer_secret_key
+                    ], 200);
+                } else {
+                    return response()->json([
+                        'success' => 'error',
+                        'message' => 'Transaction type not found',
+                    ], 404);
+                }
+            } catch (\Exception $e) {
+                return false;
             }
-            // } catch (\Exception $e) {
-            //     return false;
-            // }
         } else {
             return response()->json([
                 'success' => false,
@@ -555,9 +556,6 @@ class TokenController extends Controller
 
     private function tokenCreationLiquidityDepositTransaction()
     {
-        // 70% of the token creation fee goes into the LP as XLM (Asset A)
-        $feePercentageForLP = 0.7;
-
         try {
             $stakingAccountPublicKey = $this->stakingPublicWallet;
             $stakingAccount = $this->sdk->requestAccount($stakingAccountPublicKey);
@@ -576,7 +574,7 @@ class TokenController extends Controller
                 throw new \RuntimeException('Liquidity pool not found yet on Horizon.');
             }
 
-            $xlmLiquidityAmount = number_format($this->token_creation_fee * $feePercentageForLP, 7, '.', '');
+            $xlmLiquidityAmount = number_format($this->token_creation_fee * $this->feePercentageForLP, 7, '.', '');
             $tkgLiquidityAmount = number_format(
                 (float)$xlmLiquidityAmount * (float)$this->tkgDepositRatio,
                 7,
