@@ -444,7 +444,7 @@
                 </div>
                 <!-- Here is the problem  -->
                 <div class="w-full max-w-full sm:max-w-[80%] min-w-0 mx-auto bg-white rounded-xl shadow-md overflow-hidden">
-                    <div class="w-full max-w-full min-w-0 overflow-x-auto overscroll-x-contain touch-pan-x">
+                    <!-- <div class="w-full max-w-full min-w-0 overflow-x-auto overscroll-x-contain touch-pan-x">
                         <table class="w-full min-w-[720px] border-collapse">
                             <thead class="bg-[#43CDFF] text-white">
                                 <tr>
@@ -493,7 +493,7 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
+                    </div> -->
 
                     <div class="flex justify-between items-center px-4 py-3">
                         <div class="text-sm text-gray-600">
