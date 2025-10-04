@@ -1188,18 +1188,3 @@ async function refreshStats() {
 }
 
 </script>
-
-<style lang="scss" scoped>
-.card-header {
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 700;
-    font-style: normal;
-    font-size: 30px;
-    line-height: 100%;
-    text-align: center;
-}
-
-.card-header span {
-    color: #43CDFF;
-}
-</style>
