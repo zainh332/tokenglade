@@ -435,7 +435,89 @@
         </section>
 
 
-        <div class="container mx-auto pt-20">
+        <div class="table-wrapper">
+    <div class="relative">
+
+      <div class="max-w-6xl px-4 pt-8 pb-8 mx-auto mt-8 bg-white sm:px-6 sm:mt-16 lg:px-8 rounded-3xl sm:drop-shadow">
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <div class="w-32 h-1 px-8 mx-auto rounded-full bg-gradient"></div>
+            <h1 class="mt-4 font-semibold leading-relaxed text-center text-black text-t24 sm:leading-lh65">
+              Latest Staking Reward Transactions
+            </h1>
+          </div>
+
+        </div>
+        <div class="flow-root mt-4">
+          <div class="-mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="inline-block min-w-full py-2 align-middle">
+              <div class="table-container">
+                <table class="min-w-full ">
+                  <thead>
+                    <tr class="bg-white divide-gray-200 sm:divide-x">
+                      <th scope="col"
+                        class="pb-3.5 pl-4 text-left pr-4 text-[20px] font-semibold text-gray-900 sm:pl-6 lg:pl-20 ">
+                        Wallet Address</th>
+                      <th scope="col"
+                        class="pb-3.5 pl-4 text-left pr-4 text-[20px] font-semibold text-gray-900 sm:pl-6 lg:pl-20 ">
+                        Reward</th>
+                      <th scope="col"
+                        class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900">
+                        Transactions</th>
+                      <th scope="col"
+                        class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900">
+                        Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                                <tr v-if="pageRows.length === 0">
+                                    <td colspan="4" class="py-6 text-center text-gray-500">Loading rewards</td>
+                                </tr>
+
+                                <tr v-for="(row, index) in pageRows" :key="index"
+                                    class="bg-white border-b border-[#EBEBEB]">
+                                    <td class="py-4 px-4 text-dark text-center">
+                                        <span :title="row.wallet_address">{{ shortMiddle(row.wallet_address, 6, 6)
+                                            }}</span>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <span
+                                            class="inline-block w-full px-4 py-1 text-center text-sm font-medium text-dark bg-[#DBFEF0] rounded-full">
+                                            {{ row.reward }}
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-4 text-dark text-center">
+                                        <a v-if="row.transaction" :href="txUrl(row.transaction)" target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300/60 transition"
+                                            :title="`View transaction ${row.transaction} on the explorer`"
+                                            aria-label="View on Explorer">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
+                                                fill="currentColor" aria-hidden="true">
+                                                <path
+                                                    d="M12.5 3H17v4.5a1 1 0 11-2 0V6.414l-6.793 6.793a1 1 0 01-1.414-1.414L13.586 5H12.5a1 1 0 110-2z" />
+                                                <path
+                                                    d="M5 5h4a1 1 0 110 2H6v7h7v-3a1 1 0 112 0v4a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
+                                            </svg>
+                                            <span class="text-sm font-medium">View on Explorer</span>
+                                            <span class="sr-only"> Tx: {{ row.transaction }}</span>
+                                        </a>
+                                        <span v-else>—</span>
+                                    </td>
+                                    <td class="py-4 px-4 text-dark text-center">{{ fmtDate(row.at) }}</td>
+                                </tr>
+                            </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+        <!-- <div class="container mx-auto pt-20">
             <div class="mx-auto">
                 <div class="table-section pb-10">
                     <h1>
@@ -443,7 +525,13 @@
                     </h1>
                 </div>
                 <div class="w-full max-w-full sm:max-w-[80%] min-w-0 mx-auto bg-white rounded-xl shadow-md overflow-hidden">
-                    <!-- Here is the problem  -->
+                   
+                    
+
+
+
+
+
                     <div class="table-scroll w-full max-w-full min-w-0 overscroll-x-contain touch-pan-x">
                         <table class="w-full min-w-[720px] table-fixed border-collapse">
                             <thead class="bg-[#43CDFF] text-white">
@@ -494,7 +582,10 @@
                             </tbody>
                         </table>
                     </div>
-                    <!-- Here is the problem  -->
+                   
+                    
+
+
 
                     <div class="flex justify-between items-center px-4 py-3">
                         <div class="text-sm text-gray-600">
@@ -511,7 +602,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <section class="container mx-auto mt-16 py-10 ">
             <div class="w-full max-w-[80%] mx-auto bg-white rounded-2xl shadow-md overflow-hidden text-center">
@@ -1198,6 +1289,8 @@ async function refreshStats() {
     }
 }
 
+
+
 .card-header {
     font-family: 'DM Sans', sans-serif;
     font-weight: 700;
@@ -1237,5 +1330,24 @@ html, body {
   overflow-x: auto;
   max-width: 100vw;                   
   scrollbar-gutter: stable both-edges;
+}
+
+@media screen and (max-width: 600px) {
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* For smoother scrolling on iOS */
+    position: relative;
+    z-index: 1;
+    /* Keep it below the modal */
+  }
+
+  .table-wrapper {
+    position: relative;
+    z-index: 1;
+    /* Lower than modal */
+  }
+
+  /* Adjust other styles as needed */
 }
 </style>
