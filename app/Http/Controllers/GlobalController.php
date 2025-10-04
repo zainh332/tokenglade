@@ -12,6 +12,7 @@ use App\Services\WalletService;
 use Illuminate\Http\Request;
 
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\Network;
 use Illuminate\Support\Facades\Validator;
@@ -122,15 +123,22 @@ class GlobalController extends Controller
 
     public function wallet_types()
     {
-        $wallets = WalletType::where('status', 1)
-            ->select('id', 'name', 'key', 'blockchain_id')
-            ->get();
+        try {
+            $wallets = WalletType::where('status', 1)
+                ->select('id', 'name', 'key', 'blockchain_id')
+                ->get();
 
-        // Return the response
-        return response()->json([
-            'status' => 'success',
-            'wallets' => $wallets
-        ]);
+            return response()->json([
+                'status' => 'success',
+                'wallets' => $wallets,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('wallet_types error', ['message' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch wallet types.',
+            ], 500);
+        }
     }
 
     public function blockchains()
@@ -217,169 +225,119 @@ class GlobalController extends Controller
 
     public function generated_tokens()
     {
-        $get_wallets_tokens = Token::with(['stellarToken', 'blockchain'])
-            ->whereHas('stellarToken', function ($q) {
-                $q->whereNotNull('issuer_public_key')
-                    ->where('issuer_public_key', '!=', '');
-            })
-            ->limit(4)
-            ->orderBy('id', 'desc')
-            ->get();
-        return response()->json([
-            'status' => 'success',
-            'tokens' => $get_wallets_tokens,
-        ]);
+        try {
+            $get_wallets_tokens = Token::with(['stellarToken', 'blockchain'])
+                ->whereHas('stellarToken', function ($q) {
+                    $q->whereNotNull('issuer_public_key')
+                        ->where('issuer_public_key', '!=', '');
+                })
+                ->limit(4)
+                ->orderBy('id', 'desc')
+                ->get();
+
+            return response()->json([
+                'status' => 'success',
+                'tokens' => $get_wallets_tokens,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('generated_tokens error', ['message' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch generated tokens.',
+            ], 500);
+        }
     }
 
     public function count_data()
     {
-        $total_tokens = StellarToken::count();
-        return response()->json([
-            'status' => 'success',
-            'total_tokens' => $total_tokens,
-        ]);
+        try {
+            $total_tokens = StellarToken::count();
+            return response()->json([
+                'status' => 'success',
+                'total_tokens' => $total_tokens,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('count_data error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch total token count.',
+            ], 500);
+        }
     }
 
     public function staking_reward(Request $request)
     {
+        try {
+            $limit = min(max((int)$request->input('limit', 20), 1), 100);
 
-        $limit = min(max((int)$request->input('limit', 20), 1), 100);
+            $rows = StakingReward::query()
+                ->with([
+                    'staking' => fn($q) => $q->select('id', 'user_id')
+                        ->with(['user:id,public_key']),
+                ])
+                ->whereHas('staking.user')
+                ->latest('created_at')
+                ->limit($limit)
+                ->get(['id', 'staking_id', 'amount', 'transaction_id', 'created_at']);
 
-        // eager-load staking to get wallet address without N+1 queries
-        $rows = StakingReward::query()
-            ->with([
-                'staking' => fn($q) => $q->select('id', 'user_id')
-                    ->with(['user:id,public_key']),
-            ])
-            ->whereHas('staking.user')                 // only rows that have a user
-            ->latest('created_at')
-            ->limit($limit)
-            ->get(['id', 'staking_id', 'amount', 'transaction_id', 'created_at']);
+            $out = $rows->map(function (StakingReward $r) {
+                return [
+                    'wallet_address' => $r->staking?->user?->public_key,
+                    'reward'         => (float) $r->amount,
+                    'transaction'    => $r->transaction_id,
+                    'at'             => optional($r->created_at)->toIso8601String(),
+                ];
+            });
 
-        $out = $rows->map(function (StakingReward $r) {
-            return [
-                'wallet_address' => $r->staking?->user?->public_key,   // <-- FIXED
-                'reward'         => (float) $r->amount,
-                'transaction'    => $r->transaction_id,
-                'at'             => optional($r->created_at)->toIso8601String(),
-            ];
-        });
-
-        return response()->json([
-            'status'         => 'success',
-            'stakingreward'  => $out,
-        ]);
+            return response()->json([
+                'status'        => 'success',
+                'stakingreward' => $out,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('staking_reward error', ['message' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch staking rewards.',
+            ], 500);
+        }
     }
 
     public function live_staking_stats()
     {
-        // Total amount currently staked (sum of amounts)
-        $total_staked = Staking::where('is_withdrawn', 0)
-            ->whereNotNull('transaction_id')
-            ->where('staking_status_id', '!=', 4)
-            ->sum('amount');
+        try {
+            $total_staked = Staking::where('is_withdrawn', 0)
+                ->whereNotNull('transaction_id')
+                ->where('staking_status_id', '!=', 4)
+                ->sum('amount');
 
-        // Active stakers (unique wallets, or just count rows)
-        $active_stakers = Staking::where('is_withdrawn', 0)
-            ->whereNotNull('transaction_id')
-            ->where('staking_status_id', '!=', 4)
-            ->distinct('user_id')
-            ->count('user_id');
+            $active_stakers = Staking::where('is_withdrawn', 0)
+                ->whereNotNull('transaction_id')
+                ->where('staking_status_id', '!=', 4)
+                ->distinct('user_id')
+                ->count('user_id');
 
-        // Rewards paid in the last 24h
-        $rewards_paid = StakingReward::where('created_at', '>=', now()->subDay())
-            ->sum('amount');
+            $rewards_paid = StakingReward::where('created_at', '>=', now()->subDay())
+                ->sum('amount');
 
-        // Total payouts ever
-        $total_payouts = StakingReward::sum('amount');
+            $total_payouts = StakingReward::sum('amount');
 
-        $stats = [
-            'total_staked'   => (float) $total_staked,
-            'active_stakers' => $active_stakers,
-            'rewards_paid'   => (float) $rewards_paid,
-            'total_payouts'  => (float) $total_payouts,
-        ];
+            $stats = [
+                'total_staked'   => (float) $total_staked,
+                'active_stakers' => $active_stakers,
+                'rewards_paid'   => (float) $rewards_paid,
+                'total_payouts'  => (float) $total_payouts,
+            ];
 
-        return response()->json([
-            'status' => 'success',
-            'stats'  => $stats,
-        ]);
+            return response()->json([
+                'status' => 'success',
+                'stats'  => $stats,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('live_staking_stats error', ['message' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch live staking stats.',
+            ], 500);
+        }
     }
-
-
-    // public function fetch_claimable_balance(Request $request)
-    // {
-    //     $wallet_address = $request->json('wallet_key');
-
-    //     // Continue only if wallet_address is not null
-    //     if ($wallet_address !== null) {
-    //         try {
-    //             $client = new \GuzzleHttp\Client();
-    //             $response = $client->request('GET', 'https://horizon-testnet.stellar.org/accounts/'.$wallet_address.'/claimable_balances');
-    //             dd($response);
-    //             // Check status code
-    //             $status_code = $response->getStatusCode();
-    //             $data = json_decode($response->getBody(), true);
-
-    //             if ($status_code == 200) {
-    //                 dd($data); // Successfully fetched claimable balances
-    //             } else {
-    //                 dd('Error:', $status_code, $data); // Error in fetching data
-    //             }
-    //             // Fetch details of the wallet from the public address
-    //             $WalletAccount = $this->sdk->requestAccount($wallet_address);
-    //             $claimableBalance = $this->sdk->claimableBalances($wallet_address);
-    //             dd($claimableBalance);
-    //             // If there are claimable balances, process them
-    //             if (count($claimableBalance) > 0) {
-    //                 $claimable = []; // Initialize an array to hold claimable balances
-
-    //                 // Loop through claimable balances and extract necessary information
-    //                 foreach ($claimableBalances as $balance) {
-    //                     $claimable[] = [
-    //                         'id' => $balance->getId(), // Claimable balance ID
-    //                         'amount' => $balance->getAmount(), // Amount of the claimable balance
-    //                         'asset_code' => $balance->getAssetCode(), // Asset code (this is the code you want)
-    //                         'asset_issuer' => $balance->getAssetIssuer(), // Asset issuer
-    //                         'claimants' => $balance->getClaimants() // List of claimants
-    //                     ];
-    //                 }
-    //             }
-
-    //             $tokens = []; // Initialize an array to hold non-native assets
-    //             $totalXLM = 0;
-
-    //             // Loop through the balances and fetch non-native assets
-    //             foreach ($WalletAccount->getBalances() as $balance) {
-    //                 if ($balance->getAssetType() === 'native') {
-    //                     // Store the XLM balance if the asset type is 'native'
-    //                     $totalXLM = $balance->getBalance();
-    //                 } else {
-    //                     // Store non-native assets
-    //                     $tokens[] = [
-    //                         'code' => $balance->getAssetCode(), // Asset code
-    //                         'issuer' => $balance->getAssetIssuer(), // Asset issuer
-    //                         'balance' => $balance->getBalance(), // Asset balance
-    //                     ];
-    //                 }
-    //             }
-
-    //             if (count($tokens) > 0) {
-    //                 return response()->json([
-    //                     'status' => 'success',
-    //                     'tokens' => $tokens,
-    //                     'total_xlm' => $totalXLM, // Include the total XLM balance in the response
-    //                 ]);
-    //             } else {
-    //                 return response()->json(['status' => 'error', 'message' => 'No Claimable Balance in Connected Wallet']);
-    //             }
-    //         } catch (\InvalidArgumentException $e) {
-    //             return response()->json(['status' => 'error', 'message' => 'Invalid Wallet Address']);
-    //         } catch (\Exception $e) {
-    //             return response()->json(['status' => 'error', 'message' => 'Wallet is not active']);
-    //         }
-    //     } else {
-    //         return response()->json(['status' => 'error', 'message' => 'Wallet address is required']);
-    //     }
-    // }
 }
