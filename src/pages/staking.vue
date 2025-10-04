@@ -514,7 +514,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <section class="container mx-auto mt-16 py-10 ">
             <div class="w-full max-w-[80%] mx-auto bg-white rounded-2xl shadow-md overflow-hidden text-center">
@@ -563,7 +563,7 @@
                     </div>
                 </div>
             </div>
-        </section> -->
+        </section> 
 
 
         <section class="container mx-auto mt-16">
