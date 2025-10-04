@@ -250,25 +250,28 @@ export function updateLoader(title, text) {
     allowOutsideClick: false,
     allowEscapeKey: false,
     showConfirmButton: false,
+    didOpen: () => Swal.showLoading(),
+
+    // 👇 keep popup narrow & detached from your modal DOM
     target: document.body,
-    width: 420,
+    width: 420,                          // or '28rem'
     customClass: { popup: 'swal-compact' },
     backdrop: true,
   };
 
   if (!Swal.isVisible()) {
-    // First time — include didOpen
-    Swal.fire({
-      ...opts,
-      didOpen: () => Swal.showLoading(),
-    });
+    Swal.fire(opts);
   } else {
-    // Updating — omit didOpen, then re-trigger loading manually
-    Swal.update(opts);
+    Swal.update({
+      title: baseOpts.title,
+      html: baseOpts.html,
+      showConfirmButton: baseOpts.showConfirmButton,
+      customClass: baseOpts.customClass,
+      width: baseOpts.width,
+    });
     Swal.showLoading();
   }
 }
-
 
 export function apiHeaders(extra = {}) {
   const csrf  = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
