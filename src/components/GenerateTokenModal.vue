@@ -176,21 +176,24 @@
 
                   <!-- Lock Issuer Wallet -->
                   <div class="col-span-1 md:col-span-2">
-                    <div
-                      class="flex items-center justify-between rounded-xl bg-gray-50 px-3.5 py-3 ring-1 ring-inset ring-gray-200">
-                      <div>
-                        <label class="block text-sm font-medium text-gray-700">Lock Issuer Wallet</label>
-                        <p class="text-xs text-gray-500">Disables future minting. Irreversible.</p>
+                    <Field name="lockIssuer" type="checkbox" v-slot="{ value, handleChange }">
+                      <div
+                        class="flex items-center justify-between rounded-xl bg-gray-50 px-3.5 py-3 ring-1 ring-inset ring-gray-200">
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700">Lock Issuer Wallet</label>
+                          <p class="text-xs text-gray-500">Disables future minting. Irreversible.</p>
+                        </div>
+
+                        <button type="button" role="switch" :aria-checked="value" @click="handleChange(!value)"
+                          class="relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-300"
+                          :class="value ? 'bg-indigo-600' : 'bg-gray-300'">
+                          <span
+                            class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-300"
+                            :class="value ? 'translate-x-7' : 'translate-x-1'" />
+                        </button>
                       </div>
-                      <button type="button" role="switch" :aria-checked="form.lockIssuer"
-                        @click="form.lockIssuer = !form.lockIssuer"
-                        class="relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-300"
-                        :class="form.lockIssuer ? 'bg-indigo-600' : 'bg-gray-300'">
-                        <span
-                          class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-300"
-                          :class="form.lockIssuer ? 'translate-x-7' : 'translate-x-1'" />
-                      </button>
-                    </div>
+                    </Field>
+                    <ErrorMessage class="mt-1 text-xs text-red-500" name="lockIssuer" />
                   </div>
 
                   <!-- Notice -->
@@ -325,10 +328,8 @@ const network = ref('public')
 const isTestnet = computed(() => network.value === 'testnet')
 
 const submitForm = async (values) => {
-
   try {
-    // Show loading indicator
-    values.lock_status = toggleValue.value;
+    values.lock_status = !!values.lockIssuer;
 
     // Get the distributor's public key from Freighter
     const distributor_wallet_key = getCookie("public_key");
