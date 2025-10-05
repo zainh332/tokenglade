@@ -30,6 +30,7 @@ use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\LiquidityPoolDepositOperationBuilder;
 use Soneso\StellarSDK\Price;
+use Soneso\StellarSDK\SetOptionsOperationBuilder;
 
 class TokenController extends Controller
 {
@@ -287,7 +288,7 @@ class TokenController extends Controller
                     if (!$token_created) {
                         return response()->json([
                             'success' => false,
-                            'error' => 'Token creation record not found for this wallet and asset code.',
+                            'message' => 'Token creation record not found for this wallet and asset code.',
                         ], 404);
                     }
 
@@ -334,17 +335,17 @@ class TokenController extends Controller
                     $tomlPath = $directory . '/stellar.toml';
 
                     $tomlContent = <<<EOT
-                [[CURRENCIES]]
-                code="{$token_created->asset_code}"
-                issuer="{$token_created->issuer_public_key}"
-                display_decimals={$token_created->display_decimals}
-                name="{$token_created->name}"
-                desc="{$token_created->desc}"
-                image="{$token_created->logo}"
-                fixed_number="{$token_created->total_supply}"
-                status="live"
+                    [[CURRENCIES]]
+                    code="{$token_created->asset_code}"
+                    issuer="{$token_created->issuer_public_key}"
+                    display_decimals={$token_created->display_decimals}
+                    name="{$token_created->name}"
+                    desc="{$token_created->desc}"
+                    image="{$token_created->logo}"
+                    fixed_number="{$token_created->total_supply}"
+                    status="live"
 
-                EOT;
+                    EOT;
 
                     if (file_exists($tomlPath)) {
                         file_put_contents($tomlPath, "\n" . $tomlContent, FILE_APPEND);
@@ -367,6 +368,20 @@ class TokenController extends Controller
                         ]);
                     }
 
+                    if ((int)$token_created->lock_status === 1) {
+                        $lockOk = $this->lockIssuerWallet(
+                            $token_created->issuer_public_key,
+                            $token_created->issuer_secret_key
+                        );
+
+                        if (!$lockOk) {
+                            return response()->json([
+                                'status'  => 'error',
+                                'message' => 'Issuer wallet lock failed after transfer.',
+                            ], 500);
+                        }
+                    }
+
                     return response()->json([
                         'status' => 'success',
                         'assetCode' => $assetCode,
@@ -385,7 +400,7 @@ class TokenController extends Controller
         } else {
             return response()->json([
                 'success' => false,
-                'error' => 'Transaction failed',
+                'message' => 'Transaction failed',
                 'result_codes' => $response?->getExtras()?->getResultCodes() ?? 'Unknown error',
                 'details' => $response?->getExtras()?->getResultXdr() ?? 'No details available'
             ], 400);
@@ -518,7 +533,7 @@ class TokenController extends Controller
         // Build the payment transaction
         $paymentTransaction = (new TransactionBuilder($issuerAccount))
             ->addOperation($paymentOperation)
-            ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Token created by TokenGlade'))
+            ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Tokens minted on TokenGlade'))
             ->build();
 
         $issuerKeypair = KeyPair::fromSeed($issuerSecretKey);
@@ -742,5 +757,32 @@ class TokenController extends Controller
 
         // If none worked or pool not found
         return null;
+    }
+
+    private function lockIssuerWallet(string $issuerPub, string $issuerSec): bool
+    {
+        try {
+            $issuerAccount = $this->sdk->requestAccount($issuerPub);
+
+            $setOptions = (new SetOptionsOperationBuilder())
+                ->setMasterKeyWeight(0)
+                ->setSourceAccount($issuerPub)
+                ->build();
+
+            $tx = (new TransactionBuilder($issuerAccount, $this->network))
+                ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Lock issuer'))
+                ->addOperation($setOptions)
+                ->build();
+
+            $issuerSecretKey = KeyPair::fromSeed($issuerSec);
+
+            $tx->sign($issuerSecretKey, $this->network);
+
+            $resp = $this->sdk->submitTransaction($tx);
+            return $resp->isSuccessful();
+        } catch (\Throwable $e) {
+            Log::error('lockIssuerWallet failed', ['msg' => $e->getMessage()]);
+            return false;
+        }
     }
 }

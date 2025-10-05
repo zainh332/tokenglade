@@ -407,7 +407,7 @@ const submitForm = async (values) => {
 
     if ((submitResponse2.data.status || "").trim() !== "success") {
       Swal.close();
-      return Swal.fire({ icon: "error", title: "Error!", text: submitResponse2.data.message || "Trustline transaction submission failed." });
+      return Swal.fire({ icon: "error", title: "Error!", text: submitResponse2.data.message || submitResponse2.data.error || "Trustline transaction submission failed." });
     }
     updateLoader("Finalizing", "Saving token details…");
     Swal.close();
