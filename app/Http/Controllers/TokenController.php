@@ -11,6 +11,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Soneso\StellarSDK\StellarSDK;
@@ -35,7 +36,7 @@ use Soneso\StellarSDK\SetOptionsOperationBuilder;
 class TokenController extends Controller
 {
     private $sdk, $network, $token_creation_fee;
-    private $feePercentageForLP, $xlm_funding_wallet, $xlm_funding_wallet_key, $issuer_wallet_amount, $stakingPublicWallet, $stakingPublicWalletKey, $tkgIssuer, $assetCode, $tkgDepositRatio;
+    private $feePercentageForLP, $xlm_funding_wallet, $xlm_funding_wallet_key, $issuer_wallet_amount, $stakingPublicWallet, $stakingPublicWalletKey, $tkgIssuer, $assetCode;
     private WalletService $wallet;
     private bool $isTestnet;
 
@@ -66,7 +67,6 @@ class TokenController extends Controller
         $this->assetCode = env('ASSET_CODE');
         $this->token_creation_fee = 50; //XLM
         $this->issuer_wallet_amount = 4; //XLM
-        $this->tkgDepositRatio = 10;
         $this->feePercentageForLP = 0.7;
     }
 
@@ -574,6 +574,18 @@ class TokenController extends Controller
             $stakingAccountPublicKey = $this->stakingPublicWallet;
             $stakingAccount = $this->sdk->requestAccount($stakingAccountPublicKey);
 
+            foreach ($stakingAccount->getBalances() as $bal) {
+                $type = $bal->getAssetType();
+
+                if ($type === 'native') {
+                    continue;
+                }
+
+                if ($type === 'liquidity_pool_shares') {
+                    continue;
+                }
+            }
+
             $poolId = $this->getPoolIdFromHorizon(
                 $this->assetCode,
                 $this->tkgIssuer,
@@ -588,26 +600,34 @@ class TokenController extends Controller
                 throw new \RuntimeException('Liquidity pool not found yet on Horizon.');
             }
 
-            $xlmLiquidityAmount = number_format($this->token_creation_fee * $this->feePercentageForLP, 7, '.', '');
-            $tkgLiquidityAmount = number_format(
-                (float)$xlmLiquidityAmount * (float)$this->tkgDepositRatio,
-                7,
-                '.',
-                ''
-            );
+            $reserves = $this->getPoolReserves($poolId);
+            Log::info('[LP] Pool reserves read', ['reserves' => $reserves]);
 
+            if (!$reserves || !isset($reserves['xlm'], $reserves['tkg'])) {
+                throw new \RuntimeException('Could not read pool reserves.');
+            }
+
+            // pool holdings (strings like "123.4567890")
+            $poolXlm = $reserves['xlm']; // XLM amount in pool
+            $poolTkg = $reserves['tkg']; // TKG amount in pool
+
+            // Decide how much XLM you want to add (70% of fee, as before)
+            $xlmLiquidityAmount = $this->scale7($this->token_creation_fee * $this->feePercentageForLP); // 7dp
+
+            // Compute matching TKG from pool ratio: tkg = xlm * (poolTkg / poolXlm)
+            $tkgLiquidityAmount = $this->scale7(
+                $this->bcmul($xlmLiquidityAmount, $this->bcdiv($poolTkg, $poolXlm, 12), 12)
+            );
             $minPrice = new Price(1, 100000000);
             $maxPrice = new Price(100000000, 1);
 
             $tkgAsset = Asset::createNonNativeAsset($this->assetCode, $this->tkgIssuer);
 
-            $txb = new TransactionBuilder($stakingAccount, $this->network);
-            $txb->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'LP trustlines + deposit'));
+            $txb = (new TransactionBuilder($stakingAccount, $this->network))
+                ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'LP trustlines + deposit'));
 
             // Trust TKG (ok to always include)
-            $txb->addOperation(
-                (new ChangeTrustOperationBuilder($tkgAsset, '922337203685.4775807'))->build()
-            );
+            $txb->addOperation((new ChangeTrustOperationBuilder($tkgAsset, '922337203685.4775807'))->build());
 
             // Trust LP shares (use AssetTypePoolShare; ALWAYS include)
             $txb->addOperation($this->buildLpShareChangeTrustOpForSdk());
@@ -635,14 +655,24 @@ class TokenController extends Controller
                     'transaction_hash' => $response->getHash()
                 ];
             } else {
-                $codes = $response->getExtras()->getResultCodes();
+                $extras = $response->getExtras();
+                $codes  = $extras ? $extras->getResultCodes() : null;
+                $envXdr = $extras ? $extras->getEnvelopeXdr() : null;
+                $resXdr = $extras ? $extras->getResultXdr() : null;
+
                 Log::error('Liquidity Pool Deposit failed', [
                     'result_codes' => $codes,
+                    'envelope_xdr' => $envXdr,
+                    'result_xdr'   => $resXdr,
                 ]);
                 return [
                     'status' => 'error',
                     'message' => 'Liquidity Pool Deposit submission failed.',
-                    'error' => $codes
+                    'error' => $codes,
+                    'debug'   => [
+                        'envelope_xdr' => $envXdr,
+                        'result_xdr'   => $resXdr,
+                    ],
                 ];
             }
         } catch (HorizonRequestException $hex) {
@@ -784,5 +814,116 @@ class TokenController extends Controller
             Log::error('lockIssuerWallet failed', ['msg' => $e->getMessage()]);
             return false;
         }
+    }
+
+    private function getPoolReserves(string $poolId): ?array
+    {
+        $base = $this->isTestnet
+            ? 'https://horizon-testnet.stellar.org'
+            : 'https://horizon.stellar.org';
+
+        $url = $base . '/liquidity_pools/' . $poolId;
+
+        Log::info('[LP:getPoolReserves] Fetching pool', [
+            'env'    => $this->isTestnet ? 'testnet' : 'public',
+            'poolId' => $poolId,
+            'url'    => $url,
+            'asset'  => $this->assetCode,
+            'issuer' => $this->tkgIssuer,
+        ]);
+
+        try {
+            $res = Http::timeout(10)->acceptJson()->get($url);
+
+            if ($res->failed()) {
+                Log::warning('[LP:getPoolReserves] Horizon request failed', [
+                    'status' => $res->status(),
+                    'body'   => mb_substr($res->body(), 0, 800),
+                ]);
+                return null;
+            }
+
+            $data = $res->json();
+
+            $rawReserves = $data['reserves'] ?? null;
+            Log::info('[LP:getPoolReserves] Reserves field', [
+                'hasReservesArray' => is_array($rawReserves),
+                'count'            => is_array($rawReserves) ? count($rawReserves) : 0,
+                'sample'           => is_array($rawReserves) ? array_slice($rawReserves, 0, 2) : $rawReserves,
+            ]);
+
+            if (!is_array($rawReserves)) {
+                Log::warning('[LP:getPoolReserves] reserves missing or not an array');
+                return null;
+            }
+
+            $xlm = null;
+            $tkg = null;
+
+            foreach ($rawReserves as $r) {
+                $asset  = $r['asset']  ?? null;
+                $amount = $r['amount'] ?? null;
+
+                if ($asset === 'native') {
+                    $xlm = $amount;
+                    continue;
+                }
+
+                if (!is_string($asset)) {
+                    continue;
+                }
+
+                $parts = explode(':', $asset);
+
+                if (count($parts) === 2) {
+                    [$code, $issuer] = $parts;
+                } elseif (count($parts) === 3) {
+                    [, $code, $issuer] = $parts;
+                } else {
+                    continue;
+                }
+
+                if ($code === $this->assetCode && $issuer === $this->tkgIssuer) {
+                    $tkg = $amount;
+                }
+            }
+
+            if ($xlm === null || $tkg === null) {
+                Log::warning('[LP:getPoolReserves] Could not match both XLM and TKG in reserves', [
+                    'asset'  => $this->assetCode,
+                    'issuer' => $this->tkgIssuer,
+                    'raw'    => $rawReserves,
+                ]);
+                return null;
+            }
+
+            return ['xlm' => $xlm, 'tkg' => $tkg];
+        } catch (\Throwable $e) {
+            Log::error('[LP:getPoolReserves] Exception', [
+                'message' => $e->getMessage(),
+                'trace'   => $e->getTraceAsString(),
+            ]);
+            return null;
+        }
+    }
+
+    /** bcmath helpers (safe if extension present; fallback to native). */
+    private function bcdiv($left, $right, $scale = 12)
+    {
+        if (extension_loaded('bcmath')) return bcdiv((string)$left, (string)$right, $scale);
+        return (string) ((float)$left / (float)$right);
+    }
+
+    private function bcmul($left, $right, $scale = 12)
+    {
+        if (extension_loaded('bcmath')) return bcmul((string)$left, (string)$right, $scale);
+        return (string) ((float)$left * (float)$right);
+    }
+
+    /** format to 7dp (round down) */
+    private function scale7($val): string
+    {
+        $f = floor(((float)$val) * 1e7) / 1e7;
+        return number_format($f, 7, '.', '');
     }
 }
