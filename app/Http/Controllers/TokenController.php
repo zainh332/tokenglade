@@ -571,10 +571,10 @@ class TokenController extends Controller
     private function tokenCreationLiquidityDepositTransaction()
     {
         try {
-            $stakingAccountPublicKey = $this->stakingPublicWallet;
-            $stakingAccount = $this->sdk->requestAccount($stakingAccountPublicKey);
+            $xlmFundingWalletPublicKey = $this->xlm_funding_wallet;
+            $xlmFundingAccount = $this->sdk->requestAccount($xlmFundingWalletPublicKey);
 
-            foreach ($stakingAccount->getBalances() as $bal) {
+            foreach ($xlmFundingAccount->getBalances() as $bal) {
                 $type = $bal->getAssetType();
 
                 if ($type === 'native') {
@@ -623,7 +623,7 @@ class TokenController extends Controller
 
             $tkgAsset = Asset::createNonNativeAsset($this->assetCode, $this->tkgIssuer);
 
-            $txb = (new TransactionBuilder($stakingAccount, $this->network))
+            $txb = (new TransactionBuilder($xlmFundingAccount, $this->network))
                 ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'LP trustlines + deposit'));
 
             // Trust TKG (ok to always include)
@@ -644,7 +644,7 @@ class TokenController extends Controller
             );
 
             $tx = $txb->build();
-            $kp = KeyPair::fromSeed($this->stakingPublicWalletKey);
+            $kp = KeyPair::fromSeed($this->xlm_funding_wallet_key);
             $tx->sign($kp, $this->network);
             $response = $this->sdk->submitTransaction($tx);
 
