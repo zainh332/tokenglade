@@ -46,7 +46,7 @@
       </div>
       <!-- Table -->
 
-      <Table />
+      <Table :network="network" />
 
       <div class="py-10 my-10 bg-white text-center">
         <h2 class="text-3xl font-bold mb-10">How It works</h2>
@@ -132,11 +132,13 @@ import axios from 'axios'
 import { ref, computed, defineProps, onMounted, watch } from "vue";
 import Swal from 'sweetalert2';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
-import { getCookie, apiHeaders } from "../utils/utils.js";
+import { getCookie, getNetwork } from "../utils/utils.js";
 
 const isWalletConnected = ref(false);
 const walletKey = ref('');
 const ConnectWalletModals = ref(false);
+const network = ref('public')
+const isTestnet = computed(() => network.value === 'testnet')
 
 function handleWalletStatus(e) {
   // Expect { connected: boolean, walletKey?: string }
@@ -200,9 +202,15 @@ function refreshWalletState() {
   isWalletConnected.value = !!(pk && pk.startsWith("G") && pk.length === 56);
 }
 
-onMounted(() => {
+onMounted(async() => {
   refreshWalletState();
   fetchdata()
+  try {
+        network.value = await getNetwork()
+    } catch (e) {
+        console.error('getNetwork failed:', e)
+        network.value = 'public'
+    }
 })
 
 
