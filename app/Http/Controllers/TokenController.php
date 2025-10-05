@@ -30,6 +30,7 @@ use Soneso\StellarSDK\ChangeTrustOperation;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\LiquidityPoolDepositOperationBuilder;
+use Soneso\StellarSDK\PathPaymentStrictReceiveOperationBuilder;
 use Soneso\StellarSDK\Price;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 
@@ -156,7 +157,7 @@ class TokenController extends Controller
 
             // Define the payment operation (from distributor to issuer)
             $paymentOp = (new PaymentOperationBuilder(
-                $this->stakingPublicWallet,
+                $this->xlm_funding_wallet,
                 Asset::native(),                  // XLM
                 strval($this->token_creation_fee) // amount: fee (200)
             ))
@@ -574,31 +575,20 @@ class TokenController extends Controller
             $xlmFundingWalletPublicKey = $this->xlm_funding_wallet;
             $xlmFundingAccount = $this->sdk->requestAccount($xlmFundingWalletPublicKey);
 
+            $nativeBal = '0';
+            $tkgBal    = '0';
             foreach ($xlmFundingAccount->getBalances() as $bal) {
-                $type = $bal->getAssetType();
-
-                if ($type === 'native') {
-                    continue;
-                }
-
-                if ($type === 'liquidity_pool_shares') {
-                    continue;
+                $t = $bal->getAssetType();
+                if ($t === 'native') $nativeBal = $bal->getBalance();
+                if ($t === 'credit_alphanum4' || $t === 'credit_alphanum12') {
+                    if ($bal->getAssetCode() === $this->assetCode && $bal->getAssetIssuer() === $this->tkgIssuer) {
+                        $tkgBal = $bal->getBalance();
+                    }
                 }
             }
 
-            $poolId = $this->getPoolIdFromHorizon(
-                $this->assetCode,
-                $this->tkgIssuer,
-                $this->isTestnet,
-            );
-
-            if (!$poolId) {
-                Log::error('Liquidity pool not found on Horizon', [
-                    'assetCode' => $this->assetCode,
-                    'issuer' => $this->tkgIssuer,
-                ]);
-                throw new \RuntimeException('Liquidity pool not found yet on Horizon.');
-            }
+            $poolId = $this->getPoolIdFromHorizon($this->assetCode, $this->tkgIssuer, $this->isTestnet);
+            if (!$poolId) throw new \RuntimeException('Liquidity pool not found yet on Horizon.');
 
             $reserves = $this->getPoolReserves($poolId);
             Log::info('[LP] Pool reserves read', ['reserves' => $reserves]);
@@ -631,6 +621,35 @@ class TokenController extends Controller
 
             // Trust LP shares (use AssetTypePoolShare; ALWAYS include)
             $txb->addOperation($this->buildLpShareChangeTrustOpForSdk());
+
+            $needTkg = max(0.0, (float)$tkgLiquidityAmount - (float)$tkgBal);
+
+            if ($needTkg > 0) {
+                $xlmForSwap = $this->xlmNeededForTkg($poolXlm, $poolTkg, number_format($needTkg, 7, '.', ''), 30);
+                if ($xlmForSwap === null) {
+                    throw new \RuntimeException('Target TKG exceeds pool capacity.');
+                }
+
+                // ensure you have enough XLM: swap + deposit + some fee headroom
+                $xlmNeededTotal = (float)$xlmForSwap + (float)$xlmLiquidityAmount + 2.0;
+                if ((float)$nativeBal < $xlmNeededTotal) {
+                    throw new \RuntimeException('Underfunded XLM for swap + deposit.');
+                }
+
+                $xlmForSwapStr         = number_format((float)$xlmForSwap, 7, '.', '');
+                $tkgLiquidityAmountStr = number_format((float)$tkgLiquidityAmount, 7, '.', '');
+
+                // Path payment strict receive: send XLM, receive exact TKG to self
+                $pathOp = (new PathPaymentStrictReceiveOperationBuilder(
+                    Asset::native(),                
+                    $xlmForSwapStr,                   
+                    $xlmFundingWalletPublicKey,            
+                    $tkgAsset,                      
+                    $tkgLiquidityAmountStr                     
+                ))->build();
+
+                $txb->addOperation($pathOp);
+            }
 
             // Deposit
             $txb->addOperation(
@@ -925,5 +944,23 @@ class TokenController extends Controller
     {
         $f = floor(((float)$val) * 1e7) / 1e7;
         return number_format($f, 7, '.', '');
+    }
+
+    private function xlmNeededForTkg(string $poolXlm, string $poolTkg, string $targetTkg, int $feeBp = 30): string 
+    {
+        $X = (float)$poolXlm;
+        $Y = (float)$poolTkg;
+        $dy = (float)$targetTkg;
+
+        // guard: cannot withdraw more than reserve
+        if ($dy >= $Y) return null;
+
+        $fee = 1.0 - ($feeBp / 10000.0); // e.g. 0.997
+        // strict-receive inverse: dx_eff = (dy * X) / (Y - dy)
+        $dxEff = ($dy * $X) / ($Y - $dy);
+        $dx = $dxEff / $fee; // undo fee on input
+        // 7dp, round up a hair to be safe
+        $dx += 1e-7;
+        return number_format($dx, 7, '.', '.');
     }
 }
