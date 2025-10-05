@@ -304,15 +304,15 @@ class TokenController extends Controller
                     $token_created->current_stellar_transaction_id = $Issuer_wallet_distributor_wallet_trustline_transaction->id;
                     $token_created->save();
 
-                    $generate_token = $this->transfer_created_tokens($distributor_wallet_key, $assetCode, $token_created->issuer_public_key, $token_created->issuer_secret_key, $token_created->total_supply);
-                    if (!$generate_token) {
+                    $transfer_generate_token = $this->transfer_created_tokens($distributor_wallet_key, $assetCode, $token_created->issuer_public_key, $token_created->issuer_secret_key, $token_created->total_supply);
+                    if (!$transfer_generate_token) {
                         return response()->json([
                             'status' => 'error',
-                            'message' => 'Token generation failed.'
+                            'message' => 'Sending generated token to user Failed.'
                         ], 500);
                     }
 
-                    $created_tokens_transfer_transaction = $this->addStellarTransactionRecord($token_created->id, $distributor_wallet_key, 4, '', $generate_token['signed_xdr'], $generate_token['tx_hash'], true);
+                    $created_tokens_transfer_transaction = $this->addStellarTransactionRecord($token_created->id, $distributor_wallet_key, 4, '', $transfer_generate_token['signed_xdr'], $transfer_generate_token['tx_hash'], true);
 
                     if (!$created_tokens_transfer_transaction) {
                         return response()->json([
