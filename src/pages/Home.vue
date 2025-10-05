@@ -103,7 +103,7 @@
         </div>
         <Faq />
       </div>
-      <GenerateTokenModal :open="isTokenModalOpen" @close="isTokenModalOpen = false" />
+      <GenerateTokenModal :open="isTokenModalOpen" @close="isTokenModalOpen = false" :network="network"/>
         <ConnectWalletModal
           v-model="ConnectWalletModals"
           :connected="isWalletConnected"
@@ -138,7 +138,6 @@ const isWalletConnected = ref(false);
 const walletKey = ref('');
 const ConnectWalletModals = ref(false);
 const network = ref('public')
-const isTestnet = computed(() => network.value === 'testnet')
 
 function handleWalletStatus(e) {
   // Expect { connected: boolean, walletKey?: string }
@@ -209,7 +208,6 @@ onMounted(async() => {
         network.value = await getNetwork()
     } catch (e) {
         console.error('getNetwork failed:', e)
-        network.value = 'public'
     }
 })
 

@@ -231,14 +231,20 @@ import { Form, Field, ErrorMessage } from 'vee-validate';
 import Logo from '@/assets/token-glade-logo.png'
 import * as Yup from "yup";
 import Swal from 'sweetalert2';
-import { E, signXdrWithWallet, getCookie, updateLoader, getNetwork } from "../utils/utils.js";
+import { E, signXdrWithWallet, getCookie, updateLoader } from "../utils/utils.js";
 import axios from 'axios';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
 
 const isWalletConnected = ref(false);
 const ConnectWalletModals = ref(false);
 const logoPreview = ref('');
-const { open } = defineProps({ open: Boolean, distributorWallet: String })
+const { open } = defineProps({ open: Boolean, distributorWallet: String, network: { type: String, default: 'public' } })
+
+const network = computed(() =>
+  (props.network || 'public').toLowerCase() === 'testnet' ? 'testnet' : 'public'
+)
+
+const isTestnet = computed(() => network.value === 'testnet')
 
 const shortWallet = computed(() =>
   walletKey.value
@@ -324,8 +330,6 @@ const closeModal = () => {
   logoPreview.value = '';          
   emit('close');
 };
-const network = ref('public')
-const isTestnet = computed(() => network.value === 'testnet')
 
 const submitForm = async (values) => {
   try {
@@ -449,16 +453,10 @@ const submitForm = async (values) => {
   }
 };
 
-onMounted(async () => {
+onMounted(() => {
   const pk = getCookie('public_key') || localStorage.getItem('public_key') || '';
   walletKey.value = pk || '';
   isWalletConnected.value = !!pk;
-  try {
-        network.value = await getNetwork()
-    } catch (e) {
-        console.error('getNetwork failed:', e)
-        network.value = 'public'
-    }
 });
 
 //Helper
