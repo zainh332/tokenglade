@@ -679,7 +679,7 @@ const nextPage = () => {
     if (currentPage.value < totalPages.value) currentPage.value++;
 };
 
-const network = ref(null)
+const network = ref('public')
 console.log('Detected Stellar network =', network.value)
 
 const isTestnet = computed(() => network.value === 'testnet')
