@@ -679,7 +679,7 @@ const nextPage = () => {
     if (currentPage.value < totalPages.value) currentPage.value++;
 };
 
-const network = ref('public')
+const network = ref(null)
 console.log('Detected Stellar network =', network.value)
 
 const isTestnet = computed(() => network.value === 'testnet')
@@ -863,6 +863,9 @@ async function signXdr(xdr, staking_id, testnet) {
         Swal.fire({ icon: 'error', title: 'Invalid XDR', text: 'Unsigned XDR is not a base64 envelope.' });
         throw new Error('unsigned XDR not base64');
     }
+    
+    console.log('signXdr', testnet);
+    
 
     const net = {
         freighter: testnet ? 'TESTNET' : 'PUBLIC',
