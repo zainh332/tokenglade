@@ -37,7 +37,7 @@
                     <tr v-for="token in fetched_tokens" :key="token.id" class="bg-white divide-gray-200 sm:divide-x">
                       <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap text-t16 sm:pl-6 lg:pl-20">
                         <template v-if="token.blockchain?.name === 'Stellar'">
-                          <a :href="`https://stellar.expert/explorer/public/account/${token.stellar_token?.user_wallet_address}`"
+                          <a :href="`https://stellar.expert/explorer/${explorerNetwork}/account/${token.stellar_token?.user_wallet_address}`"
                             target="_blank" class="text-blue-500 underline">
                             {{ formatAddress(token.stellar_token?.user_wallet_address) }}
                           </a>
@@ -45,7 +45,7 @@
                       </td>
                       <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap text-t16 sm:pl-6 lg:pl-20">
                         <template v-if="token.blockchain?.name === 'Stellar'">
-                          <a :href="`https://stellar.expert/explorer/public/account/${token.stellar_token.issuer_public_key}`"
+                          <a :href="`https://stellar.expert/explorer/${explorerNetwork}/account/${token.stellar_token.issuer_public_key}`"
                             target="_blank" class="text-blue-500 underline">
                             {{ formatAddress(token.stellar_token.issuer_public_key) }}
                           </a>
@@ -76,8 +76,15 @@ import { ref, computed, defineProps, onMounted, watch } from "vue";
 import Swal from 'sweetalert2';
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+const props = defineProps({
+  network: { type: String, default: 'public' }
+})
 
 const fetched_tokens = ref([]);
+
+const explorerNetwork = computed(() =>
+  (props.network || 'public').toLowerCase() === 'testnet' ? 'testnet' : 'public'
+)
 
 function formatAddress(address) {
   if (!address || typeof address !== 'string') return '—';

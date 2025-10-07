@@ -434,85 +434,86 @@
             </div>
         </section>
 
-        <div class="container mx-auto pt-20">
-            <div class="mx-auto">
-                <div class="table-section pb-10">
-                    <h1>
-                        Latest Staking Reward <br /> Transactions
-                    </h1>
-                </div>
 
-                <div class="w-full max-w-[80%] mx-auto bg-white rounded-xl shadow-md overflow-hidden">
-                    <!-- Table -->
-                    <div class="overflow-x-auto overscroll-x-contain touch-pan-x -mx-4 sm:mx-0">
-                        <table class="min-w-max w-[720px] sm:w-full border-collapse">
-                            <thead class="bg-[#43CDFF] text-white">
-                                <tr>
-                                    <th class="py-4 px-4 text-center">Wallet Address</th>
-                                    <th class="py-4 px-4 text-center">Reward</th>
-                                    <th class="py-4 px-4 text-center">Transactions</th>
-                                    <th class="py-4 px-4 text-center">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-if="pageRows.length === 0">
-                                    <td colspan="4" class="py-6 text-center text-gray-500">Loading rewards</td>
-                                </tr>
+        <div class="table-wrapper">
+            <div class="relative">
 
-                                <tr v-for="(row, index) in pageRows" :key="index"
-                                    class="bg-white border-b border-[#EBEBEB]">
-                                    <td class="py-4 px-4 text-dark text-center">
-                                        <span :title="row.wallet_address">{{ shortMiddle(row.wallet_address, 6, 6)
-                                        }}</span>
-                                    </td>
-                                    <td class="py-4 px-4">
-                                        <span
-                                            class="inline-block w-full px-4 py-1 text-center text-sm font-medium text-dark bg-[#DBFEF0] rounded-full">
-                                            {{ row.reward }}
-                                        </span>
-                                    </td>
-                                    <td class="py-4 px-4 text-dark text-center">
-                                        <a v-if="row.transaction" :href="txUrl(row.transaction)" target="_blank"
-                                            rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5
-           rounded-full border border-gray-200 bg-gray-100 text-gray-700
-           hover:bg-gray-200 hover:border-gray-300
-           focus:outline-none focus:ring-2 focus:ring-gray-300/60 transition"
-                                            :title="`View transaction ${row.transaction} on the explorer`"
-                                            aria-label="View on Explorer">
-                                            <!-- icon -->
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20"
-                                                fill="currentColor" aria-hidden="true">
-                                                <path
-                                                    d="M12.5 3H17v4.5a1 1 0 11-2 0V6.414l-6.793 6.793a1 1 0 01-1.414-1.414L13.586 5H12.5a1 1 0 110-2z" />
-                                                <path
-                                                    d="M5 5h4a1 1 0 110 2H6v7h7v-3a1 1 0 112 0v4a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
-                                            </svg>
-                                            <span class="text-sm font-medium">View on Explorer</span>
-                                            <span class="sr-only"> Tx: {{ row.transaction }}</span>
-                                        </a>
-                                        <span v-else>—</span>
-                                    </td>
-
-                                    <td class="py-4 px-4 text-dark text-center">
-                                        {{ fmtDate(row.at) }}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Footer -->
-                    <div class="flex justify-between items-center px-4 py-3">
-                        <div class="text-sm text-gray-600">
-                            Showing {{ paginatedData.length ? (startIndex + 1) : 0 }}–{{ endIndex }} of {{
-                                paginatedData.length
-                            }}
+                <div
+                    class="max-w-6xl px-4 pt-8 pb-8 mx-auto mt-8 bg-white sm:px-6 sm:mt-16 lg:px-8 rounded-3xl sm:drop-shadow">
+                    <div class="sm:flex sm:items-center">
+                        <div class="sm:flex-auto">
+                            <div class="w-32 h-1 px-8 mx-auto rounded-full bg-gradient"></div>
+                            <h1
+                                class="mt-4 font-semibold leading-relaxed text-center text-black text-t24 sm:leading-lh65">
+                                Latest Staking Reward Transactions
+                            </h1>
                         </div>
-                        <div class="flex gap-2">
-                            <button @click="prevPage" :disabled="currentPage === 1"
-                                class="px-3 py-1 text-sm border rounded-lg disabled:opacity-50">Prev</button>
-                            <button @click="nextPage" :disabled="currentPage === totalPages"
-                                class="px-3 py-1 text-sm border rounded-lg disabled:opacity-50">Next</button>
+
+                    </div>
+                    <div class="flow-root mt-4">
+                        <div class="-mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                            <div class="inline-block min-w-full py-2 align-middle">
+                                <div class="table-container">
+                                    <table class="min-w-full ">
+                                        <thead>
+                                            <tr class="bg-white divide-gray-200 sm:divide-x">
+                                                <th scope="col"
+                                                    class="pb-3.5 pl-4 text-left pr-4 text-[20px] font-semibold text-gray-900 sm:pl-6 lg:pl-20 ">
+                                                    Wallet Address</th>
+                                                <th scope="col"
+                                                    class="pb-3.5 pl-4 text-left pr-4 text-[20px] font-semibold text-gray-900 sm:pl-6 lg:pl-20 ">
+                                                    Reward</th>
+                                                <th scope="col"
+                                                    class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900">
+                                                    Transactions</th>
+                                                <th scope="col"
+                                                    class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900">
+                                                    Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-if="pageRows.length === 0">
+                                                <td colspan="4" class="py-6 text-center text-gray-500">Loading rewards
+                                                </td>
+                                            </tr>
+
+                                            <tr v-for="(row, index) in pageRows" :key="index"
+                                                class="bg-white border-b border-[#EBEBEB]">
+                                                <td class="py-4 px-4 text-dark text-center">
+                                                    <span :title="row.wallet_address">{{ shortMiddle(row.wallet_address,
+                                                        6, 6)
+                                                        }}</span>
+                                                </td>
+                                                <td class="py-4 px-4">
+                                                    <span
+                                                        class="inline-block w-full px-4 py-1 text-center text-sm font-medium text-dark bg-[#DBFEF0] rounded-full">
+                                                        {{ row.reward }}
+                                                    </span>
+                                                </td>
+                                                <td class="py-4 px-4 text-dark text-center">
+                                                    <a v-if="row.transaction" :href="txUrl(row.transaction)"
+                                                        target="_blank" rel="noopener noreferrer"
+                                                        class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300/60 transition"
+                                                        :title="`View transaction ${row.transaction} on the explorer`"
+                                                        aria-label="View on Explorer">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                            viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                            <path
+                                                                d="M12.5 3H17v4.5a1 1 0 11-2 0V6.414l-6.793 6.793a1 1 0 01-1.414-1.414L13.586 5H12.5a1 1 0 110-2z" />
+                                                            <path
+                                                                d="M5 5h4a1 1 0 110 2H6v7h7v-3a1 1 0 112 0v4a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
+                                                        </svg>
+                                                        <span class="text-sm font-medium">View on Explorer</span>
+                                                        <span class="sr-only"> Tx: {{ row.transaction }}</span>
+                                                    </a>
+                                                    <span v-else>—</span>
+                                                </td>
+                                                <td class="py-4 px-4 text-dark text-center">{{ fmtDate(row.at) }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -525,7 +526,6 @@
                 <p class="text-sm text-gray-600 mb-10">Earn rewards every 24 hours by staking $TKG</p>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-10 max-w-6xl mx-auto px-6 md:px-0 pb-10">
-                    <!-- Step 1: Connect Wallet -->
                     <div class="flex flex-col items-center">
                         <div class="bg-green-100 p-4 rounded-full mb-4 animate-pulseSoft">
                             <img :src="Wallet" alt="Connect Wallet" class="w-12 h-12" />
@@ -536,7 +536,6 @@
                         </p>
                     </div>
 
-                    <!-- Step 2: Start Staking -->
                     <div class="flex flex-col items-center">
                         <div class="bg-blue-100 p-4 rounded-full mb-4 animate-pulseSoft">
                             <img :src="Coin" alt="Start Staking" class="w-12 h-12" />
@@ -547,7 +546,6 @@
                         </p>
                     </div>
 
-                    <!-- Step 3: Rewards Every 24h -->
                     <div class="flex flex-col items-center">
                         <div class="bg-yellow-100 p-4 rounded-full mb-4 animate-pulseSoft">
                             <img :src="reward" alt="Rewards" class="w-12 h-12" />
@@ -558,7 +556,6 @@
                         </p>
                     </div>
 
-                    <!-- Step 4: Unstake Anytime -->
                     <div class="flex flex-col items-center">
                         <div class="bg-rose-100 p-4 rounded-full mb-4 animate-pulseSoft">
                             <img :src="stop" alt="Unstake Anytime" class="w-12 h-12" />
@@ -580,10 +577,10 @@
                 </div>
 
                 <div class="divide-y">
-                    <div v-for="(q, idx) in faq" :key="idx" class="group">
+                    <details v-for="(q, idx) in faq" :key="idx" class="group" :open="openIndex === idx"
+                        @toggle="(e) => openIndex = e.target.open ? idx : null">
                         <summary
-                            class="flex items-center justify-between cursor-pointer px-6 py-4 text-dark select-none"
-                            @click="toggleFaq(idx)">
+                            class="flex items-center justify-between cursor-pointer px-6 py-4 text-dark select-none list-none">
                             <span class="font-medium">{{ q.q }}</span>
                             <span class="ml-4 h-4 w-4 text-sky-500 transition-transform duration-300"
                                 :class="{ 'rotate-180': openIndex === idx }">
@@ -594,10 +591,10 @@
                             </span>
                         </summary>
 
-                        <div v-show="openIndex === idx" class="px-6 pb-5 text-gray-700 leading-relaxed">
+                        <div class="px-6 pb-5 text-gray-700 leading-relaxed">
                             <p v-html="q.a"></p>
                         </div>
-                    </div>
+                    </details>
                 </div>
             </div>
         </section>
@@ -611,7 +608,7 @@
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
 import { ref, computed, onMounted, watch } from "vue";
-import { checkTkgBalance, getCookie, updateLoader, apiHeaders, shortMiddle, statusClass } from "../utils/utils.js";
+import { checkTkgBalance, getCookie, updateLoader, apiHeaders, shortMiddle, statusClass, getNetwork } from "../utils/utils.js";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { signTransaction } from "@stellar/freighter-api";
@@ -682,8 +679,8 @@ const nextPage = () => {
     if (currentPage.value < totalPages.value) currentPage.value++;
 };
 
-const network = 'public';
-const isTestnet = network === 'testnet';
+const network = ref('public')
+const isTestnet = computed(() => network.value === 'testnet')
 const explorerBase = `https://stellar.expert/explorer/${isTestnet ? 'testnet' : 'public'}`;
 
 const txUrl = (tx) => `${explorerBase}/tx/${encodeURIComponent(tx)}`;
@@ -712,6 +709,13 @@ onMounted(async () => {
     await fetchPositions();
     await fetchrewards();
     await refreshStats();
+
+    try {
+        network.value = await getNetwork()
+    } catch (e) {
+        console.error('getNetwork failed:', e)
+        network.value = 'public'
+    }
 });
 
 watch(paginatedData, () => {
@@ -850,78 +854,89 @@ async function onSubmit() {
 }
 
 async function signXdr(xdr, staking_id, testnet) {
-  if (typeof xdr !== 'string' || !/^[A-Za-z0-9+/=]+$/.test(xdr)) {
-    Swal.fire({ icon:'error', title:'Invalid XDR', text:'Unsigned XDR is not a base64 envelope.' });
-    throw new Error('unsigned XDR not base64');
-  }
-
-  const net = {
-    freighter: testnet ? 'TESTNET' : 'PUBLIC',
-    albedo:    testnet ? 'testnet' : 'public',
-    rabet:     testnet ? 'testnet' : 'mainnet',
-    xbull:     testnet ? 'testnet' : 'public'
-  };
-
-  const active = (localStorage.getItem('wallet_key') || '').toLowerCase();
-
-  switch (active) {
-    case 'rabet': {
-      try {
-        const result = await rabet.sign(xdr, net.rabet);
-        await submitStakingXdr(result.xdr, staking_id);
-      } catch (e) {
-        Swal.fire({ icon:'error', title:'Rabet', text:'Signing was rejected or failed.' });
-        throw e;
-      }
-      return;
+    if (typeof xdr !== 'string' || !/^[A-Za-z0-9+/=]+$/.test(xdr)) {
+        Swal.fire({ icon: 'error', title: 'Invalid XDR', text: 'Unsigned XDR is not a base64 envelope.' });
+        throw new Error('unsigned XDR not base64');
     }
 
-    case 'freighter': {
-      try {
-        const signed = await signTransaction(xdr, net.freighter);
-        await submitStakingXdr(signed, staking_id);
-      } catch (e) {
-        Swal.fire({ icon:'error', title:'Freighter', text:'Signing was rejected or failed.' });
-        throw e;
-      }
-      return;
-    }
+    const net = {
+        freighter: testnet ? 'TESTNET' : 'PUBLIC',
+        albedo: testnet ? 'testnet' : 'public',
+        rabet: testnet ? 'testnet' : 'mainnet',
+        xbull: testnet ? 'testnet' : 'public'
+    };
 
-    case 'albedo': {
-      try {
-        const res = await window.albedo.tx({
-          xdr,                 
-          network: net.albedo
-        });
-        
-        const signedXdr = res.signed_envelope_xdr;
-        
-        if (!signedXdr) {
-          Swal.fire({ icon:'error', title:'Albedo', text:'No signed XDR returned.' });
-          return;
+    const active = (localStorage.getItem('wallet_key') || '').toLowerCase();
+
+    switch (active) {
+        case 'rabet': {
+            try {
+                const result = await rabet.sign(xdr, net.rabet);
+                await submitStakingXdr(result.xdr, staking_id);
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'Rabet', text: 'Signing was rejected or failed.' });
+                throw e;
+            }
+            return;
         }
-        await submitStakingXdr(signedXdr, staking_id);
-      } catch (err) {
-        const msg = (err && (err.message || err.error || err.code)) || '';
-        const hint = /cancel|denied|not selected/i.test(msg)
-          ? 'Request cancelled. Open Albedo, select an account, and try again.'
-          : 'Could not sign the transaction.';
-        Swal.fire({ icon:'error', title:'Albedo', text:hint });
-        throw err;
-      }
-      return;
-    }
 
-    case 'xbull': {
-      try {
-        const result = await xBullSDK.signXDR(xdr);
-        await submitStakingXdr(result, staking_id);
-      } catch (e) {
-        Swal.fire({ icon:'error', title:'xBull', text:'Signing was rejected or failed.' });
-        throw e;
-      }
-      return;
-    }
+        case 'freighter': {
+            try {
+                const signed = await signTransaction(xdr, net.freighter);
+                await submitStakingXdr(signed, staking_id);
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'Freighter', text: 'Signing was rejected or failed.' });
+                throw e;
+            }
+            return;
+        }
+
+        case 'albedo': {
+            try {
+                const res = await window.albedo.tx({
+                    xdr,
+                    network: net.albedo
+                });
+
+                const signedXdr = res.signed_envelope_xdr;
+
+                if (!signedXdr) {
+                    Swal.fire({ icon: 'error', title: 'Albedo', text: 'No signed XDR returned.' });
+                    return;
+                }
+                await submitStakingXdr(signedXdr, staking_id);
+            } catch (err) {
+                const msg = (err && (err.message || err.error || err.code)) || '';
+                const hint = /cancel|denied|not selected/i.test(msg)
+                    ? 'Request cancelled. Open Albedo, select an account, and try again.'
+                    : 'Could not sign the transaction.';
+                Swal.fire({ icon: 'error', title: 'Albedo', text: hint });
+                throw err;
+            }
+            return;
+        }
+
+        case 'xbull': {
+            const xbull = window.xBullSDK || window.xBull;
+            if (!xbull) throw new Error('xBull not installed');
+            await xbull.connect({ canRequestPublicKey: true, canRequestSign: true });
+
+            let signedXdr;
+            try {
+                signedXdr = await xbull.signXDR(xdr, 'public');
+            } catch (e1) {
+                console.warn('[xbull] signXDR(public string) failed:', e1);
+                try {
+                    signedXdr = await xbull.signXDR(xdr);
+                } catch (e2) {
+                    console.error('[xbull] signXDR() error:', e2);
+                    throw e2;
+                }
+            }
+
+            await submitStakingXdr(signedXdr, staking_id);
+            return;
+        }
         default:
             throw new Error("No wallet selected. Connect a wallet first.");
     }
@@ -1112,21 +1127,21 @@ function toggleFaq(idx: number) {
 
 // --- Helpers ---
 function fmtNum(n: number | string | null | undefined, digits = 0) {
-  if (n === null || n === undefined || Number.isNaN(Number(n))) return null; // signal "no value"
-  return Number(n).toLocaleString(undefined, {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  });
+    if (n === null || n === undefined || Number.isNaN(Number(n))) return null; // signal "no value"
+    return Number(n).toLocaleString(undefined, {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits,
+    });
 }
 
 function fmtInt(n: number | string | null | undefined, digits = 0) {
-  return fmtNum(n, digits);
+    return fmtNum(n, digits);
 }
 
 
 function fmtTKG(n: number | string | null | undefined, digits = 2) {
-  const val = fmtNum(n, digits);
-  return val === null ? null : `${val}`;
+    const val = fmtNum(n, digits);
+    return val === null ? null : `${val}`;
 }
 
 // ---------- State ----------
@@ -1140,8 +1155,8 @@ const totalPayouts = ref<number | null>(null)
 // ---------- Formatted values ----------
 const totalStakedFormatted = computed(() => fmtInt(totalStakedTKG.value));
 const activeStakersFormatted = computed(() => fmtInt(activeStakers.value));
-const rewards24hFormatted    = computed(() => fmtTKG(rewardsPaid24hTKG.value, 2));
-const totalPayoutsFormatted  = computed(() => fmtTKG(totalPayouts.value, 2));
+const rewards24hFormatted = computed(() => fmtTKG(rewardsPaid24hTKG.value, 2));
+const totalPayoutsFormatted = computed(() => fmtTKG(totalPayouts.value, 2));
 
 const lastUpdatedAgo = computed(() => {
     if (!lastUpdated.value) return 'just now'
@@ -1157,22 +1172,22 @@ const lastUpdatedAgo = computed(() => {
 const statsError = ref(false);
 
 async function refreshStats() {
-  statsLoading.value = true;
-  statsError.value = false;
-  try {
-    const { data } = await axios.get('/api/global/stats');
-    const s = data?.stats ?? data
-    totalStakedTKG.value   = Number(s?.total_staked   ?? 0);
-    activeStakers.value    = Number(s?.active_stakers ?? 0);
-    rewardsPaid24hTKG.value= Number(s?.rewards_paid   ?? 0);
-    totalPayouts.value     = Number(s?.total_payouts  ?? 0);
-  } catch (err) {
-    console.error('Failed to load staking stats', err)
-    totalStakedTKG.value    = null
-    activeStakers.value     = null
-    rewardsPaid24hTKG.value = null
-    totalPayouts.value      = null
-    statsError.value = true;
+    statsLoading.value = true;
+    statsError.value = false;
+    try {
+        const { data } = await axios.get('/api/global/stats');
+        const s = data?.stats ?? data
+        totalStakedTKG.value = Number(s?.total_staked ?? 0);
+        activeStakers.value = Number(s?.active_stakers ?? 0);
+        rewardsPaid24hTKG.value = Number(s?.rewards_paid ?? 0);
+        totalPayouts.value = Number(s?.total_payouts ?? 0);
+    } catch (err) {
+        console.error('Failed to load staking stats', err)
+        totalStakedTKG.value = null
+        activeStakers.value = null
+        rewardsPaid24hTKG.value = null
+        totalPayouts.value = null
+        statsError.value = true;
     } finally {
         lastUpdated.value = new Date()
         statsLoading.value = false
@@ -1180,43 +1195,3 @@ async function refreshStats() {
 }
 
 </script>
-
-<style lang="scss" scoped>
-.responsive-container {
-    max-width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 2rem;
-
-    @media screen and (min-width: 640px) {
-        padding: 4rem;
-    }
-
-    @media screen and (min-width: 1024px) {
-        padding: 6rem;
-    }
-}
-
-.card-header {
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 700;
-    font-style: normal;
-    font-size: 30px;
-    line-height: 100%;
-    text-align: center;
-}
-
-.card-header span {
-    color: #43CDFF;
-}
-
-.table-section {
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 700;
-    font-style: Bold;
-    font-size: 35px;
-    line-height: 50px;
-    text-align: center;
-    text-transform: capitalize;
-}
-</style>

@@ -294,4 +294,42 @@ ul.dropdown-menu.show {
   margin-left: 5px;
 }
 
+.swal2-container { padding: 1.25rem !important; }
+
+.swal-compact.swal2-popup {
+  width: min(420px, calc(100vw - 3rem)) !important;
+  border-radius: 14px;
+  padding: 18px 22px;
+}
+
+.swal-compact .swal2-title { font-size: 1.125rem; }
+.swal-compact .swal2-html-container { font-size: .9rem; color: #6b7280; }
+
 /* Wallet Modal */
+
+@media screen and (max-width: 600px) {
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        position: relative;
+        z-index: 1;
+    }
+
+    .table-wrapper {
+        position: relative;
+        z-index: 1;
+    }
+}
+
+.card-header {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    font-size: 30px;
+    line-height: 100%;
+    text-align: center;
+}
+
+.card-header span {
+    color: #43CDFF;
+}

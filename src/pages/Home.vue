@@ -1,7 +1,6 @@
 <template>
   <div>
     <Header @wallet-status="handleWalletStatus" />
-    <div>
       <div class="container mx-auto pt-[8rem] pb-10 relative top-0 z-0">
         <div class="flex flex-col lg:flex-row items-center justify-between gap-12">
           <!-- Text Content -->
@@ -47,7 +46,7 @@
       </div>
       <!-- Table -->
 
-      <Table />
+      <Table :network="network" />
 
       <div class="py-10 my-10 bg-white text-center">
         <h2 class="text-3xl font-bold mb-10">How It works</h2>
@@ -104,7 +103,7 @@
         </div>
         <Faq />
       </div>
-      <GenerateTokenModal :open="isTokenModalOpen" @close="isTokenModalOpen = false" />
+      <GenerateTokenModal :open="isTokenModalOpen" @close="isTokenModalOpen = false" :network="network"/>
         <ConnectWalletModal
           v-model="ConnectWalletModals"
           :connected="isWalletConnected"
@@ -114,7 +113,6 @@
         />
       <Newsletter />
       <Footer />
-    </div>
   </div>
 </template>
 
@@ -134,11 +132,12 @@ import axios from 'axios'
 import { ref, computed, defineProps, onMounted, watch } from "vue";
 import Swal from 'sweetalert2';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
-import { getCookie, apiHeaders } from "../utils/utils.js";
+import { getCookie, getNetwork } from "../utils/utils.js";
 
 const isWalletConnected = ref(false);
 const walletKey = ref('');
 const ConnectWalletModals = ref(false);
+const network = ref('public')
 
 function handleWalletStatus(e) {
   // Expect { connected: boolean, walletKey?: string }
@@ -202,9 +201,14 @@ function refreshWalletState() {
   isWalletConnected.value = !!(pk && pk.startsWith("G") && pk.length === 56);
 }
 
-onMounted(() => {
+onMounted(async() => {
   refreshWalletState();
   fetchdata()
+  try {
+        network.value = await getNetwork()
+    } catch (e) {
+        console.error('getNetwork failed:', e)
+    }
 })
 
 

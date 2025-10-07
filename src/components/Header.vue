@@ -94,9 +94,7 @@
   </Disclosure>
 
   <Modal :open="signInModal" />
-<ConnectWalletModal
-  v-model="ConnectWalletModals"
-/>
+  <ConnectWalletModal v-model="ConnectWalletModals" />
 
 </template>
 

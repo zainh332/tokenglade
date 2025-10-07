@@ -503,14 +503,14 @@ const isWalletConnected = computed(() => {
 });
 
 onMounted(() => {
-    fetchWallets();
-    fetchblockchains();
     const pk = readPk();
     if (pk) setConnected(pk); else setDisconnected();
 });
 
 watch(() => props.modelValue, (open) => {
   if (open) {
+    fetchWallets();
+    fetchblockchains();
     const pk = readPk();
     if (pk) setConnected(pk); else setDisconnected();
   }

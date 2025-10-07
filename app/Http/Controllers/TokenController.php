@@ -2,28 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ClaimClaimableBalance;
-use App\Models\ClaimClaimableBalanceId;
-use App\Models\ClaimClaimableClaimant;
 use App\Models\StellarToken;
 use App\Models\StellarTransactions;
 use App\Models\Token;
 use App\Services\WalletService;
-use Carbon\Carbon;
 use Exception;
-
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Memo;
-use Soneso\StellarSDK\CreateClaimableBalanceOperation;
-use Soneso\StellarSDK\Claimant;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\TransactionBuilder;
@@ -31,44 +25,63 @@ use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
-use Soneso\StellarSDK\ClaimClaimableBalanceOperation;
+use Soneso\StellarSDK\AssetTypePoolShare;
+use Soneso\StellarSDK\ChangeTrustOperation;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
+use Soneso\StellarSDK\Exceptions\HorizonRequestException;
+use Soneso\StellarSDK\LiquidityPoolDepositOperationBuilder;
+use Soneso\StellarSDK\PathPaymentStrictReceiveOperationBuilder;
+use Soneso\StellarSDK\Price;
+use Soneso\StellarSDK\SetOptionsOperationBuilder;
 
 class TokenController extends Controller
 {
-    private $sdk, $maxFee, $network, $token_creation_fee;
-    private $xlm_funding_wallet, $xlm_funding_wallet_key, $issuer_wallet_amount;
+    private $sdk, $network, $token_creation_fee;
+    private $feePercentageForLP, $xlm_funding_wallet, $xlm_funding_wallet_key, $issuer_wallet_amount, $stakingPublicWallet, $stakingPublicWalletKey, $tkgIssuer, $assetCode;
     private WalletService $wallet;
+    private bool $isTestnet;
 
     public function __construct(WalletService $wallet)
     {
         $this->wallet = $wallet;
         $stellarEnv = env('VITE_STELLAR_ENVIRONMENT');
+        $this->isTestnet = strtolower($stellarEnv) !== 'public';
 
         if ($stellarEnv === 'public') {
             $this->sdk = StellarSDK::getPublicNetInstance();
             $this->xlm_funding_wallet = env('XLM_FUNDING_WALLET');
             $this->xlm_funding_wallet_key = env('XLM_FUNDING_WALLET_KEY');
+            $this->stakingPublicWallet = env('STAKING_PUBLIC_WALLET');
+            $this->stakingPublicWalletKey = env('STAKING_PUBLIC_WALLET_KEY');
+            $this->tkgIssuer = env('TKG_ISSUER_PUBLIC');
             $this->network = Network::public();
         } else {
             $this->sdk = StellarSDK::getTestNetInstance();
             $this->network = Network::testnet();
             $this->xlm_funding_wallet = env('XLM_FUNDING_WALLET_TESTNET');
             $this->xlm_funding_wallet_key = env('XLM_FUNDING_WALLET_KEY_TESTNET');
+            $this->stakingPublicWallet = env('STAKING_PUBLIC_WALLET_TESTNET');
+            $this->stakingPublicWalletKey = env('STAKING_PUBLIC_WALLET_KEY_TESTNET');
+            $this->tkgIssuer = env('TKG_ISSUER_TESTNET');
         }
 
-        $this->maxFee = 30;
+        $this->assetCode = env('ASSET_CODE');
         $this->token_creation_fee = 50; //XLM
         $this->issuer_wallet_amount = 4; //XLM
+        $this->feePercentageForLP = 0.7;
     }
 
     public function generate_token(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'distributor_wallet_key' => 'required',
-            'asset_code' => 'required',
-            'total_supply' => 'required',
-            'lock_status' => 'required',
+            'distributor_wallet_key' => 'required|string',
+            'asset_code' => 'required|string|max:12',
+            'total_supply' => 'required|integer|min:1',
+            'name' => 'required|string|max:255',
+            'desc' => 'required|string',
+            'website_url'            => 'nullable|url|max:255',
+            'logo' => 'required|file|mimes:png,jpg,jpeg|max:5120',
+            'lock_status'            => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -79,9 +92,11 @@ class TokenController extends Controller
         }
 
         $distributor_wallet_key = $request->input('distributor_wallet_key');
+        $name = $request->input('name');
+        $desc = $request->input('desc');
+        $website_url = $request->input('website_url');
         $asset_code = $request->input('asset_code');
         $total_supply = $request->input('total_supply');
-        $memo = $request->input('memo');
         $lock_status = $request->input('lock_status');
         $distributor_wallet_xlm_balance = $this->wallet->getXlmBalance($distributor_wallet_key);
 
@@ -94,7 +109,7 @@ class TokenController extends Controller
 
 
         //charge token creation fee
-        $token_creation_charges = $this->tokenCreationXLMFeeTransaction($distributor_wallet_key, $asset_code, $total_supply, $memo, $lock_status);
+        $token_creation_charges = $this->tokenCreationXLMFeeTransaction($distributor_wallet_key, $asset_code, $total_supply, $lock_status);
         if (!$token_creation_charges) {
             return response()->json([
                 'status' => 'error',
@@ -102,11 +117,20 @@ class TokenController extends Controller
             ], 500);
         }
 
+        $logoUrl = null;
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('logos', 'public');
+            $logoUrl = asset('storage/' . $path);
+        }
+
         $token_creation = new StellarToken();
+        $token_creation->name = $name;
+        $token_creation->desc = $desc;
+        $token_creation->website_url = $website_url;
+        $token_creation->logo = $logoUrl;
         $token_creation->asset_code = $asset_code;
         $token_creation->total_supply = $total_supply;
         $token_creation->user_wallet_address = $distributor_wallet_key;
-        $token_creation->memo = $memo;
         $token_creation->lock_status = $lock_status;
         $token_creation->save();
 
@@ -201,128 +225,183 @@ class TokenController extends Controller
 
         // Check if the transaction was successful
         if ($response && $response->isSuccessful()) {
-            // try {
-            if ($type == 1) //tokenCreationFeeTransaction
-            {
-                $token_created = StellarToken::where('user_wallet_address', $distributor_wallet_key)
-                    ->where('asset_code', $assetCode)
-                    ->where('issuer_wallet_status', 0)
-                    ->where('created_token_transfer_status', 0)
-                    ->whereNotNull('current_stellar_transaction_id')
-                    ->latest()->first();
+            try {
+                if ($type == 1) //tokenCreationFeeTransaction
+                {
+                    $token_created = StellarToken::where('user_wallet_address', $distributor_wallet_key)
+                        ->where('asset_code', $assetCode)
+                        ->where('issuer_wallet_status', 0)
+                        ->where('created_token_transfer_status', 0)
+                        ->whereNotNull('current_stellar_transaction_id')
+                        ->latest()->first();
 
-                if (!$token_created) {
+                    if (!$token_created) {
+                        return response()->json([
+                            'success' => false,
+                            'error' => 'Token creation record not found for this wallet and asset code.',
+                        ], 404);
+                    }
+
+                    $generate_issuer_wallet_transaction = $this->addStellarTransactionRecord($token_created->id, $distributor_wallet_key, 1, '', $signedXdr, $response->getHash(), true);
+                    if (!$generate_issuer_wallet_transaction) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Creating stellar transaction failed while token creation fee.'
+                        ], 500);
+                    }
+
+                    // Update the token creation record with the new transaction ID
+                    $token_created->current_stellar_transaction_id = $generate_issuer_wallet_transaction->id;
+                    $token_created->save();
+
+                    $current_transaction_id = $this->generateIssuerWallet($distributor_wallet_key, $token_created->current_stellar_transaction_id);
+
+                    if (!$current_transaction_id) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Issuer wallet generation failed.'
+                        ], 500);
+                    }
+
+                    $issuer_wallet_distributor_wallet_trustline_transaction = $this->issuer_wallet_distributor_wallet_trustline_transaction($distributor_wallet_key, $current_transaction_id);
+                    if (!$issuer_wallet_distributor_wallet_trustline_transaction) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => $trustlineResult['message'] ?? 'Trustline Transaction failed',
+                        ], 500);
+                    }
                     return response()->json([
-                        'success' => false,
-                        'error' => 'Token creation record not found for this wallet and asset code.',
+                        'status' => 'success',
+                        'unsigned_trustline_transaction' => $issuer_wallet_distributor_wallet_trustline_transaction['unsigned_trustline_transaction'],
+                    ], 200);
+                } else if ($type == 3) //Issuer Wallet Distributor Wallet Trustline transaction
+                {
+                    $token_created = StellarToken::where('user_wallet_address', $distributor_wallet_key)
+                        ->where('asset_code', $assetCode)
+                        ->whereNotNull('current_stellar_transaction_id')
+                        ->whereNotNull('issuer_public_key')
+                        ->whereNotNull('issuer_secret_key')
+                        ->where('issuer_wallet_status', 1)
+                        ->where('created_token_transfer_status', 0)
+                        ->latest()
+                        ->first();
+
+                    if (!$token_created) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Token creation record not found for this wallet and asset code.',
+                        ], 404);
+                    }
+
+                    $Issuer_wallet_distributor_wallet_trustline_transaction = $this->addStellarTransactionRecord($token_created->id, $distributor_wallet_key, 3, '', $signedXdr, $response->getHash(), true);
+
+                    if (!$Issuer_wallet_distributor_wallet_trustline_transaction) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Creating stellar transaction failed.'
+                        ], 500);
+                    }
+
+                    // Update the token creation record with the new transaction ID
+                    $token_created->current_stellar_transaction_id = $Issuer_wallet_distributor_wallet_trustline_transaction->id;
+                    $token_created->save();
+
+                    $transfer_generate_token = $this->transfer_created_tokens($distributor_wallet_key, $assetCode, $token_created->issuer_public_key, $token_created->issuer_secret_key, $token_created->total_supply);
+                    if (!$transfer_generate_token) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Sending generated token to user Failed.'
+                        ], 500);
+                    }
+
+                    $created_tokens_transfer_transaction = $this->addStellarTransactionRecord($token_created->id, $distributor_wallet_key, 4, '', $transfer_generate_token['signed_xdr'], $transfer_generate_token['tx_hash'], true);
+
+                    if (!$created_tokens_transfer_transaction) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Creating stellar transaction failed while tokens transfer.'
+                        ], 500);
+                    }
+
+                    // Update the token creation record with the new transaction ID
+                    $token_created->current_stellar_transaction_id = $created_tokens_transfer_transaction->id;
+                    $token_created->created_token_transfer_status = 1;
+                    $token_created->save();
+
+                    $directory = public_path('.well-known');
+                    if (!is_dir($directory)) {
+                        mkdir($directory, 0755, true);
+                    }
+
+                    $tomlPath = $directory . '/stellar.toml';
+
+                    $tomlContent = <<<EOT
+                    [[CURRENCIES]]
+                    code="{$token_created->asset_code}"
+                    issuer="{$token_created->issuer_public_key}"
+                    display_decimals={$token_created->display_decimals}
+                    name="{$token_created->name}"
+                    desc="{$token_created->desc}"
+                    image="{$token_created->logo}"
+                    fixed_number="{$token_created->total_supply}"
+                    status="live"
+
+                    EOT;
+
+                    if (file_exists($tomlPath)) {
+                        file_put_contents($tomlPath, "\n" . $tomlContent, FILE_APPEND);
+                    } else {
+                        file_put_contents($tomlPath, $tomlContent);
+                    }
+
+                    try {
+                        $liquidityDepositTransaction = $this->tokenCreationLiquidityDepositTransaction();
+                        if ($liquidityDepositTransaction['status'] !== 'success') {
+                            Log::warning('Liquidity deposit failed', [
+                                'message' => $liquidityDepositTransaction['message'],
+                                'error'   => $liquidityDepositTransaction['error'] ?? 'Unknown error',
+                            ]);
+                        }
+                    } catch (\Throwable $t) {
+                        Log::error('Liquidity deposit exception', [
+                            'exception' => $t->getMessage(),
+                            'trace'     => $t->getTraceAsString(),
+                        ]);
+                    }
+
+                    if ((int)$token_created->lock_status === 1) {
+                        $lockOk = $this->lockIssuerWallet(
+                            $token_created->issuer_public_key,
+                            $token_created->issuer_secret_key
+                        );
+
+                        if (!$lockOk) {
+                            return response()->json([
+                                'status'  => 'error',
+                                'message' => 'Issuer wallet lock failed after transfer.',
+                            ], 500);
+                        }
+                    }
+
+                    return response()->json([
+                        'status' => 'success',
+                        'assetCode' => $assetCode,
+                        'issuerPublicKey' => $token_created->issuer_public_key,
+                        'issuerSecretKey' => $token_created->issuer_secret_key
+                    ], 200);
+                } else {
+                    return response()->json([
+                        'success' => 'error',
+                        'message' => 'Transaction type not found',
                     ], 404);
                 }
-
-                $generate_issuer_wallet_transaction = $this->addStellarTransactionRecord($token_created->id, $distributor_wallet_key, 1, '', $signedXdr, $response->getHash(), true);
-                if (!$generate_issuer_wallet_transaction) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Creating stellar transaction failed while token creation fee.'
-                    ], 500);
-                }
-
-                // Update the token creation record with the new transaction ID
-                $token_created->current_stellar_transaction_id = $generate_issuer_wallet_transaction->id;
-                $token_created->save();
-
-                $current_transaction_id = $this->generateIssuerWallet($distributor_wallet_key, $token_created->current_stellar_transaction_id);
-
-                if (!$current_transaction_id) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Issuer wallet generation failed.'
-                    ], 500);
-                }
-
-                $issuer_wallet_distributor_wallet_trustline_transaction = $this->issuer_wallet_distributor_wallet_trustline_transaction($distributor_wallet_key, $current_transaction_id);
-                if (!$issuer_wallet_distributor_wallet_trustline_transaction) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => $trustlineResult['message'] ?? 'Trustline Transaction failed',
-                    ], 500);
-                }
-                return response()->json([
-                    'status' => 'success',
-                    'unsigned_trustline_transaction' => $issuer_wallet_distributor_wallet_trustline_transaction['unsigned_trustline_transaction'],
-                ], 200);
-            } else if ($type == 3) //Issuer Wallet Distributor Wallet Trustline transaction
-            {
-                $token_created = StellarToken::where('user_wallet_address', $distributor_wallet_key)
-                    ->where('asset_code', $assetCode)
-                    ->whereNotNull('current_stellar_transaction_id')
-                    ->whereNotNull('issuer_public_key')
-                    ->whereNotNull('issuer_secret_key')
-                    ->where('issuer_wallet_status', 1)
-                    ->where('created_token_transfer_status', 0)
-                    ->latest()
-                    ->first();
-
-                if (!$token_created) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Token creation record not found for this wallet and asset code.',
-                    ], 404);
-                }
-
-                $Issuer_wallet_distributor_wallet_trustline_transaction = $this->addStellarTransactionRecord($token_created->id, $distributor_wallet_key, 3, '', $signedXdr, $response->getHash(), true);
-
-                if (!$Issuer_wallet_distributor_wallet_trustline_transaction) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Creating stellar transaction failed.'
-                    ], 500);
-                }
-
-                // Update the token creation record with the new transaction ID
-                $token_created->current_stellar_transaction_id = $Issuer_wallet_distributor_wallet_trustline_transaction->id;
-                $token_created->save();
-
-                $generate_token = $this->transfer_created_tokens($distributor_wallet_key, $assetCode, $token_created->issuer_public_key, $token_created->issuer_secret_key, $token_created->total_supply);
-                if (!$generate_token) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Token generation failed.'
-                    ], 500);
-                }
-
-                $created_tokens_transfer_transaction = $this->addStellarTransactionRecord($token_created->id, $distributor_wallet_key, 4, '', $generate_token['signed_xdr'], $generate_token['tx_hash'], true);
-
-                if (!$created_tokens_transfer_transaction) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Creating stellar transaction failed while tokens transfer.'
-                    ], 500);
-                }
-
-                // Update the token creation record with the new transaction ID
-                $token_created->current_stellar_transaction_id = $created_tokens_transfer_transaction->id;
-                $token_created->created_token_transfer_status = 1;
-                $token_created->save();
-
-                return response()->json([
-                    'status' => 'success',
-                    'assetCode' => $assetCode,
-                    'issuerPublicKey' => $token_created->issuer_public_key,
-                    'issuerSecretKey' => $token_created->issuer_secret_key
-                ], 200);
-            } else {
-                return response()->json([
-                    'success' => 'error',
-                    'message' => 'Transaction type not found',
-                ], 404);
+            } catch (\Exception $e) {
+                return false;
             }
-            // } catch (\Exception $e) {
-            //     return false;
-            // }
         } else {
             return response()->json([
                 'success' => false,
-                'error' => 'Transaction failed',
+                'message' => 'Transaction failed',
                 'result_codes' => $response?->getExtras()?->getResultCodes() ?? 'Unknown error',
                 'details' => $response?->getExtras()?->getResultXdr() ?? 'No details available'
             ], 400);
@@ -455,7 +534,7 @@ class TokenController extends Controller
         // Build the payment transaction
         $paymentTransaction = (new TransactionBuilder($issuerAccount))
             ->addOperation($paymentOperation)
-            ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Token created by TokenGlade'))
+            ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Tokens minted on TokenGlade'))
             ->build();
 
         $issuerKeypair = KeyPair::fromSeed($issuerSecretKey);
@@ -475,359 +554,6 @@ class TokenController extends Controller
         return false;
     }
 
-    public function claimable_balance(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'distributor_wallet_address' => 'required|string',
-            'token' => 'required',
-            'amount' => 'required|numeric|min:1',
-            'reclaim_time' => 'required|numeric|min:1',
-            'sender_can_claim_unit' => 'required',
-            'target_wallet_address' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $user_distributor_wallet_address = $request->distributor_wallet_address;
-        $assetCode = $request->input('token');
-        $amount = $request->input('amount');
-        $receiver_addresses = $request->input('target_wallet_address');
-        $memo = $request->input('memo');
-        $claimable_after = $request->input('claimable_after'); // Time in minutes after which balance is claimable
-        $reclaim_time = $request->input('reclaim_time');
-        $sendercanclaimUnit = $request->input('sender_can_claim_unit');
-
-        if ($claimable_after) {
-            $usercanclaimUnit = $request->input('user_can_claim_unit');
-
-
-            // Convert reclaim time to seconds based on the unit provided by the user
-            switch ($usercanclaimUnit) {
-                case 'minutes':
-                    $canclaimTimeInSeconds = $claimable_after * 60;
-                    break;
-                case 'hours':
-                    $canclaimTimeInSeconds = $claimable_after * 3600;
-                    break;
-                case 'days':
-                    $canclaimTimeInSeconds = $claimable_after * 86400;
-                    break;
-                default:
-                    $canclaimTimeInSeconds = 86400; // Default to 1 day
-                    break;
-            }
-
-            $ReceiverCanClaim = Claimant::predicateNot(
-                Claimant::predicateBeforeAbsoluteTime(strval(time() + $canclaimTimeInSeconds))
-            );
-        } else {
-            $ReceiverCanClaim = Claimant::predicateNot(
-                Claimant::predicateBeforeAbsoluteTime(strval(time()))
-            );
-        }
-
-        // Convert reclaim time to seconds based on the unit provided by the user
-        switch ($sendercanclaimUnit) {
-            case 'minutes':
-                $sendercanclaimTimeInSeconds = $reclaim_time * 60;
-                break;
-            case 'hours':
-                $sendercanclaimTimeInSeconds = $reclaim_time * 3600;
-                break;
-            case 'days':
-                $sendercanclaimTimeInSeconds = $reclaim_time * 86400;
-                break;
-            default:
-                $sendercanclaimTimeInSeconds = 86400; // Default to 1 day
-                break;
-        }
-
-        // $soon = time() + 60; // Example reclaim time, set to 1 minute after creation
-
-        // The funds can only be reclaimed within a specific timeframe
-        $DistributorCanReclaim = Claimant::predicateNot(
-            Claimant::predicateBeforeAbsoluteTime(strval(time() + $sendercanclaimTimeInSeconds))
-        );
-
-        // Split the $receiver_addresses string into an array of individual addresses
-        $receiver_addresses_array = explode("\n", $receiver_addresses);
-
-        $number_of_addresses = count($receiver_addresses_array);
-        $distributorAccount = $this->sdk->requestAccount($user_distributor_wallet_address);
-
-        // Initialize variables for balance checks
-        $issuer_id = null;
-        $hasEnoughTokens = false;
-        $hasEnoughXLM = false;
-        $total_tokens = $amount * $number_of_addresses;
-
-        // Check for sufficient XLM balance and token balance in the distributor's wallet
-        foreach ($distributorAccount->getBalances() as $balance) {
-            if ($balance->getAssetType() === 'native') {
-                $balanceFloat = floatval($balance->getBalance());
-                if ($balanceFloat >= $number_of_addresses) {
-                    $hasEnoughXLM = true; // Sufficient XLM for reserves
-                }
-            }
-            // Check for non-native token balance
-            if ($balance->getAssetCode() === $assetCode) {
-                $holding_tokens = floatval($balance->getBalance());
-                if ($holding_tokens >= $total_tokens) {
-                    $issuer_id = $balance->getAssetIssuer();
-                    $hasEnoughTokens = true;
-                }
-            }
-        }
-
-        // If there is not enough XLM, return an error
-        if (!$hasEnoughXLM) {
-            return response()->json(['status' => 'error', 'message' => 'Insufficient XLM balance to create claimable balances'], Response::HTTP_BAD_REQUEST);
-        }
-
-        // If there is not enough token balance, return an error
-        if (!$hasEnoughTokens) {
-            return response()->json(['status' => 'error', 'message' => 'Insufficient balance for the specified asset and amount'], Response::HTTP_BAD_REQUEST);
-        }
-
-        // Create the asset
-        if (strlen($assetCode) <= 4) {
-            $asset = new AssetTypeCreditAlphaNum4($assetCode, $issuer_id);
-        } else {
-            $asset = new AssetTypeCreditAlphanum12($assetCode, $issuer_id);
-        }
-
-        // Insert data into `claimable_balances` table
-        $claimableBalanceId = DB::table('claimable_balances')->insertGetId([
-            'distributor_wallet_key' => $user_distributor_wallet_address,
-            'asset_code' => $assetCode,
-            'amount' => $amount,
-            'memo' => $memo ?? 'By TokenGlade',
-            'status' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        // Build the transaction for each receiver and sign it separately
-        $claimants = [];
-        foreach ($receiver_addresses_array as $receiver) {
-            $claimants[] = new Claimant($receiver, $ReceiverCanClaim); // Each receiver
-            DB::table('claimable_balance_receivers')->insert([
-                'claimable_balance_id' => $claimableBalanceId,
-                'receiver_wallet_address' => $receiver,
-                'status' => 1, // Assuming 1 means active
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-        $claimants[] = new Claimant($user_distributor_wallet_address, $DistributorCanReclaim);
-
-        $claimableBalanceOperation = new CreateClaimableBalanceOperation($claimants, $asset, $amount);
-
-        // Build the transaction with a single operation that has single or multiple claimants
-        $transactionBuilder = (new TransactionBuilder($distributorAccount, $this->network))
-            ->setMaxOperationFee($this->maxFee)
-            ->addOperation($claimableBalanceOperation);
-
-        if (!empty($memo)) {
-            $transactionBuilder->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, $memo));
-        } else {
-            $transactionBuilder->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'By TokenGlade'));
-        }
-        $transaction = $transactionBuilder->build();
-
-        // Return success response with Wallet Address and Transaction IDs
-        return response()->json(
-            [
-                'status' => 'success',
-                'message' => 'Claimable balance created successfully',
-                'data' => [
-                    'unsigned_transactions' => $transaction->toEnvelopeXdrBase64(),
-                    'wallet_address' => $user_distributor_wallet_address,
-                    'claimable_balance_id' => $claimableBalanceId,
-                ],
-            ],
-            Response::HTTP_OK
-        );
-    }
-
-    public function reclaim_claimable_balance(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'token' => 'required',
-            'holdingTokenIssuerAddress' => 'required',
-            'distributor_wallet_address' => 'required'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $asset_code = $request->token;
-        $issuer_wallet_address = $request->holdingTokenIssuerAddress;
-        $distributor_wallet_address = $request->distributor_wallet_address;
-        // $url = 'https://horizon-testnet.stellar.org/claimable_balances/?asset='
-        //     . $asset_code . '%3A' . $issuer_wallet_address
-        //     . '&claimant=' . $distributor_wallet_address
-        //     . '&limit=200&order=desc';
-        $url = 'https://horizon.stellar.org/claimable_balances/?asset='
-            . $asset_code . '%3A' . $issuer_wallet_address
-            . '&claimant=' . $distributor_wallet_address
-            . '&limit=200&order=desc';
-
-        // Fetch data from Horizon using file_get_contents or another method
-        $response = file_get_contents($url);
-
-        // Check if the response is valid
-        if ($response === FALSE) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to fetch data from Horizon.',
-            ]);
-        } else {
-            $distributorAccount = $this->sdk->requestAccount($distributor_wallet_address);
-            $response_data = json_decode($response, true); // Decode as associative array
-
-            // Check for records and parse balance IDs
-            if (isset($response_data['_embedded']['records']) && !empty($response_data['_embedded']['records'])) {
-                $balance_ids = [];
-                $wallets_claiming_times = [];
-                $wallets_not_eligible = [];
-                $eligible_wallet_ids = [];
-                $eligible_balance_ids = [];
-                $eligible_balance_id_amounts = [];
-                $eligible_wallets_by_balance_id = [];
-
-                foreach ($response_data['_embedded']['records'] as $record) {
-                    if (isset($record['id'])) {
-                        $current_balance_id = $record['id'];
-                        $balance_ids[] = $current_balance_id;
-                    }
-                    if (isset($record['amount'])) {
-                        $current_amount = $record['amount'];
-                    }
-
-                    if (isset($record['claimants'])) {
-                        $claimants = $record['claimants'];
-                        $last_claimant_key = count($claimants) - 1;
-                        $distributor_claiming_time = null;
-                        $current_balance_wallet_ids = [];
-
-                        foreach ($claimants as $key => $claimant) {
-                            if ($key === $last_claimant_key) {
-                                // Set distributor_claiming_time for this balance
-                                if (isset($claimant['predicate']['not']['abs_before'])) {
-                                    $distributor_claiming_time = $claimant['predicate']['not']['abs_before'];
-                                }
-                                continue; // Skip adding the last claimant's wallet
-                            }
-
-                            // Add the wallet ID if it's not the last one (i.e., non-distributor)
-                            if (isset($claimant['destination'])) {
-                                $current_balance_wallet_ids[] = $claimant['destination'];
-                            }
-
-                            // Access 'abs_before' and add to claiming times if needed
-                            if (isset($claimant['predicate']['not']['abs_before'])) {
-                                $wallets_claiming_times[] = $claimant['predicate']['not']['abs_before'];
-                            }
-                        }
-
-                        // Check if the distributor can claim the tokens based on current time
-                        $can_claim = true;
-                        $claim_time  = true;
-                        if ($distributor_claiming_time) {
-                            $distributor_datetime = Carbon::parse($distributor_claiming_time, 'UTC');
-                            $current_time = Carbon::now('UTC');
-                            $claim_time = $distributor_datetime->format('Y-m-d H:i:s');
-                            if ($current_time->lt($distributor_datetime)) {
-                                $can_claim = false;
-                            }
-                        }
-
-                        if ($can_claim) {
-                            $eligible_wallet_ids = array_merge($eligible_wallet_ids, $current_balance_wallet_ids);
-                            // $eligible_balance_ids = array_merge($eligible_balance_ids, [$current_balance_id]); // Wrap $current_balance_id in an array
-                            $eligible_balance_ids[] = $current_balance_id; //$current_balance_id can be single or array thats why we aren't using array_merge
-                            $eligible_balance_id_amounts[] = $current_amount; //$current_amount can be single or array
-                            $eligible_wallets_by_balance_id[$current_balance_id] = $current_balance_wallet_ids;
-                        } else {
-                            // Otherwise, mark these wallets as not eligible
-                            $wallets_not_eligible = array_merge($wallets_not_eligible, $current_balance_wallet_ids);
-                        }
-                    }
-                }
-                if (!empty($eligible_balance_ids) && !empty($eligible_wallets_by_balance_id)) {
-
-                    // Initiate the transaction for eligible claimable balances
-                    $claimClaimableBalanceTransaction = (new TransactionBuilder($distributorAccount, $this->network))
-                        ->setMaxOperationFee($this->maxFee);
-
-                    // Create a main entry for the claimable balance
-                    $claim_claimable_balance = new ClaimClaimableBalance();
-                    $claim_claimable_balance->distributor_wallet_key = $distributor_wallet_address;
-                    $claim_claimable_balance->issuer_address = $issuer_wallet_address;
-                    $claim_claimable_balance->asset_code = $asset_code;
-                    $claim_claimable_balance->save(); // Save to get the ID
-
-                    // Loop through each eligible balance ID and its wallet addresses
-                    foreach ($eligible_wallets_by_balance_id as $balance_id => $wallet_addresses) {
-
-                        // Add an operation for each balance ID
-                        $claim_claimable_balance_operation = new ClaimClaimableBalanceOperation($balance_id);
-                        $claimClaimableBalanceTransaction->addOperation($claim_claimable_balance_operation);
-
-                        // Save the balance ID and amount
-                        $amount = $eligible_balance_id_amounts[array_search($balance_id, $eligible_balance_ids)]; // Ensure correct amount
-                        $claim_claimable_balance_id = new ClaimClaimableBalanceId();
-                        $claim_claimable_balance_id->claim_claimable_balance_id = $claim_claimable_balance->id;
-                        $claim_claimable_balance_id->token_amount = $amount;
-                        $claim_claimable_balance_id->balance_id = $balance_id;
-                        $claim_claimable_balance_id->save();
-
-                        // Loop through each wallet address for the current balance ID and save it
-                        foreach ($wallet_addresses as $wallet_address) {
-                            $claim_claimable_balance_claimant = new ClaimClaimableClaimant();
-                            $claim_claimable_balance_claimant->claim_claimable_balance_id = $claim_claimable_balance_id->id;
-                            $claim_claimable_balance_claimant->claimants_wallet_address = $wallet_address;
-                            $claim_claimable_balance_claimant->save();
-                        }
-                    }
-
-                    $builtTransaction = $claimClaimableBalanceTransaction->build();
-
-                    return response()->json([
-                        'status' => 'success',
-                        'unsigned_transactions' => $builtTransaction->toEnvelopeXdrBase64(),
-                        'asset_code' => $asset_code,
-                        'claim_claimable_balance_id' => $eligible_balance_ids,
-                        'wallet_ids' => $eligible_wallet_ids,
-                        'wallets_not_eligible' => $wallets_not_eligible
-                    ]);
-                } else {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => "Reclaim not available for the asset: " . $asset_code . ". The specified claim time has not yet passed. You can reclaim after " . $claim_time . " UTC.",
-                        'data' => $response_data
-                    ]);
-                }
-            } else {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'No reclaimable balance found for ' . $asset_code,
-                    'data' => $response_data
-                ]);
-            }
-        }
-    }
-
     private function addStellarTransactionRecord($stellar_token_id, $wallet, $type_id, $unsigned_xdr, $signed_xdr, $tx_hash, $status)
     {
         $transaction = new StellarTransactions();
@@ -841,5 +567,400 @@ class TokenController extends Controller
         $transaction->save();
 
         return $transaction;
+    }
+
+    private function tokenCreationLiquidityDepositTransaction()
+    {
+        try {
+            $xlmFundingWalletPublicKey = $this->xlm_funding_wallet;
+            $xlmFundingAccount = $this->sdk->requestAccount($xlmFundingWalletPublicKey);
+
+            $nativeBal = '0';
+            $tkgBal    = '0';
+            foreach ($xlmFundingAccount->getBalances() as $bal) {
+                $t = $bal->getAssetType();
+                if ($t === 'native') $nativeBal = $bal->getBalance();
+                if ($t === 'credit_alphanum4' || $t === 'credit_alphanum12') {
+                    if ($bal->getAssetCode() === $this->assetCode && $bal->getAssetIssuer() === $this->tkgIssuer) {
+                        $tkgBal = $bal->getBalance();
+                    }
+                }
+            }
+
+            $poolId = $this->getPoolIdFromHorizon($this->assetCode, $this->tkgIssuer, $this->isTestnet);
+            if (!$poolId) throw new \RuntimeException('Liquidity pool not found yet on Horizon.');
+
+            $reserves = $this->getPoolReserves($poolId);
+            Log::info('[LP] Pool reserves read', ['reserves' => $reserves]);
+
+            if (!$reserves || !isset($reserves['xlm'], $reserves['tkg'])) {
+                throw new \RuntimeException('Could not read pool reserves.');
+            }
+
+            // pool holdings (strings like "123.4567890")
+            $poolXlm = $reserves['xlm']; // XLM amount in pool
+            $poolTkg = $reserves['tkg']; // TKG amount in pool
+
+            // Decide how much XLM you want to add (70% of fee, as before)
+            $xlmLiquidityAmount = $this->scale7($this->token_creation_fee * $this->feePercentageForLP); // 7dp
+
+            // Compute matching TKG from pool ratio: tkg = xlm * (poolTkg / poolXlm)
+            $tkgLiquidityAmount = $this->scale7(
+                $this->bcmul($xlmLiquidityAmount, $this->bcdiv($poolTkg, $poolXlm, 12), 12)
+            );
+            $minPrice = new Price(1, 100000000);
+            $maxPrice = new Price(100000000, 1);
+
+            $tkgAsset = Asset::createNonNativeAsset($this->assetCode, $this->tkgIssuer);
+
+            $txb = (new TransactionBuilder($xlmFundingAccount, $this->network))
+                ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'LP trustlines + deposit'));
+
+            // Trust TKG (ok to always include)
+            $txb->addOperation((new ChangeTrustOperationBuilder($tkgAsset, '922337203685.4775807'))->build());
+
+            // Trust LP shares (use AssetTypePoolShare; ALWAYS include)
+            $txb->addOperation($this->buildLpShareChangeTrustOpForSdk());
+
+            $needTkg = max(0.0, (float)$tkgLiquidityAmount - (float)$tkgBal);
+
+            if ($needTkg > 0) {
+                $xlmForSwap = $this->xlmNeededForTkg($poolXlm, $poolTkg, number_format($needTkg, 7, '.', ''), 30);
+                if ($xlmForSwap === null) {
+                    throw new \RuntimeException('Target TKG exceeds pool capacity.');
+                }
+
+                // ensure you have enough XLM: swap + deposit + some fee headroom
+                $xlmNeededTotal = (float)$xlmForSwap + (float)$xlmLiquidityAmount + 2.0;
+                if ((float)$nativeBal < $xlmNeededTotal) {
+                    throw new \RuntimeException('Underfunded XLM for swap + deposit.');
+                }
+
+                $xlmForSwapStr         = number_format((float)$xlmForSwap, 7, '.', '');
+                $tkgLiquidityAmountStr = number_format((float)$tkgLiquidityAmount, 7, '.', '');
+
+                // Path payment strict receive: send XLM, receive exact TKG to self
+                $pathOp = (new PathPaymentStrictReceiveOperationBuilder(
+                    Asset::native(),                
+                    $xlmForSwapStr,                   
+                    $xlmFundingWalletPublicKey,            
+                    $tkgAsset,                      
+                    $tkgLiquidityAmountStr                     
+                ))->build();
+
+                $txb->addOperation($pathOp);
+            }
+
+            // Deposit
+            $txb->addOperation(
+                (new LiquidityPoolDepositOperationBuilder(
+                    $poolId,
+                    $xlmLiquidityAmount,
+                    $tkgLiquidityAmount,
+                    $minPrice,
+                    $maxPrice
+                ))->build()
+            );
+
+            $tx = $txb->build();
+            $kp = KeyPair::fromSeed($this->xlm_funding_wallet_key);
+            $tx->sign($kp, $this->network);
+            $response = $this->sdk->submitTransaction($tx);
+
+            if ($response->isSuccessful()) {
+                return [
+                    'status' => 'success',
+                    'message' => 'Liquidity Pool Deposit transaction successfully submitted.',
+                    'transaction_hash' => $response->getHash()
+                ];
+            } else {
+                $extras = $response->getExtras();
+                $codes  = $extras ? $extras->getResultCodes() : null;
+                $envXdr = $extras ? $extras->getEnvelopeXdr() : null;
+                $resXdr = $extras ? $extras->getResultXdr() : null;
+
+                Log::error('Liquidity Pool Deposit failed', [
+                    'result_codes' => $codes,
+                    'envelope_xdr' => $envXdr,
+                    'result_xdr'   => $resXdr,
+                ]);
+                return [
+                    'status' => 'error',
+                    'message' => 'Liquidity Pool Deposit submission failed.',
+                    'error' => $codes,
+                    'debug'   => [
+                        'envelope_xdr' => $envXdr,
+                        'result_xdr'   => $resXdr,
+                    ],
+                ];
+            }
+        } catch (HorizonRequestException $hex) {
+            $prev = $hex->getPrevious();
+            $body = null;
+            if ($prev instanceof ClientException && $prev->getResponse()) {
+                $body = (string)$prev->getResponse()->getBody();
+            }
+            Log::error('HorizonRequestException on submitTransaction', [
+                'horizon_message' => $hex->getMessage(),
+                'horizon_body'    => $body,
+            ]);
+            return [
+                'status'  => 'error',
+                'message' => 'Horizon rejected transaction',
+                'error'   => $body ?: $hex->getMessage(),
+            ];
+        } catch (\Throwable $e) {
+            Log::critical('Unexpected exception submitting tx', [
+                'exception' => $e->getMessage(),
+                'trace'     => $e->getTraceAsString(),
+            ]);
+            return [
+                'status'  => 'error',
+                'message' => 'Unexpected exception',
+                'error'   => $e->getMessage(),
+            ];
+        }
+    }
+
+    private function buildLpShareChangeTrustOpForSdk(): ChangeTrustOperation
+    {
+        $xlm = Asset::native();
+        $tkg = Asset::createNonNativeAsset($this->assetCode, $this->tkgIssuer);
+
+        $a = $xlm;
+        $b = $tkg;
+        $rank = function (Asset $as): int {
+            return $as->getType() === Asset::TYPE_NATIVE ? 0
+                : ($as->getType() === Asset::TYPE_CREDIT_ALPHANUM_4 ? 1
+                    : ($as->getType() === Asset::TYPE_CREDIT_ALPHANUM_12 ? 2 : 3));
+        };
+        $swap = false;
+        if ($rank($a) > $rank($b)) $swap = true;
+        elseif (
+            $rank($a) === $rank($b)
+            && $a instanceof \Soneso\StellarSDK\AssetTypeCreditAlphanum
+            && $b instanceof \Soneso\StellarSDK\AssetTypeCreditAlphanum
+        ) {
+            $codeCmp = strcmp($a->getCode(), $b->getCode());
+            if ($codeCmp > 0 || ($codeCmp === 0 && strcmp($a->getIssuer(), $b->getIssuer()) > 0)) $swap = true;
+        }
+        if ($swap) {
+            [$a, $b] = [$b, $a];
+        }
+
+        $poolShareAsset = new AssetTypePoolShare($a, $b);
+
+        return new ChangeTrustOperation($poolShareAsset, '922337203685.4775807');
+    }
+
+    private function getPoolIdFromHorizon(string $codeB, string $issuerB, bool $testnet = false): ?string
+    {
+        $base = $testnet
+            ? 'https://horizon-testnet.stellar.org'
+            : 'https://horizon.stellar.org';
+
+        // Try repeated-reserves style first
+        $url1 = $base
+            . '/liquidity_pools'
+            . '?reserves=native'
+            . '&reserves=' . rawurlencode($codeB . ':' . $issuerB)
+            . '&limit=1&order=asc';
+
+        // Also prepare a fallback comma-separated style
+        $url2 = $base
+            . '/liquidity_pools'
+            . '?reserves=' . rawurlencode('native,' . $codeB . ':' . $issuerB)
+            . '&limit=1&order=asc';
+
+        $client = new Client(['timeout' => 10]);
+
+        foreach ([$url1, $url2] as $url) {
+            try {
+                $res = $client->get($url);
+                $status = $res->getStatusCode();
+                if ($status !== 200) {
+                    // not successful, skip this attempt
+                    continue;
+                }
+                $body = (string)$res->getBody();
+                $json = json_decode($body, true);
+                if (!is_array($json) || !isset($json['_embedded']['records'])) {
+                    continue;
+                }
+                $records = $json['_embedded']['records'];
+                if (count($records) === 0) {
+                    continue;
+                }
+                $rec = $records[0];
+                if (isset($rec['id'])) {
+                    return $rec['id'];
+                }
+            } catch (RequestException $ex) {
+                // optionally log $ex->getMessage()
+                continue;
+            } catch (\Exception $ex) {
+                // other errors
+                continue;
+            }
+        }
+
+        // If none worked or pool not found
+        return null;
+    }
+
+    private function lockIssuerWallet(string $issuerPub, string $issuerSec): bool
+    {
+        try {
+            $issuerAccount = $this->sdk->requestAccount($issuerPub);
+
+            $setOptions = (new SetOptionsOperationBuilder())
+                ->setMasterKeyWeight(0)
+                ->setSourceAccount($issuerPub)
+                ->build();
+
+            $tx = (new TransactionBuilder($issuerAccount, $this->network))
+                ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Lock issuer'))
+                ->addOperation($setOptions)
+                ->build();
+
+            $issuerSecretKey = KeyPair::fromSeed($issuerSec);
+
+            $tx->sign($issuerSecretKey, $this->network);
+
+            $resp = $this->sdk->submitTransaction($tx);
+            return $resp->isSuccessful();
+        } catch (\Throwable $e) {
+            Log::error('lockIssuerWallet failed', ['msg' => $e->getMessage()]);
+            return false;
+        }
+    }
+
+    private function getPoolReserves(string $poolId): ?array
+    {
+        $base = $this->isTestnet
+            ? 'https://horizon-testnet.stellar.org'
+            : 'https://horizon.stellar.org';
+
+        $url = $base . '/liquidity_pools/' . $poolId;
+
+        Log::info('[LP:getPoolReserves] Fetching pool', [
+            'env'    => $this->isTestnet ? 'testnet' : 'public',
+            'poolId' => $poolId,
+            'url'    => $url,
+            'asset'  => $this->assetCode,
+            'issuer' => $this->tkgIssuer,
+        ]);
+
+        try {
+            $res = Http::timeout(10)->acceptJson()->get($url);
+
+            if ($res->failed()) {
+                Log::warning('[LP:getPoolReserves] Horizon request failed', [
+                    'status' => $res->status(),
+                    'body'   => mb_substr($res->body(), 0, 800),
+                ]);
+                return null;
+            }
+
+            $data = $res->json();
+
+            $rawReserves = $data['reserves'] ?? null;
+            Log::info('[LP:getPoolReserves] Reserves field', [
+                'hasReservesArray' => is_array($rawReserves),
+                'count'            => is_array($rawReserves) ? count($rawReserves) : 0,
+                'sample'           => is_array($rawReserves) ? array_slice($rawReserves, 0, 2) : $rawReserves,
+            ]);
+
+            if (!is_array($rawReserves)) {
+                Log::warning('[LP:getPoolReserves] reserves missing or not an array');
+                return null;
+            }
+
+            $xlm = null;
+            $tkg = null;
+
+            foreach ($rawReserves as $r) {
+                $asset  = $r['asset']  ?? null;
+                $amount = $r['amount'] ?? null;
+
+                if ($asset === 'native') {
+                    $xlm = $amount;
+                    continue;
+                }
+
+                if (!is_string($asset)) {
+                    continue;
+                }
+
+                $parts = explode(':', $asset);
+
+                if (count($parts) === 2) {
+                    [$code, $issuer] = $parts;
+                } elseif (count($parts) === 3) {
+                    [, $code, $issuer] = $parts;
+                } else {
+                    continue;
+                }
+
+                if ($code === $this->assetCode && $issuer === $this->tkgIssuer) {
+                    $tkg = $amount;
+                }
+            }
+
+            if ($xlm === null || $tkg === null) {
+                Log::warning('[LP:getPoolReserves] Could not match both XLM and TKG in reserves', [
+                    'asset'  => $this->assetCode,
+                    'issuer' => $this->tkgIssuer,
+                    'raw'    => $rawReserves,
+                ]);
+                return null;
+            }
+
+            return ['xlm' => $xlm, 'tkg' => $tkg];
+        } catch (\Throwable $e) {
+            Log::error('[LP:getPoolReserves] Exception', [
+                'message' => $e->getMessage(),
+                'trace'   => $e->getTraceAsString(),
+            ]);
+            return null;
+        }
+    }
+
+    /** bcmath helpers (safe if extension present; fallback to native). */
+    private function bcdiv($left, $right, $scale = 12)
+    {
+        if (extension_loaded('bcmath')) return bcdiv((string)$left, (string)$right, $scale);
+        return (string) ((float)$left / (float)$right);
+    }
+
+    private function bcmul($left, $right, $scale = 12)
+    {
+        if (extension_loaded('bcmath')) return bcmul((string)$left, (string)$right, $scale);
+        return (string) ((float)$left * (float)$right);
+    }
+
+    /** format to 7dp (round down) */
+    private function scale7($val): string
+    {
+        $f = floor(((float)$val) * 1e7) / 1e7;
+        return number_format($f, 7, '.', '');
+    }
+
+    private function xlmNeededForTkg(string $poolXlm, string $poolTkg, string $targetTkg, int $feeBp = 30): string 
+    {
+        $X = (float)$poolXlm;
+        $Y = (float)$poolTkg;
+        $dy = (float)$targetTkg;
+
+        // guard: cannot withdraw more than reserve
+        if ($dy >= $Y) return null;
+
+        $fee = 1.0 - ($feeBp / 10000.0); // e.g. 0.997
+        // strict-receive inverse: dx_eff = (dy * X) / (Y - dy)
+        $dxEff = ($dy * $X) / ($Y - $dy);
+        $dx = $dxEff / $fee; // undo fee on input
+        // 7dp, round up a hair to be safe
+        $dx += 1e-7;
+        return number_format($dx, 7, '.', '.');
     }
 }
