@@ -790,7 +790,7 @@ const estYearly = computed(() => Number(selectedTokens.value) * (projected.value
 
 async function onSubmit() {
 
-    const stakingAssetId = isTestnet ? 2 : 1;
+    const stakingAssetId = isTestnet.value ? 2 : 1;
     if (!publicKey) {
         Swal.fire({ icon: "info", title: "Connect Wallet", text: "Please connect your wallet to stake." });
         return;
@@ -838,7 +838,7 @@ async function onSubmit() {
                 `Please approve the staking transaction for <b>${amount.toLocaleString()}</b> TKG…`
             );
 
-            signXdr(res.data.xdr, res.data.staking_id, isTestnet);
+            signXdr(res.data.xdr, res.data.staking_id, isTestnet.value);
         } else {
             const msg = res?.data?.message || res?.data?.error || "Failed to stake tokens.";
             Swal.close();
