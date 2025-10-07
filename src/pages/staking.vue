@@ -680,12 +680,15 @@ const nextPage = () => {
 };
 
 const network = ref('public')
-console.log(network);
+console.log('Detected Stellar network =', network.value)
 
 const isTestnet = computed(() => network.value === 'testnet')
-const explorerBase = `https://stellar.expert/explorer/${isTestnet ? 'testnet' : 'public'}`;
 
-const txUrl = (tx) => `${explorerBase}/tx/${encodeURIComponent(tx)}`;
+const explorerBase = computed(() =>
+  `https://stellar.expert/explorer/${isTestnet.value ? 'testnet' : 'public'}`
+)
+
+const txUrl = (tx) => `${explorerBase.value}/tx/${encodeURIComponent(tx)}`
 
 // ---------------------
 // Initialize
