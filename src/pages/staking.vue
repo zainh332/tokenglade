@@ -680,6 +680,8 @@ const nextPage = () => {
 };
 
 const network = ref('public')
+console.log(network);
+
 const isTestnet = computed(() => network.value === 'testnet')
 const explorerBase = `https://stellar.expert/explorer/${isTestnet ? 'testnet' : 'public'}`;
 
