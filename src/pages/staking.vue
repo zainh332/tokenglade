@@ -616,6 +616,7 @@ import Coin from "@/assets/coin.png";
 import reward from "@/assets/reward.png";
 import Wallet from "@/assets/wallet.jpg";
 import stop from "@/assets/stop.png";
+import { signTransaction as lobstrSignTx } from '@lobstrco/signer-extension-api';
 
 // ---------------------
 // Slider state (0 → 100)
@@ -858,14 +859,23 @@ async function onSubmit() {
     }
 }
 
+async function lobstrSignTransaction(xdr) {
+  if (typeof lobstrSignTx === 'function') {
+    return await lobstrSignTx(xdr);
+  }
+  if (typeof window !== 'undefined' &&
+      window.lobstrSignerExtensionApi &&
+      typeof window.lobstrSignerExtensionApi.signTransaction === 'function') {
+    return await window.lobstrSignerExtensionApi.signTransaction(xdr);
+  }
+  throw new Error('LOBSTR signer API not available');
+}
+
 async function signXdr(xdr, staking_id, testnet) {
     if (typeof xdr !== 'string' || !/^[A-Za-z0-9+/=]+$/.test(xdr)) {
         Swal.fire({ icon: 'error', title: 'Invalid XDR', text: 'Unsigned XDR is not a base64 envelope.' });
         throw new Error('unsigned XDR not base64');
     }
-    
-    console.log('signXdr', testnet);
-    
 
     const net = {
         freighter: testnet ? 'TESTNET' : 'PUBLIC',
@@ -943,6 +953,18 @@ async function signXdr(xdr, staking_id, testnet) {
             }
 
             await submitStakingXdr(signedXdr, staking_id);
+            return;
+        }
+
+        case 'lobstr': {
+            try {
+                const signedXdr = await lobstrSignTransaction(xdr);
+                if (!signedXdr) throw new Error('LOBSTR returned empty XDR');
+                await submitStakingXdr(signedXdr, staking_id);
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'LOBSTR', text: e?.message || 'Signing was rejected or failed.' });
+                throw e;
+            }
             return;
         }
         default:

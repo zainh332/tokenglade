@@ -138,6 +138,11 @@ import {
 } from "@stellar/freighter-api";
 import Swal from "sweetalert2";
 import { getCookie, apiHeaders } from "../utils/utils.js";
+import {
+  isConnected as isLobConnected,
+  getPublicKey as getLobPublicKey,
+  signMessage as lobSignMessage,
+} from '@lobstrco/signer-extension-api';
 
 const modalId = "ConnectWallet";
 const walletOptions = ref([]);
@@ -164,8 +169,6 @@ const UserData = ref({
     walletKey: "",
     wallet_type_id: "",
 });
-
-const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
 // Fetch available blockchains from the server
 async function fetchblockchains() {
@@ -230,6 +233,37 @@ function getSelectedWalletMeta() {
         name: rec.name,
     };
 }
+
+function hasLobstrESM() {
+    try {
+        return typeof isLobConnected === 'function' && typeof getLobPublicKey === 'function';
+    } catch {
+        return false;
+    }
+}
+
+function hasLobstrCDN() {
+    return typeof window !== 'undefined' && !!window.lobstrSignerExtensionApi;
+}
+
+async function lobstrIsConnected() {
+    if (hasLobstrESM()) return await isLobConnected();
+    if (hasLobstrCDN()) return await window.lobstrSignerExtensionApi.isConnected();
+    return false;
+}
+
+async function lobstrGetPublicKey() {
+    if (hasLobstrESM()) return await getLobPublicKey();
+    if (hasLobstrCDN()) return await window.lobstrSignerExtensionApi.getPublicKey();
+    throw new Error('LOBSTR API not available');
+}
+
+async function lobstrSignMessage(message) {
+    if (hasLobstrESM()) return await lobSignMessage(message);
+    if (hasLobstrCDN()) return await window.lobstrSignerExtensionApi.signMessage(message);
+    throw new Error('LOBSTR API not available');
+}
+
 
 async function storeWallet(publicKey, walletTypeId, walletKey, blockchainTypeId) {
   try {
@@ -362,6 +396,26 @@ async function connectWallet(wallet) {
             } catch (e) {
                 throw new Error("xBull connection rejected");
             }
+        }
+        case "lobstr": {
+            const connected = await lobstrIsConnected();
+            if (!connected) throw new Error("LOBSTR signer extension not installed or not detected");
+
+            const publicKey = await lobstrGetPublicKey();
+            if (!publicKey) throw new Error("LOBSTR returned an empty public key");
+
+            let proof = undefined;
+            try {
+                const msg = `TokenGlade login: ${publicKey} @ ${new Date().toISOString()}`;
+                const signed = await lobstrSignMessage(msg);
+                if (signed?.signedMessage && signed?.signerAddress) {
+                    proof = { signed_message: signed.signedMessage, signer_address: signed.signerAddress, message: msg };
+                }
+            } catch (e) {
+                console.warn('LOBSTR signMessage skipped/failed:', e?.message || e);
+            }
+
+            return { publicKey, wallet: "lobstr", proof };
         }
         default:
             throw new Error("Unsupported wallet");
