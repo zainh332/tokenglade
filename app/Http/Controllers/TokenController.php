@@ -165,12 +165,10 @@ class TokenController extends Controller
                 ->build();
 
             // Build the transaction
-            $transaction = (new TransactionBuilder($distributorAccount, $this->network))
+            $transaction = (new TransactionBuilder($distributorAccount, 'public'))
                 ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Create token fee'))
                 ->addOperation($paymentOp)
                 ->build();
-
-            dd($transaction->toEnvelopeXdrBase64());
 
             // Return unsigned transaction (XDR) to frontend
             return [
