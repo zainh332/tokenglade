@@ -244,6 +244,8 @@ const network = computed(() =>
   (props.network || 'public').toLowerCase() === 'testnet' ? 'testnet' : 'public'
 )
 
+console.log("network value:",network);
+
 const isTestnet = computed(() => network.value === 'testnet')
 
 console.log("isTestnet:", isTestnet);
