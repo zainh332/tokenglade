@@ -184,26 +184,21 @@ export async function signXdrWithWallet(wallet, xdr, isTestnet) {
     xbull:     isTestnet ? "testnet" : "public",
   };
 
-  const freighterNet = isTestnet ? 'TESTNET' : 'PUBLIC';
-  const rabetNet     = isTestnet ? 'testnet' : 'mainnet';
-  const albedoNet    = isTestnet ? 'testnet' : 'public';
-  const xbullNet     = isTestnet ? 'testnet' : 'public';
-
   switch (key) {
     case "freighter": {
-      const res = await signTransaction(xdr, freighterNet);
+      const res = await signTransaction(xdr, 'PUBLIC');
       return res;
     }
 
     case "rabet": {
       if (!window.rabet) throw new Error("Rabet not installed");
-      const res = await window.rabet.sign(xdr, net.rabet);
+      const res = await window.rabet.sign(xdr, 'mainnet');
       return res?.xdr ?? res;
     }
 
     case "albedo": {
       if (!window.albedo?.tx) throw new Error("Albedo SDK not loaded");
-      const res = await window.albedo.tx({ xdr, network: net.albedo });
+      const res = await window.albedo.tx({ xdr, network: 'public' });
       const out = res?.signed_envelope_xdr;
       if (!out) throw new Error("Albedo returned no signed XDR");
       return out;
@@ -216,7 +211,7 @@ export async function signXdrWithWallet(wallet, xdr, isTestnet) {
       await xbull.connect({ canRequestPublicKey: true, canRequestSign: true });
 
       try {
-        const out = await xbull.signXDR(xdr, net.xbull);
+        const out = await xbull.signXDR(xdr, 'public');
         if (typeof out === "string") return out;
       } catch (_) {
       }
