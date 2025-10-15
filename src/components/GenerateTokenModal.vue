@@ -248,8 +248,8 @@ const { open } = defineProps({ open: Boolean, distributorWallet: String, network
 
 const network = ref('public')
 console.log('Detected Stellar network =', network.value)
-const isTestnet = computed(() => network.value === 'testnet')
-console.log('isTestnet =', isTestnet)
+// const isTestnet = computed(() => network.value === 'testnet')
+const isTestnet = 'public'
 
 const shortWallet = computed(() =>
   walletKey.value
