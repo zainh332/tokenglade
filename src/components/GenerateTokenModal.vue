@@ -240,12 +240,14 @@ const ConnectWalletModals = ref(false);
 const logoPreview = ref('');
 const { open } = defineProps({ open: Boolean, distributorWallet: String, network: { type: String, default: 'public' } })
 
-const network = computed(() =>
-  (props.network || 'public').toLowerCase() === 'testnet' ? 'testnet' : 'public'
-)
+// const network = computed(() =>
+//   (props.network || 'public').toLowerCase() === 'testnet' ? 'testnet' : 'public'
+// )
 
 // const isTestnet = computed(() => network.value === 'testnet')
-const isTestnet = 'public'
+
+const network = ref('public')
+const isTestnet = computed(() => network.value === 'testnet')
 
 const shortWallet = computed(() =>
   walletKey.value
