@@ -225,7 +225,7 @@ class TokenController extends Controller
 
         // Check if the transaction was successful
         if ($response && $response->isSuccessful()) {
-            try {
+            // try {
                 if ($type == 1) //tokenCreationFeeTransaction
                 {
                     $token_created = StellarToken::where('user_wallet_address', $distributor_wallet_key)
@@ -395,9 +395,9 @@ class TokenController extends Controller
                         'message' => 'Transaction type not found',
                     ], 404);
                 }
-            } catch (\Exception $e) {
-                return false;
-            }
+            // } catch (\Exception $e) {
+            //     return false;
+            // }
         } else {
             return response()->json([
                 'success' => false,
@@ -641,11 +641,11 @@ class TokenController extends Controller
 
                 // Path payment strict receive: send XLM, receive exact TKG to self
                 $pathOp = (new PathPaymentStrictReceiveOperationBuilder(
-                    Asset::native(),                
-                    $xlmForSwapStr,                   
-                    $xlmFundingWalletPublicKey,            
-                    $tkgAsset,                      
-                    $tkgLiquidityAmountStr                     
+                    Asset::native(),
+                    $xlmForSwapStr,
+                    $xlmFundingWalletPublicKey,
+                    $tkgAsset,
+                    $tkgLiquidityAmountStr
                 ))->build();
 
                 $txb->addOperation($pathOp);
@@ -946,7 +946,7 @@ class TokenController extends Controller
         return number_format($f, 7, '.', '');
     }
 
-    private function xlmNeededForTkg(string $poolXlm, string $poolTkg, string $targetTkg, int $feeBp = 30): string 
+    private function xlmNeededForTkg(string $poolXlm, string $poolTkg, string $targetTkg, int $feeBp = 30): string
     {
         $X = (float)$poolXlm;
         $Y = (float)$poolTkg;
