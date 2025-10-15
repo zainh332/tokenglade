@@ -171,8 +171,6 @@ export const fAddr = (_address, n = 14) => {
 };
 
 export async function signXdrWithWallet(wallet, xdr, isTestnet) {
-    console.log('In signxdr function', isTestnet);
-
     const key = (wallet || "").toString().trim().toLowerCase();
 
   if (typeof xdr !== "string" || !/^[A-Za-z0-9+/=]+$/.test(xdr)) {
@@ -186,9 +184,14 @@ export async function signXdrWithWallet(wallet, xdr, isTestnet) {
     xbull:     isTestnet ? "testnet" : "public",
   };
 
+  const freighterNet = isTestnet ? 'TESTNET' : 'PUBLIC';
+  const rabetNet     = isTestnet ? 'testnet' : 'mainnet';
+  const albedoNet    = isTestnet ? 'testnet' : 'public';
+  const xbullNet     = isTestnet ? 'testnet' : 'public';
+
   switch (key) {
     case "freighter": {
-      const res = await signTransaction(xdr, 'PUBLIC');
+      const res = await signTransaction(xdr, freighterNet);
       return res;
     }
 
