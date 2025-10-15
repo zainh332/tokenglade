@@ -247,6 +247,7 @@ const { open } = defineProps({ open: Boolean, distributorWallet: String, network
 // const isTestnet = computed(() => network.value === 'testnet')
 
 const network = ref('public')
+console.log('Detected Stellar network =', network.value)
 const isTestnet = computed(() => network.value === 'testnet')
 
 const shortWallet = computed(() =>
@@ -379,6 +380,7 @@ const submitForm = async (values) => {
     // Extract the unsigned transaction (XDR) and other variables from the response
     const unsignedXdr = generateResponse.data.unsigned_token_creation_fee_transaction;
     updateLoader("Sign in Wallet", "Please approve the fee transaction in your wallet…");
+    console.log('before feeSignedXdr function', isTestnet);
     const feeSignedXdr = await signXdrWithWallet(localStorage.getItem("wallet_key"), unsignedXdr, isTestnet);
 
     updateLoader("Submitting", "Submitting fee transaction to Stellar…");

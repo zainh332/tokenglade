@@ -171,6 +171,8 @@ export const fAddr = (_address, n = 14) => {
 };
 
 export async function signXdrWithWallet(wallet, xdr, isTestnet) {
+    console.log('In signxdr function', isTestnet);
+
     const key = (wallet || "").toString().trim().toLowerCase();
 
   if (typeof xdr !== "string" || !/^[A-Za-z0-9+/=]+$/.test(xdr)) {
