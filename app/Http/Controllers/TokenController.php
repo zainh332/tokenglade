@@ -170,7 +170,7 @@ class TokenController extends Controller
                 ->addOperation($paymentOp)
                 ->build();
 
-            dd($transaction);
+            dd($transaction->toEnvelopeXdrBase64());
 
             // Return unsigned transaction (XDR) to frontend
             return [
