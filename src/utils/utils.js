@@ -188,7 +188,7 @@ export async function signXdrWithWallet(wallet, xdr, isTestnet) {
 
   switch (key) {
     case "freighter": {
-      const res = await signTransaction(xdr, net.freighter);
+      const res = await signTransaction(xdr, 'PUBLIC');
       return res;
     }
 
