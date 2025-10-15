@@ -244,7 +244,12 @@ const network = computed(() =>
   (props.network || 'public').toLowerCase() === 'testnet' ? 'testnet' : 'public'
 )
 
+console.log("network value:",network.value);
+
+
 const isTestnet = computed(() => network.value === 'testnet')
+
+console.log("isTestnet:", isTestnet);
 
 const shortWallet = computed(() =>
   walletKey.value
@@ -326,8 +331,8 @@ const schema = Yup.object({
 
 // Close modal and reset fields
 const closeModal = () => {
-  form.value = { ...defaultForm }; 
-  logoPreview.value = '';          
+  form.value = { ...defaultForm };
+  logoPreview.value = '';
   emit('close');
 };
 
