@@ -587,10 +587,11 @@ class TokenController extends Controller
                 }
             }
 
-            $poolId = $this->getPoolIdFromHorizon($this->assetCode, $this->tkgIssuer, $this->isTestnet);
+            // $poolId = $this->getPoolIdFromHorizon($this->assetCode, $this->tkgIssuer, $this->isTestnet);
+            $poolId = 'cb1922681c9d2380d34577d3c056e435a8436586e776c38a80412120c2442fb5';
             if (!$poolId) throw new \RuntimeException('Liquidity pool not found yet on Horizon.');
 
-            $reserves = $this->getPoolReserves('cb1922681c9d2380d34577d3c056e435a8436586e776c38a80412120c2442fb5');
+            $reserves = $this->getPoolReserves($poolId);
             Log::info('[LP] Pool reserves read', ['reserves' => $reserves]);
 
             if (!$reserves || !isset($reserves['xlm'], $reserves['tkg'])) {
