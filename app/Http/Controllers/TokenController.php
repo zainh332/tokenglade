@@ -675,17 +675,19 @@ class TokenController extends Controller
 
                 // ensure you have enough XLM: swap + deposit + some fee headroom
                 $xlmNeededTotal = (float)$xlmForSwap + (float)$xlmBudget;
+                if ((float)$nativeBal < $xlmNeededTotal) {
+                    throw new \RuntimeException('Underfunded XLM for swap + deposit.');
+                }
+                
+                $xlmForSwapStr         = number_format((float)$xlmForSwap, 7, '.', '');
+                $tkgLiquidityAmountStr = number_format((float)$tkgTarget, 7, '.', '');
                 Log::info('XLM Swap', [
                     'xlmNeededTotal'     => $xlmNeededTotal,
                     'xlmForSwap'         => $xlmForSwap,
                     'xlmBudget' => $xlmBudget,
+                    'xlmForSwapStr' => $xlmForSwapStr,
+                    'tkgLiquidityAmountStr' => $tkgLiquidityAmountStr,
                 ]);
-                if ((float)$nativeBal < $xlmNeededTotal) {
-                    throw new \RuntimeException('Underfunded XLM for swap + deposit.');
-                }
-
-                $xlmForSwapStr         = number_format((float)$xlmForSwap, 7, '.', '');
-                $tkgLiquidityAmountStr = number_format((float)$tkgTarget, 7, '.', '');
 
                 // Path payment strict receive: send XLM, receive exact TKG to self
                 $pathOp = (new PathPaymentStrictReceiveOperationBuilder(
