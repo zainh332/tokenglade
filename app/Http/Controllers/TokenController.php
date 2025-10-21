@@ -637,8 +637,8 @@ class TokenController extends Controller
             $poolTkg = $reserves['tkg']; // TKG amount in pool
 
             // Decide how much XLM you want to add (70% of fee, as before)
-            $xlmLiquidityAmount = $this->scale7($this->token_creation_fee * $this->feePercentageForLP);
-            $xlmBudget = $xlmLiquidityAmount = $this->scale7($this->token_creation_fee * $this->feePercentageForLP);
+            // $xlmLiquidityAmount = $this->scale7($this->token_creation_fee * $this->feePercentageForLP);
+            $xlmBudget = $this->scale7($this->token_creation_fee * $this->feePercentageForLP);
 
             $tkgPerXlm = $this->bcdiv($poolTkg, $poolXlm, 12);
 
@@ -708,7 +708,7 @@ class TokenController extends Controller
             $txb->addOperation(
                 (new LiquidityPoolDepositOperationBuilder(
                     $poolId,
-                    $xlmLiquidityAmount,
+                    $xlmBudget,
                     $tkgLiquidityAmountStr,
                     $minPrice,
                     $maxPrice
