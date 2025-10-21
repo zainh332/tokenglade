@@ -328,6 +328,39 @@ class TokenController extends Controller
                     $token_created->created_token_transfer_status = 1;
                     $token_created->save();
 
+                    $homeDomainTx = $this->setIssuerHomeDomain(
+                        $token_created->issuer_public_key,
+                        $token_created->issuer_secret_key,
+                        'tokenglade.com'
+                    );
+
+                    if (!$homeDomainTx['ok']) {
+                        Log::warning('Failed to set home_domain for issuer', [
+                            'issuer' => $token_created->issuer_public_key,
+                            'error'  => $homeDomainTx['error'] ?? 'unknown'
+                        ]);
+                    } else {
+                        Log::info('home_domain set for issuer', [
+                            'issuer'   => $token_created->issuer_public_key,
+                            'tx_hash'  => $homeDomainTx['tx_hash'],
+                        ]);
+
+                        // (Optional) persist this tx in your own transactions table
+                        // try {
+                        //     $this->addStellarTransactionRecord(
+                        //         $token_created->id,
+                        //         $token_created->issuer_public_key,
+                        //         7, // <-- pick an internal "type" code for "Set home_domain"
+                        //         '',
+                        //         $homeDomainTx['signed_xdr'],
+                        //         $homeDomainTx['tx_hash'],
+                        //         true
+                        //     );
+                        // } catch (\Throwable $t) {
+                        //     Log::warning('Could not save home_domain tx record', ['e' => $t->getMessage()]);
+                        // }
+                    }
+
                     $directory = public_path('.well-known');
                     if (!is_dir($directory)) {
                         mkdir($directory, 0755, true);
@@ -963,5 +996,51 @@ class TokenController extends Controller
         // 7dp, round up a hair to be safe
         $dx += 1e-7;
         return number_format($dx, 7, '.', '.');
+    }
+
+    private function setIssuerHomeDomain(string $issuerPublic, string $issuerSecret, string $domain = 'tokenglade.com'): array
+    {
+        try {
+            // Load current account state
+            $account = $this->sdk->accounts()->account($issuerPublic);
+
+            // Build SetOptions(home_domain) op
+            $setHomeDomainOp = (new SetOptionsOperationBuilder())
+                ->setHomeDomain($domain)
+                ->build();
+
+            // Build & sign tx
+            $tx = (new TransactionBuilder($account))
+                ->addOperation($setHomeDomainOp)
+                ->build();
+
+            $kp = KeyPair::fromSeed($issuerSecret);
+            // Many versions require network on sign; you already keep it in $this->network
+            $tx->sign($kp, $this->network);
+
+            // Submit
+            $res = $this->sdk->submitTransaction($tx);
+
+            if ($res->isSuccessful()) {
+                return [
+                    'ok'        => true,
+                    'tx_hash'   => $res->getHash(),
+                    'signed_xdr' => $tx->toEnvelopeXdrBase64(),
+                ];
+            }
+
+            return [
+                'ok'    => false,
+                'error' => [
+                    'result_codes' => $res?->getExtras()?->getResultCodes(),
+                    'result_xdr'   => $res?->getExtras()?->getResultXdr(),
+                ],
+            ];
+        } catch (\Throwable $t) {
+            return [
+                'ok'    => false,
+                'error' => $t->getMessage(),
+            ];
+        }
     }
 }
