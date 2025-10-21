@@ -637,14 +637,22 @@ class TokenController extends Controller
             $poolTkg = $reserves['tkg']; // TKG amount in pool
 
             // Decide how much XLM you want to add (70% of fee, as before)
-            $xlmLiquidityAmount = $this->scale7($this->token_creation_fee * $this->feePercentageForLP); // 7dp
+            $xlmLiquidityAmount = $this->scale7($this->token_creation_fee * $this->feePercentageForLP);
+            $xlmBudget = $xlmLiquidityAmount = $this->scale7($this->token_creation_fee * $this->feePercentageForLP);
 
-            // Compute matching TKG from pool ratio: tkg = xlm * (poolTkg / poolXlm)
-            $tkgLiquidityAmount = $this->scale7(
-                $this->bcmul($xlmLiquidityAmount, $this->bcdiv($poolTkg, $poolXlm, 12), 12)
-            );
-            $minPrice = new Price(1, 100000000);
-            $maxPrice = new Price(100000000, 1);
+            $tkgPerXlm = $this->bcdiv($poolTkg, $poolXlm, 12);
+
+            // --- decide swap split (start with 50/50)
+            $xlmForSwap = $this->scale7($this->bcdiv($xlmBudget, '2', 7));
+            $xlmForDeposit = $this->scale7($this->bcsub($xlmBudget, $xlmForSwap, 7)); 
+
+            // Target TKG to buy so deposit matches pool ratio (approx)
+            $tkgTarget = $this->scale7($this->bcmul($xlmForDeposit, $tkgPerXlm, 12));
+
+            // Ensure funding wallet has enough XLM for the whole budget (not budget + swap)
+            if ((float)$nativeBal < (float)$xlmBudget) {
+                throw new \RuntimeException('Underfunded: not enough XLM to cover budgeted LP add.');
+            }
 
             $tkgAsset = Asset::createNonNativeAsset($this->assetCode, $this->tkgIssuer);
 
@@ -657,7 +665,7 @@ class TokenController extends Controller
             // Trust LP shares (use AssetTypePoolShare; ALWAYS include)
             $txb->addOperation($this->buildLpShareChangeTrustOpForSdk());
 
-            $needTkg = max(0.0, (float)$tkgLiquidityAmount - (float)$tkgBal);
+            $needTkg = max(0.0, (float)$tkgTarget - (float)$tkgBal);
 
             if ($needTkg > 0) {
                 $xlmForSwap = $this->xlmNeededForTkg($poolXlm, $poolTkg, number_format($needTkg, 7, '.', ''), 30);
@@ -666,18 +674,18 @@ class TokenController extends Controller
                 }
 
                 // ensure you have enough XLM: swap + deposit + some fee headroom
-                $xlmNeededTotal = (float)$xlmForSwap + (float)$xlmLiquidityAmount;
+                $xlmNeededTotal = (float)$xlmForSwap + (float)$xlmBudget;
                 Log::info('XLM Swap', [
                     'xlmNeededTotal'     => $xlmNeededTotal,
                     'xlmForSwap'         => $xlmForSwap,
-                    'xlmLiquidityAmount' => $xlmLiquidityAmount,
+                    'xlmBudget' => $xlmBudget,
                 ]);
                 if ((float)$nativeBal < $xlmNeededTotal) {
                     throw new \RuntimeException('Underfunded XLM for swap + deposit.');
                 }
 
                 $xlmForSwapStr         = number_format((float)$xlmForSwap, 7, '.', '');
-                $tkgLiquidityAmountStr = number_format((float)$tkgLiquidityAmount, 7, '.', '');
+                $tkgLiquidityAmountStr = number_format((float)$tkgTarget, 7, '.', '');
 
                 // Path payment strict receive: send XLM, receive exact TKG to self
                 $pathOp = (new PathPaymentStrictReceiveOperationBuilder(
@@ -691,12 +699,15 @@ class TokenController extends Controller
                 $txb->addOperation($pathOp);
             }
 
+            $minPrice = new Price(1, 100000000);
+            $maxPrice = new Price(100000000, 1);
+
             // Deposit
             $txb->addOperation(
                 (new LiquidityPoolDepositOperationBuilder(
                     $poolId,
                     $xlmLiquidityAmount,
-                    $tkgLiquidityAmount,
+                    $tkgLiquidityAmountStr,
                     $minPrice,
                     $maxPrice
                 ))->build()
