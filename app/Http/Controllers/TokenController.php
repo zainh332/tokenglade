@@ -100,7 +100,8 @@ class TokenController extends Controller
         $lock_status = $request->input('lock_status');
         $distributor_wallet_xlm_balance = $this->wallet->getXlmBalance($distributor_wallet_key);
 
-        if ($distributor_wallet_xlm_balance < ($this->token_creation_fee + 5)) {
+        // if ($distributor_wallet_xlm_balance < ($this->token_creation_fee + 5)) {
+        if ($distributor_wallet_xlm_balance < $this->token_creation_fee) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Insufficient balance. You need at least ' . $this->token_creation_fee . ' XLM available in your wallet to proceed.',
