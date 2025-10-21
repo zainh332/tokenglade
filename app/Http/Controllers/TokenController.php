@@ -665,7 +665,8 @@ class TokenController extends Controller
                 }
 
                 // ensure you have enough XLM: swap + deposit + some fee headroom
-                $xlmNeededTotal = (float)$xlmForSwap + (float)$xlmLiquidityAmount + 2.0;
+                $xlmNeededTotal = (float)$xlmForSwap + (float)$xlmLiquidityAmount;
+                Log::info('XLM Swap', ['xlmNeededTotal' => $xlmNeededTotal, 'xlmForSwap' => $xlmForSwap, , 'xlmLiquidityAmount' => $xlmLiquidityAmount]);
                 if ((float)$nativeBal < $xlmNeededTotal) {
                     throw new \RuntimeException('Underfunded XLM for swap + deposit.');
                 }
