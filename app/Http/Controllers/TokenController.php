@@ -999,10 +999,9 @@ class TokenController extends Controller
         return number_format($f, 7, '.', '');
     }
 
-    private function bcsub(string $left, string $right, int $scale = 7): string {
-        return function_exists('bcsub')
-            ? bcsub($left, $right, $scale)
-            : number_format(((float)$left - (float)$right), $scale, '.', '');
+    private function bcsub(string $left, string $right, int $scale = 7): string
+    {
+        return bcsub($left, $right, $scale);
     }
 
     private function xlmNeededForTkg(string $poolXlm, string $poolTkg, string $targetTkg, int $feeBp = 30): string
