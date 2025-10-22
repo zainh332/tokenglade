@@ -644,10 +644,23 @@ class TokenController extends Controller
 
             // --- decide swap split (start with 50/50)
             $xlmForSwap = $this->scale7($this->bcdiv($xlmBudget, '2', 7));
+
+            Log::info('XLM Swap', [
+                'xlmForSwap'         => $xlmForSwap,
+                'xlmBudget' => $xlmBudget,
+            ]);
+
+
             $xlmForDeposit = $this->scale7($this->bcsub($xlmBudget, $xlmForSwap, 7)); 
 
             // Target TKG to buy so deposit matches pool ratio (approx)
             $tkgTarget = $this->scale7($this->bcmul($xlmForDeposit, $tkgPerXlm, 12));
+
+            Log::info('XLM Swap', [
+                'xlmForDeposit'         => $xlmForDeposit,
+                'tkgTarget' => $tkgTarget,
+                'nativeBal' => $nativeBal,
+            ]);
 
             // Ensure funding wallet has enough XLM for the whole budget (not budget + swap)
             if ((float)$nativeBal < (float)$xlmBudget) {
