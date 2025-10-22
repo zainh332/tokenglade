@@ -675,39 +675,36 @@ class TokenController extends Controller
                 }
 
                 // swap comes OUT of the budget; recompute remainder for deposit
-                $xlmForSwap = $this->scale7($xlmForSwap);
-                $xlmForDeposit = $this->scale7($this->bcsub($xlmBudget, $xlmForSwap, 7));
+                $sendMaxPadFactor   = '1.0030000';                // 0.30% headroom
+                $xlmForSwapPadded   = bcmul($xlmForSwap, $sendMaxPadFactor, 7);
 
-                // add a small buffer to sendMax for StrictReceive (0.10%)
-                $feeHeadroom = '1.0010000'; // 0.10%
-                $needMin = $this->bcadd($xlmBudget, $feeHeadroom, 7);
-
-                log::info('Beofre $nativeBal < (float)$needMin', [
-                    'needMin'       => $needMin,
-                    'xlmForDeposit' => $xlmForDeposit,
-                    'nativeBal' => $nativeBal,
-                ]);
-                if ((float)$nativeBal < (float)$needMin) {
-                    throw new \RuntimeException('Underfunded: need at least '.$needMin.' XLM for budget + fees.');
+                // (B) recompute deposit-XLM using the *padded* worst case
+                //    so you never over-commit XLM to the deposit if the swap uses all sendMax
+                $xlmForDepositWorst = bcsub($xlmBudget, $xlmForSwapPadded, 7);
+                if (bccomp($xlmForDepositWorst, '0', 7) < 0) {
+                    throw new \RuntimeException('Budget too small after padded sendMax.');
                 }
-                
-                $xlmForSwapStr         = number_format((float)$xlmForSwap, 7, '.', '');
-                $tkgLiquidityAmountStr = number_format((float)$tkgTarget, 7, '.', '');
-                $xlmForDepositStr        = number_format((float)$xlmForDeposit, 7, '.', '');
-                 Log::info('XLM Swap', [
-                    'xlmBudget'              => $xlmBudget,
-                    'xlmForSwap'             => $xlmForSwap,
-                    'xlmForDeposit'          => $xlmForDeposit,
-                    'tkgLiquidityAmountStr'  => $tkgLiquidityAmountStr,
-                ]);
+
+                // (C) minimal fee headroom (flat, not percent)
+                $feeHeadroom = '0.0500000';
+                $needMin     = bcadd($xlmBudget, $feeHeadroom, 7);
+                if (bccomp($nativeBal, $needMin, 7) < 0) {
+                    throw new \RuntimeException('Underfunded: need at least ' . $needMin . ' XLM for budget + fees.');
+                }
+
+                // (D) final strings for ops
+                $sendMaxStr             = $this->fmt7($xlmForSwapPadded);   // path payment sendMax
+                $tkgReceiveExactStr     = $this->fmt7($tkgTarget);          // path payment receive exact
+                $xlmForDepositStr       = $this->fmt7($xlmForDepositWorst); // deposit XLM leg (worst-case safe)
+                $tkgLiquidityAmountStr  = $this->fmt7($tkgTarget);          // deposit TKG leg
 
                 // Path payment strict receive: send XLM, receive exact TKG to self
                 $pathOp = (new PathPaymentStrictReceiveOperationBuilder(
                     Asset::native(),
-                    $xlmForSwapStr,
+                    $sendMaxStr,
                     $xlmFundingWalletPublicKey,
                     $tkgAsset,
-                    $tkgLiquidityAmountStr
+                    $tkgReceiveExactStr
                 ))->build();
 
                 $txb->addOperation($pathOp);
@@ -1024,6 +1021,13 @@ class TokenController extends Controller
     private function bcadd($left, $right, $scale = 7)
     {
         return bcadd($left, $right, $scale);
+    }
+
+    private function fmt7(string $s): string {
+        // keep 7-dec string, trim trailing zeros/dot
+        $x = bcadd($s, '0', 7);
+        $x = rtrim(rtrim($x, '0'), '.');
+        return $x === '' ? '0' : $x;
     }
 
     private function xlmNeededForTkg(string $poolXlm, string $poolTkg, string $targetTkg, int $feeBp = 30): string
