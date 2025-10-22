@@ -678,8 +678,8 @@ class TokenController extends Controller
                 $xlmForSwap = $this->scale7($xlmForSwap);
                 $xlmForDeposit = $this->scale7($this->bcsub($xlmBudget, $xlmForSwap, 7));
 
-                // (optional) small fee headroom; do NOT add swap to budget
-                $feeHeadroom = '0.0500000';
+                // add a small buffer to sendMax for StrictReceive (0.10%)
+                $feeHeadroom = '1.0010000'; // 0.10%
                 $needMin = $this->bcadd($xlmBudget, $feeHeadroom, 7);
 
                 log::info('Beofre $nativeBal < (float)$needMin', [
