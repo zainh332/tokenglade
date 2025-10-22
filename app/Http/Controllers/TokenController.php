@@ -67,7 +67,7 @@ class TokenController extends Controller
 
         $this->assetCode = env('ASSET_CODE');
         $this->token_creation_fee = 30; //XLM
-        $this->issuer_wallet_amount = 4; //XLM
+        $this->issuer_wallet_amount = 1.005; //XLM
         $this->feePercentageForLP = 0.7;
     }
 
@@ -656,10 +656,11 @@ class TokenController extends Controller
             // Target TKG to buy so deposit matches pool ratio (approx)
             $tkgTarget = $this->scale7($this->bcmul($xlmForDeposit, $tkgPerXlm, 12));
 
-            Log::info('XLM Swap', [
+            Log::info('Before $nativeBal < (float)$xlmBudget', [
                 'xlmForDeposit'         => $xlmForDeposit,
                 'tkgTarget' => $tkgTarget,
                 'nativeBal' => $nativeBal,
+                'xlmBudget' => $xlmBudget,
             ]);
 
             // Ensure funding wallet has enough XLM for the whole budget (not budget + swap)
@@ -682,6 +683,13 @@ class TokenController extends Controller
 
             if ($needTkg > 0) {
                 $xlmForSwap = $this->xlmNeededForTkg($poolXlm, $poolTkg, number_format($needTkg, 7, '.', ''), 30);
+                Log::info('After $xlmForSwap = $this->xlmNeededForTkg', [
+                    'xlmForSwap'    => $xlmForSwap,
+                    'poolXlm'       => $poolXlm,
+                    'poolTkg'       => $poolTkg,
+                    'needTkg'       => $needTkg,
+                ]);
+
                 if ($xlmForSwap === null) {
                     throw new \RuntimeException('Target TKG exceeds pool capacity.');
                 }
@@ -693,6 +701,12 @@ class TokenController extends Controller
                 // (optional) small fee headroom; do NOT add swap to budget
                 $feeHeadroom = '0.0500000';
                 $needMin = $this->bcadd($xlmBudget, $feeHeadroom, 7);
+
+                log::info('Beofre $nativeBal < (float)$needMin', [
+                    'needMin'       => $needMin,
+                    'xlmForDeposit' => $xlmForDeposit,
+                    'nativeBal' => $nativeBal,
+                ]);
                 if ((float)$nativeBal < (float)$needMin) {
                     throw new \RuntimeException('Underfunded: need at least '.$needMin.' XLM for budget + fees.');
                 }
