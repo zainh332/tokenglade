@@ -340,26 +340,6 @@ class TokenController extends Controller
                             'issuer' => $token_created->issuer_public_key,
                             'error'  => $homeDomainTx['error'] ?? 'unknown'
                         ]);
-                    } else {
-                        Log::info('home_domain set for issuer', [
-                            'issuer'   => $token_created->issuer_public_key,
-                            'tx_hash'  => $homeDomainTx['tx_hash'],
-                        ]);
-
-                        // (Optional) persist this tx in your own transactions table
-                        // try {
-                        //     $this->addStellarTransactionRecord(
-                        //         $token_created->id,
-                        //         $token_created->issuer_public_key,
-                        //         7, // <-- pick an internal "type" code for "Set home_domain"
-                        //         '',
-                        //         $homeDomainTx['signed_xdr'],
-                        //         $homeDomainTx['tx_hash'],
-                        //         true
-                        //     );
-                        // } catch (\Throwable $t) {
-                        //     Log::warning('Could not save home_domain tx record', ['e' => $t->getMessage()]);
-                        // }
                     }
 
                     $directory = public_path('.well-known');
@@ -1039,6 +1019,11 @@ class TokenController extends Controller
     private function bcsub(string $left, string $right, int $scale = 7): string
     {
         return bcsub($left, $right, $scale);
+    }
+
+    private function bcadd($left, $right, $scale = 7)
+    {
+        return bcadd($left, $right, $scale);
     }
 
     private function xlmNeededForTkg(string $poolXlm, string $poolTkg, string $targetTkg, int $feeBp = 30): string
