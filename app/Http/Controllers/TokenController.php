@@ -654,6 +654,8 @@ class TokenController extends Controller
                 $xlmForSwapStr         = number_format((float)$xlmForSwap, 7, '.', '');
                 $tkgLiquidityAmountStr = number_format((float)$tkgLiquidityAmount, 7, '.', '');
 
+                Log::info('Amount', ['xlmForSwapStr' => $xlmForSwapStr, 'tkgLiquidityAmountStr' => $tkgLiquidityAmountStr]);
+
                 // Path payment strict receive: send XLM, receive exact TKG to self
                 $pathOp = (new PathPaymentStrictReceiveOperationBuilder(
                     Asset::native(),
