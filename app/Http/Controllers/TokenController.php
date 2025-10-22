@@ -656,10 +656,20 @@ class TokenController extends Controller
 
                 Log::info('Amount', ['xlmForSwapStr' => $xlmForSwapStr, 'tkgLiquidityAmountStr' => $tkgLiquidityAmountStr]);
 
+                $slippagePct = 0.01; // 1%
+                $sendMax     = max((float)$xlmForSwap * (1 + $slippagePct), (float)$xlmForSwap + 0.05);
+                $sendMaxStr  = number_format($sendMax, 7, '.', '');
+
+                // 3) Budget headroom for reserves + fees
+                $xlmLiquidityAmountStr = number_format((float)$xlmLiquidityAmount, 7, '.', '');
+                $xlmNeededTotal = (float)$sendMaxStr + (float)$xlmLiquidityAmountStr + 3.0; // headroom
+                if ((float)$nativeBal < $xlmNeededTotal) {
+                    throw new \RuntimeException('Underfunded XLM for trustlines + swap + deposit + fees/reserve.');
+                }
                 // Path payment strict receive: send XLM, receive exact TKG to self
                 $pathOp = (new PathPaymentStrictReceiveOperationBuilder(
                     Asset::native(),
-                    $xlmForSwapStr,
+                    $sendMaxStr,
                     $xlmFundingWalletPublicKey,
                     $tkgAsset,
                     $tkgLiquidityAmountStr
