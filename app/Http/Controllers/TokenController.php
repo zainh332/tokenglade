@@ -639,6 +639,13 @@ class TokenController extends Controller
 
             $needTkg = max(0.0, (float)$tkgLiquidityAmount - (float)$tkgBal);
 
+            Log::error('Before $needTkg > 0', [
+                    'needTkg' => $needTkg,
+                    'needTkg' => $needTkg,
+                    'tkgBal' => $tkgBal,
+                    'tkgLiquidityAmount' => $tkgLiquidityAmount,
+                ]);
+
             if ($needTkg > 0) {
                 $xlmForSwap = $this->xlmNeededForTkg($poolXlm, $poolTkg, number_format($needTkg, 7, '.', ''), 30);
                 if ($xlmForSwap === null) {
@@ -666,6 +673,14 @@ class TokenController extends Controller
                 if ((float)$nativeBal < $xlmNeededTotal) {
                     throw new \RuntimeException('Underfunded XLM for trustlines + swap + deposit + fees/reserve.');
                 }
+
+                Log::error('Before transaction', [
+                    'sendMaxStr' => $sendMaxStr,
+                    'xlmFundingWalletPublicKey' => $xlmFundingWalletPublicKey,
+                    'tkgAsset' => $tkgAsset,
+                    'tkgLiquidityAmountStr' => $tkgLiquidityAmountStr,
+                ]);
+
                 // Path payment strict receive: send XLM, receive exact TKG to self
                 $pathOp = (new PathPaymentStrictReceiveOperationBuilder(
                     Asset::native(),
@@ -677,6 +692,14 @@ class TokenController extends Controller
 
                 $txb->addOperation($pathOp);
             }
+
+             Log::error('Before liquidty transaction', [
+                'poolId' => $poolId,
+                'xlmLiquidityAmount' => $xlmLiquidityAmount,
+                'tkgLiquidityAmount' => $tkgLiquidityAmount,
+                'minPrice' => $minPrice,
+                'maxPrice' => $maxPrice,
+            ]);
 
             // Deposit
             $txb->addOperation(
