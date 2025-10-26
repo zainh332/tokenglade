@@ -620,9 +620,16 @@ class TokenController extends Controller
             $xlmLiquidityAmount = $this->scale7($this->token_creation_fee * $this->feePercentageForLP); // 7dp
 
             // Compute matching TKG from pool ratio: tkg = xlm * (poolTkg / poolXlm)
-            $tkgLiquidityAmount = $this->scale7(
-                $this->bcmul($xlmLiquidityAmount, $this->bcdiv($poolTkg, $poolXlm, 12), 12)
-            );
+            $halfXlm = $this->scale7($this->bcdiv($xlmLiquidityAmount, '2', 12)); // e.g. 10.5000000 (or 7.0000000)
+
+            // TKG required to pair with halfXlm at current pool ratio
+            $ratio  = $this->bcdiv($poolTkg, $poolXlm, 12);
+            $tkgNeededForDeposit = $this->scale7($this->bcmul($halfXlm, $ratio, 12));
+
+            // How much TKG we still need to buy (if any)
+            $needTkg = max(0.0, (float)$tkgNeededForDeposit - (float)$tkgBal);
+            $needTkgStr = number_format($needTkg, 7, '.', '');
+
             $minPrice = new Price(1, 100000000);
             $maxPrice = new Price(100000000, 1);
 
@@ -637,23 +644,28 @@ class TokenController extends Controller
             // Trust LP shares (use AssetTypePoolShare; ALWAYS include)
             $txb->addOperation($this->buildLpShareChangeTrustOpForSdk());
 
-            $needTkg = max(0.0, (float)$tkgLiquidityAmount - (float)$tkgBal);
-
-            if ($needTkg > 0) {
-                $xlmForSwap = $this->xlmNeededForTkg($poolXlm, $poolTkg, number_format($needTkg, 7, '.', ''), 30);
+            if ($needTkgStr > 0) {
+                $xlmForSwap = $this->xlmNeededForTkg($poolXlm, $poolTkg, $needTkgStr, 30);
                 if ($xlmForSwap === null) {
                     throw new \RuntimeException('Target TKG exceeds pool capacity.');
                 }
 
                 // ensure you have enough XLM: swap + deposit + some fee headroom
-                $xlmNeededTotal = (float)$xlmForSwap + (float)$xlmLiquidityAmount;
-                Log::info('XLM Swap', ['xlmNeededTotal' => $xlmNeededTotal, 'xlmForSwap' => $xlmForSwap, , 'xlmLiquidityAmount' => $xlmLiquidityAmount]);
+                $xlmNeededTotal = (float)$xlmForSwap + (float)$halfXlm;
+                Log::info('XLM Swap (split plan)', [
+                    'xlmNeededTotal'     => $xlmNeededTotal,
+                    'xlmForSwap'         => $xlmForSwap,
+                    'halfXlmDeposit'     => $halfXlm,
+                    'tkgNeededForDeposit'=> $tkgNeededForDeposit,
+                    'tkgOnHand'          => $tkgBal,
+                    'missingTkg'         => $needTkgStr,
+                ]);
+
                 if ((float)$nativeBal < $xlmNeededTotal) {
                     throw new \RuntimeException('Underfunded XLM for swap + deposit.');
                 }
 
                 $xlmForSwapStr         = number_format((float)$xlmForSwap, 7, '.', '');
-                $tkgLiquidityAmountStr = number_format((float)$tkgLiquidityAmount, 7, '.', '');
 
                 // Path payment strict receive: send XLM, receive exact TKG to self
                 $pathOp = (new PathPaymentStrictReceiveOperationBuilder(
@@ -661,18 +673,23 @@ class TokenController extends Controller
                     $xlmForSwapStr,
                     $xlmFundingWalletPublicKey,
                     $tkgAsset,
-                    $tkgLiquidityAmountStr
+                    $needTkgStr
                 ))->build();
 
                 $txb->addOperation($pathOp);
+            } else {
+                Log::info('Split plan: enough TKG on hand, skipping swap.', [
+                    'tkgNeededForDeposit' => $tkgNeededForDeposit,
+                    'tkgOnHand' => $tkgBal
+                ]);
             }
 
             // Deposit
             $txb->addOperation(
                 (new LiquidityPoolDepositOperationBuilder(
                     $poolId,
-                    $xlmLiquidityAmount,
-                    $tkgLiquidityAmount,
+                    $halfXlm,
+                    $tkgNeededForDeposit,
                     $minPrice,
                     $maxPrice
                 ))->build()
@@ -836,35 +853,6 @@ class TokenController extends Controller
         $poolShareAsset = new AssetTypePoolShare($a, $b);
 
         return new ChangeTrustOperation($poolShareAsset, '922337203685.4775807');
-    }
-
-    private function xlmNeededForTkgExact(string $Rxlm, string $Rtkg, string $yOut, float $fee = 0.003): string
-    {
-        // sanity
-        if ($this->bccomp($yOut, '0', 7) <= 0) return '0.0000000';
-        if ($this->bccomp($yOut, $Rtkg, 7) >= 0) {
-            throw new \RuntimeException('Requested TKG exceeds pool reserves.');
-        }
-
-        // denom = (Rtkg - yOut) * (1 - fee)
-        $oneMinusFee = $this->fmt7(1 - $fee);
-        $RtkgMinusY  = $this->bcsub($Rtkg, $yOut, 12);
-        $denom       = $this->bcmul($RtkgMinusY, $oneMinusFee, 12);
-
-        if ($this->bccomp($denom, '0', 12) <= 0) {
-            throw new \RuntimeException('Numerical error: denominator <= 0');
-        }
-
-        // num = Rxlm * yOut
-        $num   = $this->bcmul($Rxlm, $yOut, 12);
-        $xIn   = $this->bcdiv($num, $denom, 12);     // high precision
-        $xIn7  = $this->fmt7($xIn);                   // 7 dp for network amounts
-
-        // tiny epsilon to account for rounding during path payment pathfinding
-        // (path payment enforces <= sendMax, so pad a hair)
-        $epsilon = '0.0000005';
-
-        return $this->fmt7($this->bcadd($xIn7, $epsilon, 7));
     }
 
     private function getPoolIdFromHorizon(string $codeB, string $issuerB, bool $testnet = false): ?string
