@@ -606,7 +606,6 @@ class TokenController extends Controller
             if (!$poolId) throw new \RuntimeException('Liquidity pool not found yet on Horizon.');
 
             $reserves = $this->getPoolReserves($poolId);
-            Log::info('[LP] Pool reserves read', ['reserves' => $reserves]);
 
             if (!$reserves || !isset($reserves['xlm'], $reserves['tkg'])) {
                 throw new \RuntimeException('Could not read pool reserves.');
@@ -636,11 +635,20 @@ class TokenController extends Controller
 
             // Trust LP shares (use AssetTypePoolShare; ALWAYS include)
             $txb->addOperation($this->buildLpShareChangeTrustOpForSdk());
+            $tx = $txb->build();
+            $kp = KeyPair::fromSeed($this->xlm_funding_wallet_key);
+            $tx->sign($kp, $this->network);
+            $response = $this->sdk->submitTransaction($tx);
+
+            if (!$response->isSuccessful()) {
+                 Log::error('First trasaction failed', [
+                    'meesage' => $response,
+                ]);
+            }
 
             $needTkg = max(0.0, (float)$tkgLiquidityAmount - (float)$tkgBal);
 
             Log::error('Before $needTkg > 0', [
-                    'needTkg' => $needTkg,
                     'needTkg' => $needTkg,
                     'tkgBal' => $tkgBal,
                     'tkgLiquidityAmount' => $tkgLiquidityAmount,
@@ -670,6 +678,9 @@ class TokenController extends Controller
                 // 3) Budget headroom for reserves + fees
                 $xlmLiquidityAmountStr = number_format((float)$xlmLiquidityAmount, 7, '.', '');
                 $xlmNeededTotal = (float)$sendMaxStr + (float)$xlmLiquidityAmountStr + 3.0; // headroom
+
+                Log::info('before $nativeBal < $xlmNeededTotal', ['nativeBal' => $nativeBal, 'xlmNeededTotal' => $xlmNeededTotal, 'xlmLiquidityAmountStr' => $xlmLiquidityAmountStr]);
+
                 if ((float)$nativeBal < $xlmNeededTotal) {
                     throw new \RuntimeException('Underfunded XLM for trustlines + swap + deposit + fees/reserve.');
                 }
@@ -691,6 +702,16 @@ class TokenController extends Controller
                 ))->build();
 
                 $txb->addOperation($pathOp);
+                $tx = $txb->build();
+                $kp = KeyPair::fromSeed($this->xlm_funding_wallet_key);
+                $tx->sign($kp, $this->network);
+                $response = $this->sdk->submitTransaction($tx);
+
+                if (!$response->isSuccessful()) {
+                    Log::error('First trasaction failed', [
+                        'meesage' => $response,
+                    ]);
+                }
             }
 
              Log::error('Before liquidty transaction', [
@@ -893,14 +914,6 @@ class TokenController extends Controller
 
         $url = $base . '/liquidity_pools/' . $poolId;
 
-        Log::info('[LP:getPoolReserves] Fetching pool', [
-            'env'    => $this->isTestnet ? 'testnet' : 'public',
-            'poolId' => $poolId,
-            'url'    => $url,
-            'asset'  => $this->assetCode,
-            'issuer' => $this->tkgIssuer,
-        ]);
-
         try {
             $res = Http::timeout(10)->acceptJson()->get($url);
 
@@ -915,11 +928,6 @@ class TokenController extends Controller
             $data = $res->json();
 
             $rawReserves = $data['reserves'] ?? null;
-            Log::info('[LP:getPoolReserves] Reserves field', [
-                'hasReservesArray' => is_array($rawReserves),
-                'count'            => is_array($rawReserves) ? count($rawReserves) : 0,
-                'sample'           => is_array($rawReserves) ? array_slice($rawReserves, 0, 2) : $rawReserves,
-            ]);
 
             if (!is_array($rawReserves)) {
                 Log::warning('[LP:getPoolReserves] reserves missing or not an array');
