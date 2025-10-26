@@ -587,179 +587,129 @@ class TokenController extends Controller
     {
         try {
             $xlmFundingWalletPublicKey = $this->xlm_funding_wallet;
-            $kp  = KeyPair::fromSeed($this->xlm_funding_wallet_key);
+            $xlmFundingAccount = $this->sdk->requestAccount($xlmFundingWalletPublicKey);
 
-            // ---------- 1) Read balances ----------
-            $act = $this->sdk->requestAccount($xlmFundingWalletPublicKey);
             $nativeBal = '0';
             $tkgBal    = '0';
-            foreach ($act->getBalances() as $bal) {
+            foreach ($xlmFundingAccount->getBalances() as $bal) {
                 $t = $bal->getAssetType();
-                if ($t === 'native') {
-                    $nativeBal = $bal->getBalance();
-                } elseif ($t === 'credit_alphanum4' || $t === 'credit_alphanum12') {
+                if ($t === 'native') $nativeBal = $bal->getBalance();
+                if ($t === 'credit_alphanum4' || $t === 'credit_alphanum12') {
                     if ($bal->getAssetCode() === $this->assetCode && $bal->getAssetIssuer() === $this->tkgIssuer) {
                         $tkgBal = $bal->getBalance();
                     }
                 }
             }
-            $nativeBal = $this->scale7($nativeBal);
-            $tkgBal    = $this->scale7($tkgBal);
 
-            // ---------- 2) Pool + ratio ----------
             // $poolId = $this->getPoolIdFromHorizon($this->assetCode, $this->tkgIssuer, $this->isTestnet);
             $poolId = 'cb1922681c9d2380d34577d3c056e435a8436586e776c38a80412120c2442fb5';
-            if (!$poolId) throw new \RuntimeException('Liquidity pool not found on Horizon.');
+            if (!$poolId) throw new \RuntimeException('Liquidity pool not found yet on Horizon.');
 
             $reserves = $this->getPoolReserves($poolId);
+            Log::info('[LP] Pool reserves read', ['reserves' => $reserves]);
+
             if (!$reserves || !isset($reserves['xlm'], $reserves['tkg'])) {
                 throw new \RuntimeException('Could not read pool reserves.');
             }
-            $poolXlm = $this->scale7($reserves['xlm']);
-            $poolTkg = $this->scale7($reserves['tkg']);
 
-            // ratio = TKG per 1 XLM
-            $ratio = $this->bcdiv($poolTkg, $poolXlm, 12);
-            Log::info('LP ratio debug', [
-                'poolXlm' => $poolXlm,
-                'poolTkg' => $poolTkg,
-                'ratio'   => $ratio, 
-            ]);
+            // pool holdings (strings like "123.4567890")
+            $poolXlm = $reserves['xlm']; // XLM amount in pool
+            $poolTkg = $reserves['tkg']; // TKG amount in pool
 
-            // ---------- 3) Split plan: 21 => 10.5 deposit XLM + 10.5 swap to TKG ----------
-            $xlmLiquidityAmount = $this->scale7($this->token_creation_fee * $this->feePercentageForLP); // 21.0000000
-            $halfXlm            = $this->scale7($this->bcdiv($xlmLiquidityAmount, '2', 12));           // 10.5000000
+            // Decide how much XLM you want to add (70% of fee, as before)
+            $xlmLiquidityAmount = $this->scale7($this->token_creation_fee * $this->feePercentageForLP); // 7dp
 
-            // TKG needed to pair with 10.5 XLM at pool ratio
-            $tkgNeededForDeposit = $this->scale7($this->bcmul($halfXlm, $ratio, 12));                   // e.g. 563.3346415
-
-            // If we already have some TKG, we only buy the missing part
-            $missingTkg = max(0.0, (float)$tkgNeededForDeposit - (float)$tkgBal);
-            $missingTkgStr = $this->scale7($missingTkg);
-
-            // ---------- 4) Budget + quoting for swap ----------
-            $tkgAsset = Asset::createNonNativeAsset($this->assetCode, $this->tkgIssuer);
-            $lpFeeHeadroom = 0.50;   // small fee/reserve headroom for LP tx
-            $slippagePct   = 0.01;   // 1%
-            $extraFloor    = 0.05;   // +0.05 XLM buffer for path payment
-
-            $rawNeed = $this->xlmNeededForTkgExact($poolXlm, $poolTkg, $missingTkgStr, 0.003);
-
-            // Add a conservative buffer for price/rounding changes *after* we built the tx
-            // Choose either a percentage or floor, whichever is larger.
-            $slipPct    = '0.015'; // 1.5% is safe; tune as you like
-            $floorBuff  = '0.10';  // +0.10 XLM absolute floor
-            $rawTimes   = $this->fmt7($this->bcmul($rawNeed, $this->bcadd('1', $slipPct, 7), 7));
-            $rawPlus    = $this->fmt7($this->bcadd($rawNeed, $floorBuff, 7));
-
-            $sendMax = $this->bcmax($rawTimes, $rawPlus); // final sendMax  // XLM to spend on swap (0 if no swap needed)
-            
-            if ((float)$missingTkgStr > 0) {
-                // Your quoting fn: returns raw XLM needed (no slippage) to receive $missingTkgStr TKG
-                $rawXlmForSwap = $this->xlmNeededForTkg($poolXlm, $poolTkg, $missingTkgStr, 30);
-                if ($rawXlmForSwap === null) throw new \RuntimeException('Target TKG exceeds pool capacity.');
-
-                $rawXlmForSwap = (float)$this->scale7($rawXlmForSwap);
-                $sendMax = $this->scale7(max(
-                    $rawXlmForSwap * (1 + $slippagePct),
-                    $rawXlmForSwap + $extraFloor
-                ));
-            }
-
-            // Total XLM needed now = 10.5 (deposit XLM leg) + sendMax (for swap) + fee headroom
-            $totalXlmNeeded = (float)$halfXlm + (float)$sendMax + $lpFeeHeadroom;
-
-            Log::info('Split-Plan Budget', [
-                'nativeBal'            => $nativeBal,
-                'halfXlmDeposit'       => $halfXlm,
-                'tkgNeededForDeposit'  => $tkgNeededForDeposit,
-                'tkgOnHand'            => $tkgBal,
-                'missingTkg'           => $missingTkgStr,
-                'sendMaxForSwap'       => $sendMax,
-                'lpFeeHeadroom'        => $lpFeeHeadroom,
-                'totalXlmNeeded'       => $totalXlmNeeded,
-            ]);
-
-            if ((float)$nativeBal < $totalXlmNeeded) {
-                throw new \RuntimeException('Underfunded XLM for 10.5 XLM deposit + swap + headroom.');
-            }
-
-            // ---------- 5) TX-1: Trustlines ----------
-            $fresh1 = $this->sdk->requestAccount($xlmFundingWalletPublicKey);
-            $txb1 = (new TransactionBuilder($fresh1, $this->network))
-                ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'LP trustlines'))
-                ->addOperation((new ChangeTrustOperationBuilder($tkgAsset, '922337203685.4775807'))->build())
-                ->addOperation($this->buildLpShareChangeTrustOpForSdk());
-            $tx1 = $txb1->build();
-            $tx1->sign($kp, $this->network);
-            Log::info('$tx1->sign', [
-                '$tx1->sign' => $tx1,
-            ]);
-            $r1 = $this->sdk->submitTransaction($tx1);
-            if (!$r1->isSuccessful()) {
-                Log::error('Trustlines TX failed', ['extras' => $r1->getExtras()]);
-                throw new \RuntimeException('Trustlines transaction failed.');
-            }
-
-            // ---------- 6) TX-2: Optional swap (XLM -> TKG) ----------
-            if ((float)$missingTkgStr > 0) {
-                $fresh2 = $this->sdk->requestAccount($xlmFundingWalletPublicKey);
-                $txb2 = (new TransactionBuilder($fresh2, $this->network))
-                    ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Swap TKG for LP'))
-                    ->addOperation(
-                        (new PathPaymentStrictReceiveOperationBuilder(
-                            Asset::native(),
-                            $sendMax,                       // send max XLM
-                            $xlmFundingWalletPublicKey,     // destination (self)
-                            $tkgAsset,
-                            $tkgNeededForDeposit            // exact TKG we want for LP deposit
-                        ))->build()
-                    );
-                $tx2 = $txb2->build();
-                $tx2->sign($kp, $this->network);
-                $r2 = $this->sdk->submitTransaction($tx2);
-                if (!$r2->isSuccessful()) {
-                    Log::error('Swap TX failed', ['extras' => $r2->getExtras()]);
-                    throw new \RuntimeException('Swap transaction failed.');
-                }
-            }
-
-            // ---------- 7) TX-3: LP Deposit (10.5 XLM + ratio-matched TKG) ----------
+            // Compute matching TKG from pool ratio: tkg = xlm * (poolTkg / poolXlm)
+            $tkgLiquidityAmount = $this->scale7(
+                $this->bcmul($xlmLiquidityAmount, $this->bcdiv($poolTkg, $poolXlm, 12), 12)
+            );
             $minPrice = new Price(1, 100000000);
             $maxPrice = new Price(100000000, 1);
 
-            $fresh3 = $this->sdk->requestAccount($xlmFundingWalletPublicKey);
-            $txb3 = (new TransactionBuilder($fresh3, $this->network))
-                ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'LP deposit (10.5 + matched TKG)'))
-                ->addOperation(
-                    (new LiquidityPoolDepositOperationBuilder(
-                        $poolId,
-                        $halfXlm,               // 10.5000000 XLM
-                        $tkgNeededForDeposit,   // ~563.3346415 TKG (from ratio)
-                        $minPrice,
-                        $maxPrice
-                    ))->build()
-                );
-            $tx3 = $txb3->build();
-            $tx3->sign($kp, $this->network);
-            $r3 = $this->sdk->submitTransaction($tx3);
+            $tkgAsset = Asset::createNonNativeAsset($this->assetCode, $this->tkgIssuer);
 
-            if ($r3->isSuccessful()) {
-                return [
-                    'status'   => 'success',
-                    'message'  => 'LP deposit submitted (10.5 XLM + matched TKG).',
-                    'tx_hash'  => $r3->getHash(),
-                    'deposited'=> ['xlm' => $halfXlm, 'tkg' => $tkgNeededForDeposit],
-                ];
+            $txb = (new TransactionBuilder($xlmFundingAccount, $this->network))
+                ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'LP trustlines + deposit'));
+
+            // Trust TKG (ok to always include)
+            $txb->addOperation((new ChangeTrustOperationBuilder($tkgAsset, '922337203685.4775807'))->build());
+
+            // Trust LP shares (use AssetTypePoolShare; ALWAYS include)
+            $txb->addOperation($this->buildLpShareChangeTrustOpForSdk());
+
+            $needTkg = max(0.0, (float)$tkgLiquidityAmount - (float)$tkgBal);
+
+            if ($needTkg > 0) {
+                $xlmForSwap = $this->xlmNeededForTkg($poolXlm, $poolTkg, number_format($needTkg, 7, '.', ''), 30);
+                if ($xlmForSwap === null) {
+                    throw new \RuntimeException('Target TKG exceeds pool capacity.');
+                }
+
+                // ensure you have enough XLM: swap + deposit + some fee headroom
+                $xlmNeededTotal = (float)$xlmForSwap + (float)$xlmLiquidityAmount;
+                Log::info('XLM Swap', ['xlmNeededTotal' => $xlmNeededTotal, 'xlmForSwap' => $xlmForSwap, , 'xlmLiquidityAmount' => $xlmLiquidityAmount]);
+                if ((float)$nativeBal < $xlmNeededTotal) {
+                    throw new \RuntimeException('Underfunded XLM for swap + deposit.');
+                }
+
+                $xlmForSwapStr         = number_format((float)$xlmForSwap, 7, '.', '');
+                $tkgLiquidityAmountStr = number_format((float)$tkgLiquidityAmount, 7, '.', '');
+
+                // Path payment strict receive: send XLM, receive exact TKG to self
+                $pathOp = (new PathPaymentStrictReceiveOperationBuilder(
+                    Asset::native(),
+                    $xlmForSwapStr,
+                    $xlmFundingWalletPublicKey,
+                    $tkgAsset,
+                    $tkgLiquidityAmountStr
+                ))->build();
+
+                $txb->addOperation($pathOp);
             }
 
-            $extras = $r3->getExtras();
-            Log::error('LP Deposit failed', [
-                'result_codes' => $extras ? $extras->getResultCodes() : null,
-                'envelope_xdr' => $extras ? $extras->getEnvelopeXdr() : null,
-                'result_xdr'   => $extras ? $extras->getResultXdr() : null,
-            ]);
-            return ['status'=>'error','message'=>'LP deposit failed','error'=>$extras?->getResultCodes()];
+            // Deposit
+            $txb->addOperation(
+                (new LiquidityPoolDepositOperationBuilder(
+                    $poolId,
+                    $xlmLiquidityAmount,
+                    $tkgLiquidityAmount,
+                    $minPrice,
+                    $maxPrice
+                ))->build()
+            );
+
+            $tx = $txb->build();
+            $kp = KeyPair::fromSeed($this->xlm_funding_wallet_key);
+            $tx->sign($kp, $this->network);
+            $response = $this->sdk->submitTransaction($tx);
+
+            if ($response->isSuccessful()) {
+                return [
+                    'status' => 'success',
+                    'message' => 'Liquidity Pool Deposit transaction successfully submitted.',
+                    'transaction_hash' => $response->getHash()
+                ];
+            } else {
+                $extras = $response->getExtras();
+                $codes  = $extras ? $extras->getResultCodes() : null;
+                $envXdr = $extras ? $extras->getEnvelopeXdr() : null;
+                $resXdr = $extras ? $extras->getResultXdr() : null;
+
+                Log::error('Liquidity Pool Deposit failed', [
+                    'result_codes' => $codes,
+                    'envelope_xdr' => $envXdr,
+                    'result_xdr'   => $resXdr,
+                ]);
+                return [
+                    'status' => 'error',
+                    'message' => 'Liquidity Pool Deposit submission failed.',
+                    'error' => $codes,
+                    'debug'   => [
+                        'envelope_xdr' => $envXdr,
+                        'result_xdr'   => $resXdr,
+                    ],
+                ];
+            }
         } catch (HorizonRequestException $hex) {
             $prev = $hex->getPrevious();
             $body = null;
@@ -859,35 +809,33 @@ class TokenController extends Controller
 
     private function buildLpShareChangeTrustOpForSdk(): ChangeTrustOperation
     {
-        // $xlm = Asset::native();
-        // $tkg = Asset::createNonNativeAsset($this->assetCode, $this->tkgIssuer);
-
-        // $a = $xlm;
-        // $b = $tkg;
-        // $rank = function (Asset $as): int {
-        //     return $as->getType() === Asset::TYPE_NATIVE ? 0
-        //         : ($as->getType() === Asset::TYPE_CREDIT_ALPHANUM_4 ? 1
-        //             : ($as->getType() === Asset::TYPE_CREDIT_ALPHANUM_12 ? 2 : 3));
-        // };
-        // $swap = false;
-        // if ($rank($a) > $rank($b)) $swap = true;
-        // elseif (
-        //     $rank($a) === $rank($b)
-        //     && $a instanceof \Soneso\StellarSDK\AssetTypeCreditAlphanum
-        //     && $b instanceof \Soneso\StellarSDK\AssetTypeCreditAlphanum
-        // ) {
-        //     $codeCmp = strcmp($a->getCode(), $b->getCode());
-        //     if ($codeCmp > 0 || ($codeCmp === 0 && strcmp($a->getIssuer(), $b->getIssuer()) > 0)) $swap = true;
-        // }
-        // if ($swap) {
-        //     [$a, $b] = [$b, $a];
-        // }
-
-        // $poolShareAsset = new AssetTypePoolShare($a, $b);
-
-        // return new ChangeTrustOperation($poolShareAsset, '922337203685.4775807');
+        $xlm = Asset::native();
         $tkg = Asset::createNonNativeAsset($this->assetCode, $this->tkgIssuer);
-        return (new ChangeTrustOperationBuilder($tkg, '922337203685.4775807'))->build();
+
+        $a = $xlm;
+        $b = $tkg;
+        $rank = function (Asset $as): int {
+            return $as->getType() === Asset::TYPE_NATIVE ? 0
+                : ($as->getType() === Asset::TYPE_CREDIT_ALPHANUM_4 ? 1
+                    : ($as->getType() === Asset::TYPE_CREDIT_ALPHANUM_12 ? 2 : 3));
+        };
+        $swap = false;
+        if ($rank($a) > $rank($b)) $swap = true;
+        elseif (
+            $rank($a) === $rank($b)
+            && $a instanceof \Soneso\StellarSDK\AssetTypeCreditAlphanum
+            && $b instanceof \Soneso\StellarSDK\AssetTypeCreditAlphanum
+        ) {
+            $codeCmp = strcmp($a->getCode(), $b->getCode());
+            if ($codeCmp > 0 || ($codeCmp === 0 && strcmp($a->getIssuer(), $b->getIssuer()) > 0)) $swap = true;
+        }
+        if ($swap) {
+            [$a, $b] = [$b, $a];
+        }
+
+        $poolShareAsset = new AssetTypePoolShare($a, $b);
+
+        return new ChangeTrustOperation($poolShareAsset, '922337203685.4775807');
     }
 
     private function xlmNeededForTkgExact(string $Rxlm, string $Rtkg, string $yOut, float $fee = 0.003): string
