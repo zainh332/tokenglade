@@ -797,8 +797,8 @@ class TokenController extends Controller
     }
 
     /**
-     * ----- Helpers (BC math + formatting) -----
-     * Adjust/omit if you already have equivalents.
+     * ---- Helpers (BC math + formatting) ----
+     * These ensure consistent precision even if BCMath extension is limited.
      */
     private function fmt7(string|float $v): string
     {
@@ -822,14 +822,37 @@ class TokenController extends Controller
 
     private function bcdiv(string $a, string $b, int $scale = 7): string
     {
-        if ($b === '0' || (float)$b === 0.0) throw new \RuntimeException('Division by zero');
+        if ((float)$b === 0.0) throw new \RuntimeException('Division by zero');
         return \bcdiv($a, $b, $scale);
     }
 
-    private function bcmax(string $a, string $b): string
+    /**
+     * Compare two decimal strings with given precision.
+     * Returns:
+     *  -1 if $a < $b
+     *   0 if $a == $b
+     *   1 if $a > $b
+     */
+    private function bccomp(string|float $a, string|float $b, int $scale = 7): int
     {
-        return \bccomp($a, $b, 7) >= 0 ? $a : $b;
+        $a = round((float)$a, $scale);
+        $b = round((float)$b, $scale);
+
+        if ($a < $b) return -1;
+        if ($a > $b) return 1;
+        return 0;
     }
+
+    private function bcmax(string|float $a, string|float $b): string
+    {
+        return $this->bccomp($a, $b, 7) >= 0 ? (string)$a : (string)$b;
+    }
+
+    private function bcmin(string|float $a, string|float $b): string
+    {
+        return $this->bccomp($a, $b, 7) <= 0 ? (string)$a : (string)$b;
+    }
+
 
 
     private function buildLpShareChangeTrustOpForSdk(): ChangeTrustOperation
