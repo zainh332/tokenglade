@@ -692,6 +692,9 @@ class TokenController extends Controller
                 ->addOperation($this->buildLpShareChangeTrustOpForSdk());
             $tx1 = $txb1->build();
             $tx1->sign($kp, $this->network);
+            Log::info('$tx1->sign', [
+                '$tx1->sign' => $tx1,
+            ]);
             $r1 = $this->sdk->submitTransaction($tx1);
             if (!$r1->isSuccessful()) {
                 Log::error('Trustlines TX failed', ['extras' => $r1->getExtras()]);
@@ -856,33 +859,35 @@ class TokenController extends Controller
 
     private function buildLpShareChangeTrustOpForSdk(): ChangeTrustOperation
     {
-        $xlm = Asset::native();
+        // $xlm = Asset::native();
+        // $tkg = Asset::createNonNativeAsset($this->assetCode, $this->tkgIssuer);
+
+        // $a = $xlm;
+        // $b = $tkg;
+        // $rank = function (Asset $as): int {
+        //     return $as->getType() === Asset::TYPE_NATIVE ? 0
+        //         : ($as->getType() === Asset::TYPE_CREDIT_ALPHANUM_4 ? 1
+        //             : ($as->getType() === Asset::TYPE_CREDIT_ALPHANUM_12 ? 2 : 3));
+        // };
+        // $swap = false;
+        // if ($rank($a) > $rank($b)) $swap = true;
+        // elseif (
+        //     $rank($a) === $rank($b)
+        //     && $a instanceof \Soneso\StellarSDK\AssetTypeCreditAlphanum
+        //     && $b instanceof \Soneso\StellarSDK\AssetTypeCreditAlphanum
+        // ) {
+        //     $codeCmp = strcmp($a->getCode(), $b->getCode());
+        //     if ($codeCmp > 0 || ($codeCmp === 0 && strcmp($a->getIssuer(), $b->getIssuer()) > 0)) $swap = true;
+        // }
+        // if ($swap) {
+        //     [$a, $b] = [$b, $a];
+        // }
+
+        // $poolShareAsset = new AssetTypePoolShare($a, $b);
+
+        // return new ChangeTrustOperation($poolShareAsset, '922337203685.4775807');
         $tkg = Asset::createNonNativeAsset($this->assetCode, $this->tkgIssuer);
-
-        $a = $xlm;
-        $b = $tkg;
-        $rank = function (Asset $as): int {
-            return $as->getType() === Asset::TYPE_NATIVE ? 0
-                : ($as->getType() === Asset::TYPE_CREDIT_ALPHANUM_4 ? 1
-                    : ($as->getType() === Asset::TYPE_CREDIT_ALPHANUM_12 ? 2 : 3));
-        };
-        $swap = false;
-        if ($rank($a) > $rank($b)) $swap = true;
-        elseif (
-            $rank($a) === $rank($b)
-            && $a instanceof \Soneso\StellarSDK\AssetTypeCreditAlphanum
-            && $b instanceof \Soneso\StellarSDK\AssetTypeCreditAlphanum
-        ) {
-            $codeCmp = strcmp($a->getCode(), $b->getCode());
-            if ($codeCmp > 0 || ($codeCmp === 0 && strcmp($a->getIssuer(), $b->getIssuer()) > 0)) $swap = true;
-        }
-        if ($swap) {
-            [$a, $b] = [$b, $a];
-        }
-
-        $poolShareAsset = new AssetTypePoolShare($a, $b);
-
-        return new ChangeTrustOperation($poolShareAsset, '922337203685.4775807');
+        return (new ChangeTrustOperationBuilder($tkg, '922337203685.4775807'))->build();
     }
 
     private function xlmNeededForTkgExact(string $Rxlm, string $Rtkg, string $yOut, float $fee = 0.003): string
