@@ -756,27 +756,6 @@ class TokenController extends Controller
     }
 
 
-    private function toFloat(string $v): float { return (float)$v; }
-
-    /**
-     * ---- Helpers (BC math + formatting) ----
-     * These ensure consistent precision even if BCMath extension is limited.
-     */
-    private function fmt7(string|float $v): string
-    {
-        return number_format((float)$v, 7, '.', '');
-    }
-
-    private function bcadd(string $a, string $b, int $scale = 7): string
-    {
-        return \bcadd($a, $b, $scale);
-    }
-
-    private function bcsub(string $a, string $b, int $scale = 7): string
-    {
-        return \bcsub($a, $b, $scale);
-    }
-
     private function bcmul(string $a, string $b, int $scale = 7): string
     {
         return \bcmul($a, $b, $scale);
@@ -788,41 +767,12 @@ class TokenController extends Controller
         return \bcdiv($a, $b, $scale);
     }
 
-    /**
-     * Compare two decimal strings with given precision.
-     * Returns:
-     *  -1 if $a < $b
-     *   0 if $a == $b
-     *   1 if $a > $b
-     */
-    private function bccomp(string|float $a, string|float $b, int $scale = 7): int
-    {
-        $a = round((float)$a, $scale);
-        $b = round((float)$b, $scale);
-
-        if ($a < $b) return -1;
-        if ($a > $b) return 1;
-        return 0;
-    }
-
-    private function bcmax(string|float $a, string|float $b): string
-    {
-        return $this->bccomp($a, $b, 7) >= 0 ? (string)$a : (string)$b;
-    }
-
-    private function bcmin(string|float $a, string|float $b): string
-    {
-        return $this->bccomp($a, $b, 7) <= 0 ? (string)$a : (string)$b;
-    }
-
     /** format to 7dp (round down) */
     private function scale7($val): string
     {
         $f = floor(((float)$val) * 1e7) / 1e7;
         return number_format($f, 7, '.', '');
     }
-
-
 
     private function buildLpShareChangeTrustOpForSdk(): ChangeTrustOperation
     {
