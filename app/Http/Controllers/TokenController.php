@@ -620,6 +620,11 @@ class TokenController extends Controller
 
             // ratio = TKG per 1 XLM
             $ratio = $this->bcdiv($poolTkg, $poolXlm, 12);
+            Log::info('LP ratio debug', [
+                'poolXlm' => $poolXlm,
+                'poolTkg' => $poolTkg,
+                'ratio'   => $ratio, 
+            ]);
 
             // ---------- 3) Split plan: 21 => 10.5 deposit XLM + 10.5 swap to TKG ----------
             $xlmLiquidityAmount = $this->scale7($this->token_creation_fee * $this->feePercentageForLP); // 21.0000000
@@ -638,7 +643,17 @@ class TokenController extends Controller
             $slippagePct   = 0.01;   // 1%
             $extraFloor    = 0.05;   // +0.05 XLM buffer for path payment
 
-            $sendMax = '0.0000000';  // XLM to spend on swap (0 if no swap needed)
+            $rawNeed = $this->xlmNeededForTkgExact($poolXlm, $poolTkg, $missingTkgStr, 0.003);
+
+            // Add a conservative buffer for price/rounding changes *after* we built the tx
+            // Choose either a percentage or floor, whichever is larger.
+            $slipPct    = '0.015'; // 1.5% is safe; tune as you like
+            $floorBuff  = '0.10';  // +0.10 XLM absolute floor
+            $rawTimes   = $this->fmt7($this->bcmul($rawNeed, $this->bcadd('1', $slipPct, 7), 7));
+            $rawPlus    = $this->fmt7($this->bcadd($rawNeed, $floorBuff, 7));
+
+            $sendMax = $this->bcmax($rawTimes, $rawPlus); // final sendMax  // XLM to spend on swap (0 if no swap needed)
+            
             if ((float)$missingTkgStr > 0) {
                 // Your quoting fn: returns raw XLM needed (no slippage) to receive $missingTkgStr TKG
                 $rawXlmForSwap = $this->xlmNeededForTkg($poolXlm, $poolTkg, $missingTkgStr, 30);
@@ -868,6 +883,35 @@ class TokenController extends Controller
         $poolShareAsset = new AssetTypePoolShare($a, $b);
 
         return new ChangeTrustOperation($poolShareAsset, '922337203685.4775807');
+    }
+
+    private function xlmNeededForTkgExact(string $Rxlm, string $Rtkg, string $yOut, float $fee = 0.003): string
+    {
+        // sanity
+        if ($this->bccomp($yOut, '0', 7) <= 0) return '0.0000000';
+        if ($this->bccomp($yOut, $Rtkg, 7) >= 0) {
+            throw new \RuntimeException('Requested TKG exceeds pool reserves.');
+        }
+
+        // denom = (Rtkg - yOut) * (1 - fee)
+        $oneMinusFee = $this->fmt7(1 - $fee);
+        $RtkgMinusY  = $this->bcsub($Rtkg, $yOut, 12);
+        $denom       = $this->bcmul($RtkgMinusY, $oneMinusFee, 12);
+
+        if ($this->bccomp($denom, '0', 12) <= 0) {
+            throw new \RuntimeException('Numerical error: denominator <= 0');
+        }
+
+        // num = Rxlm * yOut
+        $num   = $this->bcmul($Rxlm, $yOut, 12);
+        $xIn   = $this->bcdiv($num, $denom, 12);     // high precision
+        $xIn7  = $this->fmt7($xIn);                   // 7 dp for network amounts
+
+        // tiny epsilon to account for rounding during path payment pathfinding
+        // (path payment enforces <= sendMax, so pad a hair)
+        $epsilon = '0.0000005';
+
+        return $this->fmt7($this->bcadd($xIn7, $epsilon, 7));
     }
 
     private function getPoolIdFromHorizon(string $codeB, string $issuerB, bool $testnet = false): ?string
