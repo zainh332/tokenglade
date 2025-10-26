@@ -53,7 +53,7 @@
                       </td>
                       <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap sm:pl-6 lg:pl-20 text-t16">
                         <template v-if="token.blockchain?.name === 'Stellar'">
-                          {{ token.stellar_token.asset_code }}
+                          {{ token.stellar_token.asset_code?.toUpperCase() }}
                         </template>
                       </td>
                       <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap sm:pl-6 lg:pl-20 text-t16">{{

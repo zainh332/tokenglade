@@ -66,8 +66,8 @@ class TokenController extends Controller
         }
 
         $this->assetCode = env('ASSET_CODE');
-        $this->token_creation_fee = 15; //XLM
-        $this->issuer_wallet_amount = 4; //XLM
+        $this->token_creation_fee = 50; //XLM
+        $this->issuer_wallet_amount = 1.1; //XLM
         $this->feePercentageForLP = 0.7;
     }
 
@@ -100,7 +100,8 @@ class TokenController extends Controller
         $lock_status = $request->input('lock_status');
         $distributor_wallet_xlm_balance = $this->wallet->getXlmBalance($distributor_wallet_key);
 
-        if ($distributor_wallet_xlm_balance < ($this->token_creation_fee + 5)) {
+        // if ($distributor_wallet_xlm_balance < ($this->token_creation_fee + 5)) {
+        if ($distributor_wallet_xlm_balance < $this->token_creation_fee) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Insufficient balance. You need at least ' . $this->token_creation_fee . ' XLM available in your wallet to proceed.',
@@ -165,7 +166,7 @@ class TokenController extends Controller
                 ->build();
 
             // Build the transaction
-            $transaction = (new TransactionBuilder($distributorAccount, $this->network))
+            $transaction = (new TransactionBuilder($distributorAccount, 'public'))
                 ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Create token fee'))
                 ->addOperation($paymentOp)
                 ->build();
@@ -327,6 +328,19 @@ class TokenController extends Controller
                     $token_created->current_stellar_transaction_id = $created_tokens_transfer_transaction->id;
                     $token_created->created_token_transfer_status = 1;
                     $token_created->save();
+
+                    $homeDomainTx = $this->setIssuerHomeDomain(
+                        $token_created->issuer_public_key,
+                        $token_created->issuer_secret_key,
+                        'tokenglade.com'
+                    );
+
+                    if (!$homeDomainTx['ok']) {
+                        Log::warning('Failed to set home_domain for issuer', [
+                            'issuer' => $token_created->issuer_public_key,
+                            'error'  => $homeDomainTx['error'] ?? 'unknown'
+                        ]);
+                    }
 
                     $directory = public_path('.well-known');
                     if (!is_dir($directory)) {
@@ -587,7 +601,8 @@ class TokenController extends Controller
                 }
             }
 
-            $poolId = $this->getPoolIdFromHorizon($this->assetCode, $this->tkgIssuer, $this->isTestnet);
+            // $poolId = $this->getPoolIdFromHorizon($this->assetCode, $this->tkgIssuer, $this->isTestnet);
+            $poolId = 'cb1922681c9d2380d34577d3c056e435a8436586e776c38a80412120c2442fb5';
             if (!$poolId) throw new \RuntimeException('Liquidity pool not found yet on Horizon.');
 
             $reserves = $this->getPoolReserves($poolId);
@@ -605,9 +620,16 @@ class TokenController extends Controller
             $xlmLiquidityAmount = $this->scale7($this->token_creation_fee * $this->feePercentageForLP); // 7dp
 
             // Compute matching TKG from pool ratio: tkg = xlm * (poolTkg / poolXlm)
-            $tkgLiquidityAmount = $this->scale7(
-                $this->bcmul($xlmLiquidityAmount, $this->bcdiv($poolTkg, $poolXlm, 12), 12)
-            );
+            $halfXlm = $this->scale7($this->bcdiv($xlmLiquidityAmount, '2', 12)); // e.g. 10.5000000 (or 7.0000000)
+
+            // TKG required to pair with halfXlm at current pool ratio
+            $ratio  = $this->bcdiv($poolTkg, $poolXlm, 12);
+            $tkgNeededForDeposit = $this->scale7($this->bcmul($halfXlm, $ratio, 12));
+
+            // How much TKG we still need to buy (if any)
+            $needTkg = max(0.0, (float)$tkgNeededForDeposit - (float)$tkgBal);
+            $needTkgStr = number_format($needTkg, 7, '.', '');
+
             $minPrice = new Price(1, 100000000);
             $maxPrice = new Price(100000000, 1);
 
@@ -622,41 +644,52 @@ class TokenController extends Controller
             // Trust LP shares (use AssetTypePoolShare; ALWAYS include)
             $txb->addOperation($this->buildLpShareChangeTrustOpForSdk());
 
-            $needTkg = max(0.0, (float)$tkgLiquidityAmount - (float)$tkgBal);
-
-            if ($needTkg > 0) {
-                $xlmForSwap = $this->xlmNeededForTkg($poolXlm, $poolTkg, number_format($needTkg, 7, '.', ''), 30);
+            if ($needTkgStr > 0) {
+                $xlmForSwap = $this->xlmNeededForTkg($poolXlm, $poolTkg, $needTkgStr, 30);
                 if ($xlmForSwap === null) {
                     throw new \RuntimeException('Target TKG exceeds pool capacity.');
                 }
 
                 // ensure you have enough XLM: swap + deposit + some fee headroom
-                $xlmNeededTotal = (float)$xlmForSwap + (float)$xlmLiquidityAmount + 2.0;
+                $xlmNeededTotal = (float)$xlmForSwap + (float)$halfXlm;
+                Log::info('XLM Swap (split plan)', [
+                    'xlmNeededTotal'     => $xlmNeededTotal,
+                    'xlmForSwap'         => $xlmForSwap,
+                    'halfXlmDeposit'     => $halfXlm,
+                    'tkgNeededForDeposit'=> $tkgNeededForDeposit,
+                    'tkgOnHand'          => $tkgBal,
+                    'missingTkg'         => $needTkgStr,
+                ]);
+
                 if ((float)$nativeBal < $xlmNeededTotal) {
                     throw new \RuntimeException('Underfunded XLM for swap + deposit.');
                 }
 
                 $xlmForSwapStr         = number_format((float)$xlmForSwap, 7, '.', '');
-                $tkgLiquidityAmountStr = number_format((float)$tkgLiquidityAmount, 7, '.', '');
 
                 // Path payment strict receive: send XLM, receive exact TKG to self
                 $pathOp = (new PathPaymentStrictReceiveOperationBuilder(
-                    Asset::native(),                
-                    $xlmForSwapStr,                   
-                    $xlmFundingWalletPublicKey,            
-                    $tkgAsset,                      
-                    $tkgLiquidityAmountStr                     
+                    Asset::native(),
+                    $xlmForSwapStr,
+                    $xlmFundingWalletPublicKey,
+                    $tkgAsset,
+                    $needTkgStr
                 ))->build();
 
                 $txb->addOperation($pathOp);
+            } else {
+                Log::info('Split plan: enough TKG on hand, skipping swap.', [
+                    'tkgNeededForDeposit' => $tkgNeededForDeposit,
+                    'tkgOnHand' => $tkgBal
+                ]);
             }
 
             // Deposit
             $txb->addOperation(
                 (new LiquidityPoolDepositOperationBuilder(
                     $poolId,
-                    $xlmLiquidityAmount,
-                    $tkgLiquidityAmount,
+                    $halfXlm,
+                    $tkgNeededForDeposit,
                     $minPrice,
                     $maxPrice
                 ))->build()
@@ -721,6 +754,75 @@ class TokenController extends Controller
             ];
         }
     }
+
+
+    private function toFloat(string $v): float { return (float)$v; }
+
+    /**
+     * ---- Helpers (BC math + formatting) ----
+     * These ensure consistent precision even if BCMath extension is limited.
+     */
+    private function fmt7(string|float $v): string
+    {
+        return number_format((float)$v, 7, '.', '');
+    }
+
+    private function bcadd(string $a, string $b, int $scale = 7): string
+    {
+        return \bcadd($a, $b, $scale);
+    }
+
+    private function bcsub(string $a, string $b, int $scale = 7): string
+    {
+        return \bcsub($a, $b, $scale);
+    }
+
+    private function bcmul(string $a, string $b, int $scale = 7): string
+    {
+        return \bcmul($a, $b, $scale);
+    }
+
+    private function bcdiv(string $a, string $b, int $scale = 7): string
+    {
+        if ((float)$b === 0.0) throw new \RuntimeException('Division by zero');
+        return \bcdiv($a, $b, $scale);
+    }
+
+    /**
+     * Compare two decimal strings with given precision.
+     * Returns:
+     *  -1 if $a < $b
+     *   0 if $a == $b
+     *   1 if $a > $b
+     */
+    private function bccomp(string|float $a, string|float $b, int $scale = 7): int
+    {
+        $a = round((float)$a, $scale);
+        $b = round((float)$b, $scale);
+
+        if ($a < $b) return -1;
+        if ($a > $b) return 1;
+        return 0;
+    }
+
+    private function bcmax(string|float $a, string|float $b): string
+    {
+        return $this->bccomp($a, $b, 7) >= 0 ? (string)$a : (string)$b;
+    }
+
+    private function bcmin(string|float $a, string|float $b): string
+    {
+        return $this->bccomp($a, $b, 7) <= 0 ? (string)$a : (string)$b;
+    }
+
+    /** format to 7dp (round down) */
+    private function scale7($val): string
+    {
+        $f = floor(((float)$val) * 1e7) / 1e7;
+        return number_format($f, 7, '.', '');
+    }
+
+
 
     private function buildLpShareChangeTrustOpForSdk(): ChangeTrustOperation
     {
@@ -843,14 +945,6 @@ class TokenController extends Controller
 
         $url = $base . '/liquidity_pools/' . $poolId;
 
-        Log::info('[LP:getPoolReserves] Fetching pool', [
-            'env'    => $this->isTestnet ? 'testnet' : 'public',
-            'poolId' => $poolId,
-            'url'    => $url,
-            'asset'  => $this->assetCode,
-            'issuer' => $this->tkgIssuer,
-        ]);
-
         try {
             $res = Http::timeout(10)->acceptJson()->get($url);
 
@@ -865,11 +959,6 @@ class TokenController extends Controller
             $data = $res->json();
 
             $rawReserves = $data['reserves'] ?? null;
-            Log::info('[LP:getPoolReserves] Reserves field', [
-                'hasReservesArray' => is_array($rawReserves),
-                'count'            => is_array($rawReserves) ? count($rawReserves) : 0,
-                'sample'           => is_array($rawReserves) ? array_slice($rawReserves, 0, 2) : $rawReserves,
-            ]);
 
             if (!is_array($rawReserves)) {
                 Log::warning('[LP:getPoolReserves] reserves missing or not an array');
@@ -926,27 +1015,7 @@ class TokenController extends Controller
         }
     }
 
-    /** bcmath helpers (safe if extension present; fallback to native). */
-    private function bcdiv($left, $right, $scale = 12)
-    {
-        if (extension_loaded('bcmath')) return bcdiv((string)$left, (string)$right, $scale);
-        return (string) ((float)$left / (float)$right);
-    }
-
-    private function bcmul($left, $right, $scale = 12)
-    {
-        if (extension_loaded('bcmath')) return bcmul((string)$left, (string)$right, $scale);
-        return (string) ((float)$left * (float)$right);
-    }
-
-    /** format to 7dp (round down) */
-    private function scale7($val): string
-    {
-        $f = floor(((float)$val) * 1e7) / 1e7;
-        return number_format($f, 7, '.', '');
-    }
-
-    private function xlmNeededForTkg(string $poolXlm, string $poolTkg, string $targetTkg, int $feeBp = 30): string 
+    private function xlmNeededForTkg(string $poolXlm, string $poolTkg, string $targetTkg, int $feeBp = 30): string
     {
         $X = (float)$poolXlm;
         $Y = (float)$poolTkg;
@@ -962,5 +1031,51 @@ class TokenController extends Controller
         // 7dp, round up a hair to be safe
         $dx += 1e-7;
         return number_format($dx, 7, '.', '.');
+    }
+
+    private function setIssuerHomeDomain(string $issuerPublic, string $issuerSecret, string $domain = 'tokenglade.com'): array
+    {
+        try {
+            // Load current account state
+            $account = $this->sdk->accounts()->account($issuerPublic);
+
+            // Build SetOptions(home_domain) op
+            $setHomeDomainOp = (new SetOptionsOperationBuilder())
+                ->setHomeDomain($domain)
+                ->build();
+
+            // Build & sign tx
+            $tx = (new TransactionBuilder($account))
+                ->addOperation($setHomeDomainOp)
+                ->build();
+
+            $kp = KeyPair::fromSeed($issuerSecret);
+            // Many versions require network on sign; you already keep it in $this->network
+            $tx->sign($kp, $this->network);
+
+            // Submit
+            $res = $this->sdk->submitTransaction($tx);
+
+            if ($res->isSuccessful()) {
+                return [
+                    'ok'        => true,
+                    'tx_hash'   => $res->getHash(),
+                    'signed_xdr' => $tx->toEnvelopeXdrBase64(),
+                ];
+            }
+
+            return [
+                'ok'    => false,
+                'error' => [
+                    'result_codes' => $res?->getExtras()?->getResultCodes(),
+                    'result_xdr'   => $res?->getExtras()?->getResultXdr(),
+                ],
+            ];
+        } catch (\Throwable $t) {
+            return [
+                'ok'    => false,
+                'error' => $t->getMessage(),
+            ];
+        }
     }
 }

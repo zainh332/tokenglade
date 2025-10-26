@@ -681,7 +681,6 @@ const nextPage = () => {
 };
 
 const network = ref('public')
-console.log('Detected Stellar network =', network.value)
 
 const isTestnet = computed(() => network.value === 'testnet')
 

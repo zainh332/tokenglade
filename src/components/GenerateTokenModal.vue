@@ -240,11 +240,15 @@ const ConnectWalletModals = ref(false);
 const logoPreview = ref('');
 const { open } = defineProps({ open: Boolean, distributorWallet: String, network: { type: String, default: 'public' } })
 
-const network = computed(() =>
-  (props.network || 'public').toLowerCase() === 'testnet' ? 'testnet' : 'public'
-)
+// const network = computed(() =>
+//   (props.network || 'public').toLowerCase() === 'testnet' ? 'testnet' : 'public'
+// )
 
-const isTestnet = computed(() => network.value === 'testnet')
+// const isTestnet = computed(() => network.value === 'testnet')
+
+const network = ref('public')
+// const isTestnet = computed(() => network.value === 'testnet')
+const isTestnet = 'public'
 
 const shortWallet = computed(() =>
   walletKey.value
@@ -326,8 +330,8 @@ const schema = Yup.object({
 
 // Close modal and reset fields
 const closeModal = () => {
-  form.value = { ...defaultForm }; 
-  logoPreview.value = '';          
+  form.value = { ...defaultForm };
+  logoPreview.value = '';
   emit('close');
 };
 
