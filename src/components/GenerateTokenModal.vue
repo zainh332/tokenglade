@@ -290,7 +290,7 @@ const trimUpper = (v) => (typeof v === 'string' ? v.trim().toUpperCase() : v);
 const schema = Yup.object({
   name: Yup.string()
     .required('Name is required')
-    .max(255, 'Name must be at most 255 characters')
+    .max(50, 'Name must be at most 255 characters')
     .trim(),
 
   desc: Yup.string()
@@ -302,7 +302,7 @@ const schema = Yup.object({
     .transform(toNullIfEmpty)
     .nullable()
     .url('Enter a valid URL (e.g., https://example.com)')
-    .max(255, 'Website URL must be at most 255 characters'),
+    .max(50, 'Website URL must be at most 255 characters'),
 
   asset_code: Yup.string()
     .required('Asset Code is required')
