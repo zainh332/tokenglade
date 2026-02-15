@@ -40,10 +40,10 @@
                   </div>
                   <div class="min-w-0">
                     <DialogTitle class="text-base font-semibold text-gray-900">
-                      Create Your Token on Stellar
+                      Create a Native Stellar Token
                     </DialogTitle>
                     <p class="mt-0.5 text-sm text-gray-500">
-                      Easily mint tokens using your connected wallet.
+                      Deploy directly from your connected wallet
                     </p>
                   </div>
                 </div>
