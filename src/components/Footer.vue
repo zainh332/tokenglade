@@ -84,7 +84,7 @@
 </template>
 
 <script setup>
-import footerLogo from "@/assets/footer-logo.png";
+import footerLogo from "@/assets/token-glade-logo.png";
 </script>
 
 <style lang="scss" scoped></style>
