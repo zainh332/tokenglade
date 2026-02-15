@@ -22,7 +22,7 @@
             <button type="button" id="mintToken"
               class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient"
               @click="isWalletConnected ? openTokenModal() : openConnectWalletModal()">
-              {{ isWalletConnected ? 'Launch Token' : 'Connect Wallet to Launch Token' }}
+              {{ isWalletConnected ? 'Launch Token' : 'Connect Wallet to Continue' }}
             </button>
 
             <div class="lg:hidden">
