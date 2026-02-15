@@ -1,74 +1,74 @@
 <template>
-  <div class="table-wrapper">
-    <div class="relative">
+  <div class="max-w-6xl mx-auto px-6 mt-24">
 
-      <div class="max-w-6xl px-4 pt-8 pb-8 mx-auto mt-8 bg-white sm:px-6 sm:mt-16 lg:px-8 rounded-3xl sm:drop-shadow">
-        <div class="sm:flex sm:items-center">
-          <div class="sm:flex-auto">
-            <div class="w-32 h-1 px-8 mx-auto rounded-full bg-gradient"></div>
-            <h1 class="mt-4 font-semibold leading-relaxed text-center text-black text-t24 sm:leading-lh65">
-              Latest Tokens Generated with TokenGlade
-            </h1>
+    <h2 class="text-3xl font-semibold text-center text-gray-900 mb-14">
+      Recently Minted on TokenGlade
+    </h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <div v-for="token in fetched_tokens" :key="token.id"
+        class="relative bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition">
+
+        <!-- Header -->
+        <div class="flex items-center gap-3 mb-4">
+
+          <!-- Smaller Logo -->
+          <div
+            class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border border-gray-100">
+            <img v-if="token.logo_url" :src="token.logo_url" class="w-full h-full object-contain p-1" />
+            <span v-else class="text-xs font-semibold text-gray-600">
+              {{ token.asset_code?.slice(0, 2).toUpperCase() }}
+            </span>
+          </div>
+
+          <div class="min-w-0">
+            <p class="text-base font-semibold text-gray-900 truncate">
+              {{ token.name }}
+            </p>
+            <p class="text-xs text-gray-500">
+              {{ token.asset_code?.toUpperCase() }}
+            </p>
           </div>
 
         </div>
-        <div class="flow-root mt-4">
-          <div class="-mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div class="inline-block min-w-full py-2 align-middle">
-              <div class="table-container">
-                <table class="min-w-full ">
-                  <thead>
-                    <tr class="bg-white divide-gray-200 sm:divide-x">
-                      <th scope="col"
-                        class="pb-3.5 pl-4 text-left pr-4 text-[20px] font-semibold text-gray-900 sm:pl-6 lg:pl-20 ">
-                        Distributor Address</th>
-                      <th scope="col"
-                        class="pb-3.5 pl-4 text-left pr-4 text-[20px] font-semibold text-gray-900 sm:pl-6 lg:pl-20 ">
-                        Issuer Address</th>
-                      <th scope="col"
-                        class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900">
-                        Symbol</th>
-                      <th scope="col"
-                        class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900">
-                        Blockchain</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="token in fetched_tokens" :key="token.id" class="bg-white divide-gray-200 sm:divide-x">
-                      <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap text-t16 sm:pl-6 lg:pl-20">
-                        <template v-if="token.blockchain?.name === 'Stellar'">
-                          <a :href="`https://stellar.expert/explorer/${explorerNetwork}/account/${token.stellar_token?.user_wallet_address}`"
-                            target="_blank" class="text-blue-500 underline">
-                            {{ formatAddress(token.stellar_token?.user_wallet_address) }}
-                          </a>
-                        </template>
-                      </td>
-                      <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap text-t16 sm:pl-6 lg:pl-20">
-                        <template v-if="token.blockchain?.name === 'Stellar'">
-                          <a :href="`https://stellar.expert/explorer/${explorerNetwork}/account/${token.stellar_token.issuer_public_key}`"
-                            target="_blank" class="text-blue-500 underline">
-                            {{ formatAddress(token.stellar_token.issuer_public_key) }}
-                          </a>
-                        </template>
-                      </td>
-                      <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap sm:pl-6 lg:pl-20 text-t16">
-                        <template v-if="token.blockchain?.name === 'Stellar'">
-                          {{ token.stellar_token.asset_code?.toUpperCase() }}
-                        </template>
-                      </td>
-                      <td class="py-4 pl-4 pr-4 text-black whitespace-nowrap sm:pl-6 lg:pl-20 text-t16">{{
-                        token.blockchain.name }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+
+        <!-- Stats (More Compact) -->
+        <div class="flex justify-between items-center text-sm text-gray-600 mb-4">
+
+          <div>
+            <p class="text-[11px] text-gray-400 uppercase tracking-wide">
+              Supply
+            </p>
+            <p class="font-medium text-gray-800">
+              {{ formatNumber(token.total_supply) }}
+            </p>
           </div>
+
+          <div class="text-right">
+            <p class="text-[11px] text-gray-400 uppercase tracking-wide">
+              Chain
+            </p>
+            <p class="font-medium text-gray-800">
+              {{ token.blockchain.name }}
+            </p>
+          </div>
+
         </div>
+
+        <!-- Slim Button -->
+        <a v-if="token.tx_hash" :href="`https://stellar.expert/explorer/${explorerNetwork}/tx/${token.tx_hash}`"
+          target="_blank"
+          class="text-sm text-center py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-purple-500 text-white hover:opacity-90 transition">
+          View on Explorer →
+        </a>
+
       </div>
     </div>
+
   </div>
 </template>
+
 
 <script setup>
 import axios from 'axios'
@@ -86,13 +86,6 @@ const explorerNetwork = computed(() =>
   (props.network || 'public').toLowerCase() === 'testnet' ? 'testnet' : 'public'
 )
 
-function formatAddress(address) {
-  if (!address || typeof address !== 'string') return '—';
-  if (address.length > 9) {
-    return `${address.slice(0, 3)}...${address.slice(6, 9)}..${address.slice(-3)}`;
-  }
-  return address; // return as-is if the address is too short
-}
 
 async function fetchWallets() {
   try {
@@ -124,6 +117,11 @@ async function fetchWallets() {
 onMounted(() => {
   fetchWallets()
 })
+
+function formatNumber(value) {
+  if (!value) return '—'
+  return new Intl.NumberFormat().format(value)
+}
 </script>
 
 <style lang="scss" scoped>

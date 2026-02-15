@@ -226,14 +226,36 @@ class GlobalController extends Controller
     public function generated_tokens()
     {
         try {
-            $get_wallets_tokens = Token::with(['stellarToken', 'blockchain'])
+            $get_wallets_tokens = Token::with([
+                'stellarToken.mintTransaction',
+                'blockchain'
+            ])
                 ->whereHas('stellarToken', function ($q) {
                     $q->whereNotNull('issuer_public_key')
                         ->where('issuer_public_key', '!=', '');
                 })
-                ->limit(4)
-                ->orderBy('id', 'desc')
-                ->get();
+                ->latest()
+                ->take(6)
+                ->get()
+                ->map(function ($token) {
+
+                    $stellar = $token->stellarToken;
+                    $mintTx = $stellar->mintTransaction;
+
+                    return [
+                        'id' => $token->id,
+                        'name' => $stellar->name ?? null,
+                        'asset_code' => $stellar->asset_code ?? null,
+                        'total_supply' => $stellar->total_supply ?? null,
+                        'logo_url' => $stellar->logo ?? null,
+                        'issuer_locked' => $stellar->issuer_locked ?? false,
+                        'tx_hash' => $mintTx->tx_hash ?? null,
+                        'blockchain' => [
+                            'name' => $token->blockchain->name ?? null,
+                        ],
+                    ];
+                });
+
 
             return response()->json([
                 'status' => 'success',

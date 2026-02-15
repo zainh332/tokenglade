@@ -15,4 +15,16 @@ class StellarToken extends Model
     {
         return $this->hasOne(Token::class);
     }
+
+    public function transactions()
+    {
+        return $this->hasMany(StellarTransactions::class);
+    }
+
+    public function mintTransaction()
+    {
+        return $this->hasOne(StellarTransactions::class)
+            ->where('transaction_type_id', 4)
+            ->latest();
+    }
 }
