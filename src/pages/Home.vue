@@ -5,21 +5,24 @@
       <div class="flex flex-col lg:flex-row items-center justify-between gap-12">
         <!-- Text Content -->
         <div class="text-center mx-auto lg:text-left max-w-3xl">
-          <h1 class="text-[32px] sm:text-[48px] lg:text-[64px] font-normal leading-tight text-dark">
-            Effortless Blockchain
-            <span
-              class="block font-semibold bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]  bg-clip-text text-transparent  bg-[length:200%_200%]  animate-gradientMove">
-              Token Creation
+          <h1 class="text-[32px] sm:text-[48px] lg:text-[64px] font-semibold leading-tight text-dark">
+            Launch Your Token
+            <span class="block">
+              on
+              <span
+                class="bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-clip-text text-transparent bg-[length:200%_200%] animate-gradientMove">
+                Stellar
+              </span>
             </span>
           </h1>
           <p class="text-[18px] sm:text-[20px] mt-4 text-dark max-w-xl mx-auto lg:mx-0">
-            Easily generate blockchain tokens across multiple networks with our intuitive platform.
+            Create native Stellar tokens directly from your wallet with complete on-chain control
           </p>
           <div class="py-5">
             <button type="button" id="mintToken"
               class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient"
               @click="isWalletConnected ? openTokenModal() : openConnectWalletModal()">
-              {{ isWalletConnected ? 'Mint Token' : 'Connect Wallet to Mint' }}
+              {{ isWalletConnected ? 'Launch Token' : 'Connect Wallet to Launch Token' }}
             </button>
 
             <div class="lg:hidden">
@@ -36,7 +39,7 @@
 
         <!-- Image -->
         <div class="hidden lg:block flex-shrink-0 animate-float">
-          <img class="w-[340px] h-[400px] xl:w-[500px] object-contain" :src="flower" alt="Decorative Flower" />
+          <img class="w-[280px] h-[340px] xl:w-[420px] object-contain" :src="flower" alt="Decorative Logo" />
         </div>
       </div>
     </div>
