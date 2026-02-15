@@ -1,118 +1,109 @@
 <template>
   <div>
     <Header @wallet-status="handleWalletStatus" />
-      <div class="container mx-auto pt-[8rem] pb-10 relative top-0 z-0">
-        <div class="flex flex-col lg:flex-row items-center justify-between gap-12">
-          <!-- Text Content -->
-          <div class="text-center mx-auto lg:text-left max-w-3xl">
-            <h1 class="text-[32px] sm:text-[48px] lg:text-[64px] font-normal leading-tight text-dark">
-              Effortless Blockchain
-              <span
-                class="block font-semibold bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]  bg-clip-text text-transparent  bg-[length:200%_200%]  animate-gradientMove">
-                Token Creation
-              </span>
-            </h1>
-            <p class="text-[18px] sm:text-[20px] mt-4 text-dark max-w-xl mx-auto lg:mx-0">
-              Easily generate blockchain tokens across multiple networks with our intuitive platform.
-            </p>
-            <div class="py-5">
-              <button
-                type="button"
-                id="mintToken"
-                class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient"
-                @click="isWalletConnected ? openTokenModal() : openConnectWalletModal()"
-              >
-                {{ isWalletConnected ? 'Mint Token' : 'Connect Wallet to Mint' }}
-              </button>
+    <div class="container mx-auto pt-[8rem] pb-10 relative top-0 z-0">
+      <div class="flex flex-col lg:flex-row items-center justify-between gap-12">
+        <!-- Text Content -->
+        <div class="text-center mx-auto lg:text-left max-w-3xl">
+          <h1 class="text-[32px] sm:text-[48px] lg:text-[64px] font-normal leading-tight text-dark">
+            Effortless Blockchain
+            <span
+              class="block font-semibold bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]  bg-clip-text text-transparent  bg-[length:200%_200%]  animate-gradientMove">
+              Token Creation
+            </span>
+          </h1>
+          <p class="text-[18px] sm:text-[20px] mt-4 text-dark max-w-xl mx-auto lg:mx-0">
+            Easily generate blockchain tokens across multiple networks with our intuitive platform.
+          </p>
+          <div class="py-5">
+            <button type="button" id="mintToken"
+              class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient"
+              @click="isWalletConnected ? openTokenModal() : openConnectWalletModal()">
+              {{ isWalletConnected ? 'Mint Token' : 'Connect Wallet to Mint' }}
+            </button>
 
             <div class="lg:hidden">
               <div class="pt-6 space-y-1">
                 <a href="https://lobstr.co/trade/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  target="_blank" rel="noopener noreferrer"
                   class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
                   Buy TKG Tokens
                 </a>
               </div>
             </div>
-            </div>
-          </div>
-
-          <!-- Image -->
-          <div class="hidden lg:block flex-shrink-0 animate-float">
-            <img class="w-[340px] h-[400px] xl:w-[500px] object-contain" :src="flower" alt="Decorative Flower" />
           </div>
         </div>
-      </div>
-      <!-- Table -->
 
-      <Table :network="network" />
-
-      <div class="py-10 my-10 bg-white text-center">
-        <h2 class="text-3xl font-bold mb-10">How It works</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
-          <!-- Step 1 -->
-          <div class="flex flex-col items-center">
-            <div class="bg-blue-100 p-4 rounded-full mb-4 animate-pulseSoft">
-              <img :src="Phone" alt="Choose Blockchain" class="w-12 h-12" />
-            </div>
-            <h3 class="text-xl font-semibold mb-2">Choose Your Blockchain</h3>
-            <p class="text-dark text-sm">
-              Currently, TokenGlade supports the Stellar blockchain. More chains coming soon.
-            </p>
-          </div>
-
-          <!-- Step 2 -->
-          <div class="flex flex-col items-center">
-            <div class="bg-green-100 p-4 rounded-full mb-4 animate-pulseSoft">
-              <img :src="Wallet" alt="Connect Wallet" class="w-12 h-12" />
-            </div>
-            <h3 class="text-xl font-semibold mb-2">Connect Your Wallet</h3>
-            <p class="text-dark text-sm">
-              TokenGlade will automatically suggest the right wallet<br />
-              based on the blockchain you select (e.g., Freighter for Stellar).
-            </p>
-          </div>
-
-          <!-- Step 3 -->
-          <div class="flex flex-col items-center">
-            <div class="bg-yellow-100 p-4 rounded-full mb-4 animate-pulseSoft">
-              <img :src="Coin" alt="Mint Token" class="w-12 h-12" />
-            </div>
-            <h3 class="text-xl font-semibold mb-2">Mint Your Token</h3>
-            <p class="text-dark text-sm">
-              Enter your token details and click “Create”.<br />
-              Your token goes live instantly on Stellar.<br />
-              Other blockchains coming soon!
-            </p>
-          </div>
+        <!-- Image -->
+        <div class="hidden lg:block flex-shrink-0 animate-float">
+          <img class="w-[340px] h-[400px] xl:w-[500px] object-contain" :src="flower" alt="Decorative Flower" />
         </div>
       </div>
+    </div>
+    <!-- Table -->
 
-      <div class="max-w-6xl gap-12 px-4 py-10 mx-auto cards sm:pt-24 sm:px-6 lg:px-8">
-        <div class="sm:flex sm:items-center">
-          <div class="sm:flex-auto">
-            <div class="w-32 h-1 px-8 mx-auto rounded-full bg-gradient"></div>
-            <h1 class="mt-2 font-semibold leading-relaxed text-center text-black text-t34 sm:leading-lh65">
-              Frequent questions
-            </h1>
-            <!-- <p class="text-center text-t16">
+    <Table :network="network" />
+
+    <div class="py-10 my-10 bg-white text-center">
+      <h2 class="text-3xl font-bold mb-10">How It works</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+        <!-- Step 1 -->
+        <div class="flex flex-col items-center">
+          <div class="bg-blue-100 p-4 rounded-full mb-4 animate-pulseSoft">
+            <img :src="Phone" alt="Choose Blockchain" class="w-12 h-12" />
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Choose Your Blockchain</h3>
+          <p class="text-dark text-sm">
+            Currently, TokenGlade supports the Stellar blockchain. More chains coming soon.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="flex flex-col items-center">
+          <div class="bg-green-100 p-4 rounded-full mb-4 animate-pulseSoft">
+            <img :src="Wallet" alt="Connect Wallet" class="w-12 h-12" />
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Connect Your Wallet</h3>
+          <p class="text-dark text-sm">
+            TokenGlade will automatically suggest the right wallet<br />
+            based on the blockchain you select (e.g., Freighter for Stellar).
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="flex flex-col items-center">
+          <div class="bg-yellow-100 p-4 rounded-full mb-4 animate-pulseSoft">
+            <img :src="Coin" alt="Mint Token" class="w-12 h-12" />
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Mint Your Token</h3>
+          <p class="text-dark text-sm">
+            Enter your token details and click “Create”.<br />
+            Your token goes live instantly on Stellar.<br />
+            Other blockchains coming soon!
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-6xl gap-12 px-4 py-10 mx-auto cards sm:pt-24 sm:px-6 lg:px-8">
+      <div class="sm:flex sm:items-center">
+        <div class="sm:flex-auto">
+          <div class="w-32 h-1 px-8 mx-auto rounded-full bg-gradient"></div>
+          <h1 class="mt-2 font-semibold leading-relaxed text-center text-black text-t34 sm:leading-lh65">
+            Frequent questions
+          </h1>
+          <!-- <p class="text-center text-t16">
               It is a long established fact that a reader will be distracted
             </p> -->
-          </div>
         </div>
-        <Faq />
       </div>
-      <GenerateTokenModal :open="isTokenModalOpen" @close="isTokenModalOpen = false" :network="network"/>
-        <ConnectWalletModal
-          v-model="ConnectWalletModals"
-          :connected="isWalletConnected"
-          :walletKey="walletKey"
-          @status="handleWalletStatus"
-          @close="ConnectWalletModals = false"
-        />
-      <Newsletter />
-      <Footer />
+      <Faq />
+    </div>
+    <GenerateTokenModal :open="isTokenModalOpen" @close="isTokenModalOpen = false" :network="network" />
+    <ConnectWalletModal v-model="ConnectWalletModals" :connected="isWalletConnected" :walletKey="walletKey"
+      @status="handleWalletStatus" @close="ConnectWalletModals = false" />
+    <Newsletter />
+    <Footer />
   </div>
 </template>
 
@@ -201,14 +192,14 @@ function refreshWalletState() {
   isWalletConnected.value = !!(pk && pk.startsWith("G") && pk.length === 56);
 }
 
-onMounted(async() => {
+onMounted(async () => {
   refreshWalletState();
   fetchdata()
   try {
-        network.value = await getNetwork()
-    } catch (e) {
-        console.error('getNetwork failed:', e)
-    }
+    network.value = await getNetwork()
+  } catch (e) {
+    console.error('getNetwork failed:', e)
+  }
 })
 
 
