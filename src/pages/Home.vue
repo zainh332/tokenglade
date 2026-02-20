@@ -142,7 +142,7 @@
     </div>
 
     <!-- Ripple Coming Soon Section -->
-    <div class="py-20 my-20 bg-white text-center">
+    <div class="py-16 bg-white text-center">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <h2 class="text-3xl sm:text-4xl font-semibold text-dark mb-4">
