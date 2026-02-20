@@ -12,7 +12,7 @@
         <div class="flex">
           <div class="flex items-center flex-shrink-0">
             <router-link to="/">
-              <img class="w-auto h-8" :src="logo" alt="TokenGlade Logo" />
+              <img class="w-auto h-8 mt-2" :src="logo" alt="TokenGlade Logo" />
             </router-link>
           </div>
           <div class="hidden sm:ml-6 lg:flex sm:space-x-6">
@@ -101,7 +101,7 @@
 <script setup>
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline';
-import logo from '@/assets/logo.png';
+import logo from '@/assets/header-logo.png';
 
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import Modal from '@/components/Modal.vue';

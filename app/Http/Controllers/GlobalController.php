@@ -245,6 +245,7 @@ class GlobalController extends Controller
                     return [
                         'id' => $token->id,
                         'name' => $stellar->name ?? null,
+                        'token_verify' => (int) ($token->token_verify ?? 0),
                         'asset_code' => $stellar->asset_code ?? null,
                         'total_supply' => $stellar->total_supply ?? null,
                         'logo_url' => $stellar->logo ?? null,

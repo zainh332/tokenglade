@@ -138,6 +138,7 @@ class TokenController extends Controller
         $token = new Token();
         $token->stellar_token_id = $token_creation->id;
         $token->blockchain_id = 1; //stellar
+        $token->token_verify = 1; //verified by default
         $token->save();
 
         $addStellarTransactionRecord = $this->addStellarTransactionRecord($token_creation->id, $distributor_wallet_key, 1, $token_creation_charges['unsigned_token_creation_fee_transaction'], '', '', false);
