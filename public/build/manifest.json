@@ -1,12 +1,20 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-30377669.css",
+    "file": "assets/app-2d6d475b.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
   "src/assets/coin.png": {
     "file": "assets/coin-1814fc02.png",
     "src": "src/assets/coin.png"
+  },
+  "src/assets/community.png": {
+    "file": "assets/community-e954eadb.png",
+    "src": "src/assets/community.png"
+  },
+  "src/assets/dao.png": {
+    "file": "assets/dao-04bee784.png",
+    "src": "src/assets/dao.png"
   },
   "src/assets/flower.png": {
     "file": "assets/flower-5799095d.png",
@@ -24,9 +32,21 @@
     "file": "assets/phone-d7e790d1.png",
     "src": "src/assets/phone.png"
   },
+  "src/assets/prototype.png": {
+    "file": "assets/prototype-fddc4f34.png",
+    "src": "src/assets/prototype.png"
+  },
   "src/assets/reward.png": {
     "file": "assets/reward-9c1d8a04.png",
     "src": "src/assets/reward.png"
+  },
+  "src/assets/rewards.png": {
+    "file": "assets/rewards-cb946755.png",
+    "src": "src/assets/rewards.png"
+  },
+  "src/assets/startups.png": {
+    "file": "assets/startups-56a8f004.png",
+    "src": "src/assets/startups.png"
   },
   "src/assets/stop.png": {
     "file": "assets/stop-abbef106.png",
@@ -41,7 +61,7 @@
     "src": "src/assets/wallet.jpg"
   },
   "src/main.css": {
-    "file": "assets/main-88d330c3.css",
+    "file": "assets/main-f161281d.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -49,6 +69,11 @@
       "assets/logo-85d8ef3c.png",
       "assets/token-glade-logo-fc9beecd.png",
       "assets/flower-5799095d.png",
+      "assets/community-e954eadb.png",
+      "assets/startups-56a8f004.png",
+      "assets/rewards-cb946755.png",
+      "assets/dao-04bee784.png",
+      "assets/prototype-fddc4f34.png",
       "assets/coin-1814fc02.png",
       "assets/phone-d7e790d1.png",
       "assets/wallet-d06d1cc0.jpg",
@@ -56,9 +81,9 @@
       "assets/stop-abbef106.png"
     ],
     "css": [
-      "assets/main-88d330c3.css"
+      "assets/main-f161281d.css"
     ],
-    "file": "assets/main-5de4b03e.js",
+    "file": "assets/main-a392d1ff.js",
     "isEntry": true,
     "src": "src/main.js"
   }

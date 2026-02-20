@@ -89,7 +89,7 @@
     </div>
 
     <!-- Perfect For Section -->
-    <div class="text-center">
+    <div class="py-10 my-10 text-center">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <h2 class="text-3xl font-bold mb-12">Perfect For:</h2>
@@ -138,6 +138,21 @@
           </div>
 
         </div>
+      </div>
+    </div>
+
+    <!-- Ripple Coming Soon Section -->
+    <div class="py-20 my-20 bg-white text-center">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <h2 class="text-3xl sm:text-4xl font-semibold text-dark mb-4">
+          <span class="bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-clip-text text-transparent bg-[length:200%_200%] animate-gradientMove">Ripple</span> Minting Coming Soon
+        </h2>
+
+        <p class="text-gray-600 text-base sm:text-lg mb-8">
+          TokenGlade is expanding to XRP Ledger. Be among the first to mint on Stellar.
+        </p>
+
       </div>
     </div>
 
