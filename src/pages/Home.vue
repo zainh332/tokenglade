@@ -39,7 +39,7 @@
 
         <!-- Image -->
         <div class="hidden lg:block flex-shrink-0 animate-float">
-          <img class="w-[280px] h-[340px] xl:w-[420px] object-contain" :src="flower" alt="Decorative Logo" />
+          <img class="w-[280px] h-[340px] xl:w-[420px] object-contain" :src="logo" alt="TokenGlade Logo" />
         </div>
       </div>
     </div>
@@ -182,7 +182,7 @@
 import Header from "@/components/Header.vue";
 import Table from "@/components/Table.vue"; // Stellar Tokens Generated
 import Card from "@/components/Card.vue";
-import flower from "@/assets/flower.png";
+import logo from "@/assets/Xl-logo.png";
 import community from "@/assets/community.png";
 import startups from "@/assets/startups.png";
 import reward from "@/assets/rewards.png";
