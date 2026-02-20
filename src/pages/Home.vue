@@ -149,7 +149,7 @@
           <span class="bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-clip-text text-transparent bg-[length:200%_200%] animate-gradientMove">Ripple</span> Minting Coming Soon
         </h2>
 
-        <p class="text-gray-600 text-base sm:text-lg mb-8">
+        <p class="text-[20px] font-normal leading-7">
           TokenGlade is expanding to XRP Ledger. Be among the first to mint on Stellar.
         </p>
 
