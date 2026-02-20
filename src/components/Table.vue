@@ -23,9 +23,16 @@
           </div>
 
           <div class="min-w-0">
-            <p class="text-base font-semibold text-gray-900 truncate">
-              {{ token.name }}
-            </p>
+
+            <div class="flex items-center gap-1">
+              <p class="text-base font-semibold text-gray-900 truncate">
+                {{ token.name }}
+              </p>
+
+              <img v-if="Number(token.token_verify) === 1" :src="verified" alt="Verified" class="w-4 h-4 flex-shrink-0"
+                title="Verified Token" />
+            </div>
+
             <p class="text-xs text-gray-500">
               {{ token.asset_code?.toUpperCase() }}
             </p>
@@ -74,6 +81,7 @@
 import axios from 'axios'
 import { ref, computed, defineProps, onMounted, watch } from "vue";
 import Swal from 'sweetalert2';
+import verified from "@/assets/verify.png";
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 const props = defineProps({

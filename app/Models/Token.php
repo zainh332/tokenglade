@@ -12,6 +12,7 @@ class Token extends Model
     protected $fillable = [
         'stellar_token_id',
         'blockchain_id',
+        'token_verify',
     ];
 
     public function stellarToken()
