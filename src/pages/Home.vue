@@ -8,21 +8,21 @@
           <h1 class="text-[32px] sm:text-[48px] lg:text-[64px] font-semibold leading-tight text-dark">
             Launch Your Token
             <span class="block">
-              on
+              Like a
               <span
                 class="bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-clip-text text-transparent bg-[length:200%_200%] animate-gradientMove">
-                Stellar
+                Real Builder
               </span>
             </span>
           </h1>
           <p class="text-[18px] sm:text-[20px] mt-4 text-dark max-w-xl mx-auto lg:mx-0">
-            Create native Stellar tokens directly from your wallet with complete on-chain control
+            Launch on Stellar today. XRP Ledger support coming next.
           </p>
           <div class="py-5">
             <button type="button" id="mintToken"
               class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient"
               @click="isWalletConnected ? openTokenModal() : openConnectWalletModal()">
-              {{ isWalletConnected ? 'Launch Token' : 'Connect Wallet to Continue' }}
+              {{ isWalletConnected ? 'Launch Token' : 'Start Minting Now' }}
             </button>
 
             <div class="lg:hidden">
@@ -45,10 +45,58 @@
     </div>
     <!-- Table -->
 
+    <!-- Why TokenGlade -->
+    <div class="py-14 bg-white">
+      <div class="max-w-6xl mx-auto px-6">
+
+        <h2 class="text-3xl font-semibold text-center text-gray-900 mb-12">
+          Why TokenGlade
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          <!-- Card 1 -->
+          <div class="bg-gray-50 rounded-xl p-6 text-center border border-gray-100">
+            <div class="text-3xl mb-3">⚡</div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+              Mint in under 60 seconds
+            </h3>
+            <p class="text-dark text-sm">
+              Launch your token quickly without complex setup or coding.
+            </p>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="bg-gray-50 rounded-xl p-6 text-center border border-gray-100">
+            <div class="text-3xl mb-3">🔐</div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+              Your wallet, your control
+            </h3>
+            <p class="text-dark text-sm">
+              Fully non-custodial. TokenGlade never holds your funds.
+            </p>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="bg-gray-50 rounded-xl p-6 text-center border border-gray-100">
+            <div class="text-3xl mb-3">🌍</div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+              Multi-chain ready
+            </h3>
+            <p class="text-dark text-sm">
+              Launching on Stellar first. XRP Ledger support coming next.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
     <Table :network="network" />
 
     <div class="py-10 my-10 bg-white text-center">
-      <h2 class="text-3xl font-bold mb-10">How It works</h2>
+      <h2 class="text-3xl font-semibold text-center text-gray-900 mb-14">How It works</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
         <!-- Step 1 -->
         <div class="flex flex-col items-center">
@@ -92,7 +140,7 @@
     <div class="py-10 my-10 text-center">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        <h2 class="text-3xl font-bold mb-12">Perfect For:</h2>
+        <h2 class="text-3xl font-semibold text-center text-gray-900 mb-14">Perfect For:</h2>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8">
 
@@ -146,7 +194,9 @@
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <h2 class="text-3xl sm:text-4xl font-semibold text-dark mb-4">
-          <span class="bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-clip-text text-transparent bg-[length:200%_200%] animate-gradientMove">Ripple</span> Minting Coming Soon
+          <span
+            class="bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-clip-text text-transparent bg-[length:200%_200%] animate-gradientMove">Ripple</span>
+          Minting Coming Soon
         </h2>
 
         <p class="text-[20px] font-normal leading-7">
@@ -156,6 +206,8 @@
       </div>
     </div>
 
+    <!-- <Newsletter /> -->
+    
     <div class="max-w-6xl gap-12 px-4 py-10 mx-auto cards sm:pt-24 sm:px-6 lg:px-8">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
@@ -163,17 +215,40 @@
           <h1 class="mt-2 font-semibold leading-relaxed text-center text-black text-t34 sm:leading-lh65">
             Frequent questions
           </h1>
-          <!-- <p class="text-center text-t16">
-              It is a long established fact that a reader will be distracted
-            </p> -->
         </div>
       </div>
       <Faq />
     </div>
+    
+    <div class="py-24 bg-white text-center">
+      <div class="max-w-4xl mx-auto px-6">
+
+        <h2 class="text-4xl sm:text-5xl font-semibold text-gray-900 mb-4">
+          Ready to launch your token?
+        </h2>
+
+        <p class="text-dark-600 text-lg mb-6">
+          Mint instantly with full on-chain control
+        </p>
+
+        <!-- Trust strip -->
+        <p class="text-sm text-dark-500 mb-8">
+          Non-custodial • Fully on-chain • Built on Stellar (XRP Ledger coming next)
+        </p>
+
+
+        <button type="button" id="mintToken"
+          class="text-white rounded-full px-8 py-3 bg-gradient hover:opacity-90 transition"
+          @click="isWalletConnected ? openTokenModal() : openConnectWalletModal()">
+          {{ isWalletConnected ? 'Launch Token' : 'Start Minting Now' }}
+        </button>
+
+      </div>
+    </div>
     <GenerateTokenModal :open="isTokenModalOpen" @close="isTokenModalOpen = false" :network="network" />
     <ConnectWalletModal v-model="ConnectWalletModals" :connected="isWalletConnected" :walletKey="walletKey"
       @status="handleWalletStatus" @close="ConnectWalletModals = false" />
-    <Newsletter />
+    
     <Footer />
   </div>
 </template>
