@@ -55,6 +55,7 @@ Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
     Route::prefix('token')->group(function () {
         Route::post('generate', 'TokenController@generate_token')->name('token.generate');
         Route::post('submit_transaction', 'TokenController@submit_transaction')->name('token.submitTransaction');
+        Route::get('show', 'TokenController@show')->name('token.show');
     });
 
     // ==========================

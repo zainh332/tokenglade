@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\StellarToken;
 use App\Models\StellarTransactions;
 use App\Models\Token;
+use App\Services\StellarTokenService;
 use App\Services\WalletService;
 use Exception;
 use GuzzleHttp\Client;
@@ -657,7 +658,7 @@ class TokenController extends Controller
                     'xlmNeededTotal'     => $xlmNeededTotal,
                     'xlmForSwap'         => $xlmForSwap,
                     'halfXlmDeposit'     => $halfXlm,
-                    'tkgNeededForDeposit'=> $tkgNeededForDeposit,
+                    'tkgNeededForDeposit' => $tkgNeededForDeposit,
                     'tkgOnHand'          => $tkgBal,
                     'missingTkg'         => $needTkgStr,
                 ]);
@@ -1027,6 +1028,22 @@ class TokenController extends Controller
                 'ok'    => false,
                 'error' => $t->getMessage(),
             ];
+        }
+    }
+
+    public function show(Request $request, StellarTokenService $service)
+    {
+        $request->validate([
+            'issuer' => 'required|string'
+        ]);
+
+        try {
+            $data = $service->getTokenInsight($request->issuer);
+            return response()->json($data);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 400);
         }
     }
 }

@@ -154,5 +154,9 @@ const Links = [
     name: 'Buy TKG Tokens',
     href: 'https://lobstr.co/trade/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ',
   },
+  {
+    name: 'Token Insight',
+    to: '/token-insight'
+  },
 ]
 </script>

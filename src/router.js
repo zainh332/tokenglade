@@ -9,6 +9,7 @@ import aboutus from "./pages/about-us.vue";
 import privacypolicy from "./pages/privacy-policy.vue";
 import termsofservice from "./pages/terms-of-service.vue";
 import Staking from "./pages/staking.vue";
+import TokenInsight from "./pages/TokenInsight.vue";
 
 function hasRequiredCookies() {
     const public_key = getCookie('public_key');
@@ -91,6 +92,14 @@ const routes = [
         component: Staking,
         meta: {
             title: "Stake $TKG Tokens",
+            description: ""
+        },
+    },
+    {
+        path: "/token-insight",
+        component: TokenInsight,
+        meta: {
+            title: "Token Insights",
             description: ""
         },
     },
