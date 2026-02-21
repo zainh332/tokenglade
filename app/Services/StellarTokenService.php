@@ -9,14 +9,8 @@ class StellarTokenService
 {
     protected string $horizon = 'https://horizon.stellar.org';
 
-    public function getTokenInsight(string $issuer): array
+    public function getTokenInsight(string $issuer, string $code): array
     {
-        // Validate format
-        if (!$this->isValidStellarAddress($issuer)) {
-            throw new \Exception('Invalid Stellar address format.');
-        }
-
-        // Asset Info
         $accountResponse = Http::get($this->horizon . "/accounts/{$issuer}");
 
         if (!$accountResponse->ok()) {
@@ -26,17 +20,18 @@ class StellarTokenService
         // Fetch assets issued by this account
         $assetsResponse = Http::get($this->horizon . '/assets', [
             'asset_issuer' => $issuer,
-            'limit' => 200
+            'asset_code' => $code,
+            'limit' => 1
         ]);
 
         if (!$assetsResponse->ok()) {
-            throw new \Exception('Failed to fetch assets.');
+            throw new \Exception('Failed to fetch asset.');
         }
 
         $asset = $assetsResponse['_embedded']['records'][0];
 
-        $totalSupply  = $asset['amount'];
-        $holderCount  = $asset['accounts'];
+        $totalSupply = $asset['amount'];
+        $holderCount = $asset['accounts'];
 
         // Issuer Info
         $issuerResponse = Http::get($this->horizon . "/accounts/{$issuer}");
@@ -121,59 +116,28 @@ class StellarTokenService
         return $records;
     }
 
-    // public function getIssuerTokens(string $issuer): array
-    // {
-    //     // 1️⃣ Validate format
-    //     if (!$this->isValidStellarAddress($issuer)) {
-    //         throw new \Exception('Invalid Stellar address format.');
-    //     }
-
-    //     // 2️⃣ Check account exists
-    //     $accountResponse = Http::get($this->horizon . "/accounts/{$issuer}");
-
-    //     if (!$accountResponse->ok()) {
-    //         throw new \Exception('Account not found on Stellar network.');
-    //     }
-
-    //     // 3️⃣ Fetch assets issued by this account
-    //     $assetsResponse = Http::get($this->horizon . '/assets', [
-    //         'asset_issuer' => $issuer,
-    //         'limit' => 200
-    //     ]);
-
-    //     if (!$assetsResponse->ok()) {
-    //         throw new \Exception('Failed to fetch assets.');
-    //     }
-
-    //     $assets = $assetsResponse['_embedded']['records'] ?? [];
-
-    //     if (empty($assets)) {
-    //         return [
-    //             'is_issuer' => false,
-    //             'message' => 'This address has not issued any tokens.',
-    //             'tokens' => []
-    //         ];
-    //     }
-
-    //     // 4️⃣ Process each issued token
-    //     $tokens = collect($assets)->map(function ($asset) {
-
-    //         return [
-    //             'asset_code'   => $asset['asset_code'],
-    //             'total_supply' => $asset['amount'],
-    //             'holders'      => $asset['accounts'],
-    //         ];
-    //     });
-
-    //     return [
-    //         'is_issuer' => true,
-    //         'issuer'    => $issuer,
-    //         'tokens'    => $tokens
-    //     ];
-    // }
-
     protected function isValidStellarAddress(string $address): bool
     {
         return preg_match('/^G[A-Z2-7]{55}$/', $address) === 1;
+    }
+
+    public function getAssetsByIssuer(string $issuer): array
+    {
+        // Validate format
+        if (!$this->isValidStellarAddress($issuer)) {
+            throw new \Exception('Invalid Stellar address format.');
+        }
+
+        // Fetch all assets issued by this account (issuer)
+        $assetsResponse = Http::get($this->horizon . '/assets', [
+            'asset_issuer' => $issuer,
+            'limit' => 200
+        ]);
+
+        if (!$assetsResponse->ok()) {
+            throw new \Exception('Failed to fetch assets.');
+        }
+
+        return $assetsResponse['_embedded']['records'] ?? [];
     }
 }

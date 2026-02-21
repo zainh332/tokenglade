@@ -1038,8 +1038,22 @@ class TokenController extends Controller
         ]);
 
         try {
-            $data = $service->getTokenInsight($request->issuer);
-            return response()->json($data);
+            // Fetch the list of asset codes for the given issuer
+            $data = $service->getAssetsByIssuer($request->issuer);
+
+            // If no asset is found, return an error
+            if (empty($data)) {
+                return response()->json([
+                    'error' => 'No assets found for this issuer.'
+                ], 400);
+            }
+
+            // Fetch Token Insight for the first asset or specific asset based on user choice
+            $asset_code = $data[0]['asset_code'];  // Assuming you fetch the first asset if none is specified
+
+            $tokenInsight = $service->getTokenInsight($request->issuer, $asset_code);
+
+            return response()->json($tokenInsight);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage()
