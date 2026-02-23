@@ -10,7 +10,7 @@
 
                             <div
                                 class="w-16 h-16 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 font-semibold">
-                                {{ token.asset_code.slice(0, 2) }}
+                                {{ token.asset_code?.slice(0,2) || "--" }}
                             </div>
 
                             <div>
@@ -144,7 +144,8 @@
 </template>
 
 <script setup>
-import { reactive } from "vue"
+import { reactive, onMounted } from "vue"
+import axios from "axios"
 
 import Header from "@/components/Header.vue"
 import Footer from "@/components/Footer.vue"
@@ -154,21 +155,50 @@ import RiskCard from "@/components/insight/RiskCard.vue"
 import DetailRow from "@/components/insight/DetailRow.vue"
 
 const token = reactive({
-    name: "Testing Token",
-    asset_code: "TES",
-    issuer: "GABCD12345XYZ987654321",
-    holders: 1245,
-    supply: 1000000000,
-    mint_date: "2026-01-20",
-    updated_at: "2 mins ago"
+  name: "",
+  asset_code: "",
+  issuer: "",
+  holders: 0,
+  supply: 0,
+  mint_date: "-",
+  updated_at: "-"
+})
+
+onMounted(() => {
+  fetchToken()
 })
 
 function shorten(str) {
-    return str.slice(0, 5) + "..." + str.slice(-4)
+  if (!str) return "-"
+  return str.slice(0, 5) + "..." + str.slice(-4)
 }
 
 function formatNumber(value) {
-    return new Intl.NumberFormat().format(value)
+  return new Intl.NumberFormat().format(value || 0)
+}
+
+async function fetchToken() {
+  try {
+    const res = await axios.get("/api/token/show", {
+      params: {
+        issuer: "GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA"
+      }
+    })
+
+    const data = res.data
+
+    token.name = data.asset_code
+    token.asset_code = data.asset_code
+    token.issuer = data.issuer
+    token.holders = data.holder_count
+    token.supply = data.total_supply
+    token.updated_at = "just now"
+
+    console.log("TOKEN LOADED", data)
+
+  } catch (error) {
+    console.error("Error fetching token data:", error)
+  }
 }
 </script>
 

@@ -1036,28 +1036,23 @@ class TokenController extends Controller
         $request->validate([
             'issuer' => 'required|string'
         ]);
+        $assets = $service->getAssetsByIssuer($request->issuer);
 
-        try {
-            // Fetch the list of asset codes for the given issuer
-            $data = $service->getAssetsByIssuer($request->issuer);
 
-            // If no asset is found, return an error
-            if (empty($data)) {
-                return response()->json([
-                    'error' => 'No assets found for this issuer.'
-                ], 400);
-            }
-
-            // Fetch Token Insight for the first asset or specific asset based on user choice
-            $asset_code = $data[0]['asset_code'];  // Assuming you fetch the first asset if none is specified
-
-            $tokenInsight = $service->getTokenInsight($request->issuer, $asset_code);
-
-            return response()->json($tokenInsight);
-        } catch (\Exception $e) {
+        if (empty($assets)) {
             return response()->json([
-                'error' => $e->getMessage()
+                'error' => 'No assets found for this issuer.'
             ], 400);
         }
+
+        // BEST TOKEN AUTO SELECTED
+        $asset_code = $assets[0]['asset_code'];
+
+        $tokenInsight = $service->getTokenInsight(
+            $request->issuer,
+            $asset_code
+        );
+
+        return response()->json($tokenInsight);
     }
 }

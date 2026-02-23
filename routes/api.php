@@ -40,6 +40,10 @@ Route::prefix('wallet')->group(function () {
     Route::post('disconnect', 'WalletController@disconnect_wallet')->name('wallet.disconnect');
 });
 
+Route::prefix('token')->group(function () {
+    Route::get('show', 'TokenController@show')->name('token.show');
+});
+
 
 Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
     // ==========================
@@ -55,7 +59,6 @@ Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
     Route::prefix('token')->group(function () {
         Route::post('generate', 'TokenController@generate_token')->name('token.generate');
         Route::post('submit_transaction', 'TokenController@submit_transaction')->name('token.submitTransaction');
-        Route::get('show', 'TokenController@show')->name('token.show');
     });
 
     // ==========================
