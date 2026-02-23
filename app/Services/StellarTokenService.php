@@ -11,10 +11,8 @@ class StellarTokenService
 
     public function getTokenInsight(string $issuer, string $code): array
     {
-        $accountResponse = Http::get($this->horizon . "/accounts/{$issuer}");
-
-        if (!$accountResponse->ok()) {
-            throw new \Exception('Account not found on Stellar network.');
+        if (!$this->isValidStellarAddress($issuer)) {
+            throw new \Exception('Invalid Stellar address format.');
         }
 
         // Fetch assets issued by this account
@@ -28,10 +26,14 @@ class StellarTokenService
             throw new \Exception('Failed to fetch asset.');
         }
 
-        $asset = $assetsResponse['_embedded']['records'][0];
+        $asset = $assetsResponse->json('_embedded.records.0');
 
-        $totalSupply = $asset['amount'];
-        $holderCount = $asset['accounts'];
+        if (!$asset) {
+            throw new \Exception('Asset not found.');
+        }
+
+        $totalSupply = (float) ($asset['balances']['authorized'] ?? 0);
+        $holderCount = (int) ($asset['accounts']['authorized'] ?? 0);
 
         // Issuer Info
         $issuerResponse = Http::get($this->horizon . "/accounts/{$issuer}");
@@ -46,14 +48,14 @@ class StellarTokenService
         $mintPossible = !$isImmutable;
 
         // Trustlines (Holder Distribution)
-        $trustlines = $this->fetchAllTrustlines($code, $issuer);
+        $topHolders = $this->fetchTopHolders($code, $issuer);
 
-        $holders = collect($trustlines)
-            ->filter(fn($line) => $line['balance'] > 0)
-            ->map(fn($line) => [
-                'account' => $line['account_id'],
-                'balance' => (float) $line['balance'],
-            ])
+        $holders = collect($topHolders)
+            ->filter(
+                fn($line) =>
+                isset($line['balance']) &&
+                    (float)$line['balance'] > 0
+            )
             ->sortByDesc('balance')
             ->values();
 
@@ -61,7 +63,11 @@ class StellarTokenService
 
         $top10 = $holders->take(10);
 
-        $top10Percentage = $top10->sum('balance') / (float) $totalSupply * 100;
+        $totalSupply = (float) $totalSupply;
+
+        $top10Percentage = $totalSupply > 0
+            ? ($top10->sum('balance') / $totalSupply) * 100
+            : 0;
 
         // Recent Activity
         $paymentsResponse = Http::get($this->horizon . '/payments', [
@@ -72,7 +78,7 @@ class StellarTokenService
         ]);
 
         $recentTransfers = $paymentsResponse->ok()
-            ? $paymentsResponse['_embedded']['records']
+            ? ($paymentsResponse->json('_embedded.records') ?? [])
             : [];
 
         return [
@@ -89,31 +95,37 @@ class StellarTokenService
         ];
     }
 
-    protected function fetchAllTrustlines(string $code, string $issuer): array
+    protected function fetchTopHolders(string $code, string $issuer): array
     {
-        $records = [];
         $url = $this->horizon . "/accounts?asset={$code}:{$issuer}&limit=200";
 
-        while ($url) {
-            $response = Http::get($url);
+        $response = Http::get($url);
 
-            if (!$response->ok()) {
-                break;
-            }
-
-            $data = $response->json();
-
-            $records = array_merge($records, $data['_embedded']['records']);
-
-            $url = $data['_links']['next']['href'] ?? null;
-
-            // Optional: stop after certain limit for MVP
-            if (count($records) > 2000) {
-                break;
-            }
+        if (!$response->ok()) {
+            return [];
         }
 
-        return $records;
+        $records = $response->json('_embedded.records') ?? [];
+
+        return collect($records)
+            ->map(function ($account) use ($code, $issuer) {
+
+                $balance = collect($account['balances'])
+                    ->first(function ($b) use ($code, $issuer) {
+                        return ($b['asset_code'] ?? null) === $code
+                            && ($b['asset_issuer'] ?? null) === $issuer;
+                    });
+
+                return [
+                    'account' => $account['account_id'],
+                    'balance' => (float) ($balance['balance'] ?? 0),
+                ];
+            })
+            ->filter(fn($h) => $h['balance'] > 0)
+            ->sortByDesc('balance')
+            ->values()
+            ->take(10)
+            ->toArray();
     }
 
     protected function isValidStellarAddress(string $address): bool
@@ -123,21 +135,31 @@ class StellarTokenService
 
     public function getAssetsByIssuer(string $issuer): array
     {
-        // Validate format
         if (!$this->isValidStellarAddress($issuer)) {
             throw new \Exception('Invalid Stellar address format.');
         }
 
-        // Fetch all assets issued by this account (issuer)
-        $assetsResponse = Http::get($this->horizon . '/assets', [
+        $response = Http::get($this->horizon . '/assets', [
             'asset_issuer' => $issuer,
             'limit' => 200
         ]);
 
-        if (!$assetsResponse->ok()) {
+        if (!$response->ok()) {
             throw new \Exception('Failed to fetch assets.');
         }
 
-        return $assetsResponse['_embedded']['records'] ?? [];
+        $records = $response->json('_embedded.records') ?? [];
+
+        if (empty($records)) {
+            return [];
+        }
+
+        // SMART SELECTION
+        usort($records, function ($a, $b) {
+            return ($b['accounts']['authorized'] ?? 0)
+                <=> ($a['accounts']['authorized'] ?? 0);
+        });
+
+        return $records;
     }
 }
