@@ -1,7 +1,11 @@
 <template>
-    <div class="flex justify-between border-b border-gray-100 pb-2">
-        <span class="text-gray-500">{{ label }}</span>
-        <span class="font-medium text-gray-900">{{ value }}</span>
+    <div class="flex justify-between gap-4 py-2 px-2 border-b border-slate-100">
+        <span class="text-slate-500 shrink-0">
+            {{ label }}
+        </span>
+        <span class="text-slate-900 font-medium text-right break-all min-w-0">
+            {{ value }}
+        </span>
     </div>
 </template>
 
