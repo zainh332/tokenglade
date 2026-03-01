@@ -53,7 +53,7 @@ class StellarTokenService
             'project'          => $meta['project'] ?? [],
 
             'total_supply'     => (float) ($asset['balances']['authorized'] ?? 0),
-            'holder_count'     => (int) ($asset['accounts']['authorized'] ?? 0),
+            'holders'     => (int) ($asset['accounts']['authorized'] ?? 0),
 
             'issuer_locked'    => $issuerData['flags']['auth_immutable'] ?? false,
             'minting_possible' => !($issuerData['flags']['auth_immutable'] ?? false),
@@ -90,7 +90,7 @@ class StellarTokenService
         return [
             'largest_holder'   => $largestHolder,
             'top10_percentage' => round($top10Percentage, 2),
-            'holders'          => $top10,
+            'top10_holders'          => $top10,
         ];
     }
 
