@@ -1036,23 +1036,33 @@ class TokenController extends Controller
         $request->validate([
             'issuer' => 'required|string'
         ]);
+
         $assets = $service->getAssetsByIssuer($request->issuer);
 
 
         if (empty($assets)) {
-            return response()->json([
-                'error' => 'No assets found for this issuer.'
-            ], 400);
+            return response()->json(['error' => 'No assets found'], 400);
         }
 
-        // BEST TOKEN AUTO SELECTED
-        $asset_code = $assets[0]['asset_code'];
+        $code = $assets[0]['asset_code'];
 
-        $tokenInsight = $service->getTokenInsight(
-            $request->issuer,
-            $asset_code
+        return response()->json(
+            $service->getTokenInsight($request->issuer, $code)
         );
+    }
 
-        return response()->json($tokenInsight);
+    public function holders(Request $request, StellarTokenService $service)
+    {
+        $request->validate([
+            'issuer' => 'required|string',
+            'code' => 'required|string'
+        ]);
+
+        return response()->json(
+            $service->getHolderAnalytics(
+                $request->issuer,
+                $request->code
+            )
+        );
     }
 }

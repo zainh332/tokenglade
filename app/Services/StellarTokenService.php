@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Collection;
+use Yosymfony\Toml\Toml;
 
 class StellarTokenService
 {
@@ -15,27 +16,23 @@ class StellarTokenService
             throw new \Exception('Invalid Stellar address format.');
         }
 
-        // Fetch assets issued by this account
-        $assetsResponse = Http::get($this->horizon . '/assets', [
+        $assetResponse = Http::get($this->horizon . '/assets', [
             'asset_issuer' => $issuer,
             'asset_code' => $code,
             'limit' => 1
         ]);
 
-        if (!$assetsResponse->ok()) {
-            throw new \Exception('Failed to fetch asset.');
+        if (!$assetResponse->ok()) {
+            throw new \Exception('Asset not found.');
         }
 
-        $asset = $assetsResponse->json('_embedded.records.0');
+        $asset = $assetResponse->json('_embedded.records.0');
+        $meta = $this->fetchTomlMetadata($asset);
 
         if (!$asset) {
             throw new \Exception('Asset not found.');
         }
 
-        $totalSupply = (float) ($asset['balances']['authorized'] ?? 0);
-        $holderCount = (int) ($asset['accounts']['authorized'] ?? 0);
-
-        // Issuer Info
         $issuerResponse = Http::get($this->horizon . "/accounts/{$issuer}");
 
         if (!$issuerResponse->ok()) {
@@ -44,18 +41,31 @@ class StellarTokenService
 
         $issuerData = $issuerResponse->json();
 
-        $isImmutable = $issuerData['flags']['auth_immutable'] ?? false;
-        $mintPossible = !$isImmutable;
+        return [
+            'asset_code'       => $code,
+            'issuer'           => $issuer,
 
-        // Trustlines (Holder Distribution)
+            'name'             => $meta['token']['name'] ?? $code,
+            'image'            => $meta['token']['image'] ?? null,
+            'description'      => $meta['token']['description'] ?? null,
+            'decimals'         => $meta['token']['decimals'] ?? 7,
+
+            'project'          => $meta['project'] ?? [],
+
+            'total_supply'     => (float) ($asset['balances']['authorized'] ?? 0),
+            'holder_count'     => (int) ($asset['accounts']['authorized'] ?? 0),
+
+            'issuer_locked'    => $issuerData['flags']['auth_immutable'] ?? false,
+            'minting_possible' => !($issuerData['flags']['auth_immutable'] ?? false),
+        ];
+    }
+
+    public function getHolderAnalytics(string $issuer, string $code): array
+    {
         $topHolders = $this->fetchTopHolders($code, $issuer);
 
         $holders = collect($topHolders)
-            ->filter(
-                fn($line) =>
-                isset($line['balance']) &&
-                    (float)$line['balance'] > 0
-            )
+            ->filter(fn($h) => $h['balance'] > 0)
             ->sortByDesc('balance')
             ->values();
 
@@ -63,35 +73,24 @@ class StellarTokenService
 
         $top10 = $holders->take(10);
 
-        $totalSupply = (float) $totalSupply;
+        $assetResponse = Http::get($this->horizon . '/assets', [
+            'asset_issuer' => $issuer,
+            'asset_code' => $code,
+            'limit' => 1
+        ]);
+
+        $asset = $assetResponse->json('_embedded.records.0');
+
+        $totalSupply = (float) ($asset['balances']['authorized'] ?? 0);
 
         $top10Percentage = $totalSupply > 0
             ? ($top10->sum('balance') / $totalSupply) * 100
             : 0;
 
-        // Recent Activity
-        $paymentsResponse = Http::get($this->horizon . '/payments', [
-            'asset_code'   => $code,
-            'asset_issuer' => $issuer,
-            'limit'        => 10,
-            'order'        => 'desc',
-        ]);
-
-        $recentTransfers = $paymentsResponse->ok()
-            ? ($paymentsResponse->json('_embedded.records') ?? [])
-            : [];
-
         return [
-            'asset_code'        => $code,
-            'issuer'            => $issuer,
-            'total_supply'      => $totalSupply,
-            'holder_count'      => $holderCount,
-            'issuer_locked'     => $isImmutable,
-            'minting_possible'  => $mintPossible,
-            'largest_holder'    => $largestHolder,
-            'top10_percentage'  => round($top10Percentage, 2),
-            'recent_transfers'  => $recentTransfers,
-            'holders'           => $top10,
+            'largest_holder'   => $largestHolder,
+            'top10_percentage' => round($top10Percentage, 2),
+            'holders'          => $top10,
         ];
     }
 
@@ -161,5 +160,64 @@ class StellarTokenService
         });
 
         return $records;
+    }
+
+    protected function fetchTomlMetadata(array $asset): array
+    {
+        $tomlUrl = $asset['_links']['toml']['href'] ?? null;
+
+        if (!$tomlUrl) {
+            return [];
+        }
+
+        $response = Http::timeout(6)->get($tomlUrl);
+
+        if (!$response->ok()) {
+            return [];
+        }
+
+        try {
+            $parsed = Toml::parse($response->body());
+        } catch (\Exception $e) {
+            return [];
+        }
+
+        $documentation = $parsed['DOCUMENTATION'] ?? [];
+
+        $project = [
+            'org_name'        => $documentation['ORG_NAME'] ?? null,
+            'org_dba'         => $documentation['ORG_DBA'] ?? null,
+            'org_url'         => $documentation['ORG_URL'] ?? null,
+            'org_logo'        => $documentation['ORG_LOGO'] ?? null,
+            'org_description' => $documentation['ORG_DESCRIPTION'] ?? null,
+            'org_twitter'     => $documentation['ORG_TWITTER'] ?? null,
+            'org_email'       => $documentation['ORG_OFFICIAL_EMAIL'] ?? null,
+            'org_support'     => $documentation['ORG_SUPPORT_EMAIL'] ?? null,
+        ];
+
+        $token = [];
+
+        foreach (($parsed['CURRENCIES'] ?? []) as $currency) {
+
+            if (
+                ($currency['code'] ?? null) === $asset['asset_code'] &&
+                ($currency['issuer'] ?? null) === $asset['asset_issuer']
+            ) {
+                $token = [
+                    'name'        => $currency['name'] ?? $asset['asset_code'],
+                    'image'       => $currency['image'] ?? null,
+                    'description' => $currency['desc'] ?? null,
+                    'decimals'    => $currency['display_decimals'] ?? 7,
+                    'conditions'  => $currency['conditions'] ?? null,
+                ];
+
+                break;
+            }
+        }
+
+        return [
+            'project' => $project,
+            'token'   => $token,
+        ];
     }
 }

@@ -10,7 +10,8 @@
 
                             <div
                                 class="w-16 h-16 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 font-semibold">
-                                {{ token.asset_code?.slice(0,2) || "--" }}
+                                <img v-if="token.image" :src="token.image"
+                                    class="w-16 h-16 rounded-full object-cover" />
                             </div>
 
                             <div>
@@ -18,7 +19,7 @@
                                     {{ token.name }}
                                     <span class="text-blue-500 text-sm">✔</span>
                                 </h1>
-                                <div class="h-px bg-slate-100 my-3 w-40"></div>
+                                <div class="h-px bg-    slate-100 my-3 w-40"></div>
 
                                 <p class="text-sm text-slate-500 mt-1">{{ token.asset_code }}</p>
 
@@ -59,7 +60,9 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <RiskCard title="Issuer Locked" value="Yes" type="green" />
                         <RiskCard title="Minting Possible" value="No" type="green" />
-                        <RiskCard title="Top 10 Holders" value="68%" type="yellow" />
+                        <RiskCard title="Top 10 Holders" :value="token.top10_percentage !== null
+                            ? token.top10_percentage + '%'
+                            : 'Loading...'" type="yellow" />
                         <RiskCard title="Largest Wallet" value="34%" type="red" />
                         <RiskCard title="Total Holders" :value="String(token.holders)" type="green" />
                     </div>
@@ -155,50 +158,66 @@ import RiskCard from "@/components/insight/RiskCard.vue"
 import DetailRow from "@/components/insight/DetailRow.vue"
 
 const token = reactive({
-  name: "",
-  asset_code: "",
-  issuer: "",
-  holders: 0,
-  supply: 0,
-  mint_date: "-",
-  updated_at: "-"
+    name: "",
+    asset_code: "",
+    issuer: "",
+    image: null,
+    description: "",
+    project: {},
+
+    holders: 0,
+    supply: 0,
+    mint_date: "-",
+    updated_at: "-",
+
+    largest_holder: null,
+    top10_percentage: null,
+    holders_list: []
 })
 
 onMounted(() => {
-  fetchToken()
+    fetchToken()
 })
 
 function shorten(str) {
-  if (!str) return "-"
-  return str.slice(0, 5) + "..." + str.slice(-4)
+    if (!str) return "-"
+    return str.slice(0, 5) + "..." + str.slice(-4)
 }
 
 function formatNumber(value) {
-  return new Intl.NumberFormat().format(value || 0)
+    return new Intl.NumberFormat().format(value || 0)
 }
 
 async function fetchToken() {
-  try {
-    const res = await axios.get("/api/token/show", {
-      params: {
-        issuer: "GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA"
-      }
+    try {
+        const res = await axios.get("/api/token/show", {
+            params: {
+                issuer: "GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA"
+            }
+        })
+
+        const data = res.data
+
+        Object.assign(token, res.data)
+
+        fetchAnalytics()
+
+    } catch (error) {
+        console.error("Error fetching token data:", error)
+    }
+}
+
+async function fetchAnalytics() {
+    const res = await axios.get("/api/token/holders", {
+        params: {
+            issuer: token.issuer,
+            code: token.asset_code
+        }
     })
 
-    const data = res.data
-
-    token.name = data.asset_code
-    token.asset_code = data.asset_code
-    token.issuer = data.issuer
-    token.holders = data.holder_count
-    token.supply = data.total_supply
-    token.updated_at = "just now"
-
-    console.log("TOKEN LOADED", data)
-
-  } catch (error) {
-    console.error("Error fetching token data:", error)
-  }
+    token.largest_holder = res.data.largest_holder
+    token.top10_percentage = res.data.top10_percentage
+    token.holders_list = res.data.holders
 }
 </script>
 
