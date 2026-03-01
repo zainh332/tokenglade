@@ -42,7 +42,7 @@
                         <!-- RIGHT -->
                         <div class="grid grid-cols-2 gap-4">
                             <StatCard title="Holders" :value="token.holders" />
-                            <StatCard title="Total Supply" :value="formatNumber(token.supply)" />
+                            <StatCard title="Total Supply" :value="formatNumber(token.total_supply)" />
                             <StatCard title="Mint Date" :value="token.mint_date" />
                             <StatCard title="Last Updated" :value="token.updated_at" />
                         </div>
@@ -52,7 +52,7 @@
                 <!-- ========================= -->
                 <!-- Risk Overview -->
                 <!-- ========================= -->
-                <section class="insight-card insight-highlight p-7">
+                <section class="insight-card p-7">
                     <h2 class="text-2xl font-bold text-slate-900 mb-6">
                         Token Control & Risk Overview
                     </h2>
@@ -71,7 +71,7 @@
                 <!-- ========================= -->
                 <!-- Distribution -->
                 <!-- ========================= -->
-                <section class="insight-card insight-highlight p-7">
+                <section class="insight-card p-7">
                     <h2 class="text-2xl font-bold text-slate-900 mb-6">
                         Holder Distribution
                     </h2>
@@ -101,7 +101,7 @@
                 <!-- ========================= -->
                 <!-- Activity -->
                 <!-- ========================= -->
-                <section class="insight-card insight-highlight p-7">
+                <section class="insight-card p-7">
                     <h2 class="text-2xl font-bold text-slate-900 mb-6">
                         Recent Activity
                     </h2>
@@ -126,7 +126,7 @@
                 <!-- ========================= -->
                 <!-- Details -->
                 <!-- ========================= -->
-                <section class="insight-card insight-highlight p-7">
+                <section class="insight-card p-7">
                     <h2 class="text-2xl font-bold text-slate-900 mb-6">
                         Token Details
                     </h2>
@@ -134,7 +134,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-y-3 text-sm">
                         <DetailRow label="Asset Code" :value="token.asset_code" />
                         <DetailRow label="Issuer Account" :value="token.issuer" />
-                        <DetailRow label="Decimals" value="7" />
+                        <DetailRow label="Decimals" :value="token.decimals" />
                         <DetailRow label="Trustlines" value="1245" />
                         <DetailRow label="Creation Date" :value="token.mint_date" />
                         <DetailRow label="Burned Supply" value="0" />
@@ -172,7 +172,8 @@ const token = reactive({
 
     largest_holder: null,
     top10_percentage: null,
-    top10_holders: []
+    top10_holders: [],
+    decimals: null,
 })
 
 onMounted(() => {
@@ -192,7 +193,7 @@ async function fetchToken() {
     try {
         const res = await axios.get("/api/token/show", {
             params: {
-                issuer: "GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA"
+                issuer: "GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
             }
         })
 
