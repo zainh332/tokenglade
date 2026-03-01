@@ -172,7 +172,7 @@ const token = reactive({
 
     largest_holder: null,
     top10_percentage: null,
-    holders_list: []
+    top10_holders: []
 })
 
 onMounted(() => {
@@ -217,7 +217,7 @@ async function fetchAnalytics() {
 
     token.largest_holder = res.data.largest_holder
     token.top10_percentage = res.data.top10_percentage
-    token.holders_list = res.data.holders
+    token.top10_holders = res.data.top10_holders
 }
 </script>
 
