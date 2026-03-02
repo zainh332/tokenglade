@@ -223,16 +223,3 @@ async function fetchToken() {
 //     token.top10_holders = res.data.top10_holders
 // }
 </script>
-
-<style scoped>
-.insight-card {
-    background: white;
-    border-radius: 16px;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-}
-
-.insight-highlight {
-    border-top: 4px solid #22d3ee;
-}
-</style>

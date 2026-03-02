@@ -333,3 +333,14 @@ ul.dropdown-menu.show {
 .card-header span {
     color: #43CDFF;
 }
+
+.insight-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.insight-highlight {
+    border-top: 4px solid #22d3ee;
+}
