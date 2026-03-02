@@ -19,26 +19,34 @@
             <template v-for="link in Links" :key="link.name">
 
               <!-- TOKEN INSIGHT DROPDOWN -->
-              <div v-if="link.name === 'Token Insight'" ref="insightDropdown" class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
+              <div v-if="link.name === 'Token Insight'" ref="insightDropdown"
+                class="relative inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
 
                 <button @click="showInsightDropdown = !showInsightDropdown">
                   {{ link.name }}
                 </button>
 
-                <div v-if="showInsightDropdown"
-                  class="absolute top-full mt-3 w-[420px] max-w-[90vw] bg-white border rounded-xl shadow-lg p-4 z-50">
-                  <p class="text-sm text-slate-600 mb-2">
-                    Enter issuer address
-                  </p>
+                <Transition enter-active-class="transition duration-200 ease-out"
+                  enter-from-class="opacity-0 scale-95 translate-y-2"
+                  enter-to-class="opacity-100 scale-100 translate-y-0"
+                  leave-active-class="transition duration-300 ease-in"
+                  leave-from-class="opacity-100 scale-100 translate-y-0"
+                  leave-to-class="opacity-0 scale-95 translate-y-2">
+                  <div v-if="showInsightDropdown"
+                    class="absolute top-full mt-3 w-[600px] max-w-[95vw] bg-white border rounded-xl shadow-lg p-4 z-50">
+                    <p class="text-sm text-slate-600 mb-2">
+                      Enter issuer address
+                    </p>
 
-                  <input v-model="issuerInput" type="text" placeholder="G...."
-                    class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400" />
+                    <input v-model="issuerInput" type="text" placeholder="G...."
+                      class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400" />
 
-                  <button @click.stop="goToInsight"
-                    class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
-                    Open Insight
-                  </button>
-                </div>
+                    <button @click.stop="goToInsight"
+                      class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
+                      Open Insight
+                    </button>
+                  </div>
+                </Transition>
               </div>
 
               <router-link v-else-if="link.to" :to="link.to"
