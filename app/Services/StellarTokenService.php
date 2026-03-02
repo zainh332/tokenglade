@@ -94,9 +94,11 @@ class StellarTokenService
 
     private function getRecentTransactions(string $issuer, string $code): array
     {
-        $response = Http::get($this->horizon . "/accounts/{$issuer}/operations", [
-            'limit' => 200,
-            'order' => 'desc',
+        $response = Http::get($this->horizon . '/payments', [
+            'asset_code'   => $code,
+            'asset_issuer' => $issuer,
+            'limit'        => 40,
+            'order'        => 'desc',
         ]);
 
         if (!$response->ok()) {
@@ -106,26 +108,43 @@ class StellarTokenService
         $records = $response->json('_embedded.records') ?? [];
 
         return collect($records)
-            ->filter(function ($op) use ($issuer, $code) {
+            ->flatMap(function ($op) use ($issuer, $code) {
 
-                if (($op['type'] ?? '') !== 'payment') {
-                    return false;
+                // NORMAL payments
+                if (($op['type'] ?? '') === 'payment') {
+                    return [[
+                        'type'   => 'payment',
+                        'from'   => $op['from'] ?? '-',
+                        'to'     => $op['to'] ?? '-',
+                        'amount' => (float) ($op['amount'] ?? 0),
+                        'time'   => Carbon::parse($op['created_at'])->diffForHumans(),
+                    ]];
                 }
 
-                return (
-                    ($op['asset_code'] ?? null) === $code &&
-                    ($op['asset_issuer'] ?? null) === $issuer
-                );
+                // SOROBAN / CONTRACT OPS
+                if (!empty($op['asset_balance_changes'])) {
+
+                    return collect($op['asset_balance_changes'])
+                        ->filter(function ($c) use ($issuer, $code) {
+                            return (
+                                ($c['asset_code'] ?? null) === $code &&
+                                ($c['asset_issuer'] ?? null) === $issuer
+                            );
+                        })
+                        ->map(function ($c) use ($op) {
+                            return [
+                                'type'   => $c['type'] ?? 'contract',
+                                'from'   => $c['from'] ?? '-',
+                                'to'     => $c['to'] ?? '-',
+                                'amount' => (float) ($c['amount'] ?? 0),
+                                'time'   => Carbon::parse($op['created_at'])->diffForHumans(),
+                            ];
+                        });
+                }
+
+                return [];
             })
             ->take(10)
-            ->map(function ($tx) {
-                return [
-                    'from'   => $tx['from'] ?? '-',
-                    'to'     => $tx['to'] ?? '-',
-                    'amount' => (float) ($tx['amount'] ?? 0),
-                    'time'   => Carbon::parse($tx['created_at'])->diffForHumans(),
-                ];
-            })
             ->values()
             ->toArray();
     }
