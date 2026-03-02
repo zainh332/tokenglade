@@ -1,6 +1,6 @@
 <template>
   <Disclosure as="nav"
-    class="fixed top-[1rem] left-0 w-full z-[1] transition-transform duration-700 ease-[cubic-bezier(0.68,-0.55,0.27,1.55)] origin-top"
+    class="fixed top-[1rem] left-0 w-full z-[9999] transition-transform duration-700 ease-[cubic-bezier(0.68,-0.55,0.27,1.55)] origin-top"
     :class="{
       '-translate-y-[120%] scale-y-90': hideHeader,
       'translate-y-0 scale-y-100': !hideHeader
