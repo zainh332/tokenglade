@@ -23,7 +23,7 @@
                                 </h1>
 
                                 <p class="text-slate-500 text-sm mt-1">
-                                    {{ token.asset_code }} · {{ shorten(token.issuer) }}
+                                    {{ token?.tagline || "Next generation AMM platform on Stellar" }}
                                 </p>
                             </div>
                         </div>
@@ -71,6 +71,80 @@
                             </div>
                         </div>
                     </div>
+                </section>
+
+                <section
+                    class="relative overflow-hidden rounded-2xl p-6 border shadow-sm bg-gradient-to-br from-white via-white to-blue-50/40">
+
+                    <!-- TITLE -->
+                    <h2 class="text-2xl font-bold text-slate-900 mb-4">
+                        Project Info
+                    </h2>
+
+                    <div class="border-t pt-5 space-y-5">
+
+                        <!-- METADATA + ACTIONS -->
+                        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 pb-5 border-b">
+
+                            <!-- LEFT INFO -->
+                            <div class="space-y-3">
+
+                                <div class="flex items-center gap-3 text-sm">
+                                    <span class="text-slate-500 w-28">Asset Code</span>
+                                    <span class="font-semibold text-slate-800">{{ token.asset_code }}</span>
+                                </div>
+
+                                <div class="flex items-center gap-3 text-sm">
+                                    <span class="text-slate-500 w-28">Blockchain</span>
+                                    <span class="font-semibold text-slate-800">Stellar</span>
+                                </div>
+
+                                <div class="flex items-center gap-3 text-sm">
+                                    <span class="text-slate-500 w-28">Issuer</span>
+
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-mono text-slate-700 bg-slate-50 px-3 py-1.5 rounded border">
+                                            {{ shorten(token.issuer) }}
+                                        </span>
+
+                                        <button @click="navigator.clipboard.writeText(token.issuer)"
+                                            class="px-3 py-1.5 text-xs border rounded-md hover:bg-slate-50 transition">
+                                            Copy
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- RIGHT ACTIONS -->
+                            <div class="flex items-center gap-2">
+
+                                <a v-if="token?.website" :href="token.website" target="_blank" class="px-4 h-10 rounded-lg bg-slate-100 border
+                           flex items-center gap-2 text-sm text-slate-700 hover:bg-slate-200 transition">
+                                    <Globe class="w-4 h-4" />
+                                    Website
+                                </a>
+
+                                <a v-if="token?.twitter" :href="token.twitter" target="_blank" class="w-10 h-10 rounded-lg bg-slate-100 border
+                           flex items-center justify-center hover:bg-slate-200 transition">
+                                    <Twitter class="w-4 h-4 text-slate-600" />
+                                </a>
+
+                                <a v-if="token?.email" :href="`mailto:${token.email}`" class="w-10 h-10 rounded-lg bg-slate-100 border
+                           flex items-center justify-center hover:bg-slate-200 transition">
+                                    <Mail class="w-4 h-4 text-slate-600" />
+                                </a>
+
+                            </div>
+                        </div>
+
+                        <!-- DESCRIPTION -->
+                        <p class="text-slate-700 text-base leading-relaxed max-w-3xl">
+                            {{ token.description || "No description available." }}
+                        </p>
+
+                    </div>
+
                 </section>
 
                 <!-- ========================= -->
@@ -152,7 +226,10 @@ import {
     Users,
     Coins,
     Waves,
-    Clock3
+    Clock3,
+    Globe,
+    Mail,
+    Twitter
 } from "lucide-vue-next";
 
 const token = reactive({

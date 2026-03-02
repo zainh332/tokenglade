@@ -67,10 +67,13 @@ class StellarTokenService
 
             'issuer_locked'    => $issuerData['flags']['auth_immutable'] ?? false,
             'minting_possible' => !($issuerData['flags']['auth_immutable'] ?? false),
-            'mint_date_human' => Carbon::createFromTimestampUTC($mintDateRaw)
-                ->format('Y-m-d'),
+            'mint_date_human' => Carbon::createFromTimestampUTC($mintDateRaw)->format('Y-m-d'),
             'liquidity_pools'     => (float) ($asset['num_liquidity_pools'] ?? 0),
             'updated_at'     => '1 min ago',
+            'website'             => $meta['project']['org_url'] ?? $code,
+            'twitter'             => $meta['project']['org_twitter'] ?? $code,
+            'email'             => $meta['project']['org_email'] ?? $code,
+            'support_email'             => $meta['project']['org_support'] ?? $code,
         ];
     }
 
