@@ -17,13 +17,13 @@ class StellarTokenService
             throw new \Exception('Invalid Stellar address format.');
         }
 
-        $assetResponse = Http::get($this->horizon . '/assets', [
+        $horizonResponse = Http::get($this->horizon . '/assets', [
             'asset_issuer' => $issuer,
             'asset_code' => $code,
             'limit' => 1
         ]);
 
-        if (!$assetResponse->ok()) {
+        if (!$horizonResponse->ok()) {
             throw new \Exception('Asset not found.');
         }
 
@@ -35,11 +35,13 @@ class StellarTokenService
             throw new \Exception('response not found.');
         }
 
-        $asset = $assetResponse->json('_embedded.records.0');
-        $mintDateRaw = $response->json('created');
-        $meta = $this->fetchTomlMetadata($asset);
+        // dd($response->json());
 
-        if (!$asset) {
+        $horizon = $horizonResponse->json('_embedded.records.0');
+        $mintDateRaw = $response->json('created');
+        $toml = $this->fetchTomlMetadata($horizon);
+
+        if (!$horizon) {
             throw new \Exception('Asset not found.');
         }
 
@@ -55,26 +57,77 @@ class StellarTokenService
             'asset_code'       => $code,
             'issuer'           => $issuer,
 
-            'name'             => $meta['project']['org_name'] ?? $code,
-            'image'            => $meta['token']['image'] ?? null,
-            'description'      => $meta['token']['description'] ?? null,
-            'decimals'         => $meta['token']['decimals'] ?? 7,
+            'name'             => $toml['project']['org_name'] ?? $code,
+            'image'            => $toml['token']['image'] ?? null,
+            'description'      => $toml['token']['description'] ?? null,
+            'decimals'         => $toml['token']['decimals'] ?? 7,
 
-            'project'          => $meta['project'] ?? [],
+            'project'          => $toml['project'] ?? [],
 
-            'total_supply'     => (float) ($asset['balances']['authorized'] ?? 0),
-            'holders'     => (int) ($asset['accounts']['authorized'] ?? 0),
+            'total_supply'     => (float) ($horizon['balances']['authorized'] ?? 0),
+            'holders'     => (int) ($horizon['accounts']['authorized'] ?? 0),
 
             'issuer_locked'    => $issuerData['flags']['auth_immutable'] ?? false,
             'minting_possible' => !($issuerData['flags']['auth_immutable'] ?? false),
             'mint_date_human' => Carbon::createFromTimestampUTC($mintDateRaw)->format('Y-m-d'),
-            'liquidity_pools'     => (float) ($asset['num_liquidity_pools'] ?? 0),
+            'liquidity_pools'     => (float) ($horizon['num_liquidity_pools'] ?? 0),
             'updated_at'     => '1 min ago',
-            'website'             => $meta['project']['org_url'] ?? $code,
-            'twitter'             => $meta['project']['org_twitter'] ?? $code,
-            'email'             => $meta['project']['org_email'] ?? $code,
-            'support_email'             => $meta['project']['org_support'] ?? $code,
+            'website'             => $toml['project']['org_url'] ?? $code,
+            'twitter'             => $toml['project']['org_twitter'] ?? $code,
+            'email'             => $toml['project']['org_email'] ?? $code,
+            'support_email'             => $toml['project']['org_support'] ?? $code,
+
+            'auth_required'     => ($horizon['flags']['auth_required'] ?? false),
+            'auth_revocable'     => ($horizon['flags']['auth_revocable'] ?? false),
+            'auth_immutable'     => ($horizon['flags']['auth_immutable'] ?? false),
+            'auth_clawback_enabled'     => ($horizon['flags']['auth_clawback_enabled'] ?? false),
+
+            'num_claimable_balances' => $horizon['num_claimable_balances'] ?? 0,
+            'num_contracts' => $horizon['num_contracts'] ?? 0,
+
+            'claimable_balances_amount' => $horizon['claimable_balances_amount'] ?? 0,
+            'liquidity_pools_amount' => $horizon['liquidity_pools_amount'] ?? 0,
+            'contracts_amount' => $horizon['contracts_amount'] ?? 0,
+            'transactions' => $this->getRecentTransactions($issuer, $code),
         ];
+    }
+
+    private function getRecentTransactions(string $issuer, string $code): array
+    {
+        $response = Http::get($this->horizon . "/accounts/{$issuer}/operations", [
+            'limit' => 200,
+            'order' => 'desc',
+        ]);
+
+        if (!$response->ok()) {
+            return [];
+        }
+
+        $records = $response->json('_embedded.records') ?? [];
+
+        return collect($records)
+            ->filter(function ($op) use ($issuer, $code) {
+
+                if (($op['type'] ?? '') !== 'payment') {
+                    return false;
+                }
+
+                return (
+                    ($op['asset_code'] ?? null) === $code &&
+                    ($op['asset_issuer'] ?? null) === $issuer
+                );
+            })
+            ->take(10)
+            ->map(function ($tx) {
+                return [
+                    'from'   => $tx['from'] ?? '-',
+                    'to'     => $tx['to'] ?? '-',
+                    'amount' => (float) ($tx['amount'] ?? 0),
+                    'time'   => Carbon::parse($tx['created_at'])->diffForHumans(),
+                ];
+            })
+            ->values()
+            ->toArray();
     }
 
     // public function getHolderAnalytics(string $issuer, string $code): array

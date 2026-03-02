@@ -36,7 +36,7 @@
                                     Holders
                                 </p>
                                 <p class="text-2xl font-semibold mt-1">{{ token.holders }}</p>
-                                <span class="text-xs text-blue-500 mt-2 inline-block">Stellar</span>
+                                <!-- <span class="text-xs text-blue-500 mt-2 inline-block">Stellar</span> -->
                             </div>
 
                             <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
@@ -47,7 +47,7 @@
                                 <p class="text-2xl font-semibold mt-1">
                                     {{ formatNumber(token.total_supply) }}
                                 </p>
-                                <span class="text-xs text-blue-500 mt-2 inline-block">{{ token.asset_code }}</span>
+                                <!-- <span class="text-xs text-blue-500 mt-2 inline-block">{{ token.asset_code }}</span> -->
                             </div>
 
                             <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
@@ -147,63 +147,236 @@
 
                 </section>
 
-                <!-- ========================= -->
-                <!-- Risk Overview -->
-                <!-- ========================= -->
-                <section class="insight-card p-7">
-                    <h2 class="text-2xl font-bold text-slate-900 mb-6">
-                        Token Control & Risk Overview
+                <section class="insight-card p-6">
+
+                    <!-- TITLE -->
+                    <h2 class="text-2xl font-bold text-slate-900 mb-5">
+                        Security & Permissions
                     </h2>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <RiskCard title="Issuer Locked" value="Yes" type="green" />
-                        <RiskCard title="Minting Possible" value="No" type="green" />
-                        <RiskCard title="Total Holders" :value="String(token.holders)" type="green" />
-                    </div>
-                </section>
+                    <div class="border-t pt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                <!-- ========================= -->
-                <!-- Activity -->
-                <!-- ========================= -->
-                <section class="insight-card p-7">
-                    <h2 class="text-2xl font-bold text-slate-900 mb-6">
-                        Recent Activity
-                    </h2>
+                        <!-- ITEM -->
+                        <div class="rounded-xl border bg-slate-50 p-5">
+                            <div class="flex items-start gap-3">
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <StatCard title="Transfers (24h)" value="124" />
-                        <StatCard title="Transfers (7d)" value="982" />
-                        <StatCard title="Active Wallets" value="78" />
-                    </div>
+                                <ShieldCheck v-if="token.issuer_locked" class="w-5 h-5 text-emerald-600 mt-0.5" />
 
-                    <div class="divide-y divide-slate-100">
-                        <div v-for="i in 10" :key="i"
-                            class="py-3 flex justify-between text-sm hover:bg-slate-50 px-3 rounded-lg transition">
+                                <ShieldX v-else class="w-5 h-5 text-red-500 mt-0.5" />
 
-                            <span class="text-slate-700">GABC...XYZ → GFFF...AAA</span>
-                            <span class="font-semibold text-slate-900">12,000 TOKEN</span>
-                            <span class="text-slate-500">2m ago</span>
+                                <div>
+                                    <h3 class="font-semibold text-slate-900 text-lg">
+                                        Issuer Immutable
+                                    </h3>
+
+                                    <p class="text-sm text-slate-600 mt-1">
+                                        Issuer cannot change token permissions anymore.
+                                    </p>
+                                </div>
+
+                            </div>
                         </div>
+
+                        <!-- ITEM -->
+                        <div class="rounded-xl border bg-slate-50 p-5">
+                            <div class="flex items-start gap-3">
+                                <ShieldCheck v-if="!token.auth_clawback_enabled"
+                                    class="w-5 h-5 text-emerald-600 mt-0.5" />
+                                <ShieldX v-else class="w-5 h-5 text-red-500 mt-0.5" />
+                                <div>
+                                    <h3 class="font-semibold text-slate-900 text-lg">
+                                        Clawback Disabled
+                                    </h3>
+                                    <p class="text-sm text-slate-600 mt-1">
+                                        Issuer cannot force-remove tokens from holders.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ITEM -->
+                        <div class="rounded-xl border bg-slate-50 p-5">
+                            <div class="flex items-start gap-3">
+                                <ShieldCheck v-if="!token.auth_revocable" class="w-5 h-5 text-emerald-600 mt-0.5" />
+                                <ShieldX v-else class="w-5 h-5 text-red-500 mt-0.5" />
+                                <div>
+                                    <h3 class="font-semibold text-slate-900 text-lg">
+                                        Revocation Disabled
+                                    </h3>
+                                    <p class="text-sm text-slate-600 mt-1">
+                                        Issuer cannot freeze user balances.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- WARNING ITEM -->
+                        <div class="rounded-xl border bg-slate-50 p-5">
+                            <div class="flex items-start gap-3">
+                                <ShieldCheck v-if="token.auth_required" class="w-5 h-5 text-amber-500 mt-0.5" />
+                                <ShieldX v-else class="w-5 h-5 text-slate-400 mt-0.5" />
+                                <div>
+                                    <h3 class="font-semibold text-slate-900 text-lg">
+                                        Authorization Required
+                                    </h3>
+                                    <p class="text-sm text-slate-600 mt-1">
+                                        Wallets must be approved before holding this token.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </section>
 
                 <!-- ========================= -->
-                <!-- Details -->
+                <!-- Network + Technical -->
                 <!-- ========================= -->
-                <section class="insight-card p-7">
-                    <h2 class="text-2xl font-bold text-slate-900 mb-6">
-                        Token Details
-                    </h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-3 text-sm">
-                        <DetailRow label="Asset Code" :value="token.asset_code" />
-                        <DetailRow label="Issuer Account" :value="token.issuer" />
-                        <DetailRow label="Decimals" :value="token.decimals" />
-                        <DetailRow label="Trustlines" value="1245" />
-                        <DetailRow label="Creation Date" :value="token.mint_date_human" />
-                        <DetailRow label="Burned Supply" value="0" />
-                    </div>
-                </section>
+                    <!-- LEFT SIDE -->
+                    <section class="insight-card p-6 lg:col-span-2">
+
+                        <h2 class="text-2xl font-bold text-slate-900 mb-6">
+                            Network Exposure
+                        </h2>
+
+                        <!-- TOP METRICS -->
+                        <div class="grid grid-cols-2 lg:grid-cols-4 border rounded-xl overflow-hidden mb-6">
+
+                            <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
+                                <p class="text-xs text-slate-500">Claimable Balances</p>
+                                <p class="text-1xl font-semibold mt-1">
+                                    {{ formatNumber(token.num_claimable_balances) }}
+                                </p>
+                            </div>
+
+                            <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
+                                <p class="text-xs text-slate-500">Connected Contracts</p>
+                                <p class="text-1xl font-semibold mt-1">
+                                    {{ formatNumber(token.num_contracts) }}
+                                </p>
+                            </div>
+
+                            <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
+                                <p class="text-xs text-slate-500">Liquidity Pools Amount</p>
+                                <p class="text-1xl font-semibold mt-1">
+                                    {{ formatNumber(token.liquidity_pools_amount || 0) }}
+                                </p>
+                            </div>
+
+                            <div class="p-4 bg-slate-50">
+                                <p class="text-xs text-slate-500">Contracts Amount</p>
+                                <p class="text-1xl font-semibold mt-1">
+                                    {{ formatNumber(token.contracts_amount || 0) }}
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <!-- TRANSACTIONS TABLE -->
+                        <div class="border rounded-xl overflow-hidden">
+
+                            <!-- HEADER -->
+                            <div class="grid grid-cols-4 bg-slate-50 text-sm text-slate-500 px-4 py-3 border-b">
+                                <span>From</span>
+                                <span>To</span>
+                                <span class="text-right">Amount</span>
+                                <span class="text-right">Time</span>
+                            </div>
+
+                            <!-- ROWS -->
+                            <div class="divide-y text-sm">
+                                <div v-for="(tx, i) in token.transactions || []" :key="i"
+                                    class="grid grid-cols-4 px-4 py-3 hover:bg-slate-50 transition">
+                                    <span class="text-slate-700 font-medium">
+                                        {{ shorten(tx.from) }}
+                                    </span>
+
+                                    <span class="text-slate-700 font-medium">
+                                        → {{ shorten(tx.to) }}
+                                    </span>
+
+                                    <span class="text-right font-semibold text-slate-900">
+                                        {{ formatNumber(tx.amount) }} {{ token.asset_code }}
+                                    </span>
+
+                                    <span class="text-right text-slate-500">
+                                        {{ tx.time }}
+                                    </span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                    <!-- RIGHT SIDE -->
+                    <section class="insight-card p-6">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-6">
+                            Technical Details
+                        </h2>
+
+                        <div class="divide-y text-sm">
+
+                            <div class="py-3 flex justify-between">
+                                <span class="text-slate-500">Asset Code</span>
+                                <span class="font-semibold">{{ token.asset_code }}</span>
+                            </div>
+
+                            <div class="py-3 flex justify-between">
+                                <span class="text-slate-500">Issuer Account</span>
+                                <span class="font-mono text-xs">
+                                    {{ shorten(token.issuer) }}
+                                </span>
+                            </div>
+
+                            <div class="py-3 flex justify-between">
+                                <span class="text-slate-500">Decimals</span>
+                                <span class="font-semibold">{{ token.decimals }}</span>
+                            </div>
+
+                            <div class="py-3 flex justify-between">
+                                <span class="text-slate-500">Trustlines</span>
+                                <span class="font-semibold">{{ token.holders }}</span>
+                            </div>
+
+                            <div class="py-3 flex justify-between">
+                                <span class="text-slate-500">Created</span>
+                                <span class="font-semibold">{{ token.mint_date_human }}</span>
+                            </div>
+
+                            <div class="py-3 flex justify-between">
+                                <span class="text-slate-500">Supply</span>
+                                <span class="font-semibold">
+                                    {{ formatNumber(token.total_supply) }}
+                                </span>
+                            </div>
+
+                            <div class="py-3 flex justify-between">
+                                <span class="text-slate-500">Auth Required</span>
+                                <span class="font-semibold">
+                                    {{ token.auth_required ? "Yes" : "No" }}
+                                </span>
+                            </div>
+
+                            <div class="py-3 flex justify-between">
+                                <span class="text-slate-500">Auth Revocable</span>
+                                <span class="font-semibold">
+                                    {{ token.auth_revocable ? "Yes" : "No" }}
+                                </span>
+                            </div>
+
+                            <div class="py-3 flex justify-between">
+                                <span class="text-slate-500">Clawback Enabled</span>
+                                <span class="font-semibold">
+                                    {{ token.auth_clawback_enabled ? "Yes" : "No" }}
+                                </span>
+                            </div>
+
+                        </div>
+                    </section>
+                </div>
             </div>
         </div>
         <Footer />
@@ -229,7 +402,9 @@ import {
     Clock3,
     Globe,
     Mail,
-    Twitter
+    Twitter,
+    ShieldCheck,
+    ShieldX
 } from "lucide-vue-next";
 
 const token = reactive({
@@ -267,8 +442,8 @@ async function fetchToken() {
     try {
         const res = await axios.get("/api/token/show", {
             params: {
-                // issuer: "GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
-                issuer: "GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA"
+                issuer: "GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
+                // issuer: "GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA"
             }
         })
 
