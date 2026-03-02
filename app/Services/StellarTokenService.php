@@ -72,69 +72,69 @@ class StellarTokenService
         ];
     }
 
-    public function getHolderAnalytics(string $issuer, string $code): array
-    {
-        $topHolders = collect(
-            $this->fetchTopHolders($code, $issuer)
-        );
+    // public function getHolderAnalytics(string $issuer, string $code): array
+    // {
+    //     $topHolders = collect(
+    //         $this->fetchTopHolders($code, $issuer)
+    //     );
 
-        if ($topHolders->isEmpty()) {
-            return [
-                'largest_holder'   => null,
-                'top10_percentage' => 0,
-                'top10_holders'    => [],
-            ];
-        }
+    //     if ($topHolders->isEmpty()) {
+    //         return [
+    //             'largest_holder'   => null,
+    //             'top10_percentage' => 0,
+    //             'top10_holders'    => [],
+    //         ];
+    //     }
 
-        $largestHolder = $topHolders->first();
+    //     $largestHolder = $topHolders->first();
 
-        $top10 = $topHolders->take(10)->values();
-        $assetResponse = Http::get($this->horizon . '/assets', [
-            'asset_issuer' => $issuer,
-            'asset_code' => $code,
-            'limit' => 1
-        ]);
+    //     $top10 = $topHolders->take(10)->values();
+    //     $assetResponse = Http::get($this->horizon . '/assets', [
+    //         'asset_issuer' => $issuer,
+    //         'asset_code' => $code,
+    //         'limit' => 1
+    //     ]);
 
-        $asset = $assetResponse->json('_embedded.records.0');
+    //     $asset = $assetResponse->json('_embedded.records.0');
 
-        $totalSupply = (float) ($asset['balances']['authorized'] ?? 0);
+    //     $totalSupply = (float) ($asset['balances']['authorized'] ?? 0);
 
-        $top10Percentage = $totalSupply > 0
-            ? ($top10->sum('balance') / $totalSupply) * 100
-            : 0;
+    //     $top10Percentage = $totalSupply > 0
+    //         ? ($top10->sum('balance') / $totalSupply) * 100
+    //         : 0;
 
-        return [
-            'largest_holder'   => $largestHolder,
-            'top10_percentage' => round($top10Percentage, 2),
-            'top10_holders'    => $top10,
-        ];
-    }
+    //     return [
+    //         'largest_holder'   => $largestHolder,
+    //         'top10_percentage' => round($top10Percentage, 2),
+    //         'top10_holders'    => $top10,
+    //     ];
+    // }
 
-    protected function fetchTopHolders(string $code, string $issuer): array
-    {
-        $asset = "{$code}-{$issuer}";
+    // protected function fetchTopHolders(string $code, string $issuer): array
+    // {
+    //     $asset = "{$code}-{$issuer}";
 
-        $url = "https://api.stellar.expert/explorer/public/asset/{$asset}/holders";
+    //     $url = "https://api.stellar.expert/explorer/public/asset/{$asset}/holders";
 
-        $response = Http::timeout(10)->get($url, [
-            'limit' => 10,
-            'order' => 'desc'
-        ]);
+    //     $response = Http::timeout(10)->get($url, [
+    //         'limit' => 10,
+    //         'order' => 'desc'
+    //     ]);
 
-        if (!$response->ok()) {
-            return [];
-        }
+    //     if (!$response->ok()) {
+    //         return [];
+    //     }
 
-        $records = $response->json('_embedded.records') ?? [];
+    //     $records = $response->json('_embedded.records') ?? [];
 
-        return collect($records)
-            ->map(fn($r) => [
-                'account' => $r['account'],
-                'balance' => (float) $r['balance'],
-            ])
-            ->values()
-            ->toArray();
-    }
+    //     return collect($records)
+    //         ->map(fn($r) => [
+    //             'account' => $r['account'],
+    //             'balance' => (float) $r['balance'],
+    //         ])
+    //         ->values()
+    //         ->toArray();
+    // }
 
     protected function isValidStellarAddress(string $address): bool
     {

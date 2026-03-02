@@ -60,10 +60,10 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <RiskCard title="Issuer Locked" value="Yes" type="green" />
                         <RiskCard title="Minting Possible" value="No" type="green" />
-                        <RiskCard title="Top 10 Holders" :value="token.top10_percentage !== null
+                        <!-- <RiskCard title="Top 10 Holders" :value="token.top10_percentage !== null
                             ? token.top10_percentage + '%'
                             : 'Loading...'" type="yellow" />
-                        <RiskCard title="Largest Wallet" value="34%" type="red" />
+                        <RiskCard title="Largest Wallet" value="34%" type="red" /> -->
                         <RiskCard title="Total Holders" :value="String(token.holders)" type="green" />
                     </div>
                 </section>
@@ -71,7 +71,7 @@
                 <!-- ========================= -->
                 <!-- Distribution -->
                 <!-- ========================= -->
-                <section class="insight-card p-7">
+                <!-- <section class="insight-card p-7">
                     <h2 class="text-2xl font-bold text-slate-900 mb-6">
                         Holder Distribution
                     </h2>
@@ -96,7 +96,7 @@
                             </p>
                         </div>
                     </div>
-                </section>
+                </section> -->
 
                 <!-- ========================= -->
                 <!-- Activity -->
@@ -170,9 +170,9 @@ const token = reactive({
     mint_date_human: "-",
     updated_at: "-",
 
-    largest_holder: null,
-    top10_percentage: null,
-    top10_holders: [],
+    // largest_holder: null,
+    // top10_percentage: null,
+    // top10_holders: [],
     decimals: null,
 })
 
@@ -201,25 +201,25 @@ async function fetchToken() {
 
         Object.assign(token, res.data)
 
-        fetchAnalytics()
+        // fetchAnalytics()
 
     } catch (error) {
         console.error("Error fetching token data:", error)
     }
 }
 
-async function fetchAnalytics() {
-    const res = await axios.get("/api/token/holders", {
-        params: {
-            issuer: token.issuer,
-            code: token.asset_code
-        }
-    })
+// async function fetchAnalytics() {
+//     const res = await axios.get("/api/token/holders", {
+//         params: {
+//             issuer: token.issuer,
+//             code: token.asset_code
+//         }
+//     })
 
-    token.largest_holder = res.data.largest_holder
-    token.top10_percentage = res.data.top10_percentage
-    token.top10_holders = res.data.top10_holders
-}
+//     token.largest_holder = res.data.largest_holder
+//     token.top10_percentage = res.data.top10_percentage
+//     token.top10_holders = res.data.top10_holders
+// }
 </script>
 
 <style scoped>
