@@ -17,7 +17,8 @@
                             <div>
                                 <h1 class="text-3xl font-bold text-slate-900 flex items-center gap-2">
                                     {{ token.name }}
-                                    <span class="text-blue-500 text-sm">✔</span>
+                                    <img :src="verified" alt="Verified" class="w-4 h-4 flex-shrink-0"
+                                        title="Verified Token" />
                                 </h1>
                                 <div class="h-px bg-    slate-100 my-3 w-40"></div>
 
@@ -149,6 +150,7 @@
 <script setup>
 import { reactive, onMounted } from "vue"
 import axios from "axios"
+import verified from "@/assets/verify.png";
 
 import Header from "@/components/Header.vue"
 import Footer from "@/components/Footer.vue"
