@@ -278,17 +278,18 @@
                         <div class="border rounded-xl overflow-hidden">
 
                             <!-- HEADER -->
-                            <div class="grid grid-cols-4 bg-slate-50 text-sm text-slate-500 px-4 py-3 border-b">
+                            <div class="grid grid-cols-5 bg-slate-50 text-sm text-slate-500 px-4 py-3 border-b">
                                 <span>From</span>
                                 <span>To</span>
-                                <span class="text-right">Amount</span>
-                                <span class="text-right">Time</span>
+                                <span>Type</span>
+                                <span>Amount</span>
+                                <span>Time</span>
                             </div>
 
                             <!-- ROWS -->
                             <div class="divide-y text-sm">
                                 <div v-for="(tx, i) in token.transactions || []" :key="i"
-                                    class="grid grid-cols-4 px-4 py-3 hover:bg-slate-50 transition">
+                                    class="grid grid-cols-5 px-4 py-3 hover:bg-slate-50 transition">
                                     <span class="text-slate-700 font-medium">
                                         {{ shorten(tx.from) }}
                                     </span>
@@ -297,16 +298,19 @@
                                         → {{ shorten(tx.to) }}
                                     </span>
 
-                                    <span class="text-right font-semibold text-slate-900">
+                                    <span class="capitalize text-slate-500">
+                                        {{ tx.type }}
+                                    </span>
+
+                                    <span class="text-slate-700 font-medium">
                                         {{ formatNumber(tx.amount) }} {{ token.asset_code }}
                                     </span>
 
-                                    <span class="text-right text-slate-500">
+                                    <span class="text-slate-700 font-medium">
                                         {{ tx.time }}
                                     </span>
                                 </div>
                             </div>
-
                         </div>
 
                     </section>
@@ -442,8 +446,8 @@ async function fetchToken() {
     try {
         const res = await axios.get("/api/token/show", {
             params: {
-                issuer: "GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
-                // issuer: "GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA"
+                // issuer: "GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
+                issuer: "GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA"
             }
         })
 
