@@ -1050,19 +1050,4 @@ class TokenController extends Controller
             $service->getTokenInsight($request->issuer, $code)
         );
     }
-
-    public function holders(Request $request, StellarTokenService $service)
-    {
-        $request->validate([
-            'issuer' => 'required|string',
-            'code' => 'required|string'
-        ]);
-
-        return response()->json(
-            $service->getHolderAnalytics(
-                $request->issuer,
-                $request->code
-            )
-        );
-    }
 }
