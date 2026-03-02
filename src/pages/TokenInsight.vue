@@ -395,10 +395,6 @@ import verified from "@/assets/verify.png";
 import Header from "@/components/Header.vue"
 import Footer from "@/components/Footer.vue"
 
-import StatCard from "@/components/insight/StatCard.vue"
-import RiskCard from "@/components/insight/RiskCard.vue"
-import DetailRow from "@/components/insight/DetailRow.vue"
-
 import {
     Users,
     Coins,
