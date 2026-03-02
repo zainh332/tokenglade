@@ -3,49 +3,72 @@
         <Header />
         <div class="bg-gradient-to-b from-[#f7f9fc] to-[#eef2f7] min-h-screen pt-[8rem] pb-20">
             <div class="max-w-6xl mx-auto px-6 space-y-10">
-                <section class="insight-card insight-highlight p-7">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <!-- LEFT -->
-                        <div class="flex items-start gap-4">
+                <section class="relative overflow-hidden rounded-2xl p-6 border shadow-sm bg-white">
+                    <!-- TOP RIGHT -->
+                    <div
+                        class="absolute -top-24 -right-24 w-[420px] h-[420px] bg-gradient-to-br from-blue-200/60 via-purple-200/40 to-transparent rounded-full blur-3xl pointer-events-none">
+                    </div>
 
-                            <div
-                                class="w-16 h-16 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 font-semibold">
-                                <img v-if="token.image" :src="token.image"
-                                    class="w-16 h-16 rounded-full object-cover" />
-                            </div>
+                    <!-- CONTENT -->
+                    <div class="relative z-10">
 
+                        <!-- TOP HEADER -->
+                        <div class="flex items-center gap-4 mb-5">
+                            <img v-if="token.image" :src="token.image"
+                                class="w-16 h-16 rounded-full object-cover border" />
                             <div>
-                                <h1 class="text-3xl font-bold text-slate-900 flex items-center gap-2">
+                                <h1 class="text-3xl font-bold flex items-center gap-2">
                                     {{ token.name }}
-                                    <img :src="verified" alt="Verified" class="w-4 h-4 flex-shrink-0"
-                                        title="Verified Token" />
+                                    <img :src="verified" class="w-4 h-4" />
                                 </h1>
-                                <div class="h-px bg-    slate-100 my-3 w-40"></div>
 
-                                <p class="text-sm text-slate-500 mt-1">{{ token.asset_code }}</p>
-
-                                <div class="mt-4 flex items-center gap-2 text-sm">
-                                    <span class="text-slate-500">Issuer:</span>
-                                    <span class="font-semibold text-slate-800">{{ shorten(token.issuer) }}</span>
-                                    <button class="px-2 py-1 text-xs bg-slate-100 rounded hover:bg-slate-200">
-                                        Copy
-                                    </button>
-                                </div>
-
-                                <span
-                                    class="inline-block mt-4 text-xs px-3 py-1 rounded-full bg-cyan-50 text-cyan-700 font-medium">
-                                    Stellar
-                                </span>
+                                <p class="text-slate-500 text-sm mt-1">
+                                    {{ token.asset_code }} · {{ shorten(token.issuer) }}
+                                </p>
                             </div>
-
                         </div>
 
-                        <!-- RIGHT -->
-                        <div class="grid grid-cols-2 gap-4">
-                            <StatCard title="Holders" :value="token.holders" />
-                            <StatCard title="Total Supply" :value="formatNumber(token.total_supply)" />
-                            <StatCard title="Mint Date" :value="token.mint_date_human" />
-                            <StatCard title="Last Updated" :value="token.updated_at" />
+                        <!-- STATS -->
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-0 rounded-xl overflow-hidden border ">
+                            <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
+                                <p class="text-xs text-slate-500 flex items-center gap-1.5">
+                                    <Users class="w-3.5 h-3.5 text-slate-400" />
+                                    Holders
+                                </p>
+                                <p class="text-2xl font-semibold mt-1">{{ token.holders }}</p>
+                                <span class="text-xs text-blue-500 mt-2 inline-block">Stellar</span>
+                            </div>
+
+                            <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
+                                <p class="text-xs text-slate-500 flex items-center gap-1.5">
+                                    <Coins class="w-3.5 h-3.5 text-slate-400" />
+                                    Total Supply
+                                </p>
+                                <p class="text-2xl font-semibold mt-1">
+                                    {{ formatNumber(token.total_supply) }}
+                                </p>
+                                <span class="text-xs text-blue-500 mt-2 inline-block">{{ token.asset_code }}</span>
+                            </div>
+
+                            <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
+                                <p class="text-xs text-slate-500 flex items-center gap-1.5">
+                                    <Waves class="w-3.5 h-3.5 text-slate-400" />
+                                    Liquidity Pools
+                                </p>
+                                <p class="text-2xl font-semibold mt-1">
+                                    {{ token.liquidity_pools || 0 }}
+                                </p>
+                            </div>
+
+                            <div class="p-4 bg-slate-50">
+                                <p class="text-xs text-slate-500 flex items-center gap-1.5">
+                                    <Clock3 class="w-3.5 h-3.5 text-slate-400" />
+                                    Last Updated
+                                </p>
+                                <p class="text-2xl font-semibold mt-1">
+                                    {{ token.updated_at || "-" }}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -61,43 +84,9 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <RiskCard title="Issuer Locked" value="Yes" type="green" />
                         <RiskCard title="Minting Possible" value="No" type="green" />
-                        <!-- <RiskCard title="Top 10 Holders" :value="token.top10_percentage !== null
-                            ? token.top10_percentage + '%'
-                            : 'Loading...'" type="yellow" />
-                        <RiskCard title="Largest Wallet" value="34%" type="red" /> -->
                         <RiskCard title="Total Holders" :value="String(token.holders)" type="green" />
                     </div>
                 </section>
-
-                <!-- ========================= -->
-                <!-- Distribution -->
-                <!-- ========================= -->
-                <!-- <section class="insight-card p-7">
-                    <h2 class="text-2xl font-bold text-slate-900 mb-6">
-                        Holder Distribution
-                    </h2>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div class="bg-slate-50 border border-slate-100 rounded-xl p-6">
-                            <div class="h-56 flex items-center justify-center text-slate-400">
-                                Chart Area (Pie / Bars)
-                            </div>
-                        </div>
-
-                        <div class="space-y-3 text-sm text-slate-700">
-                            <p>Top 1 Wallet: <span class="font-bold text-slate-900">34%</span></p>
-                            <p>Top 5 Wallets: <span class="font-bold text-slate-900">56%</span></p>
-                            <p>Top 10 Wallets: <span class="font-bold text-slate-900">68%</span></p>
-                            <p>Others: <span class="font-bold text-slate-900">32%</span></p>
-
-                            <p class="pt-4 text-slate-600">
-                                Top 10 wallets control
-                                <span class="font-bold text-slate-900">68%</span>
-                                of total supply.
-                            </p>
-                        </div>
-                    </div>
-                </section> -->
 
                 <!-- ========================= -->
                 <!-- Activity -->
@@ -159,22 +148,26 @@ import StatCard from "@/components/insight/StatCard.vue"
 import RiskCard from "@/components/insight/RiskCard.vue"
 import DetailRow from "@/components/insight/DetailRow.vue"
 
+import {
+    Users,
+    Coins,
+    Waves,
+    Clock3
+} from "lucide-vue-next";
+
 const token = reactive({
     name: "",
     asset_code: "",
+    liquidity_pools: "",
     issuer: "",
     image: null,
     description: "",
     project: {},
 
     holders: 0,
-    supply: 0,
     mint_date_human: "-",
     updated_at: "-",
 
-    // largest_holder: null,
-    // top10_percentage: null,
-    // top10_holders: [],
     decimals: null,
 })
 
@@ -188,38 +181,24 @@ function shorten(str) {
 }
 
 function formatNumber(value) {
-    return new Intl.NumberFormat().format(value || 0)
+    return new Intl.NumberFormat("en-US", {
+        maximumFractionDigits: 0
+    }).format(value || 0);
 }
 
 async function fetchToken() {
     try {
         const res = await axios.get("/api/token/show", {
             params: {
-                issuer: "GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
+                // issuer: "GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
+                issuer: "GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA"
             }
         })
 
-        const data = res.data
-
         Object.assign(token, res.data)
-
-        // fetchAnalytics()
 
     } catch (error) {
         console.error("Error fetching token data:", error)
     }
 }
-
-// async function fetchAnalytics() {
-//     const res = await axios.get("/api/token/holders", {
-//         params: {
-//             issuer: token.issuer,
-//             code: token.asset_code
-//         }
-//     })
-
-//     token.largest_holder = res.data.largest_holder
-//     token.top10_percentage = res.data.top10_percentage
-//     token.top10_holders = res.data.top10_holders
-// }
 </script>
