@@ -182,9 +182,13 @@
                                                 {{ shorten(token.issuer) }}
                                             </span>
 
-                                            <button @click="navigator.clipboard.writeText(token.issuer)"
-                                                class="px-3 py-1.5 text-xs border rounded-md hover:bg-slate-50 transition">
-                                                Copy
+                                            <button @click="copyIssuer" :class="[
+                                                'px-3 py-1.5 text-xs rounded-md transition',
+                                                copied
+                                                    ? 'bg-green-500 text-white border-green-500'
+                                                    : 'border hover:bg-slate-50'
+                                            ]">
+                                                {{ copied ? 'Copied' : 'Copy' }}
                                             </button>
                                         </div>
                                     </div>
@@ -522,6 +526,7 @@ import verified from "@/assets/verify.png";
 import Header from "@/components/Header.vue"
 import Footer from "@/components/Footer.vue"
 const loading = ref(true)
+const copied = ref(false)
 
 import {
     Users,
@@ -583,5 +588,41 @@ async function fetchToken() {
     } finally {
         loading.value = false
     }
+}
+
+function copyIssuer() {
+    if (!token.issuer) return
+
+    const success = () => {
+        copied.value = true
+
+        setTimeout(() => {
+            copied.value = false
+        }, 2000)
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(token.issuer)
+            .then(success)
+            .catch(() => fallbackCopy(success))
+    } else {
+        fallbackCopy(success)
+    }
+}
+
+function fallbackCopy(onSuccess) {
+    const textarea = document.createElement("textarea")
+    textarea.value = token.issuer
+    textarea.style.position = "fixed"
+    textarea.style.left = "-9999px"
+
+    document.body.appendChild(textarea)
+    textarea.focus()
+    textarea.select()
+
+    document.execCommand("copy")
+    document.body.removeChild(textarea)
+
+    onSuccess()
 }
 </script>
