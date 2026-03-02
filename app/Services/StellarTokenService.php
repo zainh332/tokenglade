@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Collection;
 use Yosymfony\Toml\Toml;
@@ -26,7 +27,16 @@ class StellarTokenService
             throw new \Exception('Asset not found.');
         }
 
+        $url = "https://api.stellar.expert/explorer/public/asset/{$code}-{$issuer}";
+
+        $response = Http::timeout(8)->get($url);
+
+        if (!$response->ok()) {
+            throw new \Exception('response not found.');
+        }
+
         $asset = $assetResponse->json('_embedded.records.0');
+        $mintDateRaw = $response->json('created');
         $meta = $this->fetchTomlMetadata($asset);
 
         if (!$asset) {
@@ -57,22 +67,28 @@ class StellarTokenService
 
             'issuer_locked'    => $issuerData['flags']['auth_immutable'] ?? false,
             'minting_possible' => !($issuerData['flags']['auth_immutable'] ?? false),
+            'mint_date_human' => Carbon::createFromTimestampUTC($mintDateRaw)
+                ->format('Y-m-d'),
         ];
     }
 
     public function getHolderAnalytics(string $issuer, string $code): array
     {
-        $topHolders = $this->fetchTopHolders($code, $issuer);
+        $topHolders = collect(
+            $this->fetchTopHolders($code, $issuer)
+        );
 
-        $holders = collect($topHolders)
-            ->filter(fn($h) => $h['balance'] > 0)
-            ->sortByDesc('balance')
-            ->values();
+        if ($topHolders->isEmpty()) {
+            return [
+                'largest_holder'   => null,
+                'top10_percentage' => 0,
+                'top10_holders'    => [],
+            ];
+        }
 
-        $largestHolder = $holders->first();
+        $largestHolder = $topHolders->first();
 
-        $top10 = $holders->take(10);
-
+        $top10 = $topHolders->take(10)->values();
         $assetResponse = Http::get($this->horizon . '/assets', [
             'asset_issuer' => $issuer,
             'asset_code' => $code,
@@ -90,15 +106,20 @@ class StellarTokenService
         return [
             'largest_holder'   => $largestHolder,
             'top10_percentage' => round($top10Percentage, 2),
-            'top10_holders'          => $top10,
+            'top10_holders'    => $top10,
         ];
     }
 
     protected function fetchTopHolders(string $code, string $issuer): array
     {
-        $url = $this->horizon . "/accounts?asset={$code}:{$issuer}&limit=200";
+        $asset = "{$code}-{$issuer}";
 
-        $response = Http::get($url);
+        $url = "https://api.stellar.expert/explorer/public/asset/{$asset}/holders";
+
+        $response = Http::timeout(10)->get($url, [
+            'limit' => 10,
+            'order' => 'desc'
+        ]);
 
         if (!$response->ok()) {
             return [];
@@ -107,23 +128,11 @@ class StellarTokenService
         $records = $response->json('_embedded.records') ?? [];
 
         return collect($records)
-            ->map(function ($account) use ($code, $issuer) {
-
-                $balance = collect($account['balances'])
-                    ->first(function ($b) use ($code, $issuer) {
-                        return ($b['asset_code'] ?? null) === $code
-                            && ($b['asset_issuer'] ?? null) === $issuer;
-                    });
-
-                return [
-                    'account' => $account['account_id'],
-                    'balance' => (float) ($balance['balance'] ?? 0),
-                ];
-            })
-            ->filter(fn($h) => $h['balance'] > 0)
-            ->sortByDesc('balance')
+            ->map(fn($r) => [
+                'account' => $r['account'],
+                'balance' => (float) $r['balance'],
+            ])
             ->values()
-            ->take(10)
             ->toArray();
     }
 

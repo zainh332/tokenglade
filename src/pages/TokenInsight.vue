@@ -43,7 +43,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <StatCard title="Holders" :value="token.holders" />
                             <StatCard title="Total Supply" :value="formatNumber(token.total_supply)" />
-                            <StatCard title="Mint Date" :value="token.mint_date" />
+                            <StatCard title="Mint Date" :value="token.mint_date_human" />
                             <StatCard title="Last Updated" :value="token.updated_at" />
                         </div>
                     </div>
@@ -136,7 +136,7 @@
                         <DetailRow label="Issuer Account" :value="token.issuer" />
                         <DetailRow label="Decimals" :value="token.decimals" />
                         <DetailRow label="Trustlines" value="1245" />
-                        <DetailRow label="Creation Date" :value="token.mint_date" />
+                        <DetailRow label="Creation Date" :value="token.mint_date_human" />
                         <DetailRow label="Burned Supply" value="0" />
                     </div>
                 </section>
@@ -167,7 +167,7 @@ const token = reactive({
 
     holders: 0,
     supply: 0,
-    mint_date: "-",
+    mint_date_human: "-",
     updated_at: "-",
 
     largest_holder: null,
