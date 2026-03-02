@@ -17,21 +17,37 @@
           </div>
           <div class="hidden sm:ml-6 lg:flex sm:space-x-6">
             <template v-for="link in Links" :key="link.name">
-              <router-link
-                v-if="link.to"
-                :to="link.to"
-                class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14"
-              >
+
+              <!-- TOKEN INSIGHT DROPDOWN -->
+              <div v-if="link.name === 'Token Insight'" ref="insightDropdown" class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
+
+                <button @click="showInsightDropdown = !showInsightDropdown">
+                  {{ link.name }}
+                </button>
+
+                <div v-if="showInsightDropdown"
+                  class="absolute top-full mt-3 w-[420px] max-w-[90vw] bg-white border rounded-xl shadow-lg p-4 z-50">
+                  <p class="text-sm text-slate-600 mb-2">
+                    Enter issuer address
+                  </p>
+
+                  <input v-model="issuerInput" type="text" placeholder="G...."
+                    class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400" />
+
+                  <button @click.stop="goToInsight"
+                    class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
+                    Open Insight
+                  </button>
+                </div>
+              </div>
+
+              <router-link v-else-if="link.to" :to="link.to"
+                class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
                 {{ link.name }}
               </router-link>
 
-              <a
-                v-else
-                :href="link.href"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14"
-              >
+              <a v-else :href="link.href" target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
                 {{ link.name }}
               </a>
             </template>
@@ -113,6 +129,10 @@ const ConnectWalletModals = ref(false);
 const walletPk = ref('')
 const emit = defineEmits(['wallet-status']);
 
+const showInsightDropdown = ref(false)
+const issuerInput = ref("")
+const insightDropdown = ref(null)
+
 const isConnected = computed(() => !!walletPk.value)
 
 const hideHeader = ref(false);
@@ -128,6 +148,7 @@ const handleScroll = () => {
 };
 
 onMounted(() => {
+  document.addEventListener("mousedown", handleOutsideClick)
   window.addEventListener("scroll", handleScroll);
   walletPk.value =
     getCookie('public_key') ||
@@ -140,6 +161,7 @@ function shortMiddle(str, head = 4, tail = 4) {
 }
 
 onUnmounted(() => {
+  document.removeEventListener("mousedown", handleOutsideClick)
   window.removeEventListener("scroll", handleScroll);
 });
 
@@ -159,4 +181,31 @@ const Links = [
     to: '/token-insight'
   },
 ]
+
+import { useRouter } from "vue-router"
+
+const router = useRouter()
+
+function goToInsight() {
+  if (!issuerInput.value) return
+
+  router.push({
+    path: "/token-insight",
+    query: { issuer: issuerInput.value }
+  })
+
+  showInsightDropdown.value = false
+}
+
+function handleOutsideClick(e) {
+  if (!insightDropdown.value) return
+
+  const el = Array.isArray(insightDropdown.value)
+    ? insightDropdown.value[0]
+    : insightDropdown.value
+
+  if (!el.contains(e.target)) {
+    showInsightDropdown.value = false
+  }
+}
 </script>
