@@ -70,10 +70,10 @@ class StellarTokenService
             'mint_date_human' => Carbon::createFromTimestampUTC($mintDateRaw)->format('Y-m-d'),
             'liquidity_pools'     => (float) ($horizon['num_liquidity_pools'] ?? 0),
             'updated_at'     => '1 min ago',
-            'website'             => $toml['project']['org_url'] ?? $code,
-            'twitter'             => $this->normalizeUrl($toml['project']['org_twitter'] ?? null),
-            'email'             => $toml['project']['org_email'] ?? $code,
-            'support_email'             => $toml['project']['org_support'] ?? $code,
+            'website'             => $toml['project']['org_url'] ?? null,
+            'twitter'             => 'https://x.com/' . $toml['project']['org_twitter'] ?? null,
+            'email'             => $toml['project']['org_email'] ?? null,
+            'support_email'             => $toml['project']['org_support'] ?? null,
 
             'auth_required'     => ($horizon['flags']['auth_required'] ?? false),
             'auth_revocable'     => ($horizon['flags']['auth_revocable'] ?? false),
@@ -303,18 +303,5 @@ class StellarTokenService
             'project' => $project,
             'token'   => $token,
         ];
-    }
-
-    private function normalizeUrl(?string $url): ?string
-    {
-        if (!$url) {
-            return null;
-        }
-
-        if (!str_starts_with($url, 'http')) {
-            return 'https://' . $url;
-        }
-
-        return $url;
     }
 }
