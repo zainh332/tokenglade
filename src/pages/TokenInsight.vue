@@ -46,11 +46,17 @@
                                 <div>
                                     <h1 class="text-3xl font-bold flex items-center gap-2">
                                         {{ token.name }}
-                                        <img :src="verified" class="w-4 h-4" />
+
+                                        <img v-if="isVerified" :src="verified" class="w-4 h-4" />
+
+                                        <span v-else @click="contactVerification"
+                                            class="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded border border-amber-200 cursor-pointer hover:bg-amber-100">
+                                            Get Verified
+                                        </span>
                                     </h1>
 
-                                    <p class="text-slate-500 text-sm mt-1">
-                                        {{ token?.tagline || "Next generation AMM platform on Stellar" }}
+                                    <p v-if="token?.conditions" class="text-slate-500 text-sm mt-1">
+                                        {{ token.conditions }}
                                     </p>
                                 </div>
                             </div>
@@ -526,7 +532,7 @@
 </template>
 
 <script setup>
-import { reactive, onMounted, watch, ref } from "vue"
+import { reactive, onMounted, watch, ref, computed } from "vue"
 import { useRoute } from "vue-router"
 import axios from "axios"
 import verified from "@/assets/verify.png";
@@ -537,6 +543,7 @@ const loading = ref(true)
 const copied = ref(false)
 const issuerInput = ref("")
 const route = useRoute()
+const verified_issuer = "GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
 
 import {
     Users,
@@ -564,6 +571,7 @@ const token = reactive({
     updated_at: "-",
 
     decimals: null,
+    conditions: null,
 })
 
 onMounted(() => {
@@ -651,5 +659,13 @@ async function fetchToken() {
     } finally {
         loading.value = false
     }
+}
+
+const isVerified = computed(() => {
+    return token.issuer === verified_issuer
+})
+
+function contactVerification() {
+    window.open("https://x.com/TokenGlade", "_blank")
 }
 </script>
