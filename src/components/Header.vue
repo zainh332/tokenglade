@@ -15,58 +15,37 @@
               <img class="w-auto h-8 mt-2" :src="logo" alt="TokenGlade Logo" />
             </router-link>
           </div>
-          <div class="hidden sm:ml-6 lg:flex sm:space-x-6">
-            <template v-for="link in Links" :key="link.name">
+          <template v-for="link in Links" :key="link.name">
+            <router-link v-if="link.to" :to="link.to"
+              class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
+              {{ link.name }}
+            </router-link>
 
-              <!-- TOKEN INSIGHT DROPDOWN -->
-              <div v-if="link.name === 'Token Insight'" ref="insightDropdown"
-                class="relative inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
-
-                <button @click="showInsightDropdown = !showInsightDropdown">
-                  {{ link.name }}
-                </button>
-
-                <Transition enter-active-class="transition duration-200 ease-out"
-                  enter-from-class="opacity-0 scale-95 translate-y-2"
-                  enter-to-class="opacity-100 scale-100 translate-y-0"
-                  leave-active-class="transition duration-300 ease-in"
-                  leave-from-class="opacity-100 scale-100 translate-y-0"
-                  leave-to-class="opacity-0 scale-95 translate-y-2">
-                  <div v-if="showInsightDropdown"
-                    class="absolute top-full mt-3 w-[600px] max-w-[95vw] bg-white border rounded-xl shadow-lg p-4 z-50">
-                    <p class="text-sm text-slate-600 mb-2">
-                      Enter issuer address
-                    </p>
-
-                    <input v-model="issuerInput" type="text" placeholder="G...."
-                      class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400" />
-
-                    <button @click.stop="goToInsight"
-                      class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
-                      Open Insight
-                    </button>
-                  </div>
-                </Transition>
-              </div>
-
-              <router-link v-else-if="link.to" :to="link.to"
-                class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
-                {{ link.name }}
-              </router-link>
-
-              <a v-else :href="link.href" target="_blank" rel="noopener noreferrer"
-                class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
-                {{ link.name }}
-              </a>
-            </template>
-          </div>
+            <a v-else :href="link.href" target="_blank" rel="noopener noreferrer"
+              class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
+              {{ link.name }}
+            </a>
+          </template>
 
         </div>
         <div class="hidden sm:ml-6 lg:flex sm:items-center">
 
           <!-- Connect Wallet Button -->
           <div class="flex items-center gap-2 ">
+            <button @click="tokenSearchModal = true"
+              class="flex items-center gap-2 px-4 py-2 text-sm border rounded-full hover:bg-slate-50 transition">
 
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-4.3-4.3m0 0A7.5 7.5 0 105.4 5.4a7.5 7.5 0 0011.3 11.3z" />
+
+              </svg>
+
+              <span class="text-slate-600">Search Token</span>
+
+            </button>
             <button v-if="!isConnected" @click="OpenWalletModal" class="text-xs text-white rounded-full btn-padding sm:text-t14
            bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]
            bg-[length:200%_200%] bg-no-repeat animate-gradientMove">
@@ -119,6 +98,7 @@
 
   <Modal :open="signInModal" />
   <ConnectWalletModal v-model="ConnectWalletModals" />
+  <TokenSearchModal v-model="tokenSearchModal" />
 
 </template>
 
@@ -131,15 +111,14 @@ import { ref, onMounted, onUnmounted, computed } from "vue";
 import Modal from '@/components/Modal.vue';
 import ConnectWalletModal from './ConnectWallet.vue';
 import { E, getCookie, hasLogin, saveToken } from "../utils/utils.js";
+import TokenSearchModal from "@/components/TokenSearchModal.vue"
 
 const signInModal = ref(false);
 const ConnectWalletModals = ref(false);
 const walletPk = ref('')
 const emit = defineEmits(['wallet-status']);
 
-const showInsightDropdown = ref(false)
-const issuerInput = ref("")
-const insightDropdown = ref(null)
+const tokenSearchModal = ref(false)
 
 const isConnected = computed(() => !!walletPk.value)
 
@@ -156,7 +135,6 @@ const handleScroll = () => {
 };
 
 onMounted(() => {
-  document.addEventListener("mousedown", handleOutsideClick)
   window.addEventListener("scroll", handleScroll);
   walletPk.value =
     getCookie('public_key') ||
@@ -169,7 +147,6 @@ function shortMiddle(str, head = 4, tail = 4) {
 }
 
 onUnmounted(() => {
-  document.removeEventListener("mousedown", handleOutsideClick)
   window.removeEventListener("scroll", handleScroll);
 });
 
@@ -183,37 +160,11 @@ const Links = [
   {
     name: 'Buy TKG Tokens',
     href: 'https://lobstr.co/trade/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ',
-  },
-  {
-    name: 'Token Insight',
-    to: '/token-insight'
-  },
+  }
 ]
 
 import { useRouter } from "vue-router"
 
 const router = useRouter()
 
-function goToInsight() {
-  if (!issuerInput.value) return
-
-  router.push({
-    path: "/token-insight",
-    query: { issuer: issuerInput.value }
-  })
-
-  showInsightDropdown.value = false
-}
-
-function handleOutsideClick(e) {
-  if (!insightDropdown.value) return
-
-  const el = Array.isArray(insightDropdown.value)
-    ? insightDropdown.value[0]
-    : insightDropdown.value
-
-  if (!el.contains(e.target)) {
-    showInsightDropdown.value = false
-  }
-}
 </script>
