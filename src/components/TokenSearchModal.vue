@@ -14,7 +14,7 @@
                     enter-to="opacity-100 scale-100" leave="duration-150 ease-in" leave-from="opacity-100 scale-100"
                     leave-to="opacity-0 scale-95">
 
-                    <DialogPanel class="w-full max-w-lg bg-white rounded-2xl shadow-xl p-6">
+                    <DialogPanel class="w-[520px] max-w-[90vw] bg-white rounded-2xl shadow-xl p-6">
 
                         <DialogTitle class="text-lg font-semibold mb-4">
                             Search Stellar Token
@@ -27,10 +27,15 @@
                         <input v-model="issuerInput" @keyup.enter="openToken" type="text" placeholder="G..."
                             class="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-400" />
 
-                        <button @click="openToken" class="w-full mt-4 py-3 rounded-xl text-white font-medium
-              bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]
-              hover:opacity-90 transition">
-                            Open Token Insight
+
+                        <p class="text-red-500 text-sm mt-2 min-h-[20px]">
+                            {{ error }}
+                        </p>
+
+                        <button :disabled="loading" @click="openToken" class="w-full mt-4 py-3 rounded-xl text-white font-medium
+  bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]
+  hover:opacity-90 transition disabled:opacity-50">
+                            {{ loading ? "Checking..." : "Open Token Insight" }}
                         </button>
 
                     </DialogPanel>
@@ -65,19 +70,56 @@ const router = useRouter()
 
 const issuerInput = ref("")
 
-function openToken() {
+const error = ref("")
+const loading = ref(false)
 
-    if (!issuerInput.value) return
+function isValidStellarAddress(address) {
+    return /^G[A-Z2-7]{55}$/.test(address)
+}
+
+async function openToken() {
+
+  error.value = ""
+
+  if (!issuerInput.value) {
+    error.value = "Please enter an issuer address"
+    return
+  }
+
+  if (!isValidStellarAddress(issuerInput.value)) {
+    error.value = "Invalid Stellar address"
+    return
+  }
+
+  loading.value = true
+
+  try {
+
+    const res = await fetch(
+      `https://horizon.stellar.org/assets?asset_issuer=${issuerInput.value}`
+    )
+
+    const data = await res.json()
+
+    if (!data._embedded.records.length) {
+      error.value = "This address has not issued any tokens"
+      loading.value = false
+      return
+    }
 
     router.push({
-        path: "/token-insight",
-        query: { issuer: issuerInput.value }
+      path: "/token-insight",
+      query: { issuer: issuerInput.value }
     })
 
     issuerInput.value = ""
-
     emit("update:modelValue", false)
 
+  } catch (e) {
+    error.value = "Issuer not found on Stellar network"
+  }
+
+  loading.value = false
 }
 
 </script>
