@@ -35,8 +35,6 @@ class StellarTokenService
             throw new \Exception('response not found.');
         }
 
-        // dd($response->json());
-
         $horizon = $horizonResponse->json('_embedded.records.0');
         $mintDateRaw = $response->json('created');
         $toml = $this->fetchTomlMetadata($horizon);
@@ -73,7 +71,7 @@ class StellarTokenService
             'liquidity_pools'     => (float) ($horizon['num_liquidity_pools'] ?? 0),
             'updated_at'     => '1 min ago',
             'website'             => $toml['project']['org_url'] ?? $code,
-            'twitter'             => $toml['project']['org_twitter'] ?? $code,
+            'twitter'             => $this->normalizeUrl($toml['project']['org_twitter'] ?? null),
             'email'             => $toml['project']['org_email'] ?? $code,
             'support_email'             => $toml['project']['org_support'] ?? $code,
 
@@ -305,5 +303,18 @@ class StellarTokenService
             'project' => $project,
             'token'   => $token,
         ];
+    }
+
+    private function normalizeUrl(?string $url): ?string
+    {
+        if (!$url) {
+            return null;
+        }
+
+        if (!str_starts_with($url, 'http')) {
+            return 'https://' . $url;
+        }
+
+        return $url;
     }
 }
