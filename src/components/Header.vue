@@ -15,17 +15,19 @@
               <img class="w-auto h-8 mt-2" :src="logo" alt="TokenGlade Logo" />
             </router-link>
           </div>
-          <template v-for="link in Links" :key="link.name">
-            <router-link v-if="link.to" :to="link.to"
-              class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
-              {{ link.name }}
-            </router-link>
+          <div class="hidden sm:ml-6 lg:flex sm:space-x-6">
+            <template v-for="link in Links" :key="link.name">
+              <router-link v-if="link.to" :to="link.to"
+                class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
+                {{ link.name }}
+              </router-link>
 
-            <a v-else :href="link.href" target="_blank" rel="noopener noreferrer"
-              class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
-              {{ link.name }}
-            </a>
-          </template>
+              <a v-else :href="link.href" target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
+                {{ link.name }}
+              </a>
+            </template>
+          </div>
 
         </div>
         <div class="hidden sm:ml-6 lg:flex sm:items-center">
