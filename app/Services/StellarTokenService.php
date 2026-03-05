@@ -57,7 +57,7 @@ class StellarTokenService
 
             'name'             => $toml['project']['org_name'] ?? $code,
             'image'            => $toml['token']['image'] ?? null,
-            'description'      => $toml['token']['description'] ?? null,
+            'description'      => $toml['project']['org_description'] ?? null,
             'decimals'         => $toml['token']['decimals'] ?? 7,
 
             'project'          => $toml['project'] ?? [],
