@@ -105,7 +105,7 @@
                     class="relative overflow-hidden rounded-2xl p-6 border shadow-sm bg-gradient-to-br from-white via-white to-blue-50/40">
 
                     <!-- TITLE -->
-                    <h2 class="text-2xl font-bold text-slate-900 mb-4">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-3">
                         Project Info
                     </h2>
 
@@ -229,11 +229,11 @@
                 <section class="insight-card p-6">
 
                     <!-- TITLE -->
-                    <h2 class="text-2xl font-bold text-slate-900 mb-5">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-3">
                         Security & Permissions
                     </h2>
 
-                    <div class="border-t pt-5">
+                    <div class="border-t pt-5 space-y-5">
 
                         <!-- LOADING STATE -->
                         <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -342,173 +342,180 @@
                     <!-- ================= LEFT SIDE ================= -->
                     <section class="insight-card p-6 lg:col-span-2">
 
-                        <h2 class="text-2xl font-bold text-slate-900 mb-6">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-3">
                             Network Exposure
                         </h2>
 
-                        <!-- LOADING -->
-                        <template v-if="loading">
+                        <div class="border-t pt-5 space-y-5">
 
-                            <!-- metric skeleton -->
-                            <div class="grid grid-cols-2 lg:grid-cols-4 border rounded-xl overflow-hidden mb-6">
-                                <div v-for="i in 4" :key="i" class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
-                                    <div class="h-3 w-24 bg-slate-200 rounded animate-pulse mb-2"></div>
-                                    <div class="h-6 w-20 bg-slate-200 rounded animate-pulse"></div>
-                                </div>
-                            </div>
+                            <!-- LOADING -->
+                            <template v-if="loading">
 
-                            <!-- table skeleton -->
-                            <div class="border rounded-xl overflow-hidden">
-                                <div class="grid grid-cols-5 bg-slate-50 px-4 py-3 border-b">
-                                    <div class="h-4 bg-slate-200 rounded animate-pulse w-12"></div>
-                                    <div class="h-4 bg-slate-200 rounded animate-pulse w-8"></div>
-                                    <div class="h-4 bg-slate-200 rounded animate-pulse w-10"></div>
-                                    <div class="h-4 bg-slate-200 rounded animate-pulse w-14"></div>
-                                    <div class="h-4 bg-slate-200 rounded animate-pulse w-10"></div>
+                                <!-- metric skeleton -->
+                                <div class="grid grid-cols-2 lg:grid-cols-4 border rounded-xl overflow-hidden mb-6">
+                                    <div v-for="i in 4" :key="i"
+                                        class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
+                                        <div class="h-3 w-24 bg-slate-200 rounded animate-pulse mb-2"></div>
+                                        <div class="h-6 w-20 bg-slate-200 rounded animate-pulse"></div>
+                                    </div>
                                 </div>
 
-                                <div class="divide-y">
-                                    <div v-for="i in 5" :key="i" class="grid grid-cols-5 px-4 py-3">
-                                        <div class="h-4 bg-slate-200 rounded animate-pulse w-20"></div>
-                                        <div class="h-4 bg-slate-200 rounded animate-pulse w-20"></div>
-                                        <div class="h-4 bg-slate-200 rounded animate-pulse w-14"></div>
-                                        <div class="h-4 bg-slate-200 rounded animate-pulse w-16"></div>
+                                <!-- table skeleton -->
+                                <div class="border rounded-xl overflow-hidden">
+                                    <div class="grid grid-cols-5 bg-slate-50 px-4 py-3 border-b">
                                         <div class="h-4 bg-slate-200 rounded animate-pulse w-12"></div>
+                                        <div class="h-4 bg-slate-200 rounded animate-pulse w-8"></div>
+                                        <div class="h-4 bg-slate-200 rounded animate-pulse w-10"></div>
+                                        <div class="h-4 bg-slate-200 rounded animate-pulse w-14"></div>
+                                        <div class="h-4 bg-slate-200 rounded animate-pulse w-10"></div>
                                     </div>
-                                </div>
-                            </div>
 
-                        </template>
-
-                        <!-- REAL DATA -->
-                        <template v-else>
-
-                            <!-- TOP METRICS -->
-                            <div class="grid grid-cols-2 lg:grid-cols-4 border rounded-xl overflow-hidden mb-6">
-
-                                <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
-                                    <p class="text-xs text-slate-500">Claimable Balances</p>
-                                    <p class="text-1xl font-semibold mt-1">
-                                        {{ formatNumber(token.num_claimable_balances) }}
-                                    </p>
-                                </div>
-
-                                <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
-                                    <p class="text-xs text-slate-500">Connected Contracts</p>
-                                    <p class="text-1xl font-semibold mt-1">
-                                        {{ formatNumber(token.num_contracts) }}
-                                    </p>
-                                </div>
-
-                                <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
-                                    <p class="text-xs text-slate-500">Liquidity Pools Amount</p>
-                                    <p class="text-1xl font-semibold mt-1">
-                                        {{ formatNumber(token.liquidity_pools_amount || 0) }}
-                                    </p>
-                                </div>
-
-                                <div class="p-4 bg-slate-50">
-                                    <p class="text-xs text-slate-500">Contracts Amount</p>
-                                    <p class="text-1xl font-semibold mt-1">
-                                        {{ formatNumber(token.contracts_amount || 0) }}
-                                    </p>
-                                </div>
-
-                            </div>
-
-                            <!-- TRANSACTIONS -->
-                            <div class="border rounded-xl overflow-hidden">
-
-                                <div class="grid grid-cols-5 bg-slate-50 text-sm text-slate-500 px-4 py-3 border-b">
-                                    <span>From</span>
-                                    <span>To</span>
-                                    <span>Type</span>
-                                    <span>Amount</span>
-                                    <span>Time</span>
-                                </div>
-
-                                <div class="divide-y text-sm">
-                                    <div v-for="(tx, i) in token.transactions || []" :key="i"
-                                        class="grid grid-cols-5 px-4 py-3 hover:bg-slate-50 transition">
-                                        <span class="text-slate-700 font-medium">{{ shorten(tx.from) }}</span>
-                                        <span class="text-slate-700 font-medium">→ {{ shorten(tx.to) }}</span>
-                                        <span class="capitalize text-slate-500">{{ tx.type }}</span>
-                                        <span class="text-slate-700 font-medium">
-                                            {{ formatNumber(tx.amount) }} {{ token.asset_code }}
-                                        </span>
-                                        <span class="text-slate-700 font-medium">{{ tx.time }}</span>
+                                    <div class="divide-y">
+                                        <div v-for="i in 5" :key="i" class="grid grid-cols-5 px-4 py-3">
+                                            <div class="h-4 bg-slate-200 rounded animate-pulse w-20"></div>
+                                            <div class="h-4 bg-slate-200 rounded animate-pulse w-20"></div>
+                                            <div class="h-4 bg-slate-200 rounded animate-pulse w-14"></div>
+                                            <div class="h-4 bg-slate-200 rounded animate-pulse w-16"></div>
+                                            <div class="h-4 bg-slate-200 rounded animate-pulse w-12"></div>
+                                        </div>
                                     </div>
                                 </div>
 
-                            </div>
+                            </template>
 
-                        </template>
+                            <!-- REAL DATA -->
+                            <template v-else>
+
+                                <!-- TOP METRICS -->
+                                <div class="grid grid-cols-2 lg:grid-cols-4 border rounded-xl overflow-hidden mb-6">
+
+                                    <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
+                                        <p class="text-xs text-slate-500">Claimable Balances</p>
+                                        <p class="text-1xl font-semibold mt-1">
+                                            {{ formatNumber(token.num_claimable_balances) }}
+                                        </p>
+                                    </div>
+
+                                    <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
+                                        <p class="text-xs text-slate-500">Connected Contracts</p>
+                                        <p class="text-1xl font-semibold mt-1">
+                                            {{ formatNumber(token.num_contracts) }}
+                                        </p>
+                                    </div>
+
+                                    <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
+                                        <p class="text-xs text-slate-500">Liquidity Pools Amount</p>
+                                        <p class="text-1xl font-semibold mt-1">
+                                            {{ formatNumber(token.liquidity_pools_amount || 0) }}
+                                        </p>
+                                    </div>
+
+                                    <div class="p-4 bg-slate-50">
+                                        <p class="text-xs text-slate-500">Contracts Amount</p>
+                                        <p class="text-1xl font-semibold mt-1">
+                                            {{ formatNumber(token.contracts_amount || 0) }}
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                                <!-- TRANSACTIONS -->
+                                <div class="border rounded-xl overflow-hidden">
+
+                                    <div class="grid grid-cols-5 bg-slate-50 text-sm text-slate-500 px-4 py-3 border-b">
+                                        <span>From</span>
+                                        <span>To</span>
+                                        <span>Type</span>
+                                        <span>Amount</span>
+                                        <span>Time</span>
+                                    </div>
+
+                                    <div class="divide-y text-sm">
+                                        <div v-for="(tx, i) in token.transactions || []" :key="i"
+                                            class="grid grid-cols-5 px-4 py-3 hover:bg-slate-50 transition">
+                                            <span class="text-slate-700 font-medium">{{ shorten(tx.from) }}</span>
+                                            <span class="text-slate-700 font-medium">→ {{ shorten(tx.to) }}</span>
+                                            <span class="capitalize text-slate-500">{{ tx.type }}</span>
+                                            <span class="text-slate-700 font-medium">
+                                                {{ formatNumber(tx.amount) }} {{ token.asset_code }}
+                                            </span>
+                                            <span class="text-slate-700 font-medium">{{ tx.time }}</span>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </template>
+                        </div>
                     </section>
 
                     <!-- ================= RIGHT SIDE ================= -->
                     <section class="insight-card p-6">
 
-                        <h2 class="text-2xl font-bold text-slate-900 mb-6">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-3">
                             Technical Details
                         </h2>
 
-                        <!-- LOADING -->
-                        <div v-if="loading" class="divide-y">
-                            <div v-for="i in 9" :key="i" class="py-3 flex justify-between">
-                                <div class="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
-                                <div class="h-4 w-20 bg-slate-200 rounded animate-pulse"></div>
+                        <div class="border-t pt-5 space-y-5">
+                            <!-- LOADING -->
+                            <div v-if="loading" class="divide-y">
+                                <div v-for="i in 9" :key="i" class="py-3 flex justify-between">
+                                    <div class="h-4 w-24 bg-slate-200 rounded animate-pulse"></div>
+                                    <div class="h-4 w-20 bg-slate-200 rounded animate-pulse"></div>
+                                </div>
+                            </div>
+
+                            <!-- REAL -->
+                            <div v-else class="divide-y text-sm">
+
+                                <div class="py-3 flex justify-between">
+                                    <span class="text-slate-500">Asset Code</span>
+                                    <span class="font-semibold">{{ token.asset_code }}</span>
+                                </div>
+
+                                <div class="py-3 flex justify-between">
+                                    <span class="text-slate-500">Issuer Account</span>
+                                    <span class="font-mono text-xs">{{ shorten(token.issuer) }}</span>
+                                </div>
+
+                                <div class="py-3 flex justify-between">
+                                    <span class="text-slate-500">Decimals</span>
+                                    <span class="font-semibold">{{ token.decimals }}</span>
+                                </div>
+
+                                <div class="py-3 flex justify-between">
+                                    <span class="text-slate-500">Trustlines</span>
+                                    <span class="font-semibold">{{ token.holders }}</span>
+                                </div>
+
+                                <div class="py-3 flex justify-between">
+                                    <span class="text-slate-500">Created</span>
+                                    <span class="font-semibold">{{ token.mint_date_human }}</span>
+                                </div>
+
+                                <div class="py-3 flex justify-between">
+                                    <span class="text-slate-500">Supply</span>
+                                    <span class="font-semibold">{{ formatNumber(token.total_supply) }}</span>
+                                </div>
+
+                                <div class="py-3 flex justify-between">
+                                    <span class="text-slate-500">Auth Required</span>
+                                    <span class="font-semibold">{{ token.auth_required ? "Yes" : "No" }}</span>
+                                </div>
+
+                                <div class="py-3 flex justify-between">
+                                    <span class="text-slate-500">Auth Revocable</span>
+                                    <span class="font-semibold">{{ token.auth_revocable ? "Yes" : "No" }}</span>
+                                </div>
+
+                                <div class="py-3 flex justify-between">
+                                    <span class="text-slate-500">Clawback Enabled</span>
+                                    <span class="font-semibold">{{ token.auth_clawback_enabled ? "Yes" : "No" }}</span>
+                                </div>
+
                             </div>
                         </div>
 
-                        <!-- REAL -->
-                        <div v-else class="divide-y text-sm">
-
-                            <div class="py-3 flex justify-between">
-                                <span class="text-slate-500">Asset Code</span>
-                                <span class="font-semibold">{{ token.asset_code }}</span>
-                            </div>
-
-                            <div class="py-3 flex justify-between">
-                                <span class="text-slate-500">Issuer Account</span>
-                                <span class="font-mono text-xs">{{ shorten(token.issuer) }}</span>
-                            </div>
-
-                            <div class="py-3 flex justify-between">
-                                <span class="text-slate-500">Decimals</span>
-                                <span class="font-semibold">{{ token.decimals }}</span>
-                            </div>
-
-                            <div class="py-3 flex justify-between">
-                                <span class="text-slate-500">Trustlines</span>
-                                <span class="font-semibold">{{ token.holders }}</span>
-                            </div>
-
-                            <div class="py-3 flex justify-between">
-                                <span class="text-slate-500">Created</span>
-                                <span class="font-semibold">{{ token.mint_date_human }}</span>
-                            </div>
-
-                            <div class="py-3 flex justify-between">
-                                <span class="text-slate-500">Supply</span>
-                                <span class="font-semibold">{{ formatNumber(token.total_supply) }}</span>
-                            </div>
-
-                            <div class="py-3 flex justify-between">
-                                <span class="text-slate-500">Auth Required</span>
-                                <span class="font-semibold">{{ token.auth_required ? "Yes" : "No" }}</span>
-                            </div>
-
-                            <div class="py-3 flex justify-between">
-                                <span class="text-slate-500">Auth Revocable</span>
-                                <span class="font-semibold">{{ token.auth_revocable ? "Yes" : "No" }}</span>
-                            </div>
-
-                            <div class="py-3 flex justify-between">
-                                <span class="text-slate-500">Clawback Enabled</span>
-                                <span class="font-semibold">{{ token.auth_clawback_enabled ? "Yes" : "No" }}</span>
-                            </div>
-
-                        </div>
                     </section>
 
                 </div>
@@ -567,14 +574,14 @@ onMounted(() => {
 })
 
 watch(
-  () => route.query,
-  (query) => {
-    if (query.issuer) {
-      issuerInput.value = query.issuer
-      fetchToken()
-    }
-  },
-  { immediate: true }
+    () => route.query,
+    (query) => {
+        if (query.issuer) {
+            issuerInput.value = query.issuer
+            fetchToken()
+        }
+    },
+    { immediate: true }
 )
 
 function shorten(str) {
