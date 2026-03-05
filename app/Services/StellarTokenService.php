@@ -93,61 +93,41 @@ class StellarTokenService
 
     private function getRecentTransactions(string $issuer, string $code): array
     {
-        $response = Http::get($this->horizon . '/payments', [
-            'asset_code'   => $code,
-            'asset_issuer' => $issuer,
-            'limit'        => 40,
-            'order'        => 'desc',
+        $assetType = $this->getAssetType($code);
+
+        $response = Http::get($this->horizon . '/trades', [
+            'base_asset_type'   => $assetType,
+            'base_asset_code'   => $code,
+            'base_asset_issuer' => $issuer,
+            'counter_asset_type' => 'native',
+            'order'             => 'desc',
+            'limit'             => 10,
         ]);
 
         if (!$response->ok()) {
             return [];
         }
 
-        $records = $response->json('_embedded.records') ?? [];
+        return collect($response->json()['_embedded']['records'])
+            ->map(function ($trade) {
 
-        return collect($records)
-            ->flatMap(function ($op) use ($issuer, $code) {
+                $amount = (float) $trade['base_amount'];
+                $value  = (float) $trade['counter_amount'];
 
-                // NORMAL payments
-                if (($op['type'] ?? '') === 'payment') {
-                    return [[
-                        'type'   => 'payment',
-                        'from'   => $op['from'] ?? '-',
-                        'to'     => $op['to'] ?? '-',
-                        'amount' => (float) ($op['amount'] ?? 0),
-                        'time'   => Carbon::parse($op['created_at'])->diffForHumans(),
-                    ]];
-                }
+                $price = $amount > 0 ? $value / $amount : 0;
 
-                // SOROBAN / CONTRACT OPS
-                if (!empty($op['asset_balance_changes'])) {
-
-                    return collect($op['asset_balance_changes'])
-                        ->filter(function ($c) use ($issuer, $code) {
-                            return (
-                                ($c['asset_code'] ?? null) === $code &&
-                                ($c['asset_issuer'] ?? null) === $issuer
-                            );
-                        })
-                        ->map(function ($c) use ($op) {
-                            return [
-                                'type'   => $c['type'] ?? 'contract',
-                                'from'   => $c['from'] ?? '-',
-                                'to'     => $c['to'] ?? '-',
-                                'amount' => (float) ($c['amount'] ?? 0),
-                                'time'   => Carbon::parse($op['created_at'])->diffForHumans(),
-                            ];
-                        });
-                }
-
-                return [];
+                return [
+                    'type'   => $trade['trade_type'],
+                    'side'   => $trade['base_is_seller'] ? 'sell' : 'buy',
+                    'amount' => $amount,
+                    'value'  => $value,
+                    'price'  => $price,
+                    'time'   => \Carbon\Carbon::parse($trade['ledger_close_time'])->diffForHumans(),
+                ];
             })
-            ->take(10)
             ->values()
             ->toArray();
     }
-
     // public function getHolderAnalytics(string $issuer, string $code): array
     // {
     //     $topHolders = collect(
@@ -304,5 +284,16 @@ class StellarTokenService
             'project' => $project,
             'token'   => $token,
         ];
+    }
+
+    private function getAssetType(string $code): string
+    {
+        $length = strlen($code);
+
+        if ($length <= 4) {
+            return 'credit_alphanum4';
+        }
+
+        return 'credit_alphanum12';
     }
 }

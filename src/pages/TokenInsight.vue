@@ -429,23 +429,38 @@
                                 <div class="border rounded-xl overflow-hidden">
 
                                     <div class="grid grid-cols-5 bg-slate-50 text-sm text-slate-500 px-4 py-3 border-b">
-                                        <span>From</span>
-                                        <span>To</span>
-                                        <span>Type</span>
+                                        <span>Side</span>
                                         <span>Amount</span>
+                                        <span>Price</span>
+                                        <span>Value</span>
                                         <span>Time</span>
                                     </div>
 
                                     <div class="divide-y text-sm">
                                         <div v-for="(tx, i) in token.transactions || []" :key="i"
                                             class="grid grid-cols-5 px-4 py-3 hover:bg-slate-50 transition">
-                                            <span class="text-slate-700 font-medium">{{ shorten(tx.from) }}</span>
-                                            <span class="text-slate-700 font-medium">→ {{ shorten(tx.to) }}</span>
-                                            <span class="capitalize text-slate-500">{{ tx.type }}</span>
-                                            <span class="text-slate-700 font-medium">
-                                                {{ formatNumber(tx.amount) }} {{ token.asset_code }}
+
+                                            <span
+                                                :class="tx.side === 'buy' ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'">
+                                                {{ tx.side.toUpperCase() }}
                                             </span>
-                                            <span class="text-slate-700 font-medium">{{ tx.time }}</span>
+
+                                            <span class="text-slate-700 font-medium">
+                                                {{ formatPrice(tx.amount) }} {{ token.asset_code }}
+                                            </span>
+
+                                            <span class="text-slate-700 font-medium">
+                                                {{ formatPrice(tx.price) }} XLM
+                                            </span>
+
+                                            <span class="text-slate-700 font-medium">
+                                                {{ formatPrice(tx.value) }} XLM
+                                            </span>
+
+                                            <span class="text-slate-700 font-medium">
+                                                {{ tx.time }}
+                                            </span>
+
                                         </div>
                                     </div>
 
@@ -667,5 +682,20 @@ const isVerified = computed(() => {
 
 function contactVerification() {
     window.open("https://x.com/TokenGlade", "_blank")
+}
+
+function formatPrice(num) {
+    if (!num) return "0";
+
+    const n = Number(num);
+
+    if (n < 1) {
+        return n.toFixed(6);
+    }
+
+    return n.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
 }
 </script>
