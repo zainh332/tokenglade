@@ -72,7 +72,7 @@ class StellarTokenService
             'liquidity_pools'     => (float) ($horizon['num_liquidity_pools'] ?? 0),
             'updated_at'     => '1 min ago',
             'website'             => $toml['project']['org_url'] ?? null,
-            'twitter'             => 'https://x.com/' . $toml['project']['org_twitter'] ?? null,
+            'twitter' => $toml['project']['org_twitter'] ? 'https://x.com/' . $toml['project']['org_twitter'] : null,
             'email'             => $toml['project']['org_email'] ?? null,
             'support_email'             => $toml['project']['org_support'] ?? null,
 
