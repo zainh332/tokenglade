@@ -79,47 +79,47 @@ function isValidStellarAddress(address) {
 
 async function openToken() {
 
-  error.value = ""
+    error.value = ""
 
-  if (!issuerInput.value) {
-    error.value = "Please enter an issuer address"
-    return
-  }
-
-  if (!isValidStellarAddress(issuerInput.value)) {
-    error.value = "Invalid Stellar address"
-    return
-  }
-
-  loading.value = true
-
-  try {
-
-    const res = await fetch(
-      `https://horizon.stellar.org/assets?asset_issuer=${issuerInput.value}`
-    )
-
-    const data = await res.json()
-
-    if (!data._embedded.records.length) {
-      error.value = "This address has not issued any tokens"
-      loading.value = false
-      return
+    if (!issuerInput.value) {
+        error.value = "Please enter an issuer address"
+        return
     }
 
-    router.push({
-      path: "/token-insight",
-      query: { issuer: issuerInput.value }
-    })
+    if (!isValidStellarAddress(issuerInput.value)) {
+        error.value = "Invalid Stellar address"
+        return
+    }
 
-    issuerInput.value = ""
-    emit("update:modelValue", false)
+    loading.value = true
 
-  } catch (e) {
-    error.value = "Issuer not found on Stellar network"
-  }
+    try {
 
-  loading.value = false
+        const res = await fetch(
+            `https://horizon.stellar.org/assets?asset_issuer=${issuerInput.value}`
+        )
+
+        const data = await res.json()
+
+        if (!data._embedded.records.length) {
+            error.value = "This address has not issued any tokens"
+            loading.value = false
+            return
+        }
+
+        router.push({
+            path: "/token-insight",
+            query: { issuer: issuerInput.value }
+        })
+
+        issuerInput.value = ""
+        emit("update:modelValue", false)
+
+    } catch (e) {
+        error.value = "Issuer not found on Stellar network"
+    }
+
+    loading.value = false
 }
 
 </script>
