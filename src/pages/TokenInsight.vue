@@ -1,7 +1,7 @@
 <template>
     <div>
         <Header />
-        <div class="bg-gradient-to-b from-[#f7f9fc] to-[#eef2f7] min-h-screen pt-[8rem] pb-20">
+        <div class="bg-gradient-to-b from-[#f7f9fc] to-[#eef2f7] min-h-screen pt-[8rem] pb-10">
             <div class="max-w-6xl mx-auto px-6 space-y-10">
                 <section class="relative overflow-hidden rounded-2xl p-6 border shadow-sm bg-white">
                     <!-- TOP RIGHT -->
@@ -519,7 +519,8 @@
 </template>
 
 <script setup>
-import { reactive, onMounted, ref } from "vue"
+import { reactive, onMounted, watch, ref } from "vue"
+import { useRoute } from "vue-router"
 import axios from "axios"
 import verified from "@/assets/verify.png";
 
@@ -527,6 +528,8 @@ import Header from "@/components/Header.vue"
 import Footer from "@/components/Footer.vue"
 const loading = ref(true)
 const copied = ref(false)
+const issuerInput = ref("")
+const route = useRoute()
 
 import {
     Users,
@@ -557,8 +560,22 @@ const token = reactive({
 })
 
 onMounted(() => {
-    fetchToken()
+    if (route.query.issuer) {
+        issuerInput.value = route.query.issuer
+        fetchToken()
+    }
 })
+
+watch(
+  () => route.query,
+  (query) => {
+    if (query.issuer) {
+      issuerInput.value = query.issuer
+      fetchToken()
+    }
+  },
+  { immediate: true }
+)
 
 function shorten(str) {
     if (!str) return "-"
@@ -569,25 +586,6 @@ function formatNumber(value) {
     return new Intl.NumberFormat("en-US", {
         maximumFractionDigits: 0
     }).format(value || 0);
-}
-
-async function fetchToken() {
-    loading.value = true
-    try {
-        const res = await axios.get("/api/token/show", {
-            params: {
-                // issuer: "GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
-                issuer: "GBNZILSTVQZ4R7IKQDGHYGY2QXL5QOFJYQMXPKWRRM5PAV7Y4M67AQUA"
-            }
-        })
-
-        Object.assign(token, res.data)
-
-    } catch (error) {
-        console.error("Error fetching token data:", error)
-    } finally {
-        loading.value = false
-    }
 }
 
 function copyIssuer() {
@@ -624,5 +622,27 @@ function fallbackCopy(onSuccess) {
     document.body.removeChild(textarea)
 
     onSuccess()
+}
+
+async function fetchToken() {
+
+    if (!issuerInput.value) return
+
+    loading.value = true
+
+    try {
+        const res = await axios.get("/api/token/show", {
+            params: {
+                issuer: issuerInput.value
+            }
+        })
+
+        Object.assign(token, res.data)
+
+    } catch (error) {
+        console.error("Error fetching token data:", error)
+    } finally {
+        loading.value = false
+    }
 }
 </script>
