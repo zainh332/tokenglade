@@ -499,10 +499,10 @@
                                     <span class="font-mono text-xs">{{ shorten(token.issuer) }}</span>
                                 </div>
 
-                                <div class="py-3 flex justify-between">
+                                <!-- <div class="py-3 flex justify-between">
                                     <span class="text-slate-500">Decimals</span>
                                     <span class="font-semibold">{{ token.decimals }}</span>
-                                </div>
+                                </div> -->
 
                                 <div class="py-3 flex justify-between">
                                     <span class="text-slate-500">Trustlines</span>
@@ -520,18 +520,8 @@
                                 </div>
 
                                 <div class="py-3 flex justify-between">
-                                    <span class="text-slate-500">Auth Required</span>
-                                    <span class="font-semibold">{{ token.auth_required ? "Yes" : "No" }}</span>
-                                </div>
-
-                                <div class="py-3 flex justify-between">
-                                    <span class="text-slate-500">Auth Revocable</span>
-                                    <span class="font-semibold">{{ token.auth_revocable ? "Yes" : "No" }}</span>
-                                </div>
-
-                                <div class="py-3 flex justify-between">
-                                    <span class="text-slate-500">Clawback Enabled</span>
-                                    <span class="font-semibold">{{ token.auth_clawback_enabled ? "Yes" : "No" }}</span>
+                                    <span class="text-slate-500">1h Trading Volume</span>
+                                    <span class="font-semibold">{{ formatPrice(token.volume_1h) }} {{(token.asset_code)}}</span>
                                 </div>
 
                             </div>

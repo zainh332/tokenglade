@@ -88,6 +88,7 @@ class StellarTokenService
             'liquidity_pools_amount' => $horizon['liquidity_pools_amount'] ?? 0,
             'contracts_amount' => $horizon['contracts_amount'] ?? 0,
             'transactions' => $this->getRecentTransactions($issuer, $code),
+            'volume_1h' => $this->getLastHourVolume($issuer, $code),
         ];
     }
 
@@ -127,6 +128,49 @@ class StellarTokenService
             })
             ->values()
             ->toArray();
+    }
+
+    private function getLastHourVolume(string $issuer, string $code): float
+    {
+        $assetType = $this->getAssetType($code);
+
+        $url = $this->horizon . '/trades?' . http_build_query([
+            'base_asset_type'   => $assetType,
+            'base_asset_code'   => $code,
+            'base_asset_issuer' => $issuer,
+            'counter_asset_type' => 'native',
+            'order'             => 'desc',
+            'limit'             => 200,
+        ]);
+
+        $volume = 0;
+        $cutoff = now()->subHour();
+
+        while ($url) {
+
+            $response = Http::timeout(10)->get($url);
+
+            if (!$response->ok()) {
+                break;
+            }
+
+            $records = $response->json('_embedded.records');
+
+            foreach ($records as $trade) {
+
+                $time = Carbon::parse($trade['ledger_close_time']);
+
+                if ($time->lt($cutoff)) {
+                    return $volume;
+                }
+
+                $volume += (float) $trade['base_amount'];
+            }
+
+            $url = $response->json('_links.next.href');
+        }
+
+        return $volume;
     }
     // public function getHolderAnalytics(string $issuer, string $code): array
     // {
