@@ -93,6 +93,11 @@
                bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]">
             Connect Wallet
           </button>
+
+          <button @click="tokenSearchModal = true"
+            class="w-full py-3 px-3 text-base font-medium text-gray-800 hover:bg-gray-50 rounded-lg text-left">
+            Search Token
+          </button>
         </div>
       </div>
     </DisclosurePanel>
