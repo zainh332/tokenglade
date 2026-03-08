@@ -55,9 +55,9 @@ class StellarTokenService
             'asset_code'       => $code,
             'issuer'           => $issuer,
 
-            'name'             => $toml['project']['org_name'] ?? $code,
+            'name'             => $toml['token']['name'] ?? $toml['project']['org_name'],
             'image'            => $toml['token']['image'] ?? null,
-            'description'      => $toml['project']['org_description'] ?? null,
+            'description'      => $toml['token']['description'] ?? null,
             'decimals'         => $toml['token']['decimals'] ?? 7,
             'conditions'         => $toml['token']['conditions'] ?? 7,
 
