@@ -10,7 +10,7 @@
                     </div>
 
                     <!-- CONTENT -->
-                    <div class="relative z-10">
+                    <div class="relative z-1">
 
                         <!-- LOADING STATE -->
                         <template v-if="loading">
