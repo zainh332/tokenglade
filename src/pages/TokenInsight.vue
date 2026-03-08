@@ -680,13 +680,13 @@ function contactVerification() {
 }
 
 function formatPrice(num) {
-    if (!num) return "0.00";
+    if (!num) return "0";
 
     const n = Number(num);
 
     return n.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 3
     });
 }
 </script>
