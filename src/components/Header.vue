@@ -78,7 +78,7 @@
       <div class="bg-white shadow-xl">
         <div class="max-w-6xl mx-auto px-4 py-3">
           <!-- render both internal + external links -->
-          <template v-for="link in Links" :key="link.name">
+          <template v-for="link in Links.filter(l => l.name !== 'Buy TKG Tokens')" :key="link.name">
             <router-link v-if="link.to" :to="link.to"
               class="block py-3 px-3 text-base font-medium text-gray-800 hover:bg-gray-50 rounded-lg">
               {{ link.name }}
@@ -89,14 +89,14 @@
             </a>
           </template>
 
-          <button id="walletConnected" @click="OpenWalletModal" type="button" class="w-full py-3 mt-2 text-base font-medium text-white rounded-lg
-               bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]">
-            Connect Wallet
-          </button>
-
           <button @click="tokenSearchModal = true"
             class="w-full py-3 px-3 text-base font-medium text-gray-800 hover:bg-gray-50 rounded-lg text-left">
             Search Token
+          </button>
+
+          <button id="walletConnected" @click="OpenWalletModal" type="button" class="w-full py-3 mt-2 text-base font-medium text-white rounded-lg
+             bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]">
+            Connect Wallet
           </button>
         </div>
       </div>
