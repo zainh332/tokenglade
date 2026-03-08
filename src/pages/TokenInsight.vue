@@ -673,20 +673,16 @@ async function fetchToken() {
 }
 
 const isVerified = computed(() =>
-  verified_issuer.includes(token.issuer)
+    verified_issuer.includes(token.issuer)
 )
 function contactVerification() {
     window.open("https://x.com/TokenGlade", "_blank")
 }
 
 function formatPrice(num) {
-    if (!num) return "0";
+    if (!num) return "0.00";
 
     const n = Number(num);
-
-    if (n < 1) {
-        return n.toFixed(6);
-    }
 
     return n.toLocaleString(undefined, {
         minimumFractionDigits: 2,
