@@ -446,7 +446,7 @@
                                             </span>
 
                                             <span class="text-slate-700 font-medium">
-                                                {{ formatPrice(tx.amount) }} {{ token.asset_code }}
+                                                {{ formatPrice2Deci(tx.amount) }} {{ token.asset_code }}
                                             </span>
 
                                             <span class="text-slate-700 font-medium">
@@ -454,7 +454,7 @@
                                             </span>
 
                                             <span class="text-slate-700 font-medium">
-                                                {{ formatPrice(tx.value) }} XLM
+                                                {{ formatPrice2Deci(tx.value) }} XLM
                                             </span>
 
                                             <span class="text-slate-700 font-medium">
@@ -687,6 +687,17 @@ function formatPrice(num) {
     return n.toLocaleString(undefined, {
         minimumFractionDigits: 0,
         maximumFractionDigits: 3
+    });
+}
+
+function formatPrice2Deci(num) {
+    if (!num) return "0.00";
+
+    const n = Number(num);
+
+    return n.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
     });
 }
 </script>
