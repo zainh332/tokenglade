@@ -330,10 +330,13 @@ const schema = Yup.object({
 
 // Close modal and reset fields
 const closeModal = () => {
-  form.value = { ...defaultForm };
-  logoPreview.value = '';
+  form.value = { ...defaultForm }; 
+  logoPreview.value = '';          
   emit('close');
 };
+// const network = (import.meta.env.VITE_STELLAR_ENVIRONMENT || "public").toLowerCase();
+const network = 'testnet';
+const isTestnet = network === "testnet";
 
 const submitForm = async (values) => {
   try {
