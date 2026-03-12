@@ -68,7 +68,8 @@
                                         <Users class="w-3.5 h-3.5 text-slate-400" />
                                         Holders
                                     </p>
-                                    <p class="text-2xl font-semibold mt-1">{{ token.holders }}</p>
+                                    <p class="text-sm sm:text-lg font-semibold mt-1 break-all">
+                                        {{ token.holders }}</p>
                                     <!-- <span class="text-xs text-blue-500 mt-2 inline-block">Stellar</span> -->
                                 </div>
 
@@ -77,7 +78,7 @@
                                         <Coins class="w-3.5 h-3.5 text-slate-400" />
                                         Total Supply
                                     </p>
-                                    <p class="text-2xl font-semibold mt-1">
+                                    <p class="text-sm sm:text-lg font-semibold mt-1 break-all">
                                         {{ formatNumber(token.total_supply) }}
                                     </p>
                                     <!-- <span class="text-xs text-blue-500 mt-2 inline-block">{{ token.asset_code }}</span> -->
@@ -88,7 +89,7 @@
                                         <Waves class="w-3.5 h-3.5 text-slate-400" />
                                         Liquidity Pools
                                     </p>
-                                    <p class="text-2xl font-semibold mt-1">
+                                    <p class="text-sm sm:text-lg font-semibold mt-1 break-all">
                                         {{ token.liquidity_pools || 0 }}
                                     </p>
                                 </div>
@@ -98,7 +99,7 @@
                                         <Clock3 class="w-3.5 h-3.5 text-slate-400" />
                                         Last Updated
                                     </p>
-                                    <p class="text-2xl font-semibold mt-1">
+                                    <p class="text-sm sm:text-lg font-semibold mt-1 break-all">
                                         {{ token.updated_at || "-" }}
                                     </p>
                                 </div>
@@ -506,7 +507,7 @@
 
                                 <div class="py-3 flex justify-between">
                                     <span class="text-slate-500">Trustlines</span>
-                                    <span class="font-semibold">{{ token.holders }}</span>
+                                    <span class="font-semibold">{{ token.trustlines }}</span>
                                 </div>
 
                                 <div class="py-3 flex justify-between">
