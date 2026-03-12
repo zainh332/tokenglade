@@ -37,6 +37,8 @@ class StellarTokenService
 
         $horizon = $horizonResponse->json('_embedded.records.0');
         $mintDateRaw = $response->json('created');
+        $supply = $response->json('supply');
+        $holders = $response->json('trustlines.funded');
         $toml = $this->fetchTomlMetadata($horizon);
 
         if (!$horizon) {
@@ -63,8 +65,9 @@ class StellarTokenService
 
             'project'          => $toml['project'] ?? [],
 
-            'total_supply'     => (float) ($horizon['balances']['authorized'] ?? 0),
-            'holders'     => (int) ($horizon['accounts']['authorized'] ?? 0),
+            'total_supply'     => (float) ($supply ?? 0),
+            'trustlines'     => (int) ($horizon['accounts']['authorized'] ?? 0),
+            'holders'     => (int) ($holders ?? 0),
 
             'issuer_locked'    => $issuerData['flags']['auth_immutable'] ?? false,
             'minting_possible' => !($issuerData['flags']['auth_immutable'] ?? false),
