@@ -139,7 +139,6 @@ class TokenController extends Controller
         $token = new Token();
         $token->stellar_token_id = $token_creation->id;
         $token->blockchain_id = 1; //stellar
-        $token->token_verify = 1; //verified by default
         $token->save();
 
         $addStellarTransactionRecord = $this->addStellarTransactionRecord($token_creation->id, $distributor_wallet_key, 1, $token_creation_charges['unsigned_token_creation_fee_transaction'], '', '', false);
@@ -330,6 +329,8 @@ class TokenController extends Controller
                     $token_created->current_stellar_transaction_id = $created_tokens_transfer_transaction->id;
                     $token_created->created_token_transfer_status = 1;
                     $token_created->save();
+
+                    Token::where('stellar_token_id', $token_created->id)->update(['token_verify' => 1]);
 
                     $homeDomainTx = $this->setIssuerHomeDomain(
                         $token_created->issuer_public_key,
