@@ -500,11 +500,6 @@
                                     <span class="font-mono text-xs">{{ shorten(token.issuer) }}</span>
                                 </div>
 
-                                <!-- <div class="py-3 flex justify-between">
-                                    <span class="text-slate-500">Decimals</span>
-                                    <span class="font-semibold">{{ token.decimals }}</span>
-                                </div> -->
-
                                 <div class="py-3 flex justify-between">
                                     <span class="text-slate-500">Trustlines</span>
                                     <span class="font-semibold">{{ token.trustlines }}</span>
@@ -575,7 +570,6 @@ const token = reactive({
     mint_date_human: "-",
     updated_at: "-",
 
-    decimals: null,
     conditions: null,
 })
 
