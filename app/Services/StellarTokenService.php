@@ -37,9 +37,16 @@ class StellarTokenService
 
         $horizon = $horizonResponse->json('_embedded.records.0');
         $mintDateRaw = $response->json('created');
-        $supply = $response->json('supply');
         $holders = $response->json('trustlines.funded');
         $toml = $this->fetchTomlMetadata($horizon);
+        $supply = $response->json('supply');
+        $decimals = $response->json('decimals') ?? 7;
+
+        $formattedSupply = bcdiv(
+            $supply,
+            bcpow('10', (string)$decimals, 0),
+            $decimals
+        );
 
         if (!$horizon) {
             throw new \Exception('Asset not found.');
@@ -60,12 +67,11 @@ class StellarTokenService
             'name'             => $toml['token']['name'] ?? $toml['project']['org_name'],
             'image'            => $toml['token']['image'] ?? null,
             'description'      => $toml['token']['description'] ?? null,
-            'decimals'         => $toml['token']['decimals'] ?? 7,
             'conditions'         => $toml['token']['conditions'] ?? 7,
 
             'project'          => $toml['project'] ?? [],
 
-            'total_supply'     => (float) ($supply ?? 0),
+            'total_supply' => $formattedSupply,
             'trustlines'     => (int) ($horizon['accounts']['authorized'] ?? 0),
             'holders'     => (int) ($holders ?? 0),
 

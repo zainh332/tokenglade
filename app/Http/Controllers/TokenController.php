@@ -1038,8 +1038,20 @@ class TokenController extends Controller
             'issuer' => 'required|string'
         ]);
 
-        $assets = $service->getAssetsByIssuer($request->issuer);
+        $issuer = $request->issuer;
+        $stellarToken = StellarToken::where('issuer_public_key', $issuer)
+            ->where('created_token_transfer_status', 1)
+            ->latest()->first();
 
+        $isVerified = false;
+
+        if ($stellarToken) {
+            $isVerified = Token::where('stellar_token_id', $stellarToken->id)
+                ->where('token_verify', 1)
+                ->exists();
+        }
+
+        $assets = $service->getAssetsByIssuer($request->issuer);
 
         if (empty($assets)) {
             return response()->json(['error' => 'No assets found'], 400);
@@ -1047,8 +1059,11 @@ class TokenController extends Controller
 
         $code = $assets[0]['asset_code'];
 
-        return response()->json(
-            $service->getTokenInsight($request->issuer, $code)
-        );
+        $insight = $service->getTokenInsight($issuer, $code);
+
+        return response()->json([
+            ...$insight,
+            'is_verified' => $isVerified
+        ]);
     }
 }

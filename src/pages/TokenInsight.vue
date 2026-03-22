@@ -500,11 +500,6 @@
                                     <span class="font-mono text-xs">{{ shorten(token.issuer) }}</span>
                                 </div>
 
-                                <!-- <div class="py-3 flex justify-between">
-                                    <span class="text-slate-500">Decimals</span>
-                                    <span class="font-semibold">{{ token.decimals }}</span>
-                                </div> -->
-
                                 <div class="py-3 flex justify-between">
                                     <span class="text-slate-500">Trustlines</span>
                                     <span class="font-semibold">{{ token.trustlines }}</span>
@@ -550,13 +545,6 @@ const copied = ref(false)
 const issuerInput = ref("")
 const route = useRoute()
 
-const verified_issuer = [
-    "GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ",
-    "GD6CHTD4EGCDW6CW7YGLUXWT2ZFLUSVFNUCUET5SWZOTWWLKSGH3LR2H",
-    "GBOUFNJTX2AIITPGBNZDXIOB43A7EQIF5HUTL3BU357TVH27UR2C34BZ",
-    "GD74UABBROI2QGH6JKTZUEQLOVIKF45BQ5Y6OBGCA2GBRKDLBU53WKDX"
-]
-
 import {
     Users,
     Coins,
@@ -582,7 +570,6 @@ const token = reactive({
     mint_date_human: "-",
     updated_at: "-",
 
-    decimals: null,
     conditions: null,
 })
 
@@ -673,9 +660,8 @@ async function fetchToken() {
     }
 }
 
-const isVerified = computed(() =>
-    verified_issuer.includes(token.issuer)
-)
+const isVerified = computed(() => token.is_verified === true)
+
 function contactVerification() {
     window.open("https://x.com/TokenGlade", "_blank")
 }
