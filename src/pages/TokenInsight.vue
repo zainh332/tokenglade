@@ -550,13 +550,6 @@ const copied = ref(false)
 const issuerInput = ref("")
 const route = useRoute()
 
-const verified_issuer = [
-    "GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ",
-    "GD6CHTD4EGCDW6CW7YGLUXWT2ZFLUSVFNUCUET5SWZOTWWLKSGH3LR2H",
-    "GBOUFNJTX2AIITPGBNZDXIOB43A7EQIF5HUTL3BU357TVH27UR2C34BZ",
-    "GD74UABBROI2QGH6JKTZUEQLOVIKF45BQ5Y6OBGCA2GBRKDLBU53WKDX"
-]
-
 import {
     Users,
     Coins,
@@ -673,9 +666,8 @@ async function fetchToken() {
     }
 }
 
-const isVerified = computed(() =>
-    verified_issuer.includes(token.issuer)
-)
+const isVerified = computed(() => token.is_verified === true)
+
 function contactVerification() {
     window.open("https://x.com/TokenGlade", "_blank")
 }
