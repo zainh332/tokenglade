@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
 
             // Blockchain reference
-            $table->unsignedBigInteger('blockchain_id');
+            $table->unsignedBigInteger('blockchain_id')->index();
 
             // Token identity
-            $table->string('identifier');
+            $table->string('identifier')->index();
             $table->string('asset_code')->default('');
 
             // Project info
@@ -43,13 +43,9 @@ return new class extends Migration
             $table->text('notes')->nullable();
 
             // Who requested
-            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->index()->nullable();
 
             $table->timestamps();
-
-            // Indexes
-            $table->index(['blockchain_id', 'identifier', 'updated_by']);
-            $table->index(['status']);
         });
     }
 
