@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\StellarToken;
 use App\Models\StellarTransactions;
 use App\Models\Token;
+use App\Models\VerifiedProject;
 use App\Services\StellarTokenService;
 use App\Services\WalletService;
 use Exception;
@@ -1043,15 +1044,7 @@ class TokenController extends Controller
             ->where('created_token_transfer_status', 1)
             ->latest()->first();
 
-        $isVerified = false;
-
-        if ($stellarToken) {
-            $isVerified = Token::where('stellar_token_id', $stellarToken->id)
-                ->where('token_verify', 1)
-                ->exists();
-        }
-
-        $assets = $service->getAssetsByIssuer($request->issuer);
+        $assets = $service->getAssetsByIssuer($issuer);
 
         if (empty($assets)) {
             return response()->json(['error' => 'No assets found'], 400);
@@ -1060,6 +1053,22 @@ class TokenController extends Controller
         $code = $assets[0]['asset_code'];
 
         $insight = $service->getTokenInsight($issuer, $code);
+
+        $isDbVerified = false;
+        
+        if ($stellarToken) {
+            $isDbVerified = Token::where('stellar_token_id', $stellarToken->id)
+            ->where('token_verify', 1)
+            ->exists();
+            }
+            
+            $isManuallyVerified = VerifiedProject::where('identifier', $issuer)
+            ->where('blockchain_id', 1)
+            ->where('status', 1)
+            ->exists();
+
+
+        $isVerified = $isDbVerified || $isManuallyVerified;
 
         return response()->json([
             ...$insight,
