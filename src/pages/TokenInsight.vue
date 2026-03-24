@@ -65,23 +65,22 @@
                             <div class="grid grid-cols-2 lg:grid-cols-4 gap-0 rounded-xl overflow-hidden border ">
                                 <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
                                     <p class="text-xs text-slate-500 flex items-center gap-1.5">
+                                        <Coins class="w-3.5 h-3.5 text-slate-400" />
+                                        Price (USD)
+                                    </p>
+                                    <p class="text-sm sm:text-lg font-semibold mt-1 break-all">
+                                        {{ formatPrice(token.usd_price) }}
+                                    </p>
+                                </div>
+
+                                <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
+                                    <p class="text-xs text-slate-500 flex items-center gap-1.5">
                                         <Users class="w-3.5 h-3.5 text-slate-400" />
                                         Holders
                                     </p>
                                     <p class="text-sm sm:text-lg font-semibold mt-1 break-all">
                                         {{ token.holders }}</p>
                                     <!-- <span class="text-xs text-blue-500 mt-2 inline-block">Stellar</span> -->
-                                </div>
-
-                                <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
-                                    <p class="text-xs text-slate-500 flex items-center gap-1.5">
-                                        <Coins class="w-3.5 h-3.5 text-slate-400" />
-                                        Total Supply
-                                    </p>
-                                    <p class="text-sm sm:text-lg font-semibold mt-1 break-all">
-                                        {{ formatNumber(token.total_supply) }}
-                                    </p>
-                                    <!-- <span class="text-xs text-blue-500 mt-2 inline-block">{{ token.asset_code }}</span> -->
                                 </div>
 
                                 <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
@@ -516,8 +515,15 @@
                                 </div>
 
                                 <div class="py-3 flex justify-between">
-                                    <span class="text-slate-500">1h Trading Volume</span>
-                                    <span class="font-semibold">{{ formatPrice(token.volume_1h) }} {{(token.asset_code)}}</span>
+                                    <span class="text-slate-500">1hr Trading Volume</span>
+                                    <span class="font-semibold">{{ formatPrice(token.volume_1h) }}
+                                        {{ (token.asset_code) }}</span>
+                                </div>
+
+                                <div class="py-3 flex justify-between">
+                                    <span class="text-slate-500">7d Trading Volume</span>
+                                    <span class="font-semibold">{{ formatNumber(token.volume_7d) }}
+                                        {{ (token.asset_code) }}</span>
                                 </div>
 
                             </div>
@@ -673,7 +679,7 @@ function formatPrice(num) {
 
     return n.toLocaleString(undefined, {
         minimumFractionDigits: 0,
-        maximumFractionDigits: 3
+        maximumFractionDigits: 6
     });
 }
 
