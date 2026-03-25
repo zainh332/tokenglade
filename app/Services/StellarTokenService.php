@@ -41,7 +41,6 @@ class StellarTokenService
         $toml = $this->fetchTomlMetadata($horizon);
         $supply = $response->json('supply');
         $decimals = $response->json('decimals') ?? 7;
-        $volume_7d = $response->json('volume7d') ?? 7;
         $usd_price = $response->json('price') ?? 7;
 
         $formattedSupply = bcdiv(
@@ -100,7 +99,6 @@ class StellarTokenService
             'contracts_amount' => $horizon['contracts_amount'] ?? 0,
             'transactions' => $this->getRecentTransactions($issuer, $code),
             'volume_1h' => $this->getLastHourVolume($issuer, $code),
-            'volume_7d' => $volume_7d,
             'usd_price' => $usd_price,
         ];
     }

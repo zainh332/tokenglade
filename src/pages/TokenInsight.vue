@@ -520,12 +520,6 @@
                                         {{ (token.asset_code) }}</span>
                                 </div>
 
-                                <div class="py-3 flex justify-between">
-                                    <span class="text-slate-500">7d Trading Volume</span>
-                                    <span class="font-semibold">{{ formatNumber(token.volume_7d) }}
-                                        {{ (token.asset_code) }}</span>
-                                </div>
-
                             </div>
                         </div>
 
