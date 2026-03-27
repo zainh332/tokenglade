@@ -76,10 +76,10 @@
                                 <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
                                     <p class="text-xs text-slate-500 flex items-center gap-1.5">
                                         <Users class="w-3.5 h-3.5 text-slate-400" />
-                                        Holders
+                                        XLM Price
                                     </p>
                                     <p class="text-sm sm:text-lg font-semibold mt-1 break-all">
-                                        {{ token.holders }}</p>
+                                        {{ token.xlm_price }}</p>
                                     <!-- <span class="text-xs text-blue-500 mt-2 inline-block">Stellar</span> -->
                                 </div>
 
@@ -502,6 +502,11 @@
                                 <div class="py-3 flex justify-between">
                                     <span class="text-slate-500">Trustlines</span>
                                     <span class="font-semibold">{{ token.trustlines }}</span>
+                                </div>
+
+                                <div class="py-3 flex justify-between">
+                                    <span class="text-slate-500">Holders</span>
+                                    <span class="font-semibold">{{ token.holders }}</span>
                                 </div>
 
                                 <div class="py-3 flex justify-between">

@@ -27,12 +27,44 @@ class StellarTokenService
             throw new \Exception('Asset not found.');
         }
 
-        $url = "https://api.stellar.expert/explorer/public/asset/{$code}-{$issuer}";
+        $assetId = "{$code}-{$issuer}";
+        $expertUrl = "https://api.stellar.expert/explorer/public/asset/{$assetId}";
+        $response = Http::timeout(8)->get($expertUrl);
 
-        $response = Http::timeout(8)->get($url);
 
         if (!$response->ok()) {
             throw new \Exception('response not found.');
+        }
+
+        $orderbook = Http::get($this->horizon . '/order_book', [
+            'selling_asset_type' => 'credit_alphanum4',
+            'selling_asset_code' => $code,
+            'selling_asset_issuer' => $issuer,
+            'buying_asset_type' => 'native',
+        ]);
+
+        $price_xlm = null;
+
+        if ($orderbook->ok()) {
+            $bestBid = $orderbook->json('bids.0.price');
+            $price_xlm = $bestBid ? (float) $bestBid : null;
+        }
+
+        // Fetch Top 10 Holders from StellarExpert
+        $holdersResponse = Http::timeout(8)->get("{$expertUrl}/holders", [
+            'limit' => 10,
+            'order' => 'desc'
+        ]);
+
+        $topHolders = [];
+        if ($holdersResponse->ok()) {
+            $records = $holdersResponse->json('_embedded.records') ?? [];
+            foreach ($records as $record) {
+                $topHolders[] = [
+                    'address' => $record['address'],
+                    'balance' => $record['balance'],
+                ];
+            }
         }
 
         $horizon = $horizonResponse->json('_embedded.records.0');
@@ -49,17 +81,8 @@ class StellarTokenService
             $decimals
         );
 
-        if (!$horizon) {
-            throw new \Exception('Asset not found.');
-        }
-
         $issuerResponse = Http::get($this->horizon . "/accounts/{$issuer}");
-
-        if (!$issuerResponse->ok()) {
-            throw new \Exception('Issuer not found.');
-        }
-
-        $issuerData = $issuerResponse->json();
+        $issuerData = $issuerResponse->ok() ? $issuerResponse->json() : null;
 
         return [
             'asset_code'       => $code,
@@ -75,6 +98,7 @@ class StellarTokenService
             'total_supply' => $formattedSupply,
             'trustlines'     => (int) ($horizon['accounts']['authorized'] ?? 0),
             'holders'     => (int) ($holders ?? 0),
+            'top_holders'  => $topHolders,
 
             'issuer_locked'    => $issuerData['flags']['auth_immutable'] ?? false,
             'minting_possible' => !($issuerData['flags']['auth_immutable'] ?? false),
@@ -100,6 +124,7 @@ class StellarTokenService
             'transactions' => $this->getRecentTransactions($issuer, $code),
             'volume_1h' => $this->getLastHourVolume($issuer, $code),
             'usd_price' => $usd_price,
+            'xlm_price' => $price_xlm,
         ];
     }
 
