@@ -257,17 +257,17 @@
                                 <div>
                                     <p class="text-xs text-slate-500 flex items-center gap-1.5 mb-1">
                                         <BarChart3 class="w-3.5 h-3.5 text-slate-400" />
-                                        Traded Volume
+                                        Total Trades Count
                                     </p>
                                     <p class="text-sm sm:text-lg font-semibold">
-                                        {{ formatNumber(token.activity?.traded_volume) }} {{ token.asset_code }}
+                                        {{ formatNumber(token.activity?.total_trades) }}
                                     </p>
                                 </div>
 
                                 <div>
                                     <p class="text-xs text-slate-500 flex items-center gap-1.5 mb-1">
                                         <ArrowRightLeft class="w-3.5 h-3.5 text-slate-400" />
-                                        Payments Volume
+                                        Overall Payments Volume
                                     </p>
                                     <p class="text-sm sm:text-lg font-semibold">
                                         {{ formatNumber(token.activity?.payments_volume) }} {{ token.asset_code }}

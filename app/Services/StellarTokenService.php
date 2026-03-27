@@ -36,7 +36,7 @@ class StellarTokenService
             throw new \Exception('response not found.');
         }
 
-        $trades = (int) $response->json('trades');
+        $totalTrades = (int) $response->json('trades');
         $tradedAmountRaw = $response->json('traded_amount');
 
         $payments = (int) $response->json('payments');
@@ -143,7 +143,7 @@ class StellarTokenService
             'xlm_price' => $price_xlm,
 
             'activity' => [
-                'trades' => $trades,
+                'total_trades' => $totalTrades,
                 'traded_volume' => $tradedAmount,
                 'payments' => $payments,
                 'payments_volume' => $paymentsAmount,
