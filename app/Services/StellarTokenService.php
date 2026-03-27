@@ -36,6 +36,14 @@ class StellarTokenService
             throw new \Exception('response not found.');
         }
 
+        $trades = (int) $response->json('trades');
+        $tradedAmountRaw = $response->json('traded_amount');
+
+        $payments = (int) $response->json('payments');
+        $paymentsAmountRaw = $response->json('payments_amount');
+
+        $rating = $response->json('rating') ?? [];
+
         $orderbook = Http::get($this->horizon . '/order_book', [
             'selling_asset_type' => 'credit_alphanum4',
             'selling_asset_code' => $code,
@@ -81,6 +89,14 @@ class StellarTokenService
             $decimals
         );
 
+        $tradedAmount = $tradedAmountRaw
+            ? bcdiv($tradedAmountRaw, bcpow('10', (string)$decimals, 0), $decimals)
+            : 0;
+
+        $paymentsAmount = $paymentsAmountRaw
+            ? bcdiv($paymentsAmountRaw, bcpow('10', (string)$decimals, 0), $decimals)
+            : 0;
+
         $issuerResponse = Http::get($this->horizon . "/accounts/{$issuer}");
         $issuerData = $issuerResponse->ok() ? $issuerResponse->json() : null;
 
@@ -125,6 +141,23 @@ class StellarTokenService
             'volume_1h' => $this->getLastHourVolume($issuer, $code),
             'usd_price' => $usd_price,
             'xlm_price' => $price_xlm,
+
+            'activity' => [
+                'trades' => $trades,
+                'traded_volume' => $tradedAmount,
+                'payments' => $payments,
+                'payments_volume' => $paymentsAmount,
+            ],
+
+            'rating' => [
+                'age' => $rating['age'] ?? 0,
+                'activity' => $rating['activity'] ?? 0,
+                'trustlines' => $rating['trustlines'] ?? 0,
+                'liquidity' => $rating['liquidity'] ?? 0,
+                'volume7d' => $rating['volume7d'] ?? 0,
+                'interop' => $rating['interop'] ?? 0,
+                'average' => $rating['average'] ?? 0,
+            ],
         ];
     }
 

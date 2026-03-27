@@ -75,7 +75,7 @@
 
                                 <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
                                     <p class="text-xs text-slate-500 flex items-center gap-1.5">
-                                        <Users class="w-3.5 h-3.5 text-slate-400" />
+                                        <TrendingUp class="w-3.5 h-3.5 text-slate-400" />
                                         XLM Price
                                     </p>
                                     <p class="text-sm sm:text-lg font-semibold mt-1 break-all">
@@ -85,11 +85,11 @@
 
                                 <div class="p-4 bg-slate-50 border-r border-b lg:border-b-0">
                                     <p class="text-xs text-slate-500 flex items-center gap-1.5">
-                                        <Waves class="w-3.5 h-3.5 text-slate-400" />
-                                        Liquidity Pools
+                                        <Users class="w-3.5 h-3.5 text-slate-400" />
+                                        Holders
                                     </p>
                                     <p class="text-sm sm:text-lg font-semibold mt-1 break-all">
-                                        {{ token.liquidity_pools || 0 }}
+                                        {{ token.holders || 0 }}
                                     </p>
                                 </div>
 
@@ -232,6 +232,160 @@
 
                 </section>
 
+                <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    <!-- ================= LEFT: LIQUIDITY ================= -->
+                    <div class="bg-white rounded-2xl border p-6 shadow-sm">
+
+                        <!-- ALWAYS VISIBLE -->
+                        <h2 class="text-2xl font-bold text-slate-900 mb-3">
+                            Liquidity & Flow
+                        </h2>
+
+                        <div class="border-t pt-5 space-y-5">
+
+                            <!-- LOADING -->
+                            <template v-if="loading">
+                                <div v-for="i in 3" :key="i">
+                                    <div class="h-3 w-28 bg-slate-200 rounded animate-pulse mb-2"></div>
+                                    <div class="h-5 w-40 bg-slate-200 rounded animate-pulse"></div>
+                                </div>
+                            </template>
+
+                            <!-- REAL -->
+                            <template v-else>
+                                <div>
+                                    <p class="text-xs text-slate-500 flex items-center gap-1.5 mb-1">
+                                        <BarChart3 class="w-3.5 h-3.5 text-slate-400" />
+                                        Traded Volume
+                                    </p>
+                                    <p class="text-sm sm:text-lg font-semibold">
+                                        {{ formatNumber(token.activity?.traded_volume) }} {{ token.asset_code }}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p class="text-xs text-slate-500 flex items-center gap-1.5 mb-1">
+                                        <ArrowRightLeft class="w-3.5 h-3.5 text-slate-400" />
+                                        Payments Volume
+                                    </p>
+                                    <p class="text-sm sm:text-lg font-semibold">
+                                        {{ formatNumber(token.activity?.payments_volume) }} {{ token.asset_code }}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p class="text-xs text-slate-500 flex items-center gap-1.5 mb-1">
+                                        <waves class="w-3.5 h-3.5 text-slate-400" />
+                                        Liquidity Pools
+                                    </p>
+                                    <p class="text-sm sm:text-lg font-semibold">
+                                        {{ formatNumber(token.liquidity_pools) }}
+                                    </p>
+                                </div>
+                            </template>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ================= RIGHT: HEALTH ================= -->
+                    <div class="bg-white rounded-2xl border p-6 shadow-sm lg:col-span-2">
+
+                        <!-- ALWAYS VISIBLE -->
+                        <h2 class="text-2xl font-bold text-slate-900 mb-3">
+                            Token Health Score
+                        </h2>
+
+                        <div class="border-t pt-5"></div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-[1fr_160px] gap-8 items-center mt-5">
+
+                            <!-- LEFT: BARS -->
+                            <div class="space-y-5">
+
+                                <!-- LOADING -->
+                                <template v-if="loading">
+                                    <div v-for="i in 6" :key="i">
+                                        <div class="flex justify-between mb-2">
+                                            <div class="h-3 w-20 bg-slate-200 rounded animate-pulse"></div>
+                                            <div class="h-3 w-6 bg-slate-200 rounded animate-pulse"></div>
+                                        </div>
+                                        <div class="h-[6px] w-full bg-slate-200 rounded animate-pulse"></div>
+                                    </div>
+                                </template>
+
+                                <!-- REAL -->
+                                <template v-else>
+                                    <div v-for="(value, key) in ratingBars" :key="key">
+
+                                        <div class="flex justify-between items-center mb-1">
+                                            <span class="text-sm text-slate-600 font-medium">
+                                                {{ key }}
+                                            </span>
+
+                                            <span class="text-sm font-semibold text-slate-800">
+                                                {{ value }}
+                                            </span>
+                                        </div>
+
+                                        <div class="w-full h-[6px] bg-slate-200 rounded-full overflow-hidden">
+                                            <div class="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-500"
+                                                :style="{ width: Math.max(value * 10, 4) + '%' }">
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </template>
+
+                            </div>
+
+
+                            <!-- RIGHT: SCORE -->
+                            <div class="flex flex-col items-center justify-center">
+
+                                <!-- LOADING -->
+                                <template v-if="loading">
+                                    <div class="w-24 h-24 rounded-full bg-slate-200 animate-pulse"></div>
+                                    <div class="h-3 w-20 bg-slate-200 rounded animate-pulse mt-4"></div>
+                                    <div class="h-3 w-16 bg-slate-200 rounded animate-pulse mt-2"></div>
+                                </template>
+
+                                <!-- REAL -->
+                                <template v-else>
+                                    <div class="relative w-28 h-28 flex items-center justify-center">
+
+                                        <div class="absolute inset-0 rounded-full bg-slate-100"></div>
+
+                                        <div
+                                            class="relative w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow">
+
+                                            <span class="text-white text-2xl font-bold">
+                                                {{ token.rating?.average?.toFixed(1) || 0 }}
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                    <p class="text-sm text-slate-500 mt-3">
+                                        Overall Score
+                                    </p>
+
+                                    <p class="text-sm font-semibold mt-1" :class="healthLabel.color">
+                                        {{ healthLabel.text }}
+                                    </p>
+                                </template>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
                 <section class="insight-card p-6">
 
                     <!-- TITLE -->
@@ -337,9 +491,6 @@
                     </div>
                 </section>
 
-                <!-- ========================= -->
-                <!-- Network + Technical -->
-                <!-- ========================= -->
                 <!-- ========================= -->
                 <!-- Network + Technical -->
                 <!-- ========================= -->
@@ -505,11 +656,6 @@
                                 </div>
 
                                 <div class="py-3 flex justify-between">
-                                    <span class="text-slate-500">Holders</span>
-                                    <span class="font-semibold">{{ token.holders }}</span>
-                                </div>
-
-                                <div class="py-3 flex justify-between">
                                     <span class="text-slate-500">Created</span>
                                     <span class="font-semibold">{{ token.mint_date_human }}</span>
                                 </div>
@@ -559,7 +705,10 @@ import {
     Mail,
     Twitter,
     ShieldCheck,
-    ShieldX
+    ShieldX,
+    TrendingUp,
+    ArrowRightLeft,
+    BarChart3,
 } from "lucide-vue-next";
 
 const token = reactive({
@@ -692,4 +841,25 @@ function formatPrice2Deci(num) {
         maximumFractionDigits: 2
     });
 }
+
+const healthLabel = computed(() => {
+    const score = token.rating?.average || 0
+
+    if (score >= 8) return { text: "Strong", color: "text-green-600" }
+    if (score >= 5) return { text: "Moderate", color: "text-yellow-500" }
+    return { text: "Weak", color: "text-red-500" }
+})
+
+const ratingBars = computed(() => {
+    if (!token.rating) return {}
+
+    return {
+        Age: token.rating.age || 0,
+        Activity: token.rating.activity || 0,
+        Trustlines: token.rating.trustlines || 0,
+        Liquidity: token.rating.liquidity || 0,
+        Volume: token.rating.volume7d || 0,
+        Interop: token.rating.interop || 0,
+    }
+})
 </script>
