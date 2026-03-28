@@ -345,7 +345,10 @@ class StellarTokenService
         $tomlUrl = $asset['_links']['toml']['href'] ?? null;
 
         if (!$tomlUrl) {
-            return [];
+            return [
+                'project' => [],
+                'token'   => [],
+            ];
         }
 
         $response = Http::timeout(6)->get($tomlUrl);
