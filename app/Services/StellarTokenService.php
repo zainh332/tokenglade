@@ -107,7 +107,6 @@ class StellarTokenService
             'name'             => $toml['token']['name'] ?? $toml['project']['org_name'],
             'image'            => $toml['token']['image'] ?? null,
             'description'      => $toml['token']['description'] ?? null,
-            'conditions'         => $toml['token']['conditions'] ?? 7,
 
             'project'          => $toml['project'] ?? [],
 
@@ -389,7 +388,6 @@ class StellarTokenService
                     'image'       => $currency['image'] ?? null,
                     'description' => $currency['desc'] ?? null,
                     'decimals'    => $currency['display_decimals'] ?? 7,
-                    'conditions'  => $currency['conditions'] ?? null,
                 ];
 
                 break;

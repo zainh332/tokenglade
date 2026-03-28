@@ -54,10 +54,6 @@
                                             Get Verified
                                         </span>
                                     </h1>
-
-                                    <p v-if="token?.conditions" class="text-slate-500 text-sm mt-1">
-                                        {{ token.conditions }}
-                                    </p>
                                 </div>
                             </div>
 
