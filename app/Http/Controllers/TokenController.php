@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\StellarToken;
 use App\Models\StellarTransactions;
 use App\Models\Token;
+use App\Models\VerifiedProject;
+use App\Services\StellarTokenService;
 use App\Services\WalletService;
 use Exception;
 use GuzzleHttp\Client;
@@ -138,7 +140,6 @@ class TokenController extends Controller
         $token = new Token();
         $token->stellar_token_id = $token_creation->id;
         $token->blockchain_id = 1; //stellar
-        $token->token_verify = 1; //verified by default
         $token->save();
 
         $addStellarTransactionRecord = $this->addStellarTransactionRecord($token_creation->id, $distributor_wallet_key, 1, $token_creation_charges['unsigned_token_creation_fee_transaction'], '', '', false);
@@ -329,6 +330,8 @@ class TokenController extends Controller
                     $token_created->current_stellar_transaction_id = $created_tokens_transfer_transaction->id;
                     $token_created->created_token_transfer_status = 1;
                     $token_created->save();
+
+                    Token::where('stellar_token_id', $token_created->id)->update(['token_verify' => 1]);
 
                     $homeDomainTx = $this->setIssuerHomeDomain(
                         $token_created->issuer_public_key,
@@ -657,7 +660,7 @@ class TokenController extends Controller
                     'xlmNeededTotal'     => $xlmNeededTotal,
                     'xlmForSwap'         => $xlmForSwap,
                     'halfXlmDeposit'     => $halfXlm,
-                    'tkgNeededForDeposit'=> $tkgNeededForDeposit,
+                    'tkgNeededForDeposit' => $tkgNeededForDeposit,
                     'tkgOnHand'          => $tkgBal,
                     'missingTkg'         => $needTkgStr,
                 ]);
@@ -1028,5 +1031,48 @@ class TokenController extends Controller
                 'error' => $t->getMessage(),
             ];
         }
+    }
+
+    public function show(Request $request, StellarTokenService $service)
+    {
+        $request->validate([
+            'issuer' => 'required|string'
+        ]);
+
+        $issuer = $request->issuer;
+        $stellarToken = StellarToken::where('issuer_public_key', $issuer)
+            ->where('created_token_transfer_status', 1)
+            ->latest()->first();
+
+        $assets = $service->getAssetsByIssuer($issuer);
+
+        if (empty($assets)) {
+            return response()->json(['error' => 'No assets found'], 400);
+        }
+
+        $code = $assets[0]['asset_code'];
+
+        $insight = $service->getTokenInsight($issuer, $code);
+
+        $isDbVerified = false;
+        
+        if ($stellarToken) {
+            $isDbVerified = Token::where('stellar_token_id', $stellarToken->id)
+            ->where('token_verify', 1)
+            ->exists();
+            }
+            
+            $isManuallyVerified = VerifiedProject::where('identifier', $issuer)
+            ->where('blockchain_id', 1)
+            ->where('status', 1)
+            ->exists();
+
+
+        $isVerified = $isDbVerified || $isManuallyVerified;
+
+        return response()->json([
+            ...$insight,
+            'is_verified' => $isVerified
+        ]);
     }
 }

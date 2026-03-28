@@ -40,6 +40,10 @@ Route::prefix('wallet')->group(function () {
     Route::post('disconnect', 'WalletController@disconnect_wallet')->name('wallet.disconnect');
 });
 
+Route::prefix('token')->group(function () {
+    Route::get('show', 'TokenController@show')->name('token.show');
+});
+
 
 Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
     // ==========================
