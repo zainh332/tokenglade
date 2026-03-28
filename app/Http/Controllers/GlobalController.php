@@ -3,131 +3,176 @@
 namespace App\Http\Controllers;
 
 use App\Models\Blockchain;
-use App\Models\ClaimableBalance;
-use App\Models\ClaimableBalanceReceiver;
+use App\Models\Staking;
+use App\Models\StakingReward;
 use App\Models\StellarToken;
 use App\Models\Token;
 use App\Models\WalletType;
+use App\Services\WalletService;
 use Illuminate\Http\Request;
 
-use Carbon\Carbon;
-use DateTime;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Soneso\StellarSDK\StellarSDK;
-use Soneso\StellarSDK\Server;
-use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
-use Soneso\StellarSDK\Crypto\KeyPair;
-use Soneso\StellarSDK\Memo;
-use Soneso\StellarSDK\CreateClaimableBalanceOperation;
-use Soneso\StellarSDK\Claimant;
 use Soneso\StellarSDK\Network;
-use Soneso\StellarSDK\PaymentOperationBuilder;
-use Soneso\StellarSDK\Signer;
-use Soneso\StellarSDK\Transaction;
-use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
-use Soneso\StellarSDK\Xdr\XdrSigner;
-use Soneso\StellarSDK\TimeBounds;
-use Soneso\StellarSDK\Asset;
-use Soneso\StellarSDK\ChangeTrustOperationBuilder;
-
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
-use Soneso\StellarSDK\AbstractTransaction;
-use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
-use Soneso\StellarSDK\ClaimClaimableBalanceOperation;
-use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
-use Soneso\StellarSDK\SetOptionsOperationBuilder;
-use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
-use Soneso\StellarSDK\Xdr\TransactionEnvelope;
 
 class GlobalController extends Controller
 {
-    private $sdk, $maxFee;
+    private $sdk, $assetIssuer, $stakingRewardWalletKey, $stakingPublicWalletKey, $network;
+    private WalletService $wallet;
 
-    public function __construct()
+    public function __construct(WalletService $wallet)
     {
-        $this->sdk = StellarSDK::getPublicNetInstance();
-        // $this->sdk = StellarSDK::getTestNetInstance();
-        $this->maxFee = 30000;
-    }
-    //
-    public function fetch_wallet_types()
-    {
-        $wallets = WalletType::where('status', 1) 
-            ->select('id','name', 'key', 'blockchain_id')
-            ->get();
+        $this->wallet = $wallet;
+        $stellarEnv = env('VITE_STELLAR_ENVIRONMENT');
 
-        // Return the response
-        return response()->json([
-            'status' => 'success',
-            'wallets' => $wallets
-        ]);
-    }
-
-    public function fetch_blockchains()
-    {
-        $blockchains = Blockchain::orderBy('name')->get();
-
-        // Return the response
-        return response()->json([
-            'status' => 'success',
-            'blockchains' => $blockchains
-        ]);
-    }
-
-    
-    public function fetch_holding_tokens_total_xlm(Request $request)
-    {
-        $wallet_address = $request->json('wallet_key');
-
-        // Continue only if wallet_address is not null
-        if ($wallet_address !== null) {
-            try {
-                // Fetch details of the wallet from the public address
-                $WalletAccount = $this->sdk->requestAccount($wallet_address);
-                if(!$WalletAccount){
-                    return response()->json(['status' => 'error', 'message' => 'Wallet is not active']);
-                }
-                $tokens = []; // Initialize an array to hold non-native assets
-                $totalXLM = 0;
-
-                // Loop through the balances and fetch non-native assets
-                foreach ($WalletAccount->getBalances() as $balance) {
-                    if ($balance->getAssetType() === 'native') {
-                        // Store the XLM balance if the asset type is 'native'
-                        $totalXLM = $balance->getBalance();
-                    } else {
-                        // Store non-native assets
-                        $tokens[] = [
-                            'code' => $balance->getAssetCode(), // Asset code
-                            'issuer' => $balance->getAssetIssuer(), // Asset issuer
-                            'balance' => $balance->getBalance(), // Asset balance
-                        ];
-                    }
-                }
-
-                if (count($tokens) > 0) {
-                    return response()->json([
-                        'status' => 'success',
-                        'tokens' => $tokens,
-                        'total_xlm' => $totalXLM, // Include the total XLM balance in the response
-                    ]);
-                } else {
-                    return response()->json(['status' => 'error', 'message' => 'No Tokens Found in Connected Wallet']);
-                }
-            } catch (\InvalidArgumentException $e) {
-                return response()->json(['status' => 'error', 'message' => 'Invalid Wallet Address']);
-            } catch (\Exception $e) {
-                return response()->json(['status' => 'error', 'message' => 'Wallet is not active']);
-            }
+        if ($stellarEnv === 'public') {
+            $this->sdk = StellarSDK::getPublicNetInstance();
+            $this->stakingRewardWalletKey = env('STAKING_REWARD_WALLET_KEY');
+            $this->stakingPublicWalletKey = env('STAKING_PUBLIC_WALLET_KEY');
+            $this->assetIssuer =  env('TKG_ISSUER_PUBLIC');
+            $this->network = Network::public();
         } else {
-            return response()->json(['status' => 'error', 'message' => 'Wallet address is required']);
+            $this->sdk = StellarSDK::getTestNetInstance();
+            $this->stakingRewardWalletKey = env('STAKING_REWARD_WALLET_KEY_TESTNET');
+            $this->stakingPublicWalletKey = env('STAKING_PUBLIC_WALLET_KEY_TESTNET');
+            $this->assetIssuer =  env('TKG_ISSUER_TESTNET');
+            $this->network = Network::testnet();
         }
     }
+
+    public function check_xlm_balance(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'public_wallet' => ['required', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $balance = $this->wallet->getXlmBalance($request->public_wallet);
+
+        return response()->json([
+            'status'    => 1,
+            'total_xlm' => (float) $balance,
+        ]);
+    }
+
+    public function check_tkg_balance(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'public_wallet' => ['required', 'string'],
+                'min' => ['nullable', 'numeric'],
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status'  => 0,
+                'message' => 'Validation error',
+                'errors'  => $e->errors(),
+            ], 422);
+        }
+
+        try {
+            $min = $data['min'] ?? null;
+            $result = $this->wallet->getTkgBalance($data['public_wallet'], $min);
+
+            // If "min" provided, service returns bool. Otherwise it returns float balance.
+            if ($min !== null) {
+                return response()->json([
+                    'status' => 1,
+                    'hasMin' => (bool) $result,
+                    'min'    => (float) $min,
+                ]);
+            }
+
+            return response()->json([
+                'status'    => 1,
+                'balance' => (float) $result,
+            ]);
+        } catch (HorizonRequestException $e) {
+            if ($e->getStatusCode() === 404) {
+                // account not funded / not found
+                return response()->json([
+                    'status'      => 1,
+                    'balance' => 0.0,
+                ]);
+            }
+            return response()->json([
+                'status'  => 0,
+                'message' => 'Horizon error',
+                'code'    => $e->getStatusCode(),
+            ], 502);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status'  => 0,
+                'message' => 'Unexpected error',
+            ], 500);
+        }
+    }
+
+
+    public function wallet_types()
+    {
+        try {
+            $wallets = WalletType::where('status', 1)
+                ->select('id', 'name', 'key', 'blockchain_id')
+                ->get();
+
+            return response()->json([
+                'status' => 'success',
+                'wallets' => $wallets,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('wallet_types error', ['message' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch wallet types.',
+            ], 500);
+        }
+    }
+
+    public function blockchains()
+    {
+        try {
+            $blockchains = Blockchain::query()
+                ->orderBy('name')
+                ->get();
+
+            return response()->json([
+                'status'      => 'success',
+                'blockchains' => $blockchains,
+            ], 200);
+        } catch (\Throwable $e) {
+            Log::error('Failed to fetch blockchains', [
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+            ]);
+
+            $payload = [
+                'status'  => 'error',
+                'message' => 'Failed to load blockchains. Please try again later.',
+            ];
+
+            if (config('app.debug')) {
+                $payload['debug'] = $e->getMessage();
+            }
+
+            return response()->json($payload, 500);
+        }
+    }
+
+
     public function fetch_holding_tokens_claim_claimable_balance(Request $request)
     {
         $wallet_address = $request->json('wallet_key');
@@ -147,7 +192,7 @@ class GlobalController extends Controller
                         // Store the XLM balance if the asset type is 'native'
                         $totalXLM = $balance->getBalance();
                     } else {
-                       // Only store non-native assets with a balance greater than 0
+                        // Only store non-native assets with a balance greater than 0
                         $asset_balance = $balance->getBalance();
                         if ($asset_balance > 0) {
                             $tokens[] = [
@@ -178,136 +223,144 @@ class GlobalController extends Controller
         }
     }
 
-    public function check_wallet(Request $request)
+    public function generated_tokens()
     {
-        $private_key = $request->input('private_key');
+        try {
+            $get_wallets_tokens = Token::with([
+                'stellarToken.mintTransaction',
+                'blockchain'
+            ])
+                ->whereHas('stellarToken', function ($q) {
+                    $q->whereNotNull('issuer_public_key')
+                        ->where('issuer_public_key', '!=', '');
+                })
+                ->latest()
+                ->take(6)
+                ->get()
+                ->map(function ($token) {
 
-        // Continue only if private_key is not null
-        if ($private_key !== null) {
-            try {
-                $private_key_pair = KeyPair::fromSeed($private_key);
-                // Fetch the public address of the wallet from the private key
-                $privatekeyId = $private_key_pair->getAccountId();
-                // Fetch details of the wallet from the public address
-                $privatekeyAccount = $this->sdk->requestAccount($privatekeyId);
-                // Fetch balance of the wallet
-                foreach ($privatekeyAccount->getBalances() as $balance) {
-                    // Fetch XLM (native) balance of the wallet
-                    if ($balance->getAssetType() === 'native') {
-                        // Checking if the XLM balance is less than 5 
-                        if ($balance->getBalance() < 5) {
-                            return response()->json(['status' => 'error', 'msg' => 'Account does not have enough XLM. Please deposit at least 5 XLM']);
-                        }
-                    }
-                }
-            } catch (\InvalidArgumentException $e) {
-                return response()->json(['status' => 'error', 'msg' => 'Invalid Private Key']);
-            } catch (\Exception $e) {
-                return response()->json(['status' => 'error', 'msg' => 'Wallet is not active']);
-            }
+                    $stellar = $token->stellarToken;
+                    $mintTx = $stellar->mintTransaction;
+
+                    return [
+                        'id' => $token->id,
+                        'name' => $stellar->name ?? null,
+                        'token_verify' => (int) ($token->token_verify ?? 0),
+                        'asset_code' => $stellar->asset_code ?? null,
+                        'total_supply' => $stellar->total_supply ?? null,
+                        'logo_url' => $stellar->logo ?? null,
+                        'issuer_locked' => $stellar->issuer_locked ?? false,
+                        'tx_hash' => $mintTx->tx_hash ?? null,
+                        'blockchain' => [
+                            'name' => $token->blockchain->name ?? null,
+                        ],
+                    ];
+                });
+
+
+            return response()->json([
+                'status' => 'success',
+                'tokens' => $get_wallets_tokens,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('generated_tokens error', ['message' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch generated tokens.',
+            ], 500);
         }
     }
 
-    public function fetch_generated_tokens (){
-        $get_wallets_tokens = Token::with(['stellarToken', 'blockchain'])
-        ->whereHas('stellarToken', function ($q) {
-            $q->whereNotNull('issuer_public_key')
-              ->where('issuer_public_key', '!=', '');
-        })
-        ->limit(4)
-        ->orderBy('id', 'desc')
-        ->get();
-        return response()->json([
-            'status' => 'success',
-            'tokens' => $get_wallets_tokens,
-        ]);
+    public function count_data()
+    {
+        try {
+            $total_tokens = StellarToken::count();
+            return response()->json([
+                'status' => 'success',
+                'total_tokens' => $total_tokens,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('count_data error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch total token count.',
+            ], 500);
+        }
     }
 
-    public function count_data(){
-        $total_tokens = StellarToken::count();
-        $total_claimablebalance_users = ClaimableBalance::count();
-        $total_claimablebalance = ClaimableBalanceReceiver::count();
-        return response()->json([
-            'status' => 'success',
-            'total_tokens' => $total_tokens,
-            'total_claimablebalance_users' => $total_claimablebalance_users,
-            'total_claimablebalance' => $total_claimablebalance,
-        ]);
+    public function staking_reward(Request $request)
+    {
+        try {
+            $limit = min(max((int)$request->input('limit', 20), 1), 100);
+
+            $rows = StakingReward::query()
+                ->with([
+                    'staking' => fn($q) => $q->select('id', 'user_id')
+                        ->with(['user:id,public_key']),
+                ])
+                ->whereHas('staking.user')
+                ->latest('created_at')
+                ->limit($limit)
+                ->get(['id', 'staking_id', 'amount', 'transaction_id', 'created_at']);
+
+            $out = $rows->map(function (StakingReward $r) {
+                return [
+                    'wallet_address' => $r->staking?->user?->public_key,
+                    'reward'         => (float) $r->amount,
+                    'transaction'    => $r->transaction_id,
+                    'at'             => optional($r->created_at)->toIso8601String(),
+                ];
+            });
+
+            return response()->json([
+                'status'        => 'success',
+                'stakingreward' => $out,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('staking_reward error', ['message' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch staking rewards.',
+            ], 500);
+        }
     }
-    
-    // public function fetch_claimable_balance(Request $request)
-    // {
-    //     $wallet_address = $request->json('wallet_key');
 
-    //     // Continue only if wallet_address is not null
-    //     if ($wallet_address !== null) {
-    //         try {
-    //             $client = new \GuzzleHttp\Client();
-    //             $response = $client->request('GET', 'https://horizon-testnet.stellar.org/accounts/'.$wallet_address.'/claimable_balances');
-    //             dd($response);
-    //             // Check status code
-    //             $status_code = $response->getStatusCode();
-    //             $data = json_decode($response->getBody(), true);
+    public function live_staking_stats()
+    {
+        try {
+            $total_staked = Staking::where('is_withdrawn', 0)
+                ->whereNotNull('transaction_id')
+                ->where('staking_status_id', '!=', 4)
+                ->sum('amount');
 
-    //             if ($status_code == 200) {
-    //                 dd($data); // Successfully fetched claimable balances
-    //             } else {
-    //                 dd('Error:', $status_code, $data); // Error in fetching data
-    //             }
-    //             // Fetch details of the wallet from the public address
-    //             $WalletAccount = $this->sdk->requestAccount($wallet_address);
-    //             $claimableBalance = $this->sdk->claimableBalances($wallet_address);
-    //             dd($claimableBalance);
-    //             // If there are claimable balances, process them
-    //             if (count($claimableBalance) > 0) {
-    //                 $claimable = []; // Initialize an array to hold claimable balances
-                    
-    //                 // Loop through claimable balances and extract necessary information
-    //                 foreach ($claimableBalances as $balance) {
-    //                     $claimable[] = [
-    //                         'id' => $balance->getId(), // Claimable balance ID
-    //                         'amount' => $balance->getAmount(), // Amount of the claimable balance
-    //                         'asset_code' => $balance->getAssetCode(), // Asset code (this is the code you want)
-    //                         'asset_issuer' => $balance->getAssetIssuer(), // Asset issuer
-    //                         'claimants' => $balance->getClaimants() // List of claimants
-    //                     ];
-    //                 }
-    //             }
+            $active_stakers = Staking::where('is_withdrawn', 0)
+                ->whereNotNull('transaction_id')
+                ->where('staking_status_id', '!=', 4)
+                ->distinct('user_id')
+                ->count('user_id');
 
-    //             $tokens = []; // Initialize an array to hold non-native assets
-    //             $totalXLM = 0;
+            $rewards_paid = StakingReward::where('created_at', '>=', now()->subDay())
+                ->sum('amount');
 
-    //             // Loop through the balances and fetch non-native assets
-    //             foreach ($WalletAccount->getBalances() as $balance) {
-    //                 if ($balance->getAssetType() === 'native') {
-    //                     // Store the XLM balance if the asset type is 'native'
-    //                     $totalXLM = $balance->getBalance();
-    //                 } else {
-    //                     // Store non-native assets
-    //                     $tokens[] = [
-    //                         'code' => $balance->getAssetCode(), // Asset code
-    //                         'issuer' => $balance->getAssetIssuer(), // Asset issuer
-    //                         'balance' => $balance->getBalance(), // Asset balance
-    //                     ];
-    //                 }
-    //             }
+            $total_payouts = StakingReward::sum('amount');
 
-    //             if (count($tokens) > 0) {
-    //                 return response()->json([
-    //                     'status' => 'success',
-    //                     'tokens' => $tokens,
-    //                     'total_xlm' => $totalXLM, // Include the total XLM balance in the response
-    //                 ]);
-    //             } else {
-    //                 return response()->json(['status' => 'error', 'message' => 'No Claimable Balance in Connected Wallet']);
-    //             }
-    //         } catch (\InvalidArgumentException $e) {
-    //             return response()->json(['status' => 'error', 'message' => 'Invalid Wallet Address']);
-    //         } catch (\Exception $e) {
-    //             return response()->json(['status' => 'error', 'message' => 'Wallet is not active']);
-    //         }
-    //     } else {
-    //         return response()->json(['status' => 'error', 'message' => 'Wallet address is required']);
-    //     }
-    // }
+            $stats = [
+                'total_staked'   => (float) $total_staked,
+                'active_stakers' => $active_stakers,
+                'rewards_paid'   => (float) $rewards_paid,
+                'total_payouts'  => (float) $total_payouts,
+            ];
+
+            return response()->json([
+                'status' => 'success',
+                'stats'  => $stats,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('live_staking_stats error', ['message' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch live staking stats.',
+            ], 500);
+        }
+    }
 }

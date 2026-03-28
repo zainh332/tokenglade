@@ -1,28 +1,20 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-f3a98047.css",
+    "file": "assets/app-85ebe92a.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
-  "src/assets/albeto.png": {
-    "file": "assets/albeto-acc89022.png",
-    "src": "src/assets/albeto.png"
-  },
   "src/assets/coin.png": {
-    "file": "assets/coin-ab4d3c39.png",
+    "file": "assets/coin-1814fc02.png",
     "src": "src/assets/coin.png"
   },
   "src/assets/flower.png": {
-    "file": "assets/flower-9bebdb58.png",
+    "file": "assets/flower-5799095d.png",
     "src": "src/assets/flower.png"
   },
   "src/assets/footer-logo.png": {
-    "file": "assets/footer-logo-47ce9443.png",
+    "file": "assets/footer-logo-72cfc0ba.png",
     "src": "src/assets/footer-logo.png"
-  },
-  "src/assets/frighter.png": {
-    "file": "assets/frighter-56128358.png",
-    "src": "src/assets/frighter.png"
   },
   "src/assets/lights.png": {
     "file": "assets/lights-c425c569.png",
@@ -33,43 +25,45 @@
     "src": "src/assets/logo.png"
   },
   "src/assets/phone.png": {
-    "file": "assets/phone-592dc7ab.png",
+    "file": "assets/phone-d7e790d1.png",
     "src": "src/assets/phone.png"
   },
-  "src/assets/rabet.png": {
-    "file": "assets/rabet-b63626b7.png",
-    "src": "src/assets/rabet.png"
+  "src/assets/reward.png": {
+    "file": "assets/reward-9c1d8a04.png",
+    "src": "src/assets/reward.png"
+  },
+  "src/assets/stop.png": {
+    "file": "assets/stop-abbef106.png",
+    "src": "src/assets/stop.png"
   },
   "src/assets/token-glade-logo.png": {
-    "file": "assets/token-glade-logo-14ce1d6b.png",
+    "file": "assets/token-glade-logo-fc9beecd.png",
     "src": "src/assets/token-glade-logo.png"
   },
   "src/assets/wallet.jpg": {
-    "file": "assets/wallet-3292a01f.jpg",
+    "file": "assets/wallet-d06d1cc0.jpg",
     "src": "src/assets/wallet.jpg"
   },
-  "src/assets/xbull.png": {
-    "file": "assets/xbull-0f319a8d.png",
-    "src": "src/assets/xbull.png"
-  },
   "src/main.css": {
-    "file": "assets/main-36451d53.css",
+    "file": "assets/main-6890adc5.css",
     "src": "src/main.css"
   },
   "src/main.js": {
     "assets": [
       "assets/logo-85d8ef3c.png",
-      "assets/token-glade-logo-14ce1d6b.png",
-      "assets/flower-9bebdb58.png",
-      "assets/footer-logo-47ce9443.png",
-      "assets/coin-ab4d3c39.png",
-      "assets/phone-592dc7ab.png",
-      "assets/wallet-3292a01f.jpg"
+      "assets/token-glade-logo-fc9beecd.png",
+      "assets/flower-5799095d.png",
+      "assets/footer-logo-72cfc0ba.png",
+      "assets/coin-1814fc02.png",
+      "assets/phone-d7e790d1.png",
+      "assets/wallet-d06d1cc0.jpg",
+      "assets/reward-9c1d8a04.png",
+      "assets/stop-abbef106.png"
     ],
     "css": [
-      "assets/main-36451d53.css"
+      "assets/main-6890adc5.css"
     ],
-    "file": "assets/main-8efb08c4.js",
+    "file": "assets/main-befbe846.js",
     "isEntry": true,
     "src": "src/main.js"
   }

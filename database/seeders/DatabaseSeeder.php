@@ -15,5 +15,8 @@ class DatabaseSeeder extends Seeder
         $this->call(WalletTypeSeeder::class);
         $this->call(TransactionTypeSeeder::class);
         $this->call(BlockchainSeeder::class);
+        $this->call(StakingAssetsSeeder::class);
+        $this->call(StakingStatusSeeder::class);
+        $this->call(VerfiedTokensSeeder::class);
     }
 }

@@ -1,18 +1,8 @@
 <!-- resources/js/components/BetaRibbon.vue -->
 <template>
-    <div class="beta-header">
-        <!-- <div class="max-w-6xl px-4 mx-auto sm:px-6 lg:px-8">
-            <div class="flex justify-between h-20">
-
-                <div class="flex"> -->
-                    <span>Beta Version</span>
-                <!-- </div>
-            </div>
-        </div> -->
-    </div>
 </template>
 
-<script>
+<!-- <script>
 export default {
     name: "BetaRibbon"
 };
@@ -29,4 +19,4 @@ export default {
   font-size: 0.9em;
   z-index: 1000;
 }
-</style>
+</style> -->

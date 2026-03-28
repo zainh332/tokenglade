@@ -11,17 +11,9 @@ TokenGlade steps into this space with a clear mission: to simplify and secure th
 
 - **Token Creation**: Easily create tokens on the Stellar blockchain with a user-friendly interface. Define your asset code and total supply, and within seconds, your tokens will be ready for distribution.
 
-- **External Wallet Integration**: To enhance security and user experience, TokenGlade seamlessly integrates with external Stellar wallets like Rabet, Frighter, Xbull, and Albedo. Users can securely connect their issuer and distributor wallets without compromising their private keys.
-
-- **Claimable Balance**: Send claimable balances to multiple wallets with just a few clicks. Connect your wallet, specify wallet addresses, token amounts, and asset codes, and you're good to go.
-
-- **Token Transfer**: Facilitate seamless token transfers across multiple wallets, promoting fluid interactions within the token ecosystem.
-
 - **TOML File Generator**: Enhance the credibility and visibility of your tokens with a TOML (Token Manifesto) file generator. Easily generate and upload TOML files to your domain hosting.
 
 - **Liquidity Pool Operations**: TokenGlade allows users to participate in liquidity pools, a fundamental component of decentralized exchanges and trading platforms. Deposit assets to increase reserves or withdraw to manage your liquidity positions.
-
-- **Soroban Smart Contract Integration**: TokenGlade is actively integrating Soroban smart contract features, including deployment, ledger entry inspection, and contract event viewing, to empower users with advanced blockchain capabilities.
 
 ## Getting Started
 

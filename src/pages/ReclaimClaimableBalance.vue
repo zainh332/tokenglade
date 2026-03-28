@@ -269,7 +269,7 @@
             });
     
             // Make API call to create claimable balance
-            const response = await axios.post('api/reclaim_claimable_balance', values, {
+            const response = await axios.post('api/token/reclaim-claimable-balance', values, {
               headers: {
                 'X-CSRF-TOKEN': window.Laravel.csrfToken,
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,

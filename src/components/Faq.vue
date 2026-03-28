@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white">
+  <div>
     <div class="px-2 mx-auto max-w-7xl lg:px-8 ">
       <div class="max-w-6xl mx-auto ">
         

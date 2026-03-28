@@ -9,21 +9,22 @@ class StellarToken extends Model
 {
     use HasFactory;
     
-    protected $fillable = [
-        'asset_code', 
-        'total_supply', 
-        'user_wallet_address', 
-        'issuer_public_key', 
-        'issuer_secret_key',
-        'current_stellar_transaction_id',
-        'memo', 
-        'lock_status',
-        'issuer_wallet_status',
-        'created_token_transfer_status'
-    ];
+    protected $guarded = [];
 
     public function token()
     {
         return $this->hasOne(Token::class);
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(StellarTransactions::class);
+    }
+
+    public function mintTransaction()
+    {
+        return $this->hasOne(StellarTransactions::class)
+            ->where('transaction_type_id', 4)
+            ->latest();
     }
 }

@@ -17,11 +17,5 @@ export default defineConfig({
       alias: {
         '@': path.resolve(__dirname, 'src'),
       }
-    },
-    
-    build: {
-      outDir: 'dist',
-      rollupOptions: {
-      }
     }
 })
