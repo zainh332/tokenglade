@@ -27,12 +27,52 @@ class StellarTokenService
             throw new \Exception('Asset not found.');
         }
 
-        $url = "https://api.stellar.expert/explorer/public/asset/{$code}-{$issuer}";
+        $assetId = "{$code}-{$issuer}";
+        $expertUrl = "https://api.stellar.expert/explorer/public/asset/{$assetId}";
+        $response = Http::timeout(8)->get($expertUrl);
 
-        $response = Http::timeout(8)->get($url);
 
         if (!$response->ok()) {
             throw new \Exception('response not found.');
+        }
+
+        $totalTrades = (int) $response->json('trades');
+        $tradedAmountRaw = $response->json('traded_amount');
+
+        $payments = (int) $response->json('payments');
+        $paymentsAmountRaw = $response->json('payments_amount');
+
+        $rating = $response->json('rating') ?? [];
+
+        $orderbook = Http::get($this->horizon . '/order_book', [
+            'selling_asset_type' => 'credit_alphanum4',
+            'selling_asset_code' => $code,
+            'selling_asset_issuer' => $issuer,
+            'buying_asset_type' => 'native',
+        ]);
+
+        $price_xlm = null;
+
+        if ($orderbook->ok()) {
+            $bestBid = $orderbook->json('bids.0.price');
+            $price_xlm = $bestBid ? (float) $bestBid : null;
+        }
+
+        // Fetch Top 10 Holders from StellarExpert
+        $holdersResponse = Http::timeout(8)->get("{$expertUrl}/holders", [
+            'limit' => 10,
+            'order' => 'desc'
+        ]);
+
+        $topHolders = [];
+        if ($holdersResponse->ok()) {
+            $records = $holdersResponse->json('_embedded.records') ?? [];
+            foreach ($records as $record) {
+                $topHolders[] = [
+                    'address' => $record['address'],
+                    'balance' => $record['balance'],
+                ];
+            }
         }
 
         $horizon = $horizonResponse->json('_embedded.records.0');
@@ -49,17 +89,16 @@ class StellarTokenService
             $decimals
         );
 
-        if (!$horizon) {
-            throw new \Exception('Asset not found.');
-        }
+        $tradedAmount = $tradedAmountRaw
+            ? bcdiv($tradedAmountRaw, bcpow('10', (string)$decimals, 0), $decimals)
+            : 0;
+
+        $paymentsAmount = $paymentsAmountRaw
+            ? bcdiv($paymentsAmountRaw, bcpow('10', (string)$decimals, 0), $decimals)
+            : 0;
 
         $issuerResponse = Http::get($this->horizon . "/accounts/{$issuer}");
-
-        if (!$issuerResponse->ok()) {
-            throw new \Exception('Issuer not found.');
-        }
-
-        $issuerData = $issuerResponse->json();
+        $issuerData = $issuerResponse->ok() ? $issuerResponse->json() : null;
 
         return [
             'asset_code'       => $code,
@@ -68,13 +107,13 @@ class StellarTokenService
             'name'             => $toml['token']['name'] ?? $toml['project']['org_name'],
             'image'            => $toml['token']['image'] ?? null,
             'description'      => $toml['token']['description'] ?? null,
-            'conditions'         => $toml['token']['conditions'] ?? 7,
 
             'project'          => $toml['project'] ?? [],
 
             'total_supply' => $formattedSupply,
             'trustlines'     => (int) ($horizon['accounts']['authorized'] ?? 0),
             'holders'     => (int) ($holders ?? 0),
+            'top_holders'  => $topHolders,
 
             'issuer_locked'    => $issuerData['flags']['auth_immutable'] ?? false,
             'minting_possible' => !($issuerData['flags']['auth_immutable'] ?? false),
@@ -100,6 +139,24 @@ class StellarTokenService
             'transactions' => $this->getRecentTransactions($issuer, $code),
             'volume_1h' => $this->getLastHourVolume($issuer, $code),
             'usd_price' => $usd_price,
+            'xlm_price' => $price_xlm,
+
+            'activity' => [
+                'total_trades' => $totalTrades,
+                'traded_volume' => $tradedAmount,
+                'payments' => $payments,
+                'payments_volume' => $paymentsAmount,
+            ],
+
+            'rating' => [
+                'age' => $rating['age'] ?? 0,
+                'activity' => $rating['activity'] ?? 0,
+                'trustlines' => $rating['trustlines'] ?? 0,
+                'liquidity' => $rating['liquidity'] ?? 0,
+                'volume7d' => $rating['volume7d'] ?? 0,
+                'interop' => $rating['interop'] ?? 0,
+                'average' => $rating['average'] ?? 0,
+            ],
         ];
     }
 
@@ -287,7 +344,10 @@ class StellarTokenService
         $tomlUrl = $asset['_links']['toml']['href'] ?? null;
 
         if (!$tomlUrl) {
-            return [];
+            return [
+                'project' => [],
+                'token'   => [],
+            ];
         }
 
         $response = Http::timeout(6)->get($tomlUrl);
@@ -328,7 +388,6 @@ class StellarTokenService
                     'image'       => $currency['image'] ?? null,
                     'description' => $currency['desc'] ?? null,
                     'decimals'    => $currency['display_decimals'] ?? 7,
-                    'conditions'  => $currency['conditions'] ?? null,
                 ];
 
                 break;
