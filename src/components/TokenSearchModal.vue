@@ -21,21 +21,39 @@
                         </DialogTitle>
 
                         <p class="text-sm text-slate-500 mb-4">
-                            Enter the issuer address of the token
+                            Enter the asset code of the token
                         </p>
 
-                        <input v-model="issuerInput" @keyup.enter="openToken" type="text" placeholder="G..."
+                        <!-- asset code input -->
+                        <input v-model="assetCodeInput" @keyup.enter="searchAssets" type="text" placeholder="TKG"
                             class="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-400" />
 
+                        <!-- dropdown -->
+                        <div v-if="assets.length" class="mt-4 border rounded-xl max-h-[250px] overflow-y-auto">
+                            <div v-for="asset in assets" :key="asset.asset_issuer" @click="selectAsset(asset)"
+                                class="p-4 border-b last:border-b-0 cursor-pointer hover:bg-slate-50">
+                                <div class="font-medium text-sm">
+                                    {{ asset.asset_code }}
+                                </div>
+
+                                <div class="text-xs text-slate-500 break-all mt-1">
+                                    {{ asset.asset_issuer }}
+                                </div>
+
+                                <div class="text-xs text-cyan-600 mt-2">
+                                    Holders: {{ asset.accounts.authorized }}
+                                </div>
+                            </div>
+                        </div>
 
                         <p class="text-red-500 text-sm mt-2 min-h-[20px]">
                             {{ error }}
                         </p>
 
-                        <button :disabled="loading" @click="openToken" class="w-full mt-4 py-3 rounded-xl text-white font-medium
-  bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]
-  hover:opacity-90 transition disabled:opacity-50">
-                            {{ loading ? "Checking..." : "Open Token Insight" }}
+                        <button :disabled="loading" @click="searchAssets" class="w-full mt-4 py-3 rounded-xl text-white font-medium
+                            bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]
+                            hover:opacity-90 transition disabled:opacity-50">
+                            {{ loading ? "Checking..." : "Search Token" }}
                         </button>
 
                     </DialogPanel>
@@ -50,7 +68,7 @@
 
 <script setup>
 
-import { ref } from "vue"
+import { ref, watch } from "vue"
 import { useRouter } from "vue-router"
 import {
     Dialog,
@@ -60,7 +78,7 @@ import {
     TransitionChild
 } from "@headlessui/vue"
 
-const props = defineProps({
+defineProps({
     modelValue: Boolean
 })
 
@@ -68,26 +86,20 @@ const emit = defineEmits(["update:modelValue"])
 
 const router = useRouter()
 
-const issuerInput = ref("")
+const assetCodeInput = ref("")
 
 const error = ref("")
 const loading = ref(false)
+const assets = ref([])
 
-function isValidStellarAddress(address) {
-    return /^G[A-Z2-7]{55}$/.test(address)
-}
+let debounceTimeout = null
 
-async function openToken() {
+async function searchAssets() {
 
     error.value = ""
 
-    if (!issuerInput.value) {
-        error.value = "Please enter an issuer address"
-        return
-    }
-
-    if (!isValidStellarAddress(issuerInput.value)) {
-        error.value = "Invalid Stellar address"
+    if (!assetCodeInput.value.trim()) {
+        assets.value = []
         return
     }
 
@@ -96,30 +108,64 @@ async function openToken() {
     try {
 
         const res = await fetch(
-            `https://horizon.stellar.org/assets?asset_issuer=${issuerInput.value}`
+            `https://horizon.stellar.org/assets?asset_code=${assetCodeInput.value.trim()}&limit=200`
         )
 
         const data = await res.json()
 
         if (!data._embedded.records.length) {
-            error.value = "This address has not issued any tokens"
+            assets.value = []
+            error.value = "No token found"
             loading.value = false
             return
         }
 
-        router.push({
-            path: "/token-insight",
-            query: { issuer: issuerInput.value }
-        })
+        error.value = ""
 
-        issuerInput.value = ""
-        emit("update:modelValue", false)
+        assets.value = data._embedded.records.sort(
+            (a, b) => b.accounts.authorized - a.accounts.authorized
+        )
+
+        /*
+        sorted by highest holders first using:
+        accounts.authorized
+        from Horizon response
+        :contentReference[oaicite:0]{index=0}
+        */
 
     } catch (e) {
-        error.value = "Issuer not found on Stellar network"
+        error.value = "Failed to fetch assets"
+        assets.value = []
     }
 
     loading.value = false
 }
 
+watch(assetCodeInput, (newValue) => {
+    clearTimeout(debounceTimeout)
+
+    if (!newValue.trim()) {
+        assets.value = []
+        error.value = ""
+        return
+    }
+
+    debounceTimeout = setTimeout(() => {
+        searchAssets()
+    }, 500)
+})
+
+function selectAsset(asset) {
+    router.push({
+        path: "/token-insight",
+        query: {
+            asset_code: asset.asset_code,
+            issuer: asset.asset_issuer
+        }
+    })
+
+    assetCodeInput.value = ""
+    assets.value = []
+    emit("update:modelValue", false)
+}
 </script>
