@@ -43,8 +43,8 @@
                                 <img v-if="token.image" :src="token.image"
                                     class="w-16 h-16 rounded-full object-cover border" />
 
-                                <div>
-                                    <h1 class="text-3xl font-bold flex items-center gap-2">
+                                <div class="flex-1">
+                                    <h1 class="text-3xl font-bold flex items-center gap-2 flex-wrap">
                                         {{ token.name }}
 
                                         <img v-if="isVerified" :src="verified" class="w-4 h-4" />
@@ -54,6 +54,32 @@
                                             Get Verified
                                         </span>
                                     </h1>
+
+                                    <!-- voting section -->
+                                    <div class="flex flex-wrap gap-3 mt-3">
+
+                                        <button @click="submitVote('trusted')"
+                                            class="flex items-center gap-2 px-4 py-2 rounded-xl border bg-green-50 text-green-700 hover:bg-green-100 transition">
+                                            <span>✅</span>
+                                            <span>Trusted</span>
+                                            <span class="font-semibold">{{ votes.trusted }}</span>
+                                        </button>
+
+                                        <button @click="submitVote('suspicious')"
+                                            class="flex items-center gap-2 px-4 py-2 rounded-xl border bg-yellow-50 text-yellow-700 hover:bg-yellow-100 transition">
+                                            <span>⚠️</span>
+                                            <span>Suspicious</span>
+                                            <span class="font-semibold">{{ votes.suspicious }}</span>
+                                        </button>
+
+                                        <button @click="submitVote('scam')"
+                                            class="flex items-center gap-2 px-4 py-2 rounded-xl border bg-red-50 text-red-700 hover:bg-red-100 transition">
+                                            <span>❌</span>
+                                            <span>Scam</span>
+                                            <span class="font-semibold">{{ votes.scam }}</span>
+                                        </button>
+
+                                    </div>
                                 </div>
                             </div>
 
@@ -684,6 +710,8 @@ import { reactive, onMounted, watch, ref, computed } from "vue"
 import { useRoute } from "vue-router"
 import axios from "axios"
 import verified from "@/assets/verify.png";
+import { getCookie } from "../utils/utils.js";
+import Swal from 'sweetalert2';
 
 import Header from "@/components/Header.vue"
 import Footer from "@/components/Footer.vue"
@@ -740,6 +768,12 @@ watch(
     },
     { immediate: true }
 )
+
+const votes = ref({
+    trusted: 0,
+    suspicious: 0,
+    scam: 0
+})
 
 function shorten(str) {
     if (!str) return "-"
@@ -803,6 +837,12 @@ async function fetchToken() {
 
         Object.assign(token, res.data)
 
+        votes.value = res.data.votes || {
+            trusted: 0,
+            suspicious: 0,
+            scam: 0
+        }
+
     } catch (error) {
         console.error("Error fetching token data:", error)
     } finally {
@@ -858,4 +898,38 @@ const ratingBars = computed(() => {
         Interop: token.rating.interop || 0,
     }
 })
+
+async function submitVote(type) {
+    try {
+
+        const publicKey = getCookie('public_key')
+
+        if (!publicKey) {
+            alert("Wallet not connected")
+            return
+        }
+
+        /*
+        send vote to backend
+        */
+
+        const res = await axios.post("/api/token/vote", {
+            asset_code: token.asset_code,
+            issuer: token.issuer,
+            vote_type: type,
+            public_key: publicKey
+        })
+
+        votes.value = res.data.votes
+
+    } catch (error) {
+        console.error(error)
+
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: error?.response?.data?.message || "Failed to submit vote",
+        });
+    }
+}
 </script>

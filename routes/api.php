@@ -42,6 +42,7 @@ Route::prefix('wallet')->group(function () {
 
 Route::prefix('token')->group(function () {
     Route::get('show', 'TokenController@show')->name('token.show');
+    Route::post('vote', 'TokenController@stellarTokenVote')->name('token.vote');
 });
 
 

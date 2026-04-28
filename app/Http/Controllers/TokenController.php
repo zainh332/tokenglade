@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\StellarMarketToken;
 use App\Models\StellarToken;
+use App\Models\StellarTokenVote;
 use App\Models\StellarTransactions;
 use App\Models\Token;
+use App\Models\User;
 use App\Models\VerifiedProject;
 use App\Services\StellarTokenService;
 use App\Services\WalletService;
@@ -1055,14 +1058,14 @@ class TokenController extends Controller
         $insight = $service->getTokenInsight($issuer, $code);
 
         $isDbVerified = false;
-        
+
         if ($stellarToken) {
             $isDbVerified = Token::where('stellar_token_id', $stellarToken->id)
-            ->where('token_verify', 1)
-            ->exists();
-            }
-            
-            $isManuallyVerified = VerifiedProject::where('identifier', $issuer)
+                ->where('token_verify', 1)
+                ->exists();
+        }
+
+        $isManuallyVerified = VerifiedProject::where('identifier', $issuer)
             ->where('blockchain_id', 1)
             ->where('status', 1)
             ->exists();
@@ -1070,9 +1073,146 @@ class TokenController extends Controller
 
         $isVerified = $isDbVerified || $isManuallyVerified;
 
+        $marketToken = StellarMarketToken::updateOrCreate(
+            [
+                'asset_code' => $code,
+                'asset_issuer' => $issuer,
+            ],
+            [
+                'name' => $insight['name'] ?? $code,
+                'image' => $insight['image'] ?? null,
+                'website' => $insight['website'] ?? null,
+
+                'is_verified' => $isVerified,
+
+                'current_holders' => $insight['holders'] ?? 0,
+                'current_price_usd' => $insight['usd_price'] ?? null,
+                'current_price_xlm' => $insight['xlm_price'] ?? null,
+
+                'last_viewed_at' => now(),
+            ]
+        );
+
+        $votes = [
+            'trusted' => $marketToken->votes()
+                ->where('vote_type', 'trusted')
+                ->count(),
+
+            'suspicious' => $marketToken->votes()
+                ->where('vote_type', 'suspicious')
+                ->count(),
+
+            'scam' => $marketToken->votes()
+                ->where('vote_type', 'scam')
+                ->count(),
+        ];
+
         return response()->json([
             ...$insight,
-            'is_verified' => $isVerified
+            'is_verified' => $isVerified,
+            'votes' => $votes
+        ]);
+    }
+
+    public function stellarTokenVote(Request $request)
+    {
+        $request->validate([
+            'asset_code' => 'required|string',
+            'issuer' => 'required|string',
+            'vote_type' => 'required|in:trusted,suspicious,scam',
+            'public_key' => 'required|string',
+        ]);
+
+        $user = User::where(
+            'public_key',
+            $request->public_key
+        )->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        $token = StellarMarketToken::where([
+            'asset_code' => $request->asset_code,
+            'asset_issuer' => $request->issuer
+        ])->first();
+
+        if (!$token) {
+            return response()->json([
+                'message' => 'Token not found'
+            ], 404);
+        }
+
+        /*
+    Check existing vote
+    */
+
+        $existingVote = StellarTokenVote::where([
+            'user_id' => $user->id,
+            'stellar_market_token_id' => $token->id
+        ])->first();
+
+        if ($existingVote) {
+
+            /*
+        cooldown: 7 days
+        */
+
+            $nextAllowedChange = $existingVote->last_changed_at
+                ? $existingVote->last_changed_at->addDays(7)
+                : null;
+
+            if (
+                $nextAllowedChange &&
+                now()->lt($nextAllowedChange)
+            ) {
+                return response()->json([
+                    'message' => 'You can change your vote only once every 7 days'
+                ], 422);
+            }
+
+            /*
+        update vote after cooldown
+        */
+
+            $existingVote->update([
+                'vote_type' => $request->vote_type,
+                'last_changed_at' => now()
+            ]);
+        } else {
+
+            /*
+        first vote
+        */
+
+            StellarTokenVote::create([
+                'user_id' => $user->id,
+                'stellar_market_token_id' => $token->id,
+                'vote_type' => $request->vote_type,
+                'vote_weight' => 1,
+                'last_changed_at' => now()
+            ]);
+        }
+
+        $votes = [
+            'trusted' => $token->votes()
+                ->where('vote_type', 'trusted')
+                ->count(),
+
+            'suspicious' => $token->votes()
+                ->where('vote_type', 'suspicious')
+                ->count(),
+
+            'scam' => $token->votes()
+                ->where('vote_type', 'scam')
+                ->count(),
+        ];
+
+        return response()->json([
+            'message' => 'Vote submitted successfully',
+            'votes' => $votes
         ]);
     }
 }
