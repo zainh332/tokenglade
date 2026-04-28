@@ -905,7 +905,11 @@ async function submitVote(type) {
         const publicKey = getCookie('public_key')
 
         if (!publicKey) {
-            alert("Wallet not connected")
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Wallet not connected",
+            });
             return
         }
 
