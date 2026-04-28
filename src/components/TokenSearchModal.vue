@@ -98,7 +98,9 @@ async function searchAssets() {
 
     error.value = ""
 
-    if (!assetCodeInput.value.trim()) {
+    const rawInput = assetCodeInput.value.trim()
+
+    if (!rawInput) {
         assets.value = []
         return
     }
@@ -106,32 +108,55 @@ async function searchAssets() {
     loading.value = true
 
     try {
+        const queries = [rawInput]
 
-        const res = await fetch(
-            `https://horizon.stellar.org/assets?asset_code=${assetCodeInput.value.trim()}&limit=200`
-        )
+        if (rawInput !== rawInput.toUpperCase()) {
+            queries.push(rawInput.toUpperCase())
+        }
 
-        const data = await res.json()
+        let allRecords = []
 
-        if (!data._embedded.records.length) {
+        for (const code of queries) {
+            const res = await fetch(
+                `https://horizon.stellar.org/assets?asset_code=${code}&limit=200`
+            )
+
+            const data = await res.json()
+
+            if (data._embedded?.records?.length) {
+                allRecords = [...allRecords, ...data._embedded.records]
+            }
+        }
+
+        if (!allRecords.length) {
             assets.value = []
             error.value = "No token found"
             loading.value = false
             return
         }
 
-        error.value = ""
+        /*
+        remove duplicates using issuer + asset code
+        because same asset may appear from both searches
+        */
 
-        assets.value = data._embedded.records.sort(
-            (a, b) => b.accounts.authorized - a.accounts.authorized
+        const uniqueAssets = Object.values(
+            allRecords.reduce((acc, asset) => {
+                const key = `${asset.asset_code}_${asset.asset_issuer}`
+                acc[key] = asset
+                return acc
+            }, {})
         )
 
-        /*
-        sorted by highest holders first using:
-        accounts.authorized
-        from Horizon response
-        :contentReference[oaicite:0]{index=0}
-        */
+        assets.value = uniqueAssets.sort((a, b) => {
+            if (b.num_liquidity_pools !== a.num_liquidity_pools) {
+                return b.num_liquidity_pools - a.num_liquidity_pools
+            }
+
+            return b.accounts.authorized - a.accounts.authorized
+        })
+
+        error.value = ""
 
     } catch (e) {
         error.value = "Failed to fetch assets"
