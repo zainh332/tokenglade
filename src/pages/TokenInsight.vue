@@ -44,7 +44,7 @@
                                     class="w-16 h-16 rounded-full object-cover border" />
 
                                 <div class="flex-1">
-                                    <h1 class="text-3xl font-bold flex items-center gap-2 flex-wrap">
+                                    <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-2 flex-wrap">
                                         {{ token.name }}
 
                                         <img v-if="isVerified" :src="verified" class="w-4 h-4" />
@@ -56,25 +56,37 @@
                                     </h1>
 
                                     <!-- voting section -->
-                                    <div class="flex flex-wrap gap-3 mt-3">
+                                    <div class="grid grid-cols-1 sm:flex gap-2 sm:gap-3 mt-3">
 
-                                        <button @click="submitVote('trusted')"
-                                            class="flex items-center gap-2 px-4 py-2 rounded-xl border bg-green-50 text-green-700 hover:bg-green-100 transition">
-                                            <span>✅</span>
+                                        <button @click="submitVote('trusted')" class="flex items-center justify-center sm:justify-start gap-2
+        px-3 sm:px-4 py-2
+        rounded-xl border
+        bg-green-50 text-green-700
+        text-sm sm:text-base
+        hover:bg-green-100 transition">
+                                            <span class="text-base sm:text-lg">✅</span>
                                             <span>Trusted</span>
                                             <span class="font-semibold">{{ votes.trusted }}</span>
                                         </button>
 
-                                        <button @click="submitVote('suspicious')"
-                                            class="flex items-center gap-2 px-4 py-2 rounded-xl border bg-yellow-50 text-yellow-700 hover:bg-yellow-100 transition">
-                                            <span>⚠️</span>
+                                        <button @click="submitVote('suspicious')" class="flex items-center justify-center sm:justify-start gap-2
+        px-3 sm:px-4 py-2
+        rounded-xl border
+        bg-yellow-50 text-yellow-700
+        text-sm sm:text-base
+        hover:bg-yellow-100 transition">
+                                            <span class="text-base sm:text-lg">⚠️</span>
                                             <span>Suspicious</span>
                                             <span class="font-semibold">{{ votes.suspicious }}</span>
                                         </button>
 
-                                        <button @click="submitVote('scam')"
-                                            class="flex items-center gap-2 px-4 py-2 rounded-xl border bg-red-50 text-red-700 hover:bg-red-100 transition">
-                                            <span>❌</span>
+                                        <button @click="submitVote('scam')" class="flex items-center justify-center sm:justify-start gap-2
+        px-3 sm:px-4 py-2
+        rounded-xl border
+        bg-red-50 text-red-700
+        text-sm sm:text-base
+        hover:bg-red-100 transition">
+                                            <span class="text-base sm:text-lg">❌</span>
                                             <span>Scam</span>
                                             <span class="font-semibold">{{ votes.scam }}</span>
                                         </button>
