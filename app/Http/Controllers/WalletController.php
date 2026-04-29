@@ -20,7 +20,7 @@ class WalletController extends Controller
 
     //Storing wallets connecting from extensions like rabet etc
     public function store_wallet(Request $request)
-    {   
+    {
         $validator = Validator::make($request->all(), [
             'public_key' => 'required|string',
             'wallet_type_id' => 'required|integer',
@@ -82,11 +82,10 @@ class WalletController extends Controller
         }
 
         $previous_wallet = User::where('public_key', $request->previous_public_key)->where('status', 1)->first();
-        if($previous_wallet){
+        if ($previous_wallet) {
             $previous_wallet->status = 0;
             $previous_wallet->save();
-        }
-        else{
+        } else {
             return response()->json(['status' => 'error', 'message' => 'Previous Public Key is missing']);
         }
 
@@ -136,20 +135,63 @@ class WalletController extends Controller
             return response()->json([
                 'status' => 'success',
             ]);
-        }
-        else{
+        } else {
             return response()->json(['status' => 'error', 'message' => 'Wallet not found']);
         }
     }
 
+    public function check_wallet(Request $request)
+    {
+        $request->validate([
+            'public_key' => 'required|string',
+        ]);
 
+        $result = $this->checkWalletActiveAndFunded($request->public_key);
 
+        return response()->json($result);
+    }
 
+    private function checkWalletActiveAndFunded($publicKey)
+    {
+        try {
+            $sdk = StellarSDK::getPublicNetInstance();
 
+            $account = $sdk->requestAccount($publicKey);
 
+            if (!$account) {
+                return [
+                    'status' => false,
+                    'message' => 'Wallet does not exist on Stellar network'
+                ];
+            }
 
+            $balances = $account->getBalances();
+            $xlmBalance = 0;
 
+            foreach ($balances as $balance) {
+                if ($balance->getAssetType() === 'native') {
+                    $xlmBalance = (float) $balance->getBalance();
+                    break;
+                }
+            }
 
+            if ($xlmBalance < 4) {
+                return [
+                    'status' => false,
+                    'message' => 'Wallet has less than 4 XLM'
+                ];
+            }
 
-
+            return [
+                'status' => true,
+                'message' => 'Wallet is active and funded',
+                'balance' => $xlmBalance
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => 'Wallet not active or invalid public key'
+            ];
+        }
+    }
 }

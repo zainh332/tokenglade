@@ -38,6 +38,9 @@ Route::prefix('global')->group(function () {
 Route::prefix('wallet')->group(function () {
     Route::post('store', 'WalletController@store_wallet')->name('wallet.store');
     Route::post('disconnect', 'WalletController@disconnect_wallet')->name('wallet.disconnect');
+
+    // Check if wallet is active and has at least 4 XLM
+    Route::post('check', 'WalletController@check_wallet')->name('wallet.check');
 });
 
 Route::prefix('token')->group(function () {

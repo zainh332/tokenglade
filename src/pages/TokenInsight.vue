@@ -914,6 +914,23 @@ async function submitVote(type) {
         }
 
         /*
+        First check if wallet is active and has at least 4 XLM
+        */
+
+        const walletCheck = await axios.post("/api/wallet/check", {
+            public_key: publicKey
+        })
+
+        if (!walletCheck.data.status) {
+            Swal.fire({
+                icon: "error",
+                title: "Wallet Error",
+                text: walletCheck.data.message || "Wallet is not active",
+            });
+            return
+        }
+
+        /*
         send vote to backend
         */
 
