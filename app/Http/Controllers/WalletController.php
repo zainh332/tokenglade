@@ -175,10 +175,10 @@ class WalletController extends Controller
                 }
             }
 
-            if ($xlmBalance < 4) {
+            if ($xlmBalance < 2) {
                 return [
                     'status' => false,
-                    'message' => 'Wallet has less than 4 XLM'
+                    'message' => 'Wallet has less than 2 XLM'
                 ];
             }
 
