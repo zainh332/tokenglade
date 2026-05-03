@@ -613,7 +613,7 @@
                                 <!-- TRANSACTIONS -->
                                 <div class="border rounded-xl overflow-hidden">
 
-                                    <div class="grid grid-cols-5 bg-slate-50 text-sm text-slate-500 px-4 py-3 border-b">
+                                    <div class="hidden sm:grid grid-cols-5 bg-slate-50 text-sm text-slate-500 px-4 py-3 border-b">
                                         <span>Side</span>
                                         <span>Amount</span>
                                         <span>Price</span>
@@ -623,28 +623,48 @@
 
                                     <div class="divide-y text-sm">
                                         <div v-for="(tx, i) in token.transactions || []" :key="i"
-                                            class="grid grid-cols-5 px-4 py-3 hover:bg-slate-50 transition">
+                                            class="flex flex-col gap-2 sm:grid sm:grid-cols-5 sm:gap-x-4 px-4 py-3 hover:bg-slate-50 transition">
 
-                                            <span
-                                                :class="tx.side === 'buy' ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'">
-                                                {{ tx.side.toUpperCase() }}
-                                            </span>
+                                            <!-- SIDE -->
+                                            <div class="flex justify-between sm:block">
+                                                <span class="text-xs text-slate-400 sm:hidden">Side</span>
+                                                <span class="font-semibold"
+                                                    :class="tx.side === 'buy' ? 'text-green-600' : 'text-red-600'">
+                                                    {{ tx.side.toUpperCase() }}
+                                                </span>
+                                            </div>
 
-                                            <span class="text-slate-700 font-medium">
-                                                {{ formatPrice2Deci(tx.amount) }} {{ token.asset_code }}
-                                            </span>
+                                            <!-- AMOUNT -->
+                                            <div class="flex justify-between sm:block">
+                                                <span class="text-xs text-slate-400 sm:hidden">Amount</span>
+                                                <span class="text-slate-700 font-medium">
+                                                    {{ formatPrice2Deci(tx.amount) }} {{ token.asset_code }}
+                                                </span>
+                                            </div>
 
-                                            <span class="text-slate-700 font-medium">
-                                                {{ formatPrice(tx.price) }} XLM
-                                            </span>
+                                            <!-- PRICE -->
+                                            <div class="flex justify-between sm:block">
+                                                <span class="text-xs text-slate-400 sm:hidden">Price</span>
+                                                <span class="text-slate-700 font-medium">
+                                                    {{ formatPrice(tx.price) }} XLM
+                                                </span>
+                                            </div>
 
-                                            <span class="text-slate-700 font-medium">
-                                                {{ formatPrice2Deci(tx.value) }} XLM
-                                            </span>
+                                            <!-- VALUE -->
+                                            <div class="flex justify-between sm:block">
+                                                <span class="text-xs text-slate-400 sm:hidden">Value</span>
+                                                <span class="text-slate-700 font-medium">
+                                                    {{ formatPrice2Deci(tx.value) }} XLM
+                                                </span>
+                                            </div>
 
-                                            <span class="text-slate-700 font-medium">
-                                                {{ tx.time }}
-                                            </span>
+                                            <!-- TIME -->
+                                            <div class="flex justify-between sm:block">
+                                                <span class="text-xs text-slate-400 sm:hidden">Time</span>
+                                                <span class="text-slate-700 font-medium">
+                                                    {{ tx.time }}
+                                                </span>
+                                            </div>
 
                                         </div>
                                     </div>
