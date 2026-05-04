@@ -812,61 +812,6 @@ class TokenController extends Controller
         return new ChangeTrustOperation($poolShareAsset, '922337203685.4775807');
     }
 
-    private function getPoolIdFromHorizon(string $codeB, string $issuerB, bool $testnet = false): ?string
-    {
-        $base = $testnet
-            ? 'https://horizon-testnet.stellar.org'
-            : 'https://horizon.stellar.org';
-
-        // Try repeated-reserves style first
-        $url1 = $base
-            . '/liquidity_pools'
-            . '?reserves=native'
-            . '&reserves=' . rawurlencode($codeB . ':' . $issuerB)
-            . '&limit=1&order=asc';
-
-        // Also prepare a fallback comma-separated style
-        $url2 = $base
-            . '/liquidity_pools'
-            . '?reserves=' . rawurlencode('native,' . $codeB . ':' . $issuerB)
-            . '&limit=1&order=asc';
-
-        $client = new Client(['timeout' => 10]);
-
-        foreach ([$url1, $url2] as $url) {
-            try {
-                $res = $client->get($url);
-                $status = $res->getStatusCode();
-                if ($status !== 200) {
-                    // not successful, skip this attempt
-                    continue;
-                }
-                $body = (string)$res->getBody();
-                $json = json_decode($body, true);
-                if (!is_array($json) || !isset($json['_embedded']['records'])) {
-                    continue;
-                }
-                $records = $json['_embedded']['records'];
-                if (count($records) === 0) {
-                    continue;
-                }
-                $rec = $records[0];
-                if (isset($rec['id'])) {
-                    return $rec['id'];
-                }
-            } catch (RequestException $ex) {
-                // optionally log $ex->getMessage()
-                continue;
-            } catch (\Exception $ex) {
-                // other errors
-                continue;
-            }
-        }
-
-        // If none worked or pool not found
-        return null;
-    }
-
     private function lockIssuerWallet(string $issuerPub, string $issuerSec): bool
     {
         try {
