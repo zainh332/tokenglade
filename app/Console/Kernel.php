@@ -17,6 +17,13 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('staking:reward')->hourly();
+
+        // LP rewards (controlled execution)
+        $schedule->command('lp:distribute-rewards')
+            ->sundays()
+            ->hourly()
+            ->withoutOverlapping()
+            ->onOneServer();
     }
 
     /**
@@ -24,7 +31,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands(): void
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }
