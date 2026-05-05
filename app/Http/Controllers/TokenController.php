@@ -71,7 +71,7 @@ class TokenController extends Controller
         }
 
         $this->assetCode = env('ASSET_CODE');
-        $this->token_creation_fee = 50; //XLM
+        $this->token_creation_fee = 5; //XLM
         $this->issuer_wallet_amount = 1.1; //XLM
         $this->feePercentageForLP = 0.7;
     }
@@ -356,16 +356,21 @@ class TokenController extends Controller
 
                     $tomlPath = $directory . '/stellar.toml';
 
+                    $websiteLink = !empty($token_created->website_url)
+                        ? 'website="' . $this->tomlSafe($token_created->website_url) . '"'
+                        : '';
+
                     $tomlContent = <<<EOT
                     [[CURRENCIES]]
                     code="{$token_created->asset_code}"
                     issuer="{$token_created->issuer_public_key}"
                     display_decimals={$token_created->display_decimals}
-                    name="{$token_created->name}"
-                    desc="{$token_created->desc}"
+                    name="{$this->tomlSafe($token_created->name)}",
+                    desc="{$this->tomlSafe($token_created->desc)}"
                     image="{$token_created->logo}"
                     fixed_number="{$token_created->total_supply}"
                     status="live"
+                    {$websiteLink}
 
                     EOT;
 
@@ -1159,5 +1164,19 @@ class TokenController extends Controller
             'message' => 'Vote submitted successfully',
             'votes' => $votes
         ]);
+    }
+
+    protected function tomlSafe($value)
+    {
+        // Normalize to string
+        $value = (string) $value;
+
+        // Trim excessive length (optional but smart)
+        $value = substr($value, 0, 300);
+
+        // Escape critical characters for TOML basic strings
+        $value = addcslashes($value, "\\\"\n\r\t");
+
+        return $value;
     }
 }

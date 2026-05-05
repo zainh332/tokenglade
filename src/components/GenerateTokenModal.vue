@@ -290,7 +290,8 @@ const trimUpper = (v) => (typeof v === 'string' ? v.trim().toUpperCase() : v);
 const schema = Yup.object({
   name: Yup.string()
     .required('Name is required')
-    .max(50, 'Name must be at most 255 characters')
+    .max(50, 'Name must be at most 50 characters')
+    .matches(/^[a-zA-Z0-9\s\-]+$/, 'Only letters, numbers, spaces and - allowed')
     .trim(),
 
   desc: Yup.string()
@@ -301,19 +302,22 @@ const schema = Yup.object({
   website_url: Yup.string()
     .transform(toNullIfEmpty)
     .nullable()
-    .url('Enter a valid URL (e.g., https://example.com)')
-    .max(50, 'Website URL must be at most 255 characters'),
+    .matches(/^https?:\/\//, 'Must start with http:// or https://')
+    .url('Enter a valid URL')
+    .max(255, 'Website URL must be at most 255 characters'),
 
   asset_code: Yup.string()
     .required('Asset Code is required')
     .max(12, 'Asset Code should not exceed 12 characters')
+    .matches(/^[A-Z0-9]+$/, 'Only uppercase letters and numbers allowed')
     .transform(trimUpper),
 
   total_supply: Yup.number()
     .typeError('Total Supply must be a number')
     .required('Total Supply is required')
     .integer('Total Supply must be an integer')
-    .min(1, 'Total Supply must be at least 1'),
+    .min(1, 'Total Supply must be at least 1')
+    .max(922337203685, 'Exceeds Stellar limit'),
 
   logo: Yup.mixed()
     .required('Logo is required')

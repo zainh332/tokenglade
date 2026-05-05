@@ -120,7 +120,7 @@ class StellarTokenService
             'mint_date_human' => Carbon::createFromTimestampUTC($mintDateRaw)->format('Y-m-d'),
             'liquidity_pools'     => (float) ($horizon['num_liquidity_pools'] ?? 0),
             'updated_at'     => '1 min ago',
-            'website'             => $toml['project']['org_url'] ?? null,
+            'website' => $toml['token']['website'] ?? $toml['project']['org_url'] ?? null,
             'twitter' => $toml['project']['org_twitter'] ? 'https://x.com/' . $toml['project']['org_twitter'] : null,
             'email'             => $toml['project']['org_email'] ?? null,
             'support_email'             => $toml['project']['org_support'] ?? null,
@@ -388,6 +388,7 @@ class StellarTokenService
                     'image'       => $currency['image'] ?? null,
                     'description' => $currency['desc'] ?? null,
                     'decimals'    => $currency['display_decimals'] ?? 7,
+                    'website'     => $currency['website'] ?? null,
                 ];
 
                 break;
