@@ -309,7 +309,7 @@ const schema = Yup.object({
   asset_code: Yup.string()
     .required('Asset Code is required')
     .max(12, 'Asset Code should not exceed 12 characters')
-    .matches(/^[A-Z0-9]+$/, 'Only uppercase letters and numbers allowed')
+    .matches(/^[A-Z0-9]+$/, 'Only letters and numbers allowed')
     .transform(trimUpper),
 
   total_supply: Yup.number()
