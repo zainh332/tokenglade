@@ -299,9 +299,9 @@ class TokenController extends Controller
                         ], 404);
                     }
 
-                    $Issuer_wallet_distributor_wallet_trustline_transaction = $this->addStellarTransactionRecord($token_created->id, $distributor_wallet_key, 3, '', $signedXdr, $response->getHash(), true);
+                    $addRecord = $this->addStellarTransactionRecord($token_created->id, $distributor_wallet_key, 3, '', $signedXdr, $response->getHash(), true);
 
-                    if (!$Issuer_wallet_distributor_wallet_trustline_transaction) {
+                    if (!$addRecord) {
                         return response()->json([
                             'status' => 'error',
                             'message' => 'Creating stellar transaction failed.'
@@ -309,7 +309,7 @@ class TokenController extends Controller
                     }
 
                     // Update the token creation record with the new transaction ID
-                    $token_created->current_stellar_transaction_id = $Issuer_wallet_distributor_wallet_trustline_transaction->id;
+                    $token_created->current_stellar_transaction_id = $addRecord->id;
                     $token_created->save();
 
                     $transfer_generate_token = $this->transferCreatedTokens($distributor_wallet_key, $assetCode, $token_created->issuer_public_key, $token_created->issuer_secret_key, $token_created->total_supply);
