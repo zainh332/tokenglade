@@ -31,6 +31,14 @@ class VerfiedProjectsSeeder extends Seeder
                 'name' => 'Aquarius',
                 'status' => 1,
             ],
+
+            [
+                'blockchain_id' => 1,
+                'identifier' => 'GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH',
+                'asset_code' => 'SHX',
+                'name' => 'Stronghold',
+                'status' => 1,
+            ],
         ];
 
         foreach ($projects as $project) {
