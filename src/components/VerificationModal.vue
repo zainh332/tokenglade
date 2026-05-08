@@ -1,60 +1,101 @@
 <template>
     <TransitionRoot as="template" :show="open">
         <Dialog as="div" class="relative z-50" @close="$emit('close')">
-            <div class="fixed inset-0 bg-black/50" />
+            <div class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" />
             <div class="fixed inset-0 overflow-y-auto">
                 <div class="flex min-h-full items-center justify-center p-4">
-                    <DialogPanel class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                    <DialogPanel
+                        class="relative w-full max-w-xl overflow-hidden rounded-[32px] border border-white/40 bg-white shadow-2xl">
+                        <div class="absolute inset-x-0 top-0 h-1 bg-gradient" />
+                        <button @click="$emit('close')"
+                            class="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200">
+                            ✕
+                        </button>
 
-                        <h2 class="text-xl font-bold text-slate-900">
-                            Token Verification
-                        </h2>
+                        <div class="p-7 sm:p-8">
+                            <div class="flex items-start gap-4">
+                                <div
+                                    class="flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-100 bg-gradient-to-br from-cyan-50 to-fuchsia-50">
+                                    <img :src="verified" class="w-12 h-12" />
+                                </div>
 
-                        <p class="mt-3 text-sm text-slate-600">
-                            Your verification request will be reviewed manually to confirm project authenticity and
-                            ownership.
-                        </p>
+                                <div class="flex-1 pr-8">
+                                    <h2 class="text-2xl font-bold tracking-tight text-slate-900">
+                                        Token Verification
+                                    </h2>
 
-                        <!-- FEE -->
-
-                        <div class="mt-5 rounded-xl border bg-slate-50 p-4">
-                            <div class="flex justify-between">
-                                <span class="text-slate-500">
-                                    Verification Fee
-                                </span>
-
-                                <span class="font-semibold">
-                                    {{ fee }} XLM
-                                </span>
+                                    <p class="mt-3 text-sm leading-7 text-slate-600">
+                                        Your verification request will be
+                                        reviewed manually to confirm project
+                                        authenticity and ownership.
+                                    </p>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- WARNING -->
+                            <!-- FEE -->
 
-                        <div
-                            class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 leading-6">
-                            Verification fees are refunded if the verification request is rejected.
-                            Approved projects are not eligible for refunds.
-                        </div>
+                            <div class="mt-7 rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
 
-                        <div class="mt-6">
-                            <button v-if="!connected" @click="$emit('connect-wallet')"
-                                class="w-full text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
-                                Connect Wallet
-                            </button>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-4">
+                                        <div>
+                                            <p class="text-base font-semibold text-slate-900">
+                                                Verification Fee
+                                            </p>
 
-                            <button v-else @click="$emit('pay')" :disabled="loading"
-                                class="w-full text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient disabled:opacity-50">
+                                            <p class="mt-1 text-sm text-slate-500">
+                                                One-time review deposit
+                                            </p>
+                                        </div>
+                                    </div>
 
-                                <span v-if="loading">
-                                    Processing...
-                                </span>
+                                    <div class="text-right">
+                                        <p class="text-3xl font-bold tracking-tight text-slate-900">
+                                            {{ fee }}
+                                            <span class="text-xl">
+                                                XLM
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
 
-                                <span v-else>
-                                    Pay {{ fee }} XLM
-                                </span>
+                            <!-- WARNING -->
 
-                            </button>
+                            <div class="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+                                <div class="flex gap-4">
+                                    <div class="text-sm leading-7 text-amber-800">
+
+                                        Verification fees are refunded if the
+                                        verification request is rejected.
+
+                                        Approved projects are not eligible for
+                                        refunds.
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-7">
+                                <button v-if="!connected" @click="$emit('connect-wallet')"
+                                    class="flex w-full items-center justify-center gap-3 rounded-full bg-gradient py-4 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.01]">
+                                    Connect Wallet
+                                </button>
+
+                                <button v-else @click="$emit('pay')" :disabled="loading"
+                                    class="flex w-full items-center justify-center gap-3 rounded-full bg-gradient py-4 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50">
+
+                                    <span v-if="loading">
+                                        Processing...
+                                    </span>
+
+                                    <span v-else>
+                                        Pay {{ fee }} XLM
+                                    </span>
+
+                                </button>
+                            </div>
+
                         </div>
                     </DialogPanel>
                 </div>
@@ -68,8 +109,10 @@
 import {
     Dialog,
     DialogPanel,
-    TransitionRoot
+    TransitionRoot,
+    TransitionChild
 } from '@headlessui/vue'
+import verified from "@/assets/verify.png";
 
 defineProps({
 
@@ -90,7 +133,7 @@ defineProps({
 
     fee: {
         type: Number,
-        default: 100
+        default: 185
     }
 })
 

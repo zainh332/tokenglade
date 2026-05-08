@@ -762,7 +762,7 @@ const walletKey = ref('')
 const ConnectWalletModals = ref(false)
 const verificationModal = ref(false)
 const verificationLoading = ref(false)
-const verificationFee = ref(100)
+const verificationFee = ref(185)
 
 import {
     Users,
