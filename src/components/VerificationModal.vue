@@ -1,8 +1,11 @@
 <template>
     <TransitionRoot as="template" :show="open">
         <Dialog as="div" class="relative z-50" @close="$emit('close')">
-            <div class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" />
-            <div class="fixed inset-0 overflow-y-auto">
+            <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
+                leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
+                <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" />
+            </TransitionChild>
+            <div class="fixed inset-0 overflow-y-auto scrollbar-gutter-stable">
                 <div class="flex min-h-full items-center justify-center p-4">
                     <DialogPanel
                         class="relative w-full max-w-xl overflow-hidden rounded-[32px] border border-white/40 bg-white shadow-2xl">
@@ -14,8 +17,7 @@
 
                         <div class="p-7 sm:p-8">
                             <div class="flex items-start gap-4">
-                                <div
-                                    class="flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-100 bg-gradient-to-br from-cyan-50 to-fuchsia-50">
+                                <div class="flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-100 bg-gradient-to-br from-cyan-50 to-fuchsia-50">
                                     <img :src="verified" class="w-12 h-12" />
                                 </div>
 

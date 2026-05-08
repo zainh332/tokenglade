@@ -344,3 +344,13 @@ ul.dropdown-menu.show {
 .insight-highlight {
     border-top: 4px solid #22d3ee;
 }
+
+.scrollbar-gutter-stable {
+    scrollbar-gutter: stable;
+}
+
+html,
+body {
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+}
