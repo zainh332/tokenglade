@@ -49,6 +49,13 @@
 
                                         <img v-if="isVerified" :src="verified" class="w-4 h-4" />
 
+                                        <span
+                                            v-else-if="isVerificationPending"
+                                            class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-200"
+                                        >
+                                            Verification Pending
+                                        </span>
+
                                         <span v-else @click="verificationModal = true"
                                             class="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded border border-amber-200 cursor-pointer hover:bg-amber-100">
                                             Get Verified
@@ -59,33 +66,33 @@
                                     <div class="grid grid-cols-1 sm:flex gap-2 sm:gap-3 mt-3">
 
                                         <button @click="submitVote('trusted')" class="flex items-center justify-center sm:justify-start gap-2
-        px-3 sm:px-4 py-2
-        rounded-xl border
-        bg-green-50 text-green-700
-        text-sm sm:text-base
-        hover:bg-green-100 transition">
+                                        px-3 sm:px-4 py-2
+                                        rounded-xl border
+                                        bg-green-50 text-green-700
+                                        text-sm sm:text-base
+                                        hover:bg-green-100 transition">
                                             <span class="text-base sm:text-lg">✅</span>
                                             <span>Trusted</span>
                                             <span class="font-semibold">{{ votes.trusted }}</span>
                                         </button>
 
                                         <button @click="submitVote('suspicious')" class="flex items-center justify-center sm:justify-start gap-2
-        px-3 sm:px-4 py-2
-        rounded-xl border
-        bg-yellow-50 text-yellow-700
-        text-sm sm:text-base
-        hover:bg-yellow-100 transition">
+                                        px-3 sm:px-4 py-2
+                                        rounded-xl border
+                                        bg-yellow-50 text-yellow-700
+                                        text-sm sm:text-base
+                                        hover:bg-yellow-100 transition">
                                             <span class="text-base sm:text-lg">⚠️</span>
                                             <span>Suspicious</span>
                                             <span class="font-semibold">{{ votes.suspicious }}</span>
                                         </button>
 
                                         <button @click="submitVote('scam')" class="flex items-center justify-center sm:justify-start gap-2
-        px-3 sm:px-4 py-2
-        rounded-xl border
-        bg-red-50 text-red-700
-        text-sm sm:text-base
-        hover:bg-red-100 transition">
+                                        px-3 sm:px-4 py-2
+                                        rounded-xl border
+                                        bg-red-50 text-red-700
+                                        text-sm sm:text-base
+                                        hover:bg-red-100 transition">
                                             <span class="text-base sm:text-lg">❌</span>
                                             <span>Scam</span>
                                             <span class="font-semibold">{{ votes.scam }}</span>
@@ -763,6 +770,9 @@ const ConnectWalletModals = ref(false)
 const verificationModal = ref(false)
 const verificationLoading = ref(false)
 const verificationFee = ref(185)
+const isVerificationPending = computed(
+    () => token.is_verification_pending === true
+)
 
 import {
     Users,

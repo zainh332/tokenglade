@@ -1017,13 +1017,18 @@ class TokenController extends Controller
                 ->exists();
         }
 
-        $isManuallyVerified = VerifiedProject::where('identifier', $issuer)
+        $verificationProject = VerifiedProject::where('identifier', $issuer)
             ->where('blockchain_id', 1)
-            ->where('status', 1)
-            ->exists();
+            ->latest()
+            ->first();
 
 
-        $isVerified = $isDbVerified || $isManuallyVerified;
+        $isVerified =
+            $isDbVerified || ($verificationProject && $verificationProject->status == 1);
+
+        $isVerificationPending =
+            $verificationProject &&
+            $verificationProject->status == 2;
 
         $marketToken = StellarMarketToken::updateOrCreate(
             [
@@ -1062,6 +1067,7 @@ class TokenController extends Controller
         return response()->json([
             ...$insight,
             'is_verified' => $isVerified,
+            'is_verification_pending' => $isVerificationPending,
             'votes' => $votes
         ]);
     }
@@ -1379,7 +1385,7 @@ class TokenController extends Controller
 
             if ($project) {
 
-                $project->status = 0;
+                $project->status = 2; 
                 $project->save();
             }
 
