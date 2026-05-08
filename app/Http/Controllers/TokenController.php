@@ -1228,7 +1228,7 @@ class TokenController extends Controller
         try {
             /* Verification fee in XLM */
 
-            $verificationFee = 100;
+            $verificationFee = 1;
 
             $paymentOp = (new PaymentOperationBuilder(
                 $this->xlm_funding_wallet,
