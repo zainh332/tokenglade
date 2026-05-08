@@ -49,7 +49,7 @@
 
                                         <img v-if="isVerified" :src="verified" class="w-4 h-4" />
 
-                                        <span v-else @click="contactVerification"
+                                        <span v-else @click="verificationModal = true"
                                             class="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded border border-amber-200 cursor-pointer hover:bg-amber-100">
                                             Get Verified
                                         </span>
@@ -733,6 +733,10 @@
                 </div>
             </div>
         </div>
+        <ConnectWalletModal v-model="ConnectWalletModals" :connected="isWalletConnected" :walletKey="walletKey" />
+        <VerificationModal :open="verificationModal" :connected="isWalletConnected" :loading="verificationLoading"
+            :fee="verificationFee" @close="verificationModal = false" @connect-wallet="ConnectWalletModals = true"
+            @pay="contactVerification" />
         <Footer />
     </div>
 </template>
@@ -742,8 +746,10 @@ import { reactive, onMounted, watch, ref, computed } from "vue"
 import { useRoute } from "vue-router"
 import axios from "axios"
 import verified from "@/assets/verify.png";
-import { getCookie } from "../utils/utils.js";
+import { getCookie, signXdrWithWallet } from "../utils/utils.js";
 import Swal from 'sweetalert2';
+import ConnectWalletModal from '@/components/ConnectWallet.vue';
+import VerificationModal from '@/components/VerificationModal.vue'
 
 import Header from "@/components/Header.vue"
 import Footer from "@/components/Footer.vue"
@@ -751,6 +757,12 @@ const loading = ref(true)
 const copied = ref(false)
 const issuerInput = ref("")
 const route = useRoute()
+const isWalletConnected = ref(false)
+const walletKey = ref('')
+const ConnectWalletModals = ref(false)
+const verificationModal = ref(false)
+const verificationLoading = ref(false)
+const verificationFee = ref(100)
 
 import {
     Users,
@@ -784,6 +796,12 @@ const token = reactive({
 })
 
 onMounted(() => {
+
+    walletKey.value =
+        getCookie('public_key') || ''
+
+    isWalletConnected.value = !!walletKey.value
+
     if (route.query.issuer) {
         issuerInput.value = route.query.issuer
         fetchToken()
@@ -884,8 +902,61 @@ async function fetchToken() {
 
 const isVerified = computed(() => token.is_verified === true)
 
-function contactVerification() {
-    window.open("https://x.com/TokenGlade", "_blank")
+async function contactVerification() {
+
+    try {
+
+        const publicKey = getCookie('public_key')
+
+        if (!publicKey) {
+            ConnectWalletModals.value = true
+            return
+        }
+
+        const res = await axios.post('/api/token/verification', {
+            identifier: token.issuer,
+            asset_code: token.asset_code,
+            public_key: publicKey
+        })
+
+        if (res.data.status !== 'success') {
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: res.data.message || 'Failed to generate verification transaction'
+            })
+
+            return
+        }
+
+        const signedXdr = await signXdrWithWallet(
+            localStorage.getItem("wallet_key"),
+            res.data.xdr,
+            'public'
+        )
+
+
+        const submitRes = await axios.post('/api/token/submit_verification_xdr', {
+            signedXdr
+        })
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: 'Verification submitted successfully'
+        })
+
+    } catch (e) {
+
+        console.error(e)
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: e?.response?.data?.message || 'Verification failed'
+        })
+    }
 }
 
 function formatPrice(num) {

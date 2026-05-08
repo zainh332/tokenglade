@@ -8,6 +8,7 @@ use App\Models\StellarTokenVote;
 use App\Models\StellarTransactions;
 use App\Models\Token;
 use App\Models\User;
+use App\Models\VerificationTransaction;
 use App\Models\VerifiedProject;
 use App\Services\StellarTokenService;
 use App\Services\WalletService;
@@ -16,6 +17,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -1178,5 +1180,228 @@ class TokenController extends Controller
         $value = addcslashes($value, "\\\"\n\r\t");
 
         return $value;
+    }
+
+    public function startVerification(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'identifier'   => ['required', 'string'],
+            'asset_code'   => ['required', 'string'],
+            'name'         => ['nullable', 'string'],
+            'website'      => ['nullable', 'string'],
+            'twitter'      => ['nullable', 'string'],
+            'email'        => ['nullable', 'email'],
+            'public_key'   => ['required', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $public = $request->public_key;
+
+        try {
+
+            $source = $this->sdk->requestAccount($public);
+        } catch (HorizonRequestException $e) {
+
+            if ($e->getStatusCode() == 404) {
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Wallet does not exist on Stellar network.'
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Horizon error.'
+            ]);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            /* Verification fee in XLM */
+
+            $verificationFee = 100;
+
+            $paymentOp = (new PaymentOperationBuilder(
+                $this->xlm_funding_wallet,
+                Asset::native(),
+                strval($verificationFee)
+            ))
+                ->setSourceAccount($public)
+                ->build();
+
+            $transaction = (new TransactionBuilder($source, $this->network))
+                ->addMemo(
+                    new Memo(
+                        Memo::MEMO_TYPE_TEXT,
+                        'Token Verification'
+                    )
+                )
+                ->addOperation($paymentOp)
+                ->build();
+
+            $unsignedXdr = $transaction->toEnvelopeXdrBase64();
+
+            if (!$unsignedXdr) {
+
+                throw new \Exception('Failed to generate transaction.');
+            }
+
+            $project = VerifiedProject::create([
+                'blockchain_id'    => 1,
+                'identifier'       => $request->identifier,
+                'asset_code'       => $request->asset_code,
+                'name'             => $request->name,
+                'website'          => $request->website,
+                'twitter'          => $request->twitter,
+                'email'            => $request->email,
+                'wallet_address'   => $public,
+                'verification_fee' => $verificationFee,
+                'status'           => 0,
+            ]);
+
+            $verificationTransaction = VerificationTransaction::create([
+                'verified_project_id' => $project->id,
+                'wallet_address'      => $public,
+                'unsigned_xdr'        => $unsignedXdr,
+                'amount'              => $verificationFee,
+                'status'              => 0,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'xdr' => $unsignedXdr,
+                'verification_project_id' => $project->id,
+                'verification_transaction_id' => $verificationTransaction->id,
+            ]);
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function submitVerificationXdr(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+
+            'signedXdr' => [
+                'required',
+                function ($attr, $value, $fail) {
+
+                    if (!is_string($value) && !is_array($value)) {
+
+                        $fail('signedXdr must be valid.');
+                    }
+                },
+            ],
+
+            'verification_transaction_id' => [
+                'required',
+                'integer',
+                'exists:verification_transactions,id'
+            ],
+        ]);
+
+        if ($validator->fails()) {
+
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $raw = $request->signedXdr;
+
+        if (is_array($raw)) {
+
+            $signedXdr =
+                $raw['signedTxXdr']
+                ?? $raw['xdr']
+                ?? $raw['signed_envelope_xdr']
+                ?? $raw['envelope_xdr']
+                ?? null;
+        } else {
+
+            $signedXdr = $raw;
+        }
+
+        if (!$signedXdr) {
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid signed XDR.'
+            ]);
+        }
+
+        $verificationTransaction = VerificationTransaction::find(
+            $request->verification_transaction_id
+        );
+
+        if (!$verificationTransaction) {
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Verification transaction not found.'
+            ]);
+        }
+
+        DB::beginTransaction();
+
+        try {
+
+            $tx = Transaction::fromEnvelopeBase64XdrString($signedXdr);
+            $result = $this->sdk->submitTransaction($tx);
+            $txHash = $result->getId();
+
+            $verificationTransaction->signed_xdr = $signedXdr;
+            $verificationTransaction->transaction_hash = $txHash;
+            $verificationTransaction->status = 2;
+            $verificationTransaction->save();
+
+            $project = VerifiedProject::find(
+                $verificationTransaction->verified_project_id
+            );
+
+            if ($project) {
+
+                $project->status = 0;
+                $project->save();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Verification payment submitted successfully.',
+                'transaction_hash' => $txHash,
+            ]);
+        } catch (HorizonRequestException $e) {
+
+            DB::rollBack();
+
+            $verificationTransaction->status = 3;
+            $verificationTransaction->error_message = $e->getMessage();
+            $verificationTransaction->save();
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to submit transaction.'
+            ]);
+        }
     }
 }
