@@ -962,6 +962,7 @@ async function contactVerification() {
 
         verificationLoading.value = false
         verificationModal.value = false
+        window.location.reload();
 
     } catch (e) {
         verificationLoading.value = false
