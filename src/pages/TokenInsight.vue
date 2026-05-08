@@ -905,10 +905,11 @@ const isVerified = computed(() => token.is_verified === true)
 async function contactVerification() {
 
     try {
-
+        verificationLoading.value = true
         const publicKey = getCookie('public_key')
 
         if (!publicKey) {
+            verificationLoading.value = false
             ConnectWalletModals.value = true
             return
         }
@@ -920,7 +921,7 @@ async function contactVerification() {
         })
 
         if (res.data.status !== 'success') {
-
+            verificationLoading.value = false
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -938,7 +939,9 @@ async function contactVerification() {
 
 
         const submitRes = await axios.post('/api/token/submit_verification_xdr', {
-            signedXdr
+            signedXdr,
+            verification_transaction_id:
+            res.data.verification_transaction_id
         })
 
         Swal.fire({
@@ -947,8 +950,11 @@ async function contactVerification() {
             text: 'Verification submitted successfully'
         })
 
-    } catch (e) {
+        verificationLoading.value = false
+        verificationModal.value = false
 
+    } catch (e) {
+        verificationLoading.value = false
         console.error(e)
 
         Swal.fire({
