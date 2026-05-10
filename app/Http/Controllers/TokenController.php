@@ -1398,7 +1398,16 @@ class TokenController extends Controller
 
             $tx = Transaction::fromEnvelopeBase64XdrString($signedXdr);
             $result = $this->sdk->submitTransaction($tx);
-            $txHash = $result->getId();
+            $txHash = $result->getHash() ?? $result->getId() ?? null;
+
+            if (!$txHash && method_exists($result, 'getRawResponse')) {
+                $rawResponse = $result->getRawResponse();
+
+                $txHash =
+                    $rawResponse['hash']
+                    ?? $rawResponse['id']
+                    ?? null;
+            }
 
             $verificationTransaction->signed_xdr = $signedXdr;
             $verificationTransaction->transaction_hash = $txHash;
