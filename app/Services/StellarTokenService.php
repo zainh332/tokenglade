@@ -80,22 +80,48 @@ class StellarTokenService
         $holders = $response->json('trustlines.funded');
         $toml = $this->fetchTomlMetadata($horizon);
         $supply = $response->json('supply');
-        $decimals = $response->json('decimals') ?? 7;
+        $decimals = (int) ($response->json('decimals') ?? 7);
         $usd_price = $response->json('price') ?? 7;
 
-        $formattedSupply = bcdiv(
-            $supply,
-            bcpow('10', (string)$decimals, 0),
-            $decimals
+        $formattedSupply = 0;
+        $normalizedSupply = normalizeBcNumber(
+            $supply
         );
 
-        $tradedAmount = $tradedAmountRaw
-            ? bcdiv($tradedAmountRaw, bcpow('10', (string)$decimals, 0), $decimals)
-            : 0;
+        if ($normalizedSupply !== '0') {
 
-        $paymentsAmount = $paymentsAmountRaw
-            ? bcdiv($paymentsAmountRaw, bcpow('10', (string)$decimals, 0), $decimals)
-            : 0;
+            $formattedSupply = bcdiv(
+                $normalizedSupply,
+                bcpow('10', (string) $decimals, 0),
+                $decimals
+            );
+        }
+
+        $tradedAmount = 0;
+        $normalizedTradedAmount = normalizeBcNumber(
+            $tradedAmountRaw
+        );
+
+        if ($normalizedTradedAmount !== '0') {
+            $tradedAmount = bcdiv(
+                $normalizedTradedAmount,
+                bcpow('10', (string) $decimals, 0),
+                $decimals
+            );
+        }
+
+        $paymentsAmount = 0;
+        $normalizedPaymentsAmount = normalizeBcNumber(
+            $paymentsAmountRaw
+        );
+
+        if ($normalizedPaymentsAmount !== '0') {
+            $paymentsAmount = bcdiv(
+                $normalizedPaymentsAmount,
+                bcpow('10', (string) $decimals, 0),
+                $decimals
+            );
+        }
 
         $issuerResponse = Http::get($this->horizon . "/accounts/{$issuer}");
         $issuerData = $issuerResponse->ok() ? $issuerResponse->json() : null;
@@ -104,7 +130,7 @@ class StellarTokenService
             'asset_code'       => $code,
             'issuer'           => $issuer,
 
-            'name'             => $toml['token']['name'] ?? $toml['project']['org_name'],
+            'name'             => $toml['token']['name'] ?? $toml['project']['org_name'] ?? $code,
             'image'            => $toml['token']['image'] ?? null,
             'description'      => $toml['token']['description'] ?? null,
 
@@ -121,7 +147,13 @@ class StellarTokenService
             'liquidity_pools'     => (float) ($horizon['num_liquidity_pools'] ?? 0),
             'updated_at'     => '1 min ago',
             'website' => $toml['token']['website'] ?? $toml['project']['org_url'] ?? null,
-            'twitter' => $toml['project']['org_twitter'] ? 'https://x.com/' . $toml['project']['org_twitter'] : null,
+            'twitter' =>
+            isset($toml['project']['org_twitter'])
+                && !empty($toml['project']['org_twitter'])
+
+                ? 'https://x.com/' .
+                $toml['project']['org_twitter']
+                : null,
             'email'             => $toml['project']['org_email'] ?? null,
             'support_email'             => $toml['project']['org_support'] ?? null,
 
