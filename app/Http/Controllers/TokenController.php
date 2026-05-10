@@ -8,6 +8,7 @@ use App\Models\StellarTokenVote;
 use App\Models\StellarTransactions;
 use App\Models\Token;
 use App\Models\User;
+use App\Models\VerificationPaymentAsset;
 use App\Models\VerificationTransaction;
 use App\Models\VerifiedProject;
 use App\Services\StellarTokenService;
@@ -1198,6 +1199,11 @@ class TokenController extends Controller
             'twitter'      => ['nullable', 'string'],
             'email'        => ['nullable', 'email'],
             'public_key'   => ['required', 'string'],
+            'verification_payment_asset_id' => [
+                'required',
+                'integer',
+                'exists:verification_payment_assets,id'
+            ],
         ]);
 
         if ($validator->fails()) {
@@ -1209,6 +1215,21 @@ class TokenController extends Controller
         }
 
         $public = $request->public_key;
+
+        $paymentAsset = VerificationPaymentAsset::find(
+            $request->verification_payment_asset_id
+        );
+
+        if (
+            !$paymentAsset ||
+            !$paymentAsset->is_active
+        ) {
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid payment asset.'
+            ]);
+        }
 
         try {
 
@@ -1232,14 +1253,19 @@ class TokenController extends Controller
         DB::beginTransaction();
 
         try {
-            /* Verification fee in XLM */
 
-            $verificationFee = 1;
+            $stellarAsset = $paymentAsset->asset_code === 'XLM'
+                ? Asset::native()
+
+                : Asset::createNonNativeAsset(
+                    $paymentAsset->asset_code,
+                    $paymentAsset->asset_issuer
+                );
 
             $paymentOp = (new PaymentOperationBuilder(
                 $this->xlm_funding_wallet,
-                Asset::native(),
-                strval($verificationFee)
+                $stellarAsset,
+                strval($paymentAsset->amount)
             ))
                 ->setSourceAccount($public)
                 ->build();
@@ -1270,7 +1296,6 @@ class TokenController extends Controller
                 'twitter'          => $request->twitter,
                 'email'            => $request->email,
                 'wallet_address'   => $public,
-                'verification_fee' => $verificationFee,
                 'status'           => 0,
             ]);
 
@@ -1278,7 +1303,8 @@ class TokenController extends Controller
                 'verified_project_id' => $project->id,
                 'wallet_address'      => $public,
                 'unsigned_xdr'        => $unsignedXdr,
-                'amount'              => $verificationFee,
+                'verification_payment_asset_id' => $paymentAsset->id,
+                'amount'              => $paymentAsset->amount,
                 'status'              => 0,
             ]);
 
@@ -1409,5 +1435,23 @@ class TokenController extends Controller
                 'message' => 'Failed to submit transaction.'
             ]);
         }
+    }
+
+    public function verificationPaymentAssets()
+    {
+        $assets = VerificationPaymentAsset::query()
+            ->where('is_active', true)
+            ->orderBy('position')
+            ->get([
+                'id',
+                'asset_code',
+                'asset_issuer',
+                'amount',
+            ]);
+
+        return response()->json([
+            'status' => 'success',
+            'assets' => $assets
+        ]);
     }
 }

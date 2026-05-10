@@ -49,10 +49,8 @@
 
                                         <img v-if="isVerified" :src="verified" class="w-4 h-4" />
 
-                                        <span
-                                            v-else-if="isVerificationPending"
-                                            class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-200"
-                                        >
+                                        <span v-else-if="isVerificationPending"
+                                            class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-200">
                                             Verification Pending
                                         </span>
 
@@ -620,7 +618,8 @@
                                 <!-- TRANSACTIONS -->
                                 <div class="border rounded-xl overflow-hidden">
 
-                                    <div class="hidden sm:grid grid-cols-5 bg-slate-50 text-sm text-slate-500 px-4 py-3 border-b">
+                                    <div
+                                        class="hidden sm:grid grid-cols-5 bg-slate-50 text-sm text-slate-500 px-4 py-3 border-b">
                                         <span>Side</span>
                                         <span>Amount</span>
                                         <span>Price</span>
@@ -742,8 +741,10 @@
         </div>
         <ConnectWalletModal v-model="ConnectWalletModals" :connected="isWalletConnected" :walletKey="walletKey" />
         <VerificationModal :open="verificationModal" :connected="isWalletConnected" :loading="verificationLoading"
-            :fee="verificationFee" @close="verificationModal = false" @connect-wallet="ConnectWalletModals = true"
-            @pay="contactVerification" />
+            :payment-assets="verificationPaymentAssets" :selected-asset="selectedVerificationAsset" @select-asset="
+                selectedVerificationAsset = $event
+                " @close="verificationModal = false" @connect-wallet="
+                    ConnectWalletModals = true" @pay="contactVerification" />
         <Footer />
     </div>
 </template>
@@ -773,6 +774,9 @@ const verificationFee = ref(185)
 const isVerificationPending = computed(
     () => token.is_verification_pending === true
 )
+
+const verificationPaymentAssets = ref([])
+const selectedVerificationAsset = ref(null)
 
 import {
     Users,
@@ -805,7 +809,7 @@ const token = reactive({
     conditions: null,
 })
 
-onMounted(() => {
+onMounted(async () => {
 
     walletKey.value =
         getCookie('public_key') || ''
@@ -816,6 +820,8 @@ onMounted(() => {
         issuerInput.value = route.query.issuer
         fetchToken()
     }
+
+    await fetchVerificationAssets()
 })
 
 watch(
@@ -927,7 +933,8 @@ async function contactVerification() {
         const res = await axios.post('/api/token/verification', {
             identifier: token.issuer,
             asset_code: token.asset_code,
-            public_key: publicKey
+            public_key: publicKey,
+            verification_payment_asset_id: selectedVerificationAsset.value.id
         })
 
         if (res.data.status !== 'success') {
@@ -951,7 +958,7 @@ async function contactVerification() {
         const submitRes = await axios.post('/api/token/submit_verification_xdr', {
             signedXdr,
             verification_transaction_id:
-            res.data.verification_transaction_id
+                res.data.verification_transaction_id
         })
 
         Swal.fire({
@@ -1071,6 +1078,41 @@ async function submitVote(type) {
             title: "Error",
             text: error?.response?.data?.message || "Failed to submit vote",
         });
+    }
+}
+
+async function fetchVerificationAssets() {
+
+    try {
+
+        const res = await axios.get(
+            '/api/token/verification-payment-assets'
+        )
+
+        verificationPaymentAssets.value =
+            res.data.assets || []
+
+        /*
+        Default select first asset
+        */
+
+        if (
+            verificationPaymentAssets.value.length > 0
+        ) {
+
+            selectedVerificationAsset.value =
+                verificationPaymentAssets.value[0]
+        }
+
+    } catch (error) {
+
+        console.error(error)
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to load verification assets'
+        })
     }
 }
 </script>
