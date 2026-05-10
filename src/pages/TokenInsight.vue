@@ -43,6 +43,11 @@
                                 <img v-if="token.image" :src="token.image"
                                     class="w-16 h-16 rounded-full object-cover border" />
 
+                                <div v-else
+                                    class="w-16 h-16 rounded-full border border-slate-200 bg-slate-100 flex items-center justify-center text-lg font-bold text-slate-500">
+                                    {{ getTokenInitials(token.asset_code) }}
+                                </div>
+
                                 <div class="flex-1">
                                     <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-2 flex-wrap">
                                         {{ token.name }}
@@ -1114,5 +1119,14 @@ async function fetchVerificationAssets() {
             text: 'Failed to load verification assets'
         })
     }
+
+}
+function getTokenInitials(code) {
+
+    if (!code) return '?'
+
+    return code
+        .substring(0, 2)
+        .toUpperCase()
 }
 </script>
