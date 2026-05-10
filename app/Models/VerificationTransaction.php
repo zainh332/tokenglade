@@ -15,6 +15,10 @@ class VerificationTransaction extends Model
         'amount',
         'status',
         'error_message',
+        'verification_payment_asset_id',
+        'refunded_amount',
+        'refund_transaction_hash',
+        'refund_status',
     ];
 
     const STATUS_PENDING   = 0;
