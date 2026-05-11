@@ -388,8 +388,9 @@ class StellarTokenService
             return [];
         }
 
+        $body = preg_replace('/\[\s*\]/', '[]', $response->body());
         try {
-            $parsed = Toml::parse($response->body());
+            $parsed = Toml::parse($body);
         } catch (\Exception $e) {
             return [];
         }
