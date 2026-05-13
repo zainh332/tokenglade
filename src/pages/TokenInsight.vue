@@ -43,13 +43,23 @@
                                 <img v-if="token.image" :src="token.image"
                                     class="w-16 h-16 rounded-full object-cover border" />
 
+                                <div v-else
+                                    class="w-16 h-16 rounded-full border border-slate-200 bg-slate-100 flex items-center justify-center text-lg font-bold text-slate-500">
+                                    {{ getTokenInitials(token.asset_code) }}
+                                </div>
+
                                 <div class="flex-1">
                                     <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-2 flex-wrap">
                                         {{ token.name }}
 
                                         <img v-if="isVerified" :src="verified" class="w-4 h-4" />
 
-                                        <span v-else @click="contactVerification"
+                                        <span v-else-if="isVerificationPending"
+                                            class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-200">
+                                            Verification Pending
+                                        </span>
+
+                                        <span v-else @click="verificationModal = true"
                                             class="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded border border-amber-200 cursor-pointer hover:bg-amber-100">
                                             Get Verified
                                         </span>
@@ -59,33 +69,33 @@
                                     <div class="grid grid-cols-1 sm:flex gap-2 sm:gap-3 mt-3">
 
                                         <button @click="submitVote('trusted')" class="flex items-center justify-center sm:justify-start gap-2
-        px-3 sm:px-4 py-2
-        rounded-xl border
-        bg-green-50 text-green-700
-        text-sm sm:text-base
-        hover:bg-green-100 transition">
+                                        px-3 sm:px-4 py-2
+                                        rounded-xl border
+                                        bg-green-50 text-green-700
+                                        text-sm sm:text-base
+                                        hover:bg-green-100 transition">
                                             <span class="text-base sm:text-lg">✅</span>
                                             <span>Trusted</span>
                                             <span class="font-semibold">{{ votes.trusted }}</span>
                                         </button>
 
                                         <button @click="submitVote('suspicious')" class="flex items-center justify-center sm:justify-start gap-2
-        px-3 sm:px-4 py-2
-        rounded-xl border
-        bg-yellow-50 text-yellow-700
-        text-sm sm:text-base
-        hover:bg-yellow-100 transition">
+                                        px-3 sm:px-4 py-2
+                                        rounded-xl border
+                                        bg-yellow-50 text-yellow-700
+                                        text-sm sm:text-base
+                                        hover:bg-yellow-100 transition">
                                             <span class="text-base sm:text-lg">⚠️</span>
                                             <span>Suspicious</span>
                                             <span class="font-semibold">{{ votes.suspicious }}</span>
                                         </button>
 
                                         <button @click="submitVote('scam')" class="flex items-center justify-center sm:justify-start gap-2
-        px-3 sm:px-4 py-2
-        rounded-xl border
-        bg-red-50 text-red-700
-        text-sm sm:text-base
-        hover:bg-red-100 transition">
+                                        px-3 sm:px-4 py-2
+                                        rounded-xl border
+                                        bg-red-50 text-red-700
+                                        text-sm sm:text-base
+                                        hover:bg-red-100 transition">
                                             <span class="text-base sm:text-lg">❌</span>
                                             <span>Scam</span>
                                             <span class="font-semibold">{{ votes.scam }}</span>
@@ -613,7 +623,8 @@
                                 <!-- TRANSACTIONS -->
                                 <div class="border rounded-xl overflow-hidden">
 
-                                    <div class="hidden sm:grid grid-cols-5 bg-slate-50 text-sm text-slate-500 px-4 py-3 border-b">
+                                    <div
+                                        class="hidden sm:grid grid-cols-5 bg-slate-50 text-sm text-slate-500 px-4 py-3 border-b">
                                         <span>Side</span>
                                         <span>Amount</span>
                                         <span>Price</span>
@@ -733,6 +744,12 @@
                 </div>
             </div>
         </div>
+        <ConnectWalletModal v-model="ConnectWalletModals" :connected="isWalletConnected" :walletKey="walletKey" />
+        <VerificationModal :open="verificationModal" :connected="isWalletConnected" :loading="verificationLoading"
+            :payment-assets="verificationPaymentAssets" :selected-asset="selectedVerificationAsset" @select-asset="
+                selectedVerificationAsset = $event
+                " @close="verificationModal = false" @connect-wallet="
+                    ConnectWalletModals = true" @pay="contactVerification" />
         <Footer />
     </div>
 </template>
@@ -742,8 +759,10 @@ import { reactive, onMounted, watch, ref, computed } from "vue"
 import { useRoute } from "vue-router"
 import axios from "axios"
 import verified from "@/assets/verify.png";
-import { getCookie } from "../utils/utils.js";
+import { getCookie, signXdrWithWallet } from "../utils/utils.js";
 import Swal from 'sweetalert2';
+import ConnectWalletModal from '@/components/ConnectWallet.vue';
+import VerificationModal from '@/components/VerificationModal.vue'
 
 import Header from "@/components/Header.vue"
 import Footer from "@/components/Footer.vue"
@@ -751,6 +770,18 @@ const loading = ref(true)
 const copied = ref(false)
 const issuerInput = ref("")
 const route = useRoute()
+const isWalletConnected = ref(false)
+const walletKey = ref('')
+const ConnectWalletModals = ref(false)
+const verificationModal = ref(false)
+const verificationLoading = ref(false)
+const verificationFee = ref(185)
+const isVerificationPending = computed(
+    () => token.is_verification_pending === true
+)
+
+const verificationPaymentAssets = ref([])
+const selectedVerificationAsset = ref(null)
 
 import {
     Users,
@@ -783,11 +814,19 @@ const token = reactive({
     conditions: null,
 })
 
-onMounted(() => {
+onMounted(async () => {
+
+    walletKey.value =
+        getCookie('public_key') || ''
+
+    isWalletConnected.value = !!walletKey.value
+
     if (route.query.issuer) {
         issuerInput.value = route.query.issuer
         fetchToken()
     }
+
+    await fetchVerificationAssets()
 })
 
 watch(
@@ -884,8 +923,69 @@ async function fetchToken() {
 
 const isVerified = computed(() => token.is_verified === true)
 
-function contactVerification() {
-    window.open("https://x.com/TokenGlade", "_blank")
+async function contactVerification() {
+
+    try {
+        verificationLoading.value = true
+        const publicKey = getCookie('public_key')
+
+        if (!publicKey) {
+            verificationLoading.value = false
+            ConnectWalletModals.value = true
+            return
+        }
+
+        const res = await axios.post('/api/token/verification', {
+            identifier: token.issuer,
+            asset_code: token.asset_code,
+            public_key: publicKey,
+            verification_payment_asset_id: selectedVerificationAsset.value.id
+        })
+
+        if (res.data.status !== 'success') {
+            verificationLoading.value = false
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: res.data.message || 'Failed to generate verification transaction'
+            })
+
+            return
+        }
+
+        const signedXdr = await signXdrWithWallet(
+            localStorage.getItem("wallet_key"),
+            res.data.xdr,
+            'public'
+        )
+
+
+        const submitRes = await axios.post('/api/token/submit_verification_xdr', {
+            signedXdr,
+            verification_transaction_id:
+                res.data.verification_transaction_id
+        })
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: 'Verification submitted successfully'
+        })
+
+        verificationLoading.value = false
+        verificationModal.value = false
+        window.location.reload();
+
+    } catch (e) {
+        verificationLoading.value = false
+        console.error(e)
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: e?.response?.data?.message || 'Verification failed'
+        })
+    }
 }
 
 function formatPrice(num) {
@@ -984,5 +1084,49 @@ async function submitVote(type) {
             text: error?.response?.data?.message || "Failed to submit vote",
         });
     }
+}
+
+async function fetchVerificationAssets() {
+
+    try {
+
+        const res = await axios.get(
+            '/api/token/verification-payment-assets'
+        )
+
+        verificationPaymentAssets.value =
+            res.data.assets || []
+
+        /*
+        Default select first asset
+        */
+
+        if (
+            verificationPaymentAssets.value.length > 0
+        ) {
+
+            selectedVerificationAsset.value =
+                verificationPaymentAssets.value[0]
+        }
+
+    } catch (error) {
+
+        console.error(error)
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to load verification assets'
+        })
+    }
+
+}
+function getTokenInitials(code) {
+
+    if (!code) return '?'
+
+    return code
+        .substring(0, 2)
+        .toUpperCase()
 }
 </script>
