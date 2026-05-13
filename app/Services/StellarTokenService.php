@@ -29,20 +29,27 @@ class StellarTokenService
 
         $assetId = "{$code}-{$issuer}";
         $expertUrl = "https://api.stellar.expert/explorer/public/asset/{$assetId}";
-        $response = Http::timeout(8)->get($expertUrl);
+        try {
 
+            $response = Http::timeout(4)->get($expertUrl);
 
-        if (!$response->ok()) {
-            throw new \Exception('response not found.');
+            if (!$response->ok()) {
+
+                $response = null;
+            }
+        } catch (\Throwable $e) {
+
+            $response = null;
         }
 
-        $totalTrades = (int) $response->json('trades');
-        $tradedAmountRaw = $response->json('traded_amount');
+        $totalTrades = (int) ($response?->json('trades') ?? 0
+);
+        $tradedAmountRaw = $response?->json('traded_amount');
 
-        $payments = (int) $response->json('payments');
-        $paymentsAmountRaw = $response->json('payments_amount');
+        $payments = (int) ($response?->json('payments') ?? 0);
+        $paymentsAmountRaw = $response?->json('payments_amount');
 
-        $rating = $response->json('rating') ?? [];
+        $rating = $response?->json('rating') ?? [];
 
         $orderbook = Http::get($this->horizon . '/order_book', [
             'selling_asset_type' => 'credit_alphanum4',
@@ -76,12 +83,12 @@ class StellarTokenService
         }
 
         $horizon = $horizonResponse->json('_embedded.records.0');
-        $mintDateRaw = $response->json('created');
-        $holders = $response->json('trustlines.funded');
+        $mintDateRaw = $response?->json('created');
+        $holders = $response?->json('trustlines.funded');
         $toml = $this->fetchTomlMetadata($horizon);
-        $supply = $response->json('supply');
-        $decimals = (int) ($response->json('decimals') ?? 7);
-        $usd_price = $response->json('price') ?? 7;
+        $supply = $response?->json('supply');
+        $decimals = (int) ($response?->json('decimals') ?? 7);
+        $usd_price = $response?->json('price') ?? 7;
 
         $formattedSupply = 0;
         $normalizedSupply = normalizeBcNumber(
