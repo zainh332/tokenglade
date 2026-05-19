@@ -47,6 +47,14 @@ class VerfiedProjectsSeeder extends Seeder
                 'name' => 'Lumenswap',
                 'status' => 1,
             ],
+
+            [
+                'blockchain_id' => 1,
+                'identifier' => 'GBHFGY3ZNEJWLNO4LBUKLYOCEK4V7ENEBJGPRHHX7JU47GWHBREH37UR',
+                'asset_code' => 'SSLX',
+                'name' => 'Cassator Corp',
+                'status' => 1,
+            ],
         ];
 
         foreach ($projects as $project) {
