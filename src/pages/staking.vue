@@ -12,7 +12,7 @@
                             TKG, Earn More
                         </span>
                     </h1>
-                    <p class="text-[18px] sm:text-[20px] mt-4 text-white max-w-xl mx-auto lg:mx-0">
+                    <p class="text-[18px] sm:text-[20px] mt-4 text-white max-w-xl mx-auto lg:mx-0 px-4 sm:px-0">
                         Put your tokens to work with TokenGlade’s staking module.
                         Secure, seamless, and built for long-term rewards — up to 18% APY.
                         The stronger you hold, the more you earn
