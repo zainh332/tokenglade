@@ -16,31 +16,34 @@
 
                     <DialogPanel class="w-[520px] max-w-[90vw] bg-white rounded-2xl shadow-xl p-6">
 
-                        <DialogTitle class="text-lg font-semibold mb-4">
+                        <DialogTitle class="mb-4 text-lg font-semibold">
                             Search Stellar Token
                         </DialogTitle>
 
-                        <p class="text-sm text-slate-500 mb-4">
+                        <p class="mb-4 text-sm text-slate-500">
                             Enter the asset code of the token
                         </p>
 
                         <!-- asset code input -->
                         <input v-model="assetCodeInput" @keyup.enter="searchAssets" type="text" placeholder="TKG"
-                            class="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-400" />
+                            class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400" />
 
                         <!-- dropdown -->
                         <div v-if="assets.length" class="mt-4 border rounded-xl max-h-[250px] overflow-y-auto">
-                            <div v-for="asset in assets" :key="asset.asset_issuer" @click="selectAsset(asset)"
-                                class="p-4 border-b last:border-b-0 cursor-pointer hover:bg-slate-50">
-                                <div class="font-medium text-sm">
+                            <div v-for="asset in assets" :key="`${asset.asset_code}_${asset.asset_issuer}`"
+                                @click="selectAsset(asset)"
+                                class="p-4 border-b cursor-pointer last:border-b-0 hover:bg-slate-50">
+                                <div class="flex items-center gap-1.5 font-medium text-sm">
                                     {{ asset.asset_code }}
+                                    <img v-if="asset.is_verified" :src="verified" alt="Verified"
+                                        class="flex-shrink-0 w-4 h-4" title="Verified Token" />
                                 </div>
 
-                                <div class="text-xs text-slate-500 break-all mt-1">
+                                <div class="mt-1 text-xs break-all text-slate-500">
                                     {{ asset.asset_issuer }}
                                 </div>
 
-                                <div class="text-xs text-cyan-600 mt-2">
+                                <div class="mt-2 text-xs text-cyan-600">
                                     Holders: {{ asset.accounts.authorized }}
                                 </div>
                             </div>
@@ -70,6 +73,8 @@
 
 import { ref, watch } from "vue"
 import { useRouter } from "vue-router"
+import axios from "axios"
+import verified from "@/assets/verify.png"
 import {
     Dialog,
     DialogPanel,
@@ -93,9 +98,31 @@ const loading = ref(false)
 const assets = ref([])
 
 let debounceTimeout = null
+let searchRequestId = 0
+
+async function enrichVerificationStatus(assetList) {
+    const issuers = assetList.map((asset) => asset.asset_issuer)
+
+    if (!issuers.length) {
+        return
+    }
+
+    try {
+        const { data } = await axios.post("/api/token/check-verification", {
+            issuers,
+        })
+
+        for (const asset of assetList) {
+            asset.is_verified = data.verified?.[asset.asset_issuer] === true
+        }
+    } catch {
+        for (const asset of assetList) {
+            asset.is_verified = false
+        }
+    }
+}
 
 async function searchAssets() {
-
     error.value = ""
 
     const rawInput = assetCodeInput.value.trim()
@@ -105,6 +132,7 @@ async function searchAssets() {
         return
     }
 
+    const requestId = ++searchRequestId
     loading.value = true
 
     try {
@@ -118,7 +146,7 @@ async function searchAssets() {
 
         for (const code of queries) {
             const res = await fetch(
-                `https://horizon.stellar.org/assets?asset_code=${code}&limit=200`
+                `https://horizon.stellar.org/assets?asset_code=${encodeURIComponent(code)}&limit=200`
             )
 
             const data = await res.json()
@@ -128,17 +156,15 @@ async function searchAssets() {
             }
         }
 
-        if (!allRecords.length) {
-            assets.value = []
-            error.value = "No token found"
-            loading.value = false
+        if (requestId !== searchRequestId) {
             return
         }
 
-        /*
-        remove duplicates using issuer + asset code
-        because same asset may appear from both searches
-        */
+        if (!allRecords.length) {
+            assets.value = []
+            error.value = "No token found"
+            return
+        }
 
         const uniqueAssets = Object.values(
             allRecords.reduce((acc, asset) => {
@@ -148,7 +174,7 @@ async function searchAssets() {
             }, {})
         )
 
-        assets.value = uniqueAssets.sort((a, b) => {
+        const sortedAssets = uniqueAssets.sort((a, b) => {
             if (b.num_liquidity_pools !== a.num_liquidity_pools) {
                 return b.num_liquidity_pools - a.num_liquidity_pools
             }
@@ -156,14 +182,27 @@ async function searchAssets() {
             return b.accounts.authorized - a.accounts.authorized
         })
 
+        await enrichVerificationStatus(sortedAssets)
+
+        if (requestId !== searchRequestId) {
+            return
+        }
+
+        assets.value = sortedAssets
         error.value = ""
 
     } catch (e) {
+        if (requestId !== searchRequestId) {
+            return
+        }
+
         error.value = "Failed to fetch assets"
         assets.value = []
+    } finally {
+        if (requestId === searchRequestId) {
+            loading.value = false
+        }
     }
-
-    loading.value = false
 }
 
 watch(assetCodeInput, (newValue) => {
