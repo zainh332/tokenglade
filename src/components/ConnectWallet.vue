@@ -488,6 +488,7 @@ async function handleConnect() {
 }
 
 async function disconnectWallet() {
+    
     try {
         const public_key = localStorage.getItem("public_key");
         const response = await axios.post(
