@@ -623,8 +623,7 @@ function isWalletSessionExpired() {
     const now = Date.now();
     const diff = now - Number(connectedAt);
 
-    // 24 hours
-    // return diff > 24 * 60 * 60 * 1000;
-    return diff > 10 * 1000;
+    // 2 hours
+    return diff > 2 * 60 * 60 * 1000;
 }
 </script>
