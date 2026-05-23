@@ -18,7 +18,7 @@
     <div class="flex flex-wrap items-center justify-center max-w-sm gap-4 mx-auto">
 
       <!-- Telegram -->
-      <div class="relative flex items-center justify-center w-12 h-12 rounded-full shadow drop-shadow-sm">
+      <!-- <div class="relative flex items-center justify-center w-12 h-12 rounded-full shadow drop-shadow-sm">
         <a href="https://t.me/tokenglade" target="_blank" rel="noopener noreferrer"
           class="absolute top-0 left-0 w-full h-full"></a>
         <svg xmlns="http://www.w3.org/2000/svg" width="19" height="16" viewBox="0 0 19 16" fill="none">
@@ -28,7 +28,7 @@
               fill="#28A8EA" />
           </g>
         </svg>
-      </div>
+      </div> -->
       <!-- End Telegram -->
 
       <!-- Medium -->
