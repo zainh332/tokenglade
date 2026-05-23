@@ -109,6 +109,19 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes,
+    scrollBehavior(to, from, savedPosition) {
+        if (savedPosition) {
+            return savedPosition;
+        } else {
+            // Scroll to top with a small delay to ensure DOM is ready
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+            }, 0);
+            return { top: 0, left: 0 };
+        }
+    }
 });
 
 // Set the page title dynamically when the route changes
