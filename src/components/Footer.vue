@@ -65,7 +65,7 @@
 
     </div>
 
-    <div class="flex flex-col items-center justify-center gap-6 mt-24 mb-8 pb-4 md:flex-row md:justify-between">
+    <div class="flex flex-col-reverse items-center justify-center gap-6 mt-24 mb-8 pb-4 md:flex-row md:justify-between">
       <p class="font-normal text-t16">© Copyright 2026 TokenGlade. All rights reserved.</p>
       <div class="flex flex-col items-center gap-4 sm:flex-row">
         <router-link class="font-normal text-t16" to="/privacy-policy">Privacy Policy</router-link>
