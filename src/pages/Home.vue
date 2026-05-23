@@ -84,7 +84,7 @@
               Multi-chain ready
             </h3>
             <p class="text-dark text-sm">
-              Launching on Stellar first. XRP Ledger support coming next.
+              Launching on Stellar first. XRP Ledger support coming next
             </p>
           </div>
 

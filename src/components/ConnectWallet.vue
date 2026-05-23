@@ -25,6 +25,7 @@
                                         d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
+                            
                             <div :id="modalId" :data-bs-backdrop="backdrop" :data-bs-keyboard="keyboard" tabindex="-1"
                                 aria-labelledby="exampleModalLabel" :inert="!props.modelValue">
                                 <div class="modal-dialog">
@@ -486,6 +487,7 @@ async function handleConnect() {
         isLoading.value = false;
     }
 }
+
 
 async function disconnectWallet() {
     
