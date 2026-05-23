@@ -376,7 +376,10 @@ ul.dropdown-menu.show {
     }
 }
 
-html,
+html {
+    scrollbar-gutter: stable;
+}
+
 body {
-    overflow-y: auto;
+    overflow-x: hidden;
 }
