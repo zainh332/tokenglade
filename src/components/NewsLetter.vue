@@ -12,9 +12,9 @@
         </div>
         <form class="w-full max-w-md ml-auto">
           <div class="flex items-center gap-x-4 sm:justify-end">
-            <a href="https://twitter.com/TokenGlade" target="_blank" rel="noopener noreferrer"
+            <a href="https://x.com/TokenGlade" target="_blank" rel="noopener noreferrer"
               class="flex-none text-sm font-normal text-gray-900 bg-white rounded-full shadow-sm btn-padding hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Join
-              us on Twitter</a>
+              us on X</a>
           </div>
         </form>
       </div>
