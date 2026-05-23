@@ -287,6 +287,8 @@ async function storeWallet(publicKey, walletTypeId, walletKey, blockchainTypeId)
             // persist values
             localStorage.setItem('public_key', data.public ?? publicKey);
             localStorage.setItem('wallet_connect', 'true');
+            localStorage.setItem("wallet_connected_at", Date.now().toString());
+
             if (data.token) localStorage.setItem('token', data.token);
             localStorage.setItem('wallet_type', String(walletTypeId));
             if (walletKey) localStorage.setItem('wallet_key', walletKey);
@@ -497,9 +499,10 @@ async function disconnectWallet() {
             //clear everthing from cookies
             localStorage.setItem("wallet_connect", "false");
             localStorage.setItem("token", null);
-            localStorage.setItem("public_key", null);
-            localStorage.setItem("wallet_key", null);
-            localStorage.setItem("wallet_type", null);
+            localStorage.removeItem("public_key");
+            localStorage.removeItem("wallet_key");
+            localStorage.removeItem("wallet_type");
+            localStorage.removeItem("wallet_connected_at");
             speak("connected", false);
             document.cookie =
                 "public_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -557,6 +560,34 @@ const isWalletConnected = computed(() => {
 });
 
 onMounted(() => {
+
+    if (isWalletSessionExpired()) {
+
+        localStorage.removeItem("wallet_connect");
+        localStorage.removeItem("public_key");
+        localStorage.removeItem("wallet_key");
+        localStorage.removeItem("wallet_type");
+        localStorage.removeItem("wallet_connected_at");
+        localStorage.removeItem("token");
+
+        // cookies
+        document.cookie =
+            "public_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+        document.cookie =
+            "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+        document.cookie =
+            "wallet_type_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+        document.cookie =
+            "blockchain_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+        setDisconnected();
+
+        return;
+    }
+
     const pk = readPk();
     if (pk) setConnected(pk); else setDisconnected();
 });
@@ -569,4 +600,17 @@ watch(() => props.modelValue, (open) => {
         if (pk) setConnected(pk); else setDisconnected();
     }
 });
+
+function isWalletSessionExpired() {
+    const connectedAt = localStorage.getItem("wallet_connected_at");
+
+    if (!connectedAt) return true;
+
+    const now = Date.now();
+    const diff = now - Number(connectedAt);
+
+    // 24 hours
+    // return diff > 24 * 60 * 60 * 1000;
+    return diff > 10 * 1000;
+}
 </script>
