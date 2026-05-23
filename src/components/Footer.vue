@@ -70,14 +70,20 @@
       <div class="flex flex-col items-center gap-4 sm:flex-row">
         <router-link class="font-normal text-t16" to="/privacy-policy">Privacy Policy</router-link>
         <router-link class="font-normal text-t16" to="/terms-service">Terms of Service</router-link>
-        <router-link class="font-normal text-t16" to="#">Contact Us</router-link>
+        <button type="button" class="font-normal text-t16" @click="contactModalOpen = true">Contact Us</button>
       </div>
     </div>
+
+    <ContactModal v-model="contactModalOpen" />
   </div>
 </template>
 
 <script setup>
+import { ref } from "vue";
+import ContactModal from "@/components/ContactModal.vue";
 import footerLogo from "@/assets/token-glade-logo.png";
+
+const contactModalOpen = ref(false);
 </script>
 
 <style lang="scss" scoped></style>
