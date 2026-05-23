@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-6xl px-4 pt-40 mx-auto sm:pt-24 sm:px-6 lg:px-8">
+  <div class="max-w-6xl px-4 pt-16 pb-2 mx-auto sm:pt-24 sm:pb-1 sm:px-6 lg:px-8">
     <!-- Logo -->
     <div class="flex items-center justify-center max-w-xs mx-auto">
       <img :src="footerLogo" alt="" />
@@ -65,8 +65,8 @@
 
     </div>
 
-    <div class="flex flex-col-reverse items-center justify-center gap-6 mt-24 mb-8 pb-4 md:flex-row md:justify-between">
-      <p class="font-normal text-t16">© Copyright 2026 TokenGlade. All rights reserved.</p>
+    <div class="flex flex-col-reverse items-center justify-center gap-5 mt-10 mb-4 pb-2 md:mt-24 md:mb-8 md:pb-4 md:flex-row md:justify-between">
+      <p class="font-normal text-t14 sm:text-t16 text-center">© Copyright 2026 TokenGlade. All rights reserved.</p>
       <div class="flex flex-col items-center gap-4 sm:flex-row">
         <router-link class="font-normal text-t16" to="/privacy-policy">Privacy Policy</router-link>
         <router-link class="font-normal text-t16" to="/terms-service">Terms of Service</router-link>
