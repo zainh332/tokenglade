@@ -139,9 +139,9 @@ import {
 import Swal from "sweetalert2";
 import { getCookie, apiHeaders } from "../utils/utils.js";
 import {
-  isConnected as isLobConnected,
-  getPublicKey as getLobPublicKey,
-  signMessage as lobSignMessage,
+    isConnected as isLobConnected,
+    getPublicKey as getLobPublicKey,
+    signMessage as lobSignMessage,
 } from '@lobstrco/signer-extension-api';
 
 const modalId = "ConnectWallet";
@@ -151,9 +151,9 @@ const selectedWallet = ref("");
 const selectedBlockchain = ref("");
 const isLoading = ref(false);
 const props = defineProps({
-  modelValue:   { type: Boolean, default: false }, // v-model for open/close
-  connected:    { type: Boolean, default: false }, // parent’s connection state
-  walletKey:    { type: String,  default: "" },    // parent’s wallet pk (optional)
+    modelValue: { type: Boolean, default: false }, // v-model for open/close
+    connected: { type: Boolean, default: false }, // parent’s connection state
+    walletKey: { type: String, default: "" },    // parent’s wallet pk (optional)
 });
 
 const backdrop = computed(() => (!isWalletConnected.value ? "static" : ""));
@@ -266,53 +266,53 @@ async function lobstrSignMessage(message) {
 
 
 async function storeWallet(publicKey, walletTypeId, walletKey, blockchainTypeId) {
-  try {
-    const resp = await axios.post(
-      '/api/wallet/store',
-      {
-        public_key: publicKey,
-        wallet_type_id: walletTypeId,
-        wallet_key: walletKey || null,
-        blockchain_id: blockchainTypeId,
-      },
-      { headers: apiHeaders(), withCredentials: true }
-    );
+    try {
+        const resp = await axios.post(
+            '/api/wallet/store',
+            {
+                public_key: publicKey,
+                wallet_type_id: walletTypeId,
+                wallet_key: walletKey || null,
+                blockchain_id: blockchainTypeId,
+            },
+            { headers: apiHeaders(), withCredentials: true }
+        );
 
-    const { data } = resp;
+        const { data } = resp;
 
-    if (data?.status === 'success') {
-      // mark connected
-      setConnected(data.public ?? publicKey);
+        if (data?.status === 'success') {
+            // mark connected
+            setConnected(data.public ?? publicKey);
 
-      // persist values
-      localStorage.setItem('public_key', data.public ?? publicKey);
-      localStorage.setItem('wallet_connect', 'true');
-      if (data.token) localStorage.setItem('token', data.token);
-      localStorage.setItem('wallet_type', String(walletTypeId));
-      if (walletKey)  localStorage.setItem('wallet_key', walletKey);
+            // persist values
+            localStorage.setItem('public_key', data.public ?? publicKey);
+            localStorage.setItem('wallet_connect', 'true');
+            if (data.token) localStorage.setItem('token', data.token);
+            localStorage.setItem('wallet_type', String(walletTypeId));
+            if (walletKey) localStorage.setItem('wallet_key', walletKey);
 
-      // optional UX
-      if (typeof speak === 'function') speak('connected', true);
+            // optional UX
+            if (typeof speak === 'function') speak('connected', true);
 
-      return true; // <-- important
+            return true; // <-- important
+        }
+
+        Swal.fire({ icon: 'error', title: 'Error!', text: data?.message || 'Failed to connect wallet.' });
+        return false;
+    } catch (err) {
+        const resp = err?.response;
+        console.error('[storeWallet] error:', {
+            status: resp?.status,
+            data: resp?.data,
+            headers: resp?.headers,
+        });
+        Swal.fire({
+            icon: 'error',
+            title: 'Could not save wallet',
+            text: resp?.data?.message || resp?.data?.error || `Request failed (${resp?.status || 'network'})`,
+        });
+        return false;
     }
-
-    Swal.fire({ icon: 'error', title: 'Error!', text: data?.message || 'Failed to connect wallet.' });
-    return false;
-  } catch (err) {
-    const resp = err?.response;
-    console.error('[storeWallet] error:', {
-      status: resp?.status,
-      data: resp?.data,
-      headers: resp?.headers,
-    });
-    Swal.fire({
-      icon: 'error',
-      title: 'Could not save wallet',
-      text: resp?.data?.message || resp?.data?.error || `Request failed (${resp?.status || 'network'})`,
-    });
-    return false;
-  }
 }
 
 function hasRabet() {
@@ -320,11 +320,11 @@ function hasRabet() {
 }
 
 function hasAlbedo() {
-  return typeof window !== "undefined" && !!window.albedo && typeof window.albedo.publicKey === "function";
+    return typeof window !== "undefined" && !!window.albedo && typeof window.albedo.publicKey === "function";
 }
 
 function hasXbull() {
-  return typeof window !== 'undefined' && (!!window.xBullSDK || !!window.xBull);
+    return typeof window !== 'undefined' && (!!window.xBullSDK || !!window.xBull);
 }
 
 async function connectWallet(wallet) {
@@ -530,30 +530,30 @@ async function disconnectWallet() {
 
 
 const connectedLocal = ref(false);
-const localPk        = ref(getCookie("public_key") || localStorage.getItem("public_key") || "");
+const localPk = ref(getCookie("public_key") || localStorage.getItem("public_key") || "");
 
 
 function safeGet(v) {
-  if (!v) return "";
-  const s = String(v).trim().toLowerCase();
-  return (s === "null" || s === "undefined") ? "" : String(v);
+    if (!v) return "";
+    const s = String(v).trim().toLowerCase();
+    return (s === "null" || s === "undefined") ? "" : String(v);
 }
 
 function readPk() {
-  return safeGet(getCookie("public_key") || localStorage.getItem("public_key"));
+    return safeGet(getCookie("public_key") || localStorage.getItem("public_key"));
 }
 
-function setConnected(pk)   { connectedLocal.value = true;  localPk.value = pk || ""; }
-function setDisconnected()  { connectedLocal.value = false; localPk.value = ""; }
+function setConnected(pk) { connectedLocal.value = true; localPk.value = pk || ""; }
+function setDisconnected() { connectedLocal.value = false; localPk.value = ""; }
 
 
 const displayPk = computed(() =>
-  safeGet(props.walletKey) || localPk.value
+    safeGet(props.walletKey) || localPk.value
 );
 
 const isWalletConnected = computed(() => {
-  const pk = displayPk.value;
-  return !!pk && pk.startsWith("G") && pk.length === 56;
+    const pk = displayPk.value;
+    return !!pk && pk.startsWith("G") && pk.length === 56;
 });
 
 onMounted(() => {
@@ -562,11 +562,11 @@ onMounted(() => {
 });
 
 watch(() => props.modelValue, (open) => {
-  if (open) {
-    fetchWallets();
-    fetchblockchains();
-    const pk = readPk();
-    if (pk) setConnected(pk); else setDisconnected();
-  }
+    if (open) {
+        fetchWallets();
+        fetchblockchains();
+        const pk = readPk();
+        if (pk) setConnected(pk); else setDisconnected();
+    }
 });
 </script>
