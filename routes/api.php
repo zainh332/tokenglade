@@ -44,12 +44,13 @@ Route::prefix('wallet')->group(function () {
 });
 
 Route::prefix('token')->group(function () {
+    Route::post('check-verification', 'TokenController@checkVerification')->name('token.checkVerification');
     Route::get('show', 'TokenController@show')->name('token.show');
     Route::post('vote', 'TokenController@stellarTokenVote')->name('token.vote');
     Route::get(
-    'verification-payment-assets',
-    'TokenController@verificationPaymentAssets'
-)->name('token.verificationPaymentAssets');
+        'verification-payment-assets',
+        'TokenController@verificationPaymentAssets'
+    )->name('token.verificationPaymentAssets');
     Route::post('verification', 'TokenController@startVerification')->name('token.verification');
     Route::post('submit_verification_xdr', 'TokenController@submitVerificationXdr')->name('token.submitVerificationXdr');
 });

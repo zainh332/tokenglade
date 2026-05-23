@@ -989,6 +989,53 @@ class TokenController extends Controller
         }
     }
 
+    public function checkVerification(Request $request)
+    {
+        $request->validate([
+            'issuers' => 'required|array|max:200',
+            'issuers.*' => 'required|string',
+        ]);
+
+        $issuers = array_values(array_unique($request->issuers));
+        $verified = array_fill_keys($issuers, false);
+
+        $stellarTokens = StellarToken::whereIn('issuer_public_key', $issuers)
+            ->where('created_token_transfer_status', 1)
+            ->orderByDesc('id')
+            ->get()
+            ->unique('issuer_public_key');
+
+        $verifiedStellarTokenIds = Token::whereIn('stellar_token_id', $stellarTokens->pluck('id'))
+            ->where('token_verify', 1)
+            ->pluck('stellar_token_id')
+            ->flip();
+
+        foreach ($stellarTokens as $stellarToken) {
+            if ($verifiedStellarTokenIds->has($stellarToken->id)) {
+                $verified[$stellarToken->issuer_public_key] = true;
+            }
+        }
+
+        $latestProjects = [];
+        VerifiedProject::whereIn('identifier', $issuers)
+            ->where('blockchain_id', 1)
+            ->orderByDesc('id')
+            ->get(['identifier', 'status'])
+            ->each(function ($project) use (&$latestProjects) {
+                if (! array_key_exists($project->identifier, $latestProjects)) {
+                    $latestProjects[$project->identifier] = $project->status;
+                }
+            });
+
+        foreach ($latestProjects as $issuer => $status) {
+            if ((int) $status === 1) {
+                $verified[$issuer] = true;
+            }
+        }
+
+        return response()->json(['verified' => $verified]);
+    }
+
     public function show(Request $request, StellarTokenService $service)
     {
         $request->validate([
@@ -1420,7 +1467,7 @@ class TokenController extends Controller
 
             if ($project) {
 
-                $project->status = 2; 
+                $project->status = 2;
                 $project->save();
             }
 
