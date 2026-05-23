@@ -351,6 +351,5 @@ ul.dropdown-menu.show {
 
 html,
 body {
-    overflow-y: scroll;
-    scrollbar-gutter: stable;
+    overflow-y: auto;
 }
