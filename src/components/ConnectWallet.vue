@@ -165,6 +165,25 @@ function isMobileDevice() {
     return mobileUa || narrowTouchScreen;
 }
 
+function selectStellarBlockchain() {
+    const stellar = blockchainOptions.value.find(
+        (blockchain) => (blockchain.name || "").toLowerCase() === "stellar"
+    );
+
+    if (stellar) {
+        selectedBlockchain.value = stellar.id;
+    }
+}
+
+function applyMobileDefaults() {
+    if (!isMobileDevice()) {
+        return;
+    }
+
+    selectedWallet.value = "";
+    selectStellarBlockchain();
+}
+
 const displayedWalletOptions = computed(() => {
     if (!isMobileDevice()) {
         return walletOptions.value;
@@ -202,6 +221,7 @@ async function fetchblockchains() {
 
         if (response.data.status === "success") {
             blockchainOptions.value = response.data.blockchains;
+            applyMobileDefaults();
         } else {
             Swal.fire({
                 icon: "error",
@@ -225,16 +245,6 @@ async function fetchWallets() {
         const response = await axios.get("/api/global/wallet_types", {});
         if (response.data.status === "success") {
             walletOptions.value = response.data.wallets;
-
-            if (isMobileDevice()) {
-                const lobstr = walletOptions.value.find(
-                    (wallet) => (wallet.key || "").toLowerCase() === "lobstr"
-                );
-
-                if (lobstr) {
-                    selectedWallet.value = lobstr.key;
-                }
-            }
         } else {
             Swal.fire({
                 icon: "error",
@@ -645,6 +655,11 @@ onMounted(() => {
 
 watch(() => props.modelValue, (open) => {
     if (open) {
+        if (isMobileDevice()) {
+            selectedWallet.value = "";
+            selectedBlockchain.value = "";
+        }
+
         fetchWallets();
         fetchblockchains();
         const pk = readPk();
