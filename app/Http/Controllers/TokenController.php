@@ -75,7 +75,7 @@ class TokenController extends Controller
 
         $this->assetCode = env('ASSET_CODE');
         $this->token_creation_fee = (float) env('TOKEN_CREATION_FEE');
-        $this->issuer_wallet_amount = 2.5; //XLM
+        $this->issuer_wallet_amount = 5; //XLM
         $this->feePercentageForLP = 0.7;
     }
 
