@@ -425,9 +425,7 @@ class TokenController extends Controller
                     ], 404);
                 }
             } catch (\Exception $e) {
-                dd([
-                    'message' => $e->getMessage(),
-                ]);
+                return false;
             }
         } else {
             return response()->json([
