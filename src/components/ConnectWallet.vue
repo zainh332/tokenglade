@@ -69,7 +69,7 @@
                                                         <option value="" disabled selected>
                                                             Choose your Wallet
                                                         </option>
-                                                        <option v-for="wallet in walletOptions" :key="wallet.key"
+                                                        <option v-for="wallet in displayedWalletOptions" :key="wallet.key"
                                                             :value="wallet.key">
                                                             {{ wallet.name }}
                                                         </option>
@@ -153,6 +153,47 @@ const selectedBlockchain = ref("");
 const isLoading = ref(false);
 let walletSessionInterval = null;
 
+function isMobileDevice() {
+    if (typeof window === "undefined") return false;
+
+    const ua = navigator.userAgent || navigator.vendor || "";
+    const mobileUa = /android|iphone|ipad|ipod|mobile/i.test(ua);
+    const narrowTouchScreen =
+        window.matchMedia("(max-width: 640px)").matches &&
+        "ontouchstart" in window;
+
+    return mobileUa || narrowTouchScreen;
+}
+
+function selectStellarBlockchain() {
+    const stellar = blockchainOptions.value.find(
+        (blockchain) => (blockchain.name || "").toLowerCase() === "stellar"
+    );
+
+    if (stellar) {
+        selectedBlockchain.value = stellar.id;
+    }
+}
+
+function applyMobileDefaults() {
+    if (!isMobileDevice()) {
+        return;
+    }
+
+    selectedWallet.value = "";
+    selectStellarBlockchain();
+}
+
+const displayedWalletOptions = computed(() => {
+    if (!isMobileDevice()) {
+        return walletOptions.value;
+    }
+
+    return walletOptions.value.filter(
+        (wallet) => (wallet.key || "").toLowerCase() === "lobstr"
+    );
+});
+
 const props = defineProps({
     modelValue: { type: Boolean, default: false }, // v-model for open/close
     connected: { type: Boolean, default: false }, // parent’s connection state
@@ -180,6 +221,7 @@ async function fetchblockchains() {
 
         if (response.data.status === "success") {
             blockchainOptions.value = response.data.blockchains;
+            applyMobileDefaults();
         } else {
             Swal.fire({
                 icon: "error",
@@ -432,7 +474,9 @@ async function handleConnect() {
         Swal.fire({
             icon: 'warning',
             title: 'Select a wallet',
-            text: 'Choose Freighter or Rabet.',
+            text: isMobileDevice()
+                ? 'Choose LOBSTR to connect on mobile.'
+                : 'Choose a wallet to connect.',
         });
         return;
     }
@@ -611,6 +655,11 @@ onMounted(() => {
 
 watch(() => props.modelValue, (open) => {
     if (open) {
+        if (isMobileDevice()) {
+            selectedWallet.value = "";
+            selectedBlockchain.value = "";
+        }
+
         fetchWallets();
         fetchblockchains();
         const pk = readPk();
