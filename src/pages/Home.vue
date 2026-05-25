@@ -27,11 +27,10 @@
 
             <div class="lg:hidden">
               <div class="pt-6 space-y-1">
-                <a href="https://lobstr.co/trade/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ"
-                  target="_blank" rel="noopener noreferrer"
-                  class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient">
+                <button type="button" @click="openBuyTkgModal"
+                  class="text-xs text-white rounded-full btn-padding sm:text-t14 bg-gradient inline-block">
                   Buy TKG Tokens
-                </a>
+                </button>
               </div>
             </div>
           </div>
@@ -299,6 +298,9 @@ const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute
 const isTokenModalOpen = ref(false)
 const openTokenModal = () => { isTokenModalOpen.value = true }
 const openConnectWalletModal = () => { ConnectWalletModals.value = true }
+const openBuyTkgModal = () => {
+  window.dispatchEvent(new CustomEvent("tokenglade-open-buy-tkg"));
+}
 
 const data = ref({
   total_tokens: 0,

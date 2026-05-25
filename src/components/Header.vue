@@ -22,10 +22,10 @@
                 {{ link.name }}
               </router-link>
 
-              <a v-else :href="link.href" target="_blank" rel="noopener noreferrer"
+              <button v-else-if="link.openBuy" type="button" @click="openBuyTkgModal"
                 class="inline-flex items-center px-1 pt-1 font-normal text-gray-900 text-t14">
                 {{ link.name }}
-              </a>
+              </button>
             </template>
           </div>
 
@@ -78,15 +78,15 @@
       <div class="bg-white shadow-xl">
         <div class="max-w-6xl mx-auto px-4 py-3">
           <!-- render both internal + external links -->
-          <template v-for="link in Links.filter(l => l.name !== 'Buy TKG Tokens')" :key="link.name">
+          <template v-for="link in Links" :key="link.name">
             <router-link v-if="link.to" :to="link.to"
               class="block py-3 px-3 text-base font-medium text-gray-800 hover:bg-gray-50 rounded-lg">
               {{ link.name }}
             </router-link>
-            <a v-else :href="link.href" target="_blank" rel="noopener noreferrer"
-              class="block py-3 px-3 text-base font-medium text-gray-800 hover:bg-gray-50 rounded-lg">
+            <button v-else-if="link.openBuy" type="button" @click="openBuyTkgModal"
+              class="block w-full py-3 px-3 text-base font-medium text-gray-800 hover:bg-gray-50 rounded-lg text-left">
               {{ link.name }}
-            </a>
+            </button>
           </template>
 
           <button @click="tokenSearchModal = true"
@@ -106,6 +106,7 @@
   <Modal :open="signInModal" />
   <ConnectWalletModal v-model="ConnectWalletModals" />
   <TokenSearchModal v-model="tokenSearchModal" />
+  <BuyTkgModal v-model="buyTkgModal" @open-wallet="OpenWalletModal" />
 
 </template>
 
@@ -119,9 +120,11 @@ import Modal from '@/components/Modal.vue';
 import ConnectWalletModal from './ConnectWallet.vue';
 import { E, getCookie, hasLogin, saveToken } from "../utils/utils.js";
 import TokenSearchModal from "@/components/TokenSearchModal.vue"
+import BuyTkgModal from "@/components/BuyTkgModal.vue"
 
 const signInModal = ref(false);
 const ConnectWalletModals = ref(false);
+const buyTkgModal = ref(false);
 const walletPk = ref('')
 const emit = defineEmits(['wallet-status']);
 
@@ -143,6 +146,7 @@ const handleScroll = () => {
 
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
+  window.addEventListener("tokenglade-open-buy-tkg", openBuyTkgModal);
   walletPk.value =
     getCookie('public_key') ||
     ''
@@ -155,9 +159,11 @@ function shortMiddle(str, head = 4, tail = 4) {
 
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
+  window.removeEventListener("tokenglade-open-buy-tkg", openBuyTkgModal);
 });
 
 const OpenWalletModal = () => { ConnectWalletModals.value = true; };
+const openBuyTkgModal = () => { buyTkgModal.value = true; };
 
 const Links = [
   {
@@ -166,12 +172,8 @@ const Links = [
   },
   {
     name: 'Buy TKG Tokens',
-    href: 'https://lobstr.co/trade/TKG:GAM3PID2IOBTNCBMJXHIAS4EO3GQXAGRX4UB6HTQY2DUOVL3AQRB4UKQ',
+    openBuy: true,
   }
 ]
-
-import { useRouter } from "vue-router"
-
-const router = useRouter()
 
 </script>
