@@ -138,7 +138,7 @@ import {
     requestAccess,
 } from "@stellar/freighter-api";
 import Swal from "sweetalert2";
-import { getCookie, apiHeaders } from "../utils/utils.js";
+import { getCookie, apiHeaders, clearWalletSession, disconnectWalletSession } from "../utils/utils.js";
 import {
     isConnected as isLobConnected,
     getPublicKey as getLobPublicKey,
@@ -534,34 +534,18 @@ async function handleConnect() {
 
 
 async function disconnectWallet() {
-    
     try {
-        const public_key = localStorage.getItem("public_key");
-        const response = await axios.post(
-            "/api/wallet/disconnect",
-            { public_key },
-            { headers: apiHeaders(), withCredentials: true }
-        );
-        if (response.data.status === "success") {
-            closeModal();
-
-            clearWalletSession();
-            speak("connected", false);
-            setDisconnected();
-            window.location.reload();
-        } else {
-            Swal.fire({
-                icon: "error",
-                title: "Error!",
-                text: "Failed to disconnect wallet.",
-            });
-        }
+        await disconnectWalletSession();
+        closeModal();
+        if (typeof speak === "function") speak("connected", false);
+        setDisconnected();
+        window.location.reload();
     } catch (error) {
         console.error("Error disconnecting wallet:", error);
         Swal.fire({
             icon: "error",
             title: "Error!",
-            text: "An error occurred while disconnecting the wallet.",
+            text: error.message || "An error occurred while disconnecting the wallet.",
         });
     }
 }
@@ -593,30 +577,6 @@ const isWalletConnected = computed(() => {
     const pk = displayPk.value;
     return !!pk && pk.startsWith("G") && pk.length === 56;
 });
-
-function clearWalletSession() {
-
-    // localStorage
-    localStorage.removeItem("wallet_connect");
-    localStorage.removeItem("public_key");
-    localStorage.removeItem("wallet_key");
-    localStorage.removeItem("wallet_type");
-    localStorage.removeItem("wallet_connected_at");
-    localStorage.removeItem("token");
-
-    // cookies
-    document.cookie =
-        "public_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-
-    document.cookie =
-        "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-
-    document.cookie =
-        "wallet_type_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-
-    document.cookie =
-        "blockchain_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-}
 
 onMounted(() => {
 

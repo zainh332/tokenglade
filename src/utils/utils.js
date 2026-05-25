@@ -409,3 +409,33 @@ export async function getNetwork() {
   console.log('Detected Stellar network =', network);
   return network;
 }
+
+export function clearWalletSession() {
+  localStorage.removeItem("wallet_connect");
+  localStorage.removeItem("public_key");
+  localStorage.removeItem("wallet_key");
+  localStorage.removeItem("wallet_type");
+  localStorage.removeItem("wallet_connected_at");
+  localStorage.removeItem("token");
+
+  document.cookie = "public_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  document.cookie = "wallet_type_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  document.cookie = "blockchain_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+}
+
+export async function disconnectWalletSession() {
+  const public_key = localStorage.getItem("public_key") || getCookie("public_key") || "";
+  const response = await axios.post(
+    "/api/wallet/disconnect",
+    { public_key },
+    { headers: apiHeaders(), withCredentials: true }
+  );
+
+  if (response.data.status === "success") {
+    clearWalletSession();
+    return true;
+  }
+
+  throw new Error(response.data.message || "Failed to disconnect wallet.");
+}
