@@ -28,6 +28,9 @@ class CirculatingSupplyController extends Controller
         'public_trading_hold' => [
             'GD534Y4JUU4CUUPKCSMO36QU5X3XKIBQAT4ZS4YLGVN62SBZIOWXBD4C',
         ],
+        'lp_rewards' => [
+            'GC2E7736MDO5BACXRG2AQYNVN6LEE2ZG6G3JIWDU7EAZWMSD3RQ5IWKZ'
+        ],
         // 'burn_or_cold' => ['G...'],
     ];
     // <----- STOP EDITING
