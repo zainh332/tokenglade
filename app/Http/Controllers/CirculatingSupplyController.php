@@ -25,9 +25,6 @@ class CirculatingSupplyController extends Controller
         'airdrop_rewards' => [
             'GCHBC63WM2IGFODFBO6IDOD46OA4QD7NRD6457N2QMP63YWEPESWVCZF',
         ],
-        'public_trading_hold' => [
-            'GD534Y4JUU4CUUPKCSMO36QU5X3XKIBQAT4ZS4YLGVN62SBZIOWXBD4C',
-        ],
         'lp_rewards' => [
             'GC2E7736MDO5BACXRG2AQYNVN6LEE2ZG6G3JIWDU7EAZWMSD3RQ5IWKZ'
         ],
