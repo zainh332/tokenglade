@@ -1,8 +1,19 @@
 {
+  "_hearing-fa1a9936.js": {
+    "file": "assets/hearing-fa1a9936.js"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-6f89b219.css",
+    "file": "assets/app-09fb8d4a.css",
     "isEntry": true,
     "src": "resources/css/app.css"
+  },
+  "src/admin-main.js": {
+    "file": "assets/admin-main-da81ea70.js",
+    "imports": [
+      "_hearing-fa1a9936.js"
+    ],
+    "isEntry": true,
+    "src": "src/admin-main.js"
   },
   "src/assets/Xl-logo.png": {
     "file": "assets/Xl-logo-5799095d.png",
@@ -88,7 +99,10 @@
     "css": [
       "assets/main-111a732d.css"
     ],
-    "file": "assets/main-25950b50.js",
+    "file": "assets/main-7c51fb20.js",
+    "imports": [
+      "_hearing-fa1a9936.js"
+    ],
     "isEntry": true,
     "src": "src/main.js"
   }
