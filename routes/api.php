@@ -43,6 +43,12 @@ Route::prefix('wallet')->group(function () {
     Route::post('check', 'WalletController@check_wallet')->name('wallet.check');
 });
 
+Route::middleware('admin')->prefix('admin')->group(function () {
+    Route::get('wallets', 'AdminController@wallets');
+    Route::get('tokens', 'AdminController@tokens');
+    Route::get('staking', 'AdminController@staking');
+});
+
 Route::prefix('token')->group(function () {
     Route::post('check-verification', 'TokenController@checkVerification')->name('token.checkVerification');
     Route::get('show', 'TokenController@show')->name('token.show');
