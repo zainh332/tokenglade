@@ -363,4 +363,66 @@ class GlobalController extends Controller
             ], 500);
         }
     }
+
+    public function lp_rewards_data()
+    {
+        try {
+            // 1. Total LP TKG Distributed
+            $total_distributed = \App\Models\LpRewardDistribution::where('status', 'sent')->sum('reward_amount');
+
+            // 2. Total active LP providers in our database
+            $active_providers = \App\Models\LiquidityPoolParticipant::where('wallet_status', 'active')->count();
+
+            // 3. Weekly Reward Pool from settings
+            $weekly_reward_setting = \App\Models\Setting::where('key', 'lp_weekly_reward_amount')->first();
+            $weekly_reward_pool = $weekly_reward_setting ? (float)$weekly_reward_setting->value : 16000.0;
+
+            // 4. Completed cycles count
+            $completed_cycles = \App\Models\LpRewardCycle::where('status', 'completed')->count();
+
+            // 5. Recent completed reward cycles (e.g. latest 4)
+            $cycles = \App\Models\LpRewardCycle::withCount([
+                'distributions as rewarded_wallets_count' => function ($query) {
+                    $query->where('status', 'sent');
+                }
+            ])
+            ->withSum([
+                'distributions as total_reward_distributed' => function ($query) {
+                    $query->where('status', 'sent');
+                }
+            ], 'reward_amount')
+            ->where('status', 'completed')
+            ->orderBy('week_number', 'desc')
+            ->take(4)
+            ->get();
+
+            $cycles_list = $cycles->map(function ($cycle) {
+                return [
+                    'week' => $cycle->week_number,
+                    'date' => $cycle->snapshot_date ? \Carbon\Carbon::parse($cycle->snapshot_date)->toDateString() : '',
+                    'pool' => (float) $cycle->total_reward_pool,
+                    'wallets' => (int) $cycle->rewarded_wallets_count,
+                    'distributed' => (float) ($cycle->total_reward_distributed ?? 0),
+                ];
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'total_distributed' => (float) $total_distributed,
+                    'active_providers' => $active_providers,
+                    'weekly_reward_pool' => $weekly_reward_pool,
+                    'completed_cycles' => $completed_cycles,
+                    'cycles_list' => $cycles_list,
+                ]
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('lp_rewards_data error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch LP rewards data.',
+            ], 500);
+        }
+    }
 }
+

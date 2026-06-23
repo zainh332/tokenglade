@@ -93,6 +93,14 @@
       </div>
     </div>
 
+    <LPRewardsSection 
+      :total-distributed="lpData.total_distributed" 
+      :active-providers="lpData.active_providers" 
+      :weekly-reward-pool="lpData.weekly_reward_pool" 
+      :completed-cycles="lpData.completed_cycles" 
+      :cycles-list="lpData.cycles_list" 
+    />
+
     <Table :network="network" />
 
     <div class="py-10 my-10 bg-white text-center">
@@ -274,6 +282,7 @@ import axios from 'axios'
 import { ref, computed, defineProps, onMounted, watch } from "vue";
 import Swal from 'sweetalert2';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
+import LPRewardsSection from '@/components/LPRewardsSection.vue';
 import { getCookie, getNetwork } from "../utils/utils.js";
 
 const isWalletConnected = ref(false);
@@ -304,6 +313,16 @@ const openBuyTkgModal = () => {
 
 const data = ref({
   total_tokens: 0,
+  total_tkg_distributed: 125600,
+  active_stakers: 187,
+});
+
+const lpData = ref({
+  total_distributed: 0,
+  active_providers: 0,
+  weekly_reward_pool: 16000,
+  completed_cycles: 0,
+  cycles_list: []
 });
 
 async function fetchdata() {
@@ -316,6 +335,8 @@ async function fetchdata() {
     if (response.data.status === "success") {
       data.value = {
         total_tokens: response.data.total_tokens,
+        total_tkg_distributed: response.data.total_tkg_distributed ?? 125600,
+        active_stakers: response.data.active_stakers ?? 187,
       };
     } else {
       Swal.fire({
@@ -334,6 +355,23 @@ async function fetchdata() {
   }
 }
 
+async function fetchLpData() {
+  try {
+    const response = await axios.get('/api/global/lp_rewards_data', {
+      headers: {
+        'X-CSRF-TOKEN': csrfToken
+      }
+    });
+    if (response.data.status === "success") {
+      lpData.value = response.data.data;
+    } else {
+      console.error("Failed to fetch LP rewards data:", response.data.message);
+    }
+  } catch (error) {
+    console.error("Error fetching LP rewards data:", error);
+  }
+}
+
 function readPk() {
   const pk = getCookie("public_key") || localStorage.getItem("public_key");
   if (!pk) return "";
@@ -348,7 +386,8 @@ function refreshWalletState() {
 
 onMounted(async () => {
   refreshWalletState();
-  fetchdata()
+  fetchdata();
+  fetchLpData();
   try {
     network.value = await getNetwork()
   } catch (e) {
