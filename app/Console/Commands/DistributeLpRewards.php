@@ -47,7 +47,7 @@ class DistributeLpRewards extends Command
     public function handle()
     {
         $weekNumber = Carbon::now()->weekOfYear;
-        $rewardPool = 8000;
+        $rewardPool = 16000;
         $minimumEligible = 0.099;
 
         // Prevent duplicate weekly distribution
