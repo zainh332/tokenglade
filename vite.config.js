@@ -12,6 +12,7 @@ export default defineConfig({
       input: [
         'resources/css/app.css',
         'src/main.js',
+        'src/admin-main.js',
       ],
       refresh: true,
     }),

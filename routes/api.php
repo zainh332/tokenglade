@@ -43,17 +43,29 @@ Route::prefix('wallet')->group(function () {
     Route::post('check', 'WalletController@check_wallet')->name('wallet.check');
 });
 
+Route::middleware('admin')->prefix('admin')->group(function () {
+    Route::get('wallets', 'AdminController@wallets');
+    Route::get('tokens', 'AdminController@tokens');
+    Route::get('staking', 'AdminController@staking');
+});
+
 Route::prefix('token')->group(function () {
+    Route::post('check-verification', 'TokenController@checkVerification')->name('token.checkVerification');
     Route::get('show', 'TokenController@show')->name('token.show');
     Route::post('vote', 'TokenController@stellarTokenVote')->name('token.vote');
     Route::get(
-    'verification-payment-assets',
-    'TokenController@verificationPaymentAssets'
-)->name('token.verificationPaymentAssets');
+        'verification-payment-assets',
+        'TokenController@verificationPaymentAssets'
+    )->name('token.verificationPaymentAssets');
     Route::post('verification', 'TokenController@startVerification')->name('token.verification');
     Route::post('submit_verification_xdr', 'TokenController@submitVerificationXdr')->name('token.submitVerificationXdr');
 });
 
+
+Route::prefix('tkg')->group(function () {
+    Route::get('meta', 'TkgBuyController@meta')->name('tkg.meta');
+    Route::get('quote', 'TkgBuyController@quote')->name('tkg.quote');
+});
 
 Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
     // ==========================
@@ -80,6 +92,11 @@ Route::middleware(['auth:sanctum', 'checkUser'])->group(function () {
         Route::post('reward_distribution', 'StakingController@reward_distribution')->name('staking.reward');
         Route::post('unstake', 'StakingController@unstake')->name('staking.unstake');
         Route::get('user', 'StakingController@user_staking')->name('staking.user');
+    });
+
+    Route::prefix('tkg')->group(function () {
+        Route::post('buy/prepare', 'TkgBuyController@prepare')->name('tkg.buy.prepare');
+        Route::post('buy/submit', 'TkgBuyController@submit')->name('tkg.buy.submit');
     });
 });
 

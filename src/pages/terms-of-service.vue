@@ -55,23 +55,3 @@
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
 </script>
-
-<style lang="scss" scoped>.responsive-container {
-    /* Default styles for all screen sizes */
-    max-width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 2rem;
-    /* Adjust padding as needed */
-
-    /* Responsive adjustments */
-    @media screen and (min-width: 640px) {
-        padding: 4rem;
-        /* Adjust padding for medium screens and above */
-    }
-
-    @media screen and (min-width: 1024px) {
-        padding: 6rem;
-        /* Adjust padding for large screens and above */
-    }
-}</style>

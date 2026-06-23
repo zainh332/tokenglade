@@ -243,6 +243,79 @@ export async function checkTkgBalance(public_address) {
     }
 }
 
+export async function checkXlmBalance(publicKey) {
+    try {
+        const { data } = await axios.get("/api/global/check_xlm_balance", {
+            params: { public_wallet: publicKey },
+        });
+
+        if (data.status === 1) {
+            return Number(data.total_xlm) || 0;
+        }
+    } catch (error) {
+        console.error("Error:", error);
+    }
+
+    return 0;
+}
+
+export async function signXdrWithActiveWallet(xdr, isTestnet = false) {
+    const wallet = (localStorage.getItem("wallet_key") || "").toLowerCase();
+    if (!wallet) {
+        throw new Error("No wallet selected. Connect a wallet first.");
+    }
+
+    if (typeof xdr !== "string" || !/^[A-Za-z0-9+/=]+$/.test(xdr)) {
+        throw new Error("Unsigned XDR must be a base64 envelope string");
+    }
+
+    const net = {
+        freighter: isTestnet ? "TESTNET" : "PUBLIC",
+        rabet: isTestnet ? "testnet" : "mainnet",
+        albedo: isTestnet ? "testnet" : "public",
+        xbull: isTestnet ? "testnet" : "public",
+    };
+
+    switch (wallet) {
+        case "freighter": {
+            const res = await signTransaction(xdr, net.freighter);
+            return res?.signedTxXdr ?? res;
+        }
+        case "rabet": {
+            if (!window.rabet) throw new Error("Rabet not installed");
+            const res = await window.rabet.sign(xdr, net.rabet);
+            return res?.xdr ?? res;
+        }
+        case "albedo": {
+            if (!window.albedo?.tx) throw new Error("Albedo SDK not loaded");
+            const res = await window.albedo.tx({ xdr, network: net.albedo });
+            return res?.signed_envelope_xdr;
+        }
+        case "xbull": {
+            const xbull = window.xBullSDK || window.xBull;
+            if (!xbull) throw new Error("xBull not installed");
+            await xbull.connect({ canRequestPublicKey: true, canRequestSign: true });
+            try {
+                const out = await xbull.signXDR(xdr, net.xbull);
+                if (typeof out === "string") return out;
+            } catch (_) {
+                // fall through
+            }
+            const out2 = await xbull.signXDR(xdr);
+            if (typeof out2 !== "string") throw new Error("xBull returned no signed XDR");
+            return out2;
+        }
+        case "lobstr": {
+            if (typeof window !== "undefined" && window.lobstrSignerExtensionApi?.signTransaction) {
+                return await window.lobstrSignerExtensionApi.signTransaction(xdr);
+            }
+            throw new Error("LOBSTR signer is not available in this browser.");
+        }
+        default:
+            throw new Error("Unsupported wallet for signing");
+    }
+}
+
 export function updateLoader(title, text) {
   const baseOpts = {
     title,
@@ -335,4 +408,34 @@ export async function getNetwork() {
   }
   console.log('Detected Stellar network =', network);
   return network;
+}
+
+export function clearWalletSession() {
+  localStorage.removeItem("wallet_connect");
+  localStorage.removeItem("public_key");
+  localStorage.removeItem("wallet_key");
+  localStorage.removeItem("wallet_type");
+  localStorage.removeItem("wallet_connected_at");
+  localStorage.removeItem("token");
+
+  document.cookie = "public_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  document.cookie = "wallet_type_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  document.cookie = "blockchain_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+}
+
+export async function disconnectWalletSession() {
+  const public_key = localStorage.getItem("public_key") || getCookie("public_key") || "";
+  const response = await axios.post(
+    "/api/wallet/disconnect",
+    { public_key },
+    { headers: apiHeaders(), withCredentials: true }
+  );
+
+  if (response.data.status === "success") {
+    clearWalletSession();
+    return true;
+  }
+
+  throw new Error(response.data.message || "Failed to disconnect wallet.");
 }

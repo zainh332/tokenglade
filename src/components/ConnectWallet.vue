@@ -25,6 +25,7 @@
                                         d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
+                            
                             <div :id="modalId" :data-bs-backdrop="backdrop" :data-bs-keyboard="keyboard" tabindex="-1"
                                 aria-labelledby="exampleModalLabel" :inert="!props.modelValue">
                                 <div class="modal-dialog">
@@ -68,7 +69,7 @@
                                                         <option value="" disabled selected>
                                                             Choose your Wallet
                                                         </option>
-                                                        <option v-for="wallet in walletOptions" :key="wallet.key"
+                                                        <option v-for="wallet in displayedWalletOptions" :key="wallet.key"
                                                             :value="wallet.key">
                                                             {{ wallet.name }}
                                                         </option>
@@ -137,11 +138,11 @@ import {
     requestAccess,
 } from "@stellar/freighter-api";
 import Swal from "sweetalert2";
-import { getCookie, apiHeaders } from "../utils/utils.js";
+import { getCookie, apiHeaders, clearWalletSession, disconnectWalletSession } from "../utils/utils.js";
 import {
-  isConnected as isLobConnected,
-  getPublicKey as getLobPublicKey,
-  signMessage as lobSignMessage,
+    isConnected as isLobConnected,
+    getPublicKey as getLobPublicKey,
+    signMessage as lobSignMessage,
 } from '@lobstrco/signer-extension-api';
 
 const modalId = "ConnectWallet";
@@ -150,10 +151,53 @@ const blockchainOptions = ref([]);
 const selectedWallet = ref("");
 const selectedBlockchain = ref("");
 const isLoading = ref(false);
+let walletSessionInterval = null;
+
+function isMobileDevice() {
+    if (typeof window === "undefined") return false;
+
+    const ua = navigator.userAgent || navigator.vendor || "";
+    const mobileUa = /android|iphone|ipad|ipod|mobile/i.test(ua);
+    const narrowTouchScreen =
+        window.matchMedia("(max-width: 640px)").matches &&
+        "ontouchstart" in window;
+
+    return mobileUa || narrowTouchScreen;
+}
+
+function selectStellarBlockchain() {
+    const stellar = blockchainOptions.value.find(
+        (blockchain) => (blockchain.name || "").toLowerCase() === "stellar"
+    );
+
+    if (stellar) {
+        selectedBlockchain.value = stellar.id;
+    }
+}
+
+function applyMobileDefaults() {
+    if (!isMobileDevice()) {
+        return;
+    }
+
+    selectedWallet.value = "";
+    selectStellarBlockchain();
+}
+
+const displayedWalletOptions = computed(() => {
+    if (!isMobileDevice()) {
+        return walletOptions.value;
+    }
+
+    return walletOptions.value.filter(
+        (wallet) => (wallet.key || "").toLowerCase() === "lobstr"
+    );
+});
+
 const props = defineProps({
-  modelValue:   { type: Boolean, default: false }, // v-model for open/close
-  connected:    { type: Boolean, default: false }, // parent’s connection state
-  walletKey:    { type: String,  default: "" },    // parent’s wallet pk (optional)
+    modelValue: { type: Boolean, default: false }, // v-model for open/close
+    connected: { type: Boolean, default: false }, // parent’s connection state
+    walletKey: { type: String, default: "" },    // parent’s wallet pk (optional)
 });
 
 const backdrop = computed(() => (!isWalletConnected.value ? "static" : ""));
@@ -177,6 +221,7 @@ async function fetchblockchains() {
 
         if (response.data.status === "success") {
             blockchainOptions.value = response.data.blockchains;
+            applyMobileDefaults();
         } else {
             Swal.fire({
                 icon: "error",
@@ -266,53 +311,55 @@ async function lobstrSignMessage(message) {
 
 
 async function storeWallet(publicKey, walletTypeId, walletKey, blockchainTypeId) {
-  try {
-    const resp = await axios.post(
-      '/api/wallet/store',
-      {
-        public_key: publicKey,
-        wallet_type_id: walletTypeId,
-        wallet_key: walletKey || null,
-        blockchain_id: blockchainTypeId,
-      },
-      { headers: apiHeaders(), withCredentials: true }
-    );
+    try {
+        const resp = await axios.post(
+            '/api/wallet/store',
+            {
+                public_key: publicKey,
+                wallet_type_id: walletTypeId,
+                wallet_key: walletKey || null,
+                blockchain_id: blockchainTypeId,
+            },
+            { headers: apiHeaders(), withCredentials: true }
+        );
 
-    const { data } = resp;
+        const { data } = resp;
 
-    if (data?.status === 'success') {
-      // mark connected
-      setConnected(data.public ?? publicKey);
+        if (data?.status === 'success') {
+            // mark connected
+            setConnected(data.public ?? publicKey);
 
-      // persist values
-      localStorage.setItem('public_key', data.public ?? publicKey);
-      localStorage.setItem('wallet_connect', 'true');
-      if (data.token) localStorage.setItem('token', data.token);
-      localStorage.setItem('wallet_type', String(walletTypeId));
-      if (walletKey)  localStorage.setItem('wallet_key', walletKey);
+            // persist values
+            localStorage.setItem('public_key', data.public ?? publicKey);
+            localStorage.setItem('wallet_connect', 'true');
+            localStorage.setItem("wallet_connected_at", Date.now().toString());
 
-      // optional UX
-      if (typeof speak === 'function') speak('connected', true);
+            if (data.token) localStorage.setItem('token', data.token);
+            localStorage.setItem('wallet_type', String(walletTypeId));
+            if (walletKey) localStorage.setItem('wallet_key', walletKey);
 
-      return true; // <-- important
+            // optional UX
+            if (typeof speak === 'function') speak('connected', true);
+
+            return true; // <-- important
+        }
+
+        Swal.fire({ icon: 'error', title: 'Error!', text: data?.message || 'Failed to connect wallet.' });
+        return false;
+    } catch (err) {
+        const resp = err?.response;
+        console.error('[storeWallet] error:', {
+            status: resp?.status,
+            data: resp?.data,
+            headers: resp?.headers,
+        });
+        Swal.fire({
+            icon: 'error',
+            title: 'Could not save wallet',
+            text: resp?.data?.message || resp?.data?.error || `Request failed (${resp?.status || 'network'})`,
+        });
+        return false;
     }
-
-    Swal.fire({ icon: 'error', title: 'Error!', text: data?.message || 'Failed to connect wallet.' });
-    return false;
-  } catch (err) {
-    const resp = err?.response;
-    console.error('[storeWallet] error:', {
-      status: resp?.status,
-      data: resp?.data,
-      headers: resp?.headers,
-    });
-    Swal.fire({
-      icon: 'error',
-      title: 'Could not save wallet',
-      text: resp?.data?.message || resp?.data?.error || `Request failed (${resp?.status || 'network'})`,
-    });
-    return false;
-  }
 }
 
 function hasRabet() {
@@ -320,11 +367,11 @@ function hasRabet() {
 }
 
 function hasAlbedo() {
-  return typeof window !== "undefined" && !!window.albedo && typeof window.albedo.publicKey === "function";
+    return typeof window !== "undefined" && !!window.albedo && typeof window.albedo.publicKey === "function";
 }
 
 function hasXbull() {
-  return typeof window !== 'undefined' && (!!window.xBullSDK || !!window.xBull);
+    return typeof window !== 'undefined' && (!!window.xBullSDK || !!window.xBull);
 }
 
 async function connectWallet(wallet) {
@@ -427,7 +474,9 @@ async function handleConnect() {
         Swal.fire({
             icon: 'warning',
             title: 'Select a wallet',
-            text: 'Choose Freighter or Rabet.',
+            text: isMobileDevice()
+                ? 'Choose LOBSTR to connect on mobile.'
+                : 'Choose a wallet to connect.',
         });
         return;
     }
@@ -483,90 +532,110 @@ async function handleConnect() {
     }
 }
 
+
 async function disconnectWallet() {
     try {
-        const public_key = localStorage.getItem("public_key");
-        const response = await axios.post(
-            "/api/wallet/disconnect",
-            { public_key },
-            { headers: apiHeaders(), withCredentials: true }
-        );
-        if (response.data.status === "success") {
-            closeModal();
-
-            //clear everthing from cookies
-            localStorage.setItem("wallet_connect", "false");
-            localStorage.setItem("token", null);
-            localStorage.setItem("public_key", null);
-            localStorage.setItem("wallet_key", null);
-            localStorage.setItem("wallet_type", null);
-            speak("connected", false);
-            document.cookie =
-                "public_key=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            document.cookie =
-                "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            document.cookie =
-                "wallet_type_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            document.cookie =
-                "blockchain_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            setDisconnected();
-            window.location.reload();
-        } else {
-            Swal.fire({
-                icon: "error",
-                title: "Error!",
-                text: "Failed to disconnect wallet.",
-            });
-        }
+        await disconnectWalletSession();
+        closeModal();
+        if (typeof speak === "function") speak("connected", false);
+        setDisconnected();
+        window.location.reload();
     } catch (error) {
         console.error("Error disconnecting wallet:", error);
         Swal.fire({
             icon: "error",
             title: "Error!",
-            text: "An error occurred while disconnecting the wallet.",
+            text: error.message || "An error occurred while disconnecting the wallet.",
         });
     }
 }
 
 
 const connectedLocal = ref(false);
-const localPk        = ref(getCookie("public_key") || localStorage.getItem("public_key") || "");
+const localPk = ref(getCookie("public_key") || localStorage.getItem("public_key") || "");
 
 
 function safeGet(v) {
-  if (!v) return "";
-  const s = String(v).trim().toLowerCase();
-  return (s === "null" || s === "undefined") ? "" : String(v);
+    if (!v) return "";
+    const s = String(v).trim().toLowerCase();
+    return (s === "null" || s === "undefined") ? "" : String(v);
 }
 
 function readPk() {
-  return safeGet(getCookie("public_key") || localStorage.getItem("public_key"));
+    return safeGet(getCookie("public_key") || localStorage.getItem("public_key"));
 }
 
-function setConnected(pk)   { connectedLocal.value = true;  localPk.value = pk || ""; }
-function setDisconnected()  { connectedLocal.value = false; localPk.value = ""; }
+function setConnected(pk) { connectedLocal.value = true; localPk.value = pk || ""; }
+function setDisconnected() { connectedLocal.value = false; localPk.value = ""; }
 
 
 const displayPk = computed(() =>
-  safeGet(props.walletKey) || localPk.value
+    safeGet(props.walletKey) || localPk.value
 );
 
 const isWalletConnected = computed(() => {
-  const pk = displayPk.value;
-  return !!pk && pk.startsWith("G") && pk.length === 56;
+    const pk = displayPk.value;
+    return !!pk && pk.startsWith("G") && pk.length === 56;
 });
 
 onMounted(() => {
+
+    // initial state check
+    if (isWalletSessionExpired()) {
+
+        clearWalletSession();
+
+        setDisconnected();
+
+        return;
+    }
+
     const pk = readPk();
-    if (pk) setConnected(pk); else setDisconnected();
+
+    if (pk) {
+        setConnected(pk);
+    } else {
+        setDisconnected();
+    }
+
+    // live session expiry watcher
+    walletSessionInterval = setInterval(() => {
+
+        if (isWalletSessionExpired()) {
+
+            clearWalletSession();
+
+            setDisconnected();
+
+            window.location.reload();
+        }
+
+    }, 30000); // check every 30 sec
 });
 
 watch(() => props.modelValue, (open) => {
-  if (open) {
-    fetchWallets();
-    fetchblockchains();
-    const pk = readPk();
-    if (pk) setConnected(pk); else setDisconnected();
-  }
+    if (open) {
+        if (isMobileDevice()) {
+            selectedWallet.value = "";
+            selectedBlockchain.value = "";
+        }
+
+        fetchWallets();
+        fetchblockchains();
+        const pk = readPk();
+        if (pk) setConnected(pk); else setDisconnected();
+    }
 });
+
+function isWalletSessionExpired() {
+    const connectedAt = localStorage.getItem("wallet_connected_at");
+
+    if (!connectedAt) return true;
+
+    const now = Date.now();
+    const diff = now - Number(connectedAt);
+
+    // 2 hours
+    return diff > 2 * 60 * 60 * 1000;
+}
 </script>

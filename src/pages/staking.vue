@@ -1,8 +1,7 @@
 <template>
     <div>
         <Header />
-        <div
-            class="container-fluid mx-auto pt-[8rem] pb-[6rem] relative top-0 z-0 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove">
+        <div class="container-fluid mx-auto pt-[8rem] pb-[6rem] relative top-0 z-0 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove">
             <div class="flex flex-col lg:flex-row items-center justify-center gap-12">
                 <!-- Text Content -->
                 <div class="text-center lg:text-left max-w-3xl">
@@ -12,7 +11,7 @@
                             TKG, Earn More
                         </span>
                     </h1>
-                    <p class="text-[18px] sm:text-[20px] mt-4 text-white max-w-xl mx-auto lg:mx-0">
+                    <p class="text-[18px] sm:text-[20px] mt-4 text-white max-w-xl mx-auto lg:mx-0 px-4 sm:px-0">
                         Put your tokens to work with TokenGlade’s staking module.
                         Secure, seamless, and built for long-term rewards — up to 18% APY.
                         The stronger you hold, the more you earn
@@ -570,7 +569,7 @@
         </section>
 
 
-        <section class="container mx-auto mt-16">
+        <section class="container mx-auto mt-16 py-10">
             <div class="w-full max-w-[80%] mx-auto bg-white rounded-2xl shadow-md overflow-hidden">
                 <div class="px-6 py-5 border-b">
                     <h3 class="text-xl font-semibold">Frequently Asked Questions</h3>

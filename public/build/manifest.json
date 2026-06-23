@@ -1,8 +1,19 @@
 {
+  "_hearing-fa1a9936.js": {
+    "file": "assets/hearing-fa1a9936.js"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-57ede6b9.css",
+    "file": "assets/app-09fb8d4a.css",
     "isEntry": true,
     "src": "resources/css/app.css"
+  },
+  "src/admin-main.js": {
+    "file": "assets/admin-main-da81ea70.js",
+    "imports": [
+      "_hearing-fa1a9936.js"
+    ],
+    "isEntry": true,
+    "src": "src/admin-main.js"
   },
   "src/assets/Xl-logo.png": {
     "file": "assets/Xl-logo-5799095d.png",
@@ -65,7 +76,7 @@
     "src": "src/assets/wallet.jpg"
   },
   "src/main.css": {
-    "file": "assets/main-3f72d5da.css",
+    "file": "assets/main-111a732d.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -86,9 +97,12 @@
       "assets/stop-abbef106.png"
     ],
     "css": [
-      "assets/main-3f72d5da.css"
+      "assets/main-111a732d.css"
     ],
-    "file": "assets/main-a0504d77.js",
+    "file": "assets/main-7c51fb20.js",
+    "imports": [
+      "_hearing-fa1a9936.js"
+    ],
     "isEntry": true,
     "src": "src/main.js"
   }
