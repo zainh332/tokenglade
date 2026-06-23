@@ -47,6 +47,11 @@ Route::middleware('admin')->prefix('admin')->group(function () {
     Route::get('wallets', 'AdminController@wallets');
     Route::get('tokens', 'AdminController@tokens');
     Route::get('staking', 'AdminController@staking');
+    Route::get('lp-participants', 'AdminController@lpParticipants');
+    Route::post('lp-participants/sync', 'AdminController@syncLpParticipants');
+    Route::get('settings', 'AdminController@getSettings');
+    Route::post('settings', 'AdminController@updateSettings');
+    Route::get('lp-history', 'AdminController@lpHistory');
 });
 
 Route::prefix('token')->group(function () {

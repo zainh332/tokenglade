@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\LpRewardCycle;
+use App\Services\LpSyncService;
 use App\Models\LpRewardDistribution;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Console\Command;
@@ -44,10 +45,14 @@ class DistributeLpRewards extends Command
         $this->assetCode = env('ASSET_CODE');
     }
 
-    public function handle()
+    public function handle(LpSyncService $syncService)
     {
+        $this->info('Syncing liquidity pool participants before reward distribution...');
+        $syncService->sync();
+
         $weekNumber = Carbon::now()->weekOfYear;
-        $rewardPool = 16000;
+        $rewardPoolSetting = \App\Models\Setting::where('key', 'lp_weekly_reward_amount')->first();
+        $rewardPool = $rewardPoolSetting ? (float) $rewardPoolSetting->value : 16000.0;
         $minimumEligible = 0.099;
 
         // Prevent duplicate weekly distribution

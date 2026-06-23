@@ -3,6 +3,8 @@ import AdminLayout from "./AdminLayout.vue";
 import WalletsView from "./pages/admin/WalletsView.vue";
 import TokensView from "./pages/admin/TokensView.vue";
 import StakingView from "./pages/admin/StakingView.vue";
+import LpParticipantsView from "./pages/admin/LpParticipantsView.vue";
+import LpHistoryView from "./pages/admin/LpHistoryView.vue";
 
 const routes = [
     {
@@ -27,6 +29,16 @@ const routes = [
                 path: "staking",
                 component: StakingView,
                 meta: { title: "Admin — Staking Analytics Snapshot" }
+            },
+            {
+                path: "lp-participants",
+                component: LpParticipantsView,
+                meta: { title: "Admin — Liquidity Pool Participants" }
+            },
+            {
+                path: "lp-history",
+                component: LpHistoryView,
+                meta: { title: "Admin — LP Reward Payout History" }
             }
         ]
     }

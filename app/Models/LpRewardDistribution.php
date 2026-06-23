@@ -9,4 +9,9 @@ class LpRewardDistribution extends Model
 {
     use HasFactory;
     protected $guarded = [];
+
+    public function cycle()
+    {
+        return $this->belongsTo(LpRewardCycle::class, 'lp_reward_cycle_id');
+    }
 }

@@ -89,6 +89,22 @@ const StakingIcon = {
   `
 };
 
+const LpIcon = {
+  template: `
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+    </svg>
+  `
+};
+
+const HistoryIcon = {
+  template: `
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  `
+};
+
 const route = useRoute();
 const adminPk = ref(getCookie('public_key') || localStorage.getItem('public_key') || 'Not Connected');
 const csrfToken = window.Laravel?.csrfToken || '';
@@ -97,12 +113,16 @@ const navItems = [
   { name: 'Connected Wallets', to: '/admin/wallets', icon: WalletIcon },
   { name: 'Minted Tokens', to: '/admin/tokens', icon: TokenIcon },
   { name: 'Staking Analytics', to: '/admin/staking', icon: StakingIcon },
+  { name: 'LP Participants', to: '/admin/lp-participants', icon: LpIcon },
+  { name: 'LP Reward History', to: '/admin/lp-history', icon: HistoryIcon },
 ];
 
 const currentPageTitle = computed(() => {
   if (route.path.includes('/wallets')) return 'Wallets Base Registry';
   if (route.path.includes('/tokens')) return 'Minted Assets Inventory';
   if (route.path.includes('/staking')) return 'Staking Analytics Snapshot';
+  if (route.path.includes('/lp-participants')) return 'Liquidity Pool Participants';
+  if (route.path.includes('/lp-history')) return 'LP Reward Payout History';
   return 'Admin dashboard';
 });
 
