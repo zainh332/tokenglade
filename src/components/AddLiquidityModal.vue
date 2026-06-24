@@ -71,11 +71,12 @@
                   <div class="relative group">
                     <input 
                       id="xlmAmount" 
-                      type="number" 
-                      step="any"
+                      type="text" 
+                      inputmode="decimal"
                       placeholder="0.0" 
                       v-model="xlmInput"
                       @input="handleInput('xlm')"
+                      @keydown="blockInvalidKeys"
                       class="w-full bg-gray-950/80 border border-gray-800 rounded-xl py-3.5 pl-4 pr-28 text-white font-mono text-lg focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition duration-200"
                     />
                     <div class="absolute inset-y-0 right-4 flex items-center gap-2">
@@ -110,11 +111,12 @@
                   <div class="relative group">
                     <input 
                       id="tkgAmount" 
-                      type="number" 
-                      step="any"
+                      type="text" 
+                      inputmode="decimal"
                       placeholder="0.0" 
                       v-model="tkgInput"
                       @input="handleInput('tkg')"
+                      @keydown="blockInvalidKeys"
                       class="w-full bg-gray-950/80 border border-gray-800 rounded-xl py-3.5 pl-4 pr-28 text-white font-mono text-lg focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition duration-200"
                     />
                     <div class="absolute inset-y-0 right-4 flex items-center gap-2">
@@ -148,6 +150,31 @@
                       {{ Math.round(reservesXlm).toLocaleString() }} XLM / {{ Math.round(reservesTkg).toLocaleString() }} TKG
                     </span>
                   </div>
+                  
+                  <!-- Estimated Share & LP Reward Eligibility -->
+                  <template v-if="!isReservesLoading && parseFloat(xlmInput) > 0">
+                    <div class="flex justify-between border-t border-gray-900/60 pt-2.5 mt-2.5">
+                      <span class="text-gray-500 font-bold">Est. Pool Share</span>
+                      <span class="font-mono text-gray-300">{{ estimatedShare.toFixed(3) }}%</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-gray-500">LP Reward Status</span>
+                      <span 
+                        v-if="estimatedShare >= 0.099" 
+                        class="px-2.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20 text-[9px] font-extrabold uppercase tracking-wider inline-flex items-center gap-1"
+                      >
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                        Eligible (>= 0.099%)
+                      </span>
+                      <span 
+                        v-else 
+                        class="px-2.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 text-[9px] font-extrabold uppercase tracking-wider inline-flex items-center gap-1"
+                      >
+                        <span class="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span>
+                        Ineligible (&lt; 0.099%)
+                      </span>
+                    </div>
+                  </template>
                 </div>
 
                 <!-- Action Button -->
@@ -232,18 +259,56 @@ function triggerConnectWallet() {
   emit('open-connect-wallet');
 }
 
+// Input sanitization to allow only positive numbers (integers and decimals)
+function sanitizeInput(val) {
+  if (val === null || val === undefined) return '';
+  const valStr = typeof val !== 'string' ? String(val) : val;
+  
+  // Keep only digits and decimal point
+  let sanitized = valStr.replace(/[^0-9.]/g, '');
+  
+  // Enforce single decimal point
+  const parts = sanitized.split('.');
+  if (parts.length > 2) {
+    sanitized = parts[0] + '.' + parts.slice(1).join('');
+  }
+  return sanitized;
+}
+
+// Block keys like sign characters (- / +), exponent notation (e / E), and other non-numeric keys
+function blockInvalidKeys(e) {
+  const allowedKeys = [
+    'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter', 'Escape', 'Control', 'a', 'c', 'v', 'x'
+  ];
+  
+  if (e.ctrlKey || e.metaKey || allowedKeys.includes(e.key)) {
+    return;
+  }
+  
+  // Allow only 0-9 digits and dot
+  if (!/^[0-9.]$/.test(e.key)) {
+    e.preventDefault();
+  }
+  
+  // Prevent duplicate dots
+  if (e.key === '.' && e.target.value.includes('.')) {
+    e.preventDefault();
+  }
+}
+
 // Calculation ratio management
 function handleInput(type) {
-  const xVal = parseFloat(xlmInput.value);
-  const tVal = parseFloat(tkgInput.value);
-
   if (type === 'xlm') {
+    xlmInput.value = sanitizeInput(xlmInput.value);
+    const xVal = parseFloat(xlmInput.value);
     if (isNaN(xVal) || xVal <= 0) {
       tkgInput.value = '';
     } else {
       tkgInput.value = (xVal * poolRatio.value).toFixed(7);
     }
   } else {
+    tkgInput.value = sanitizeInput(tkgInput.value);
+    const tVal = parseFloat(tkgInput.value);
     if (isNaN(tVal) || tVal <= 0) {
       xlmInput.value = '';
     } else {
@@ -263,6 +328,15 @@ function setMax(type) {
   }
 }
 
+// Estimated Pool Share calculation
+const estimatedShare = computed(() => {
+  const xVal = parseFloat(xlmInput.value);
+  if (isNaN(xVal) || xVal <= 0 || reservesXlm.value <= 0) {
+    return 0;
+  }
+  return (xVal / (reservesXlm.value + xVal)) * 100;
+});
+
 // Validation helper
 const isValid = computed(() => {
   const xVal = parseFloat(xlmInput.value);
@@ -273,6 +347,10 @@ const isValid = computed(() => {
   }
   
   if (xVal > xlmBalance.value || tVal > tkgBalance.value) {
+    return false;
+  }
+  
+  if (estimatedShare.value < 0.099) {
     return false;
   }
   
@@ -296,6 +374,10 @@ const submitButtonText = computed(() => {
   
   if (tVal > tkgBalance.value) {
     return 'Insufficient TKG balance';
+  }
+  
+  if (estimatedShare.value < 0.099) {
+    return 'Min 0.099% Pool Share Required';
   }
   
   return 'Add Liquidity';
