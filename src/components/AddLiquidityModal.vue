@@ -76,9 +76,17 @@
                       placeholder="0.0" 
                       v-model="xlmInput"
                       @input="handleInput('xlm')"
-                      class="w-full bg-gray-950/80 border border-gray-800 rounded-xl py-3.5 pl-4 pr-16 text-white font-mono text-lg focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition duration-200"
+                      class="w-full bg-gray-950/80 border border-gray-800 rounded-xl py-3.5 pl-4 pr-28 text-white font-mono text-lg focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition duration-200"
                     />
-                    <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                    <div class="absolute inset-y-0 right-4 flex items-center gap-2">
+                      <button 
+                        v-if="props.isWalletConnected"
+                        type="button"
+                        @click="setMax('xlm')"
+                        class="px-2 py-1 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 text-[10px] font-extrabold uppercase transition duration-200 cursor-pointer"
+                      >
+                        MAX
+                      </button>
                       <span class="text-gray-500 font-bold text-sm">XLM</span>
                     </div>
                   </div>
@@ -107,9 +115,17 @@
                       placeholder="0.0" 
                       v-model="tkgInput"
                       @input="handleInput('tkg')"
-                      class="w-full bg-gray-950/80 border border-gray-800 rounded-xl py-3.5 pl-4 pr-16 text-white font-mono text-lg focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition duration-200"
+                      class="w-full bg-gray-950/80 border border-gray-800 rounded-xl py-3.5 pl-4 pr-28 text-white font-mono text-lg focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition duration-200"
                     />
-                    <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                    <div class="absolute inset-y-0 right-4 flex items-center gap-2">
+                      <button 
+                        v-if="props.isWalletConnected"
+                        type="button"
+                        @click="setMax('tkg')"
+                        class="px-2 py-1 rounded bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 text-[10px] font-extrabold uppercase transition duration-200 cursor-pointer"
+                      >
+                        MAX
+                      </button>
                       <span class="text-gray-500 font-bold text-sm">TKG</span>
                     </div>
                   </div>
@@ -233,6 +249,17 @@ function handleInput(type) {
     } else {
       xlmInput.value = (tVal / poolRatio.value).toFixed(7);
     }
+  }
+}
+
+// Set maximum balance for input
+function setMax(type) {
+  if (type === 'xlm') {
+    xlmInput.value = xlmBalance.value;
+    handleInput('xlm');
+  } else {
+    tkgInput.value = tkgBalance.value;
+    handleInput('tkg');
   }
 }
 
@@ -440,3 +467,17 @@ onMounted(() => {
   }
 });
 </script>
+
+<style scoped>
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+</style>
