@@ -119,7 +119,8 @@
                 <div class="bg-gray-950/60 border border-gray-900 rounded-xl p-4 text-xs space-y-2">
                   <div class="flex justify-between">
                     <span class="text-gray-500">Current Pool Ratio</span>
-                    <span class="text-gray-300 font-mono">1 XLM ≈ {{ poolRatio.toFixed(4) }} TKG</span>
+                    <span v-if="isReservesLoading" class="text-yellow-500 animate-pulse font-mono">Loading ratio...</span>
+                    <span v-else class="text-gray-300 font-mono">1 XLM ≈ {{ poolRatio.toFixed(4) }} TKG</span>
                   </div>
                   <div class="flex justify-between" v-if="isReservesLoading">
                     <span class="text-gray-500">Reserves status</span>
