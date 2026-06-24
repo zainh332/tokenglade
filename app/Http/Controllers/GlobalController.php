@@ -424,5 +424,348 @@ class GlobalController extends Controller
             ], 500);
         }
     }
+
+    public function lp_reserves(Request $request)
+    {
+        $poolIdHex = 'cb1922681c9d2380d34577d3c056e435a8436586e776c38a80412120c2442fb5';
+        $stellarEnv = env('VITE_STELLAR_ENVIRONMENT', 'public');
+        $isTestnet = strtolower($stellarEnv) !== 'public';
+        $horizonUrl = $isTestnet ? 'https://horizon-testnet.stellar.org' : 'https://horizon.stellar.org';
+
+        try {
+            $poolResponse = \Illuminate\Support\Facades\Http::timeout(10)->acceptJson()->get("{$horizonUrl}/liquidity_pools/{$poolIdHex}");
+
+            $xlmReserve = 0.0;
+            $tkgReserve = 0.0;
+
+            if ($poolResponse->successful()) {
+                $poolData = $poolResponse->json();
+                foreach ($poolData['reserves'] as $reserve) {
+                    if ($reserve['asset'] === 'native') {
+                        $xlmReserve = (float) $reserve['amount'];
+                    } else {
+                        $parts = explode(':', $reserve['asset']);
+                        $code = $parts[0] ?? '';
+                        if ($code === 'TKG') {
+                            $tkgReserve = (float) $reserve['amount'];
+                        }
+                    }
+                }
+            }
+
+            // Fallbacks if reserves not found (e.g. pool not funded yet on Horizon)
+            if ($xlmReserve <= 0 || $tkgReserve <= 0) {
+                $xlmReserve = 1000.0; 
+                $tkgReserve = 16000.0;
+            }
+
+            $user_xlm = 0.0;
+            $user_tkg = 0.0;
+            $wallet_address = $request->input('wallet_address');
+
+            if ($wallet_address) {
+                try {
+                    $user_xlm = (float) $this->wallet->getXlmBalance($wallet_address);
+                    $user_tkg = (float) $this->wallet->getTkgBalance($wallet_address);
+                } catch (\Throwable $e) {
+                    // Ignore errors fetching wallet balance
+                }
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'pool_id' => $poolIdHex,
+                'xlm_reserve' => $xlmReserve,
+                'tkg_reserve' => $tkgReserve,
+                'ratio' => $tkgReserve / $xlmReserve, // TKG per 1 XLM
+                'user_xlm' => $user_xlm,
+                'user_tkg' => $user_tkg,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('lp_reserves error', ['message' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch pool reserves: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function lp_deposit(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'wallet_address' => ['required', 'string'],
+            'xlm_amount' => ['required', 'numeric', 'min:0.0000001'],
+            'tkg_amount' => ['required', 'numeric', 'min:0.0000001'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            $wallet_address = $request->wallet_address;
+            $xlm_amount = $request->xlm_amount;
+            $tkg_amount = $request->tkg_amount;
+
+            // Load user account from Horizon
+            $userAccount = $this->sdk->requestAccount($wallet_address);
+
+            // TKG Asset
+            $tkgAsset = \Soneso\StellarSDK\Asset::createNonNativeAsset('TKG', $this->assetIssuer);
+            $nativeAsset = \Soneso\StellarSDK\Asset::native();
+
+            // Sort assets to determine correct A/B price bounds and pool shares
+            $assetA = $nativeAsset;
+            $assetB = $tkgAsset;
+            
+            $swap = false;
+            $rank = function ($as) {
+                return $as->getType() === \Soneso\StellarSDK\Asset::TYPE_NATIVE ? 0
+                    : ($as->getType() === \Soneso\StellarSDK\Asset::TYPE_CREDIT_ALPHANUM_4 ? 1
+                        : ($as->getType() === \Soneso\StellarSDK\Asset::TYPE_CREDIT_ALPHANUM_12 ? 2 : 3));
+            };
+            if ($rank($assetA) > $rank($assetB)) $swap = true;
+            elseif (
+                $rank($assetA) === $rank($assetB)
+                && $assetA instanceof \Soneso\StellarSDK\AssetTypeCreditAlphanum
+                && $assetB instanceof \Soneso\StellarSDK\AssetTypeCreditAlphanum
+            ) {
+                $codeCmp = strcmp($assetA->getCode(), $assetB->getCode());
+                if ($codeCmp > 0 || ($codeCmp === 0 && strcmp($assetA->getIssuer(), $assetB->getIssuer()) > 0)) $swap = true;
+            }
+            if ($swap) {
+                [$assetA, $assetB] = [$assetB, $assetA];
+            }
+
+            // Price bounds are determined by A/B price, so amountA / amountB
+            $amountA = $swap ? $tkg_amount : $xlm_amount;
+            $amountB = $swap ? $xlm_amount : $tkg_amount;
+            $rawPrice = $amountA / $amountB;
+
+            // Slippage tolerance of 2%
+            $minPriceVal = $rawPrice * 0.98;
+            $maxPriceVal = $rawPrice * 1.02;
+
+            $minN = (int) round($minPriceVal * 10000000);
+            $minD = 10000000;
+            $maxN = (int) round($maxPriceVal * 10000000);
+            $maxD = 10000000;
+
+            $minPrice = new \Soneso\StellarSDK\Price($minN, $minD);
+            $maxPrice = new \Soneso\StellarSDK\Price($maxN, $maxD);
+
+            $txb = (new \Soneso\StellarSDK\TransactionBuilder($userAccount, $this->network));
+
+            // 1. Ensure user has trustline to TKG
+            $hasTkgTrustline = false;
+            foreach ($userAccount->getBalances() as $bal) {
+                if ($bal->getAssetType() !== 'native') {
+                    if ($bal->getAssetCode() === 'TKG' && $bal->getAssetIssuer() === $this->assetIssuer) {
+                        $hasTkgTrustline = true;
+                        break;
+                    }
+                }
+            }
+            if (!$hasTkgTrustline) {
+                $txb->addOperation((new \Soneso\StellarSDK\ChangeTrustOperationBuilder($tkgAsset))->build());
+            }
+
+            // 2. Ensure user has trustline to Liquidity Pool shares
+            $poolId = 'cb1922681c9d2380d34577d3c056e435a8436586e776c38a80412120c2442fb5';
+            $poolShareAsset = new \Soneso\StellarSDK\AssetTypePoolShare($assetA, $assetB);
+
+            $hasPoolShareTrustline = false;
+            foreach ($userAccount->getBalances() as $bal) {
+                if ($bal->getAssetType() === 'liquidity_pool_shares') {
+                    if ($bal->getLiquidityPoolId() === $poolId) {
+                        $hasPoolShareTrustline = true;
+                        break;
+                    }
+                }
+            }
+            if (!$hasPoolShareTrustline) {
+                $txb->addOperation(new \Soneso\StellarSDK\ChangeTrustOperation($poolShareAsset, '922337203685.4775807'));
+            }
+
+            // 3. Add LiquidityPoolDeposit
+            $xlmAmountFormatted = number_format((float)$xlm_amount, 7, '.', '');
+            $tkgAmountFormatted = number_format((float)$tkg_amount, 7, '.', '');
+
+            $txb->addOperation(
+                (new \Soneso\StellarSDK\LiquidityPoolDepositOperationBuilder(
+                    $poolId,
+                    $xlmAmountFormatted,
+                    $tkgAmountFormatted,
+                    $minPrice,
+                    $maxPrice
+                ))->build()
+            );
+
+            $tx = $txb->build();
+            $unsignedXdr = $tx->toEnvelopeXdrBase64();
+
+            return response()->json([
+                'status' => 'success',
+                'unsigned_xdr' => $unsignedXdr,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('lp_deposit prepare error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to prepare liquidity deposit transaction: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function lp_submit(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'signedXdr' => ['required', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            $signedXdr = trim($request->signedXdr);
+
+            if (base64_decode($signedXdr, true) === false) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'signedXdr is not valid base64.',
+                ], 422);
+            }
+
+            $tx = \Soneso\StellarSDK\Transaction::fromEnvelopeBase64XdrString($signedXdr);
+            $result = $this->sdk->submitTransaction($tx);
+
+            if ($result->isSuccessful()) {
+                // Sync the liquidity pool participants instantly
+                try {
+                    app(\App\Services\LpSyncService::class)->sync();
+                } catch (\Throwable $syncEx) {
+                    Log::warning('LP sync failed after successful deposit', ['message' => $syncEx->getMessage()]);
+                }
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Liquidity added successfully!',
+                    'tx_hash' => $result->getId(),
+                ]);
+            } else {
+                $resultCodes = $result->getExtras()?->getResultCodes();
+                $errString = $this->parseHorizonError('Transaction failed on Horizon.', $resultCodes);
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $errString,
+                    'result_codes' => $resultCodes,
+                ], 400);
+            }
+        } catch (\Soneso\StellarSDK\Exceptions\HorizonRequestException $e) {
+            $prev = $e->getPrevious();
+            $body = null;
+            $resultCodes = null;
+            if ($prev instanceof \GuzzleHttp\Exception\ClientException && $prev->getResponse()) {
+                $body = (string)$prev->getResponse()->getBody();
+                $decodedBody = json_decode($body, true);
+                $resultCodes = $decodedBody['extras']['result_codes'] ?? null;
+            }
+            
+            Log::error('lp_submit HorizonRequestException', [
+                'message' => $e->getMessage(),
+                'status_code' => $e->getStatusCode(),
+                'body' => $body,
+                'result_codes' => $resultCodes,
+            ]);
+
+            $errString = $this->parseHorizonError($e->getMessage(), $resultCodes);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $errString,
+                'result_codes' => $resultCodes,
+            ], 400);
+        } catch (\Throwable $e) {
+            Log::error('lp_submit error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to submit transaction: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    private function parseHorizonError(string $message, ?array $resultCodes = null): string
+    {
+        $txCode = $resultCodes['transaction'] ?? '';
+        $opCodes = $resultCodes['operations'] ?? [];
+
+        // Convert the message to lowercase for case-insensitive matching
+        $lowerMsg = strtolower($message);
+
+        // 1. Fee / Insufficient Balance errors
+        if ($txCode === 'tx_insufficient_balance' || strpos($lowerMsg, 'tx_insufficient_balance') !== false) {
+            return 'Your wallet does not have enough XLM to pay for network transaction fees. Please add a small amount of XLM to your wallet.';
+        }
+
+        // 2. Underfunded error (lack of XLM or TKG balance)
+        if (in_array('op_underfunded', $opCodes) || strpos($lowerMsg, 'op_underfunded') !== false) {
+            return 'Insufficient spendable balance. Please check that you have enough XLM and TKG in your wallet. Note: Stellar reserves a minimum of 2.5 XLM that cannot be spent or deposited.';
+        }
+
+        // 3. Low reserve error (dropping below minimum reserve)
+        if (in_array('op_low_reserve', $opCodes) || strpos($lowerMsg, 'op_low_reserve') !== false) {
+            return 'Your wallet balance is too close to the Stellar minimum reserve limit. You need to keep at least 2.5 XLM in your wallet to cover the active trustlines.';
+        }
+
+        // 4. Bad authorization or rejected signatures
+        if ($txCode === 'tx_bad_auth' || $txCode === 'tx_bad_auth_extra' || 
+            strpos($lowerMsg, 'tx_bad_auth') !== false || strpos($lowerMsg, 'tx_bad_auth_extra') !== false) {
+            return 'Wallet signature was invalid or rejected. Please verify you are using the correct connected wallet and approved the prompt.';
+        }
+
+        // 5. Sequence error
+        if ($txCode === 'tx_bad_seq' || strpos($lowerMsg, 'tx_bad_seq') !== false) {
+            return 'Transaction out of sync. Please refresh the page and try again.';
+        }
+
+        // 6. Timebounds / expired
+        if ($txCode === 'tx_too_late' || strpos($lowerMsg, 'tx_too_late') !== false) {
+            return 'Transaction took too long to sign and has expired. Please try again.';
+        }
+
+        // 7. No Trustline
+        if (in_array('op_no_trust', $opCodes) || strpos($lowerMsg, 'op_no_trust') !== false) {
+            return 'Trustline missing. Please verify your wallet has trustlines configured for TKG and the liquidity pool shares.';
+        }
+
+        // 8. Slippage / Price limits exceeded
+        if (in_array('op_invalid_price', $opCodes) || in_array('op_bad_price', $opCodes) || 
+            strpos($lowerMsg, 'op_invalid_price') !== false || strpos($lowerMsg, 'op_bad_price') !== false) {
+            return 'The pool exchange rate changed slightly. This exceeded the 2% slippage tolerance. Please try again.';
+        }
+
+        // 9. Line full
+        if (in_array('op_line_full', $opCodes) || strpos($lowerMsg, 'op_line_full') !== false) {
+            return 'Your wallet has reached the limit for holding liquidity pool shares.';
+        }
+
+        // Default: If there are operation codes we didn't map, format them nicely
+        if (!empty($opCodes)) {
+            $cleaned = array_map(function($c) { return str_replace('op_', '', $c); }, $opCodes);
+            return 'Stellar network rejected the transaction. Reason: ' . implode(', ', $cleaned);
+        }
+
+        // Otherwise return a generic rejected message
+        return 'Stellar network rejected the transaction. Please make sure your wallet is funded and has enough XLM for reserves.';
+    }
 }
 

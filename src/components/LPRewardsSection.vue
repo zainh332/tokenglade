@@ -134,7 +134,7 @@
       </div>
 
       <!-- Call To Action -->
-      <!-- <div class="relative rounded-[2.5rem] bg-[linear-gradient(135deg,rgba(88,28,135,0.5),rgba(30,58,138,0.5))] border border-purple-500/20 p-10 md:p-16 text-center overflow-hidden">
+      <div class="relative rounded-[2.5rem] bg-[linear-gradient(135deg,rgba(88,28,135,0.5),rgba(30,58,138,0.5))] border border-purple-500/20 p-10 md:p-16 text-center overflow-hidden">
         <div class="relative z-10 max-w-3xl mx-auto flex flex-col items-center">
           <h3 class="text-3xl md:text-5xl font-black mb-6 tracking-tight leading-tight">
             Add liquidity and start earning weekly TKG rewards.
@@ -142,17 +142,18 @@
           <p class="text-base md:text-lg text-gray-300/80 mb-10 max-w-xl leading-relaxed">
             Unlock premium APY and secure weekly yield distribution payouts on Stellar.
           </p>
-          <a 
-            href="/stake" 
-            class="inline-flex items-center justify-center font-bold px-10 py-5 rounded-full text-white bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] hover:opacity-95 hover:scale-[1.03] active:scale-[0.97] transition transform duration-200 shadow-2xl shadow-cyan-500/30 gap-2 text-base md:text-lg uppercase tracking-wider"
+          <button 
+            type="button"
+            @click="emit('open-add-liquidity')"
+            class="inline-flex items-center justify-center font-bold px-10 py-5 rounded-full text-white bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] hover:opacity-95 hover:scale-[1.03] active:scale-[0.97] transition transform duration-200 shadow-2xl shadow-cyan-500/30 gap-2 text-base md:text-lg uppercase tracking-wider cursor-pointer"
           >
             <span>Provide Liquidity</span>
-          </a>
+          </button>
         </div>
         
         <div class="absolute -top-24 -left-24 w-48 h-48 bg-purple-500/20 rounded-full blur-2xl pointer-events-none"></div>
         <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-cyan-500/20 rounded-full blur-2xl pointer-events-none"></div>
-      </div> -->
+      </div>
 
     </div>
   </div>
@@ -168,6 +169,8 @@ const props = defineProps({
   completedCycles: { type: Number, default: 0 },
   cyclesList: { type: Array, default: () => [] },
 });
+
+const emit = defineEmits(['open-add-liquidity']);
 
 // Animation formatted strings
 const displayTotalDistributed = ref("0 TKG");

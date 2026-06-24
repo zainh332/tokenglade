@@ -31,6 +31,9 @@ Route::prefix('global')->group(function () {
     Route::get('staking_reward', 'GlobalController@staking_reward')->name('global.countData');
     Route::get('stats', 'GlobalController@live_staking_stats')->name('global.stats');
     Route::get('lp_rewards_data', 'GlobalController@lp_rewards_data')->name('global.lpRewardsData');
+    Route::get('lp/reserves', 'GlobalController@lp_reserves')->name('global.lpReserves');
+    Route::post('lp/deposit', 'GlobalController@lp_deposit')->name('global.lpDeposit');
+    Route::post('lp/submit', 'GlobalController@lp_submit')->name('global.lpSubmit');
 });
 
 // ==========================

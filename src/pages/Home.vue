@@ -99,6 +99,7 @@
       :weekly-reward-pool="lpData.weekly_reward_pool" 
       :completed-cycles="lpData.completed_cycles" 
       :cycles-list="lpData.cycles_list" 
+      @open-add-liquidity="isAddLiquidityOpen = true"
     />
 
     <Table :network="network" />
@@ -256,6 +257,13 @@
     <GenerateTokenModal :open="isTokenModalOpen" @close="isTokenModalOpen = false" :network="network" />
     <ConnectWalletModal v-model="ConnectWalletModals" :connected="isWalletConnected" :walletKey="walletKey"
       @status="handleWalletStatus" @close="ConnectWalletModals = false" />
+    <AddLiquidityModal 
+      v-model="isAddLiquidityOpen" 
+      :isWalletConnected="isWalletConnected" 
+      :walletKey="walletKey"
+      @open-connect-wallet="ConnectWalletModals = true" 
+      @close="isAddLiquidityOpen = false" 
+    />
     
     <Footer />
   </div>
@@ -283,11 +291,13 @@ import { ref, computed, defineProps, onMounted, watch } from "vue";
 import Swal from 'sweetalert2';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
 import LPRewardsSection from '@/components/LPRewardsSection.vue';
+import AddLiquidityModal from '@/components/AddLiquidityModal.vue';
 import { getCookie, getNetwork } from "../utils/utils.js";
 
 const isWalletConnected = ref(false);
 const walletKey = ref('');
 const ConnectWalletModals = ref(false);
+const isAddLiquidityOpen = ref(false);
 const network = ref('public')
 
 function handleWalletStatus(e) {
