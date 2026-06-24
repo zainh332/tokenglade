@@ -380,6 +380,9 @@ class GlobalController extends Controller
             // 4. Completed cycles count
             $completed_cycles = \App\Models\LpRewardCycle::where('status', 'completed')->count();
 
+            // 4b. Current week number
+            $current_week = \Carbon\Carbon::now()->weekOfYear;
+
             // 5. Recent completed reward cycles (e.g. latest 4)
             $cycles = \App\Models\LpRewardCycle::withCount([
                 'distributions as rewarded_wallets_count' => function ($query) {
@@ -413,6 +416,7 @@ class GlobalController extends Controller
                     'active_providers' => $active_providers,
                     'weekly_reward_pool' => $weekly_reward_pool,
                     'completed_cycles' => $completed_cycles,
+                    'current_week' => $current_week,
                     'cycles_list' => $cycles_list,
                 ]
             ]);

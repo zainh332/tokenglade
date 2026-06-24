@@ -98,10 +98,12 @@
       :active-providers="lpData.active_providers" 
       :weekly-reward-pool="lpData.weekly_reward_pool" 
       :completed-cycles="lpData.completed_cycles" 
+      :current-week="lpData.current_week" 
       :cycles-list="lpData.cycles_list" 
       @open-add-liquidity="isAddLiquidityOpen = true"
     />
 
+    <!-- Tokens Table -->
     <Table :network="network" />
 
     <div class="py-10 my-10 bg-white text-center">
@@ -145,78 +147,7 @@
       </div>
     </div>
 
-    <!-- Perfect For Section -->
-    <div class="py-10 my-10 text-center">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        <h2 class="text-3xl font-semibold text-center text-gray-900 mb-14">Perfect For:</h2>
-
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8">
-
-          <!-- Item -->
-          <div class="flex flex-col items-center">
-            <div class="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-3">
-              <img :src="community" class="w-12 h-12" />
-            </div>
-            <h3 class="text-xl font-semibold mb-2">Community Tokens</h3>
-            <p class="text-dark text-sm">Opportunities for communities</p>
-          </div>
-
-          <div class="flex flex-col items-center">
-            <div class="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center mb-3">
-              <img :src="startups" class="w-12 h-12" />
-            </div>
-            <h3 class="text-xl font-semibold mb-2">Startup Utility Tokens</h3>
-            <p class="text-dark text-sm">Bootstrap early ecosystems</p>
-          </div>
-
-          <div class="flex flex-col items-center">
-            <div class="w-16 h-16 rounded-full bg-yellow-50 flex items-center justify-center mb-3">
-              <img :src="reward" class="w-12 h-12" />
-            </div>
-            <h3 class="text-xl font-semibold mb-2">Loyalty & Rewards</h3>
-            <p class="text-dark text-sm">Reward users instantly</p>
-          </div>
-
-          <div class="flex flex-col items-center">
-            <div class="w-16 h-16 rounded-full bg-cyan-50 flex items-center justify-center mb-3">
-              <img :src="DaoIcon" class="w-12 h-12" />
-            </div>
-            <h3 class="text-xl font-semibold mb-2">DAO Experiments</h3>
-            <p class="text-dark text-sm">Test governance ideas</p>
-          </div>
-
-          <div class="flex flex-col items-center">
-            <div class="w-16 h-16 rounded-full bg-purple-50 flex items-center justify-center mb-3">
-              <img :src="PrototypeIcon" class="w-12 h-12" />
-            </div>
-            <h3 class="text-xl font-semibold mb-2">Testing & Prototypes</h3>
-            <p class="text-dark text-sm">Launch fast, iterate faster</p>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-    <!-- Ripple Coming Soon Section -->
-    <div class="py-16 bg-white text-center">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        <h2 class="text-3xl sm:text-4xl font-semibold text-dark mb-4">
-          <span
-            class="bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-clip-text text-transparent bg-[length:200%_200%] animate-gradientMove">Ripple</span>
-          Minting Coming Soon
-        </h2>
-
-        <p class="text-[20px] font-normal leading-7">
-          TokenGlade is expanding to XRP Ledger. Be among the first to mint on Stellar.
-        </p>
-
-      </div>
-    </div>
-
-    <!-- <Newsletter /> -->
-    
+    <!-- Frequent Questions -->
     <div class="max-w-6xl gap-12 px-4 py-10 mx-auto cards sm:pt-24 sm:px-6 lg:px-8">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
@@ -427,5 +358,11 @@ onMounted(async () => {
     padding: 6rem;
     /* Adjust padding for large screens and above */
   }
+}
+</style>
+
+<style>
+html {
+  scroll-behavior: smooth;
 }
 </style>

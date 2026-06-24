@@ -67,11 +67,11 @@
         <div class="relative group">
           <div class="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-red-500/20 to-purple-500/20 rounded-3xl blur-xl group-hover:blur-2xl opacity-40 group-hover:opacity-100 transition duration-500"></div>
           <div class="relative bg-gray-900/60 backdrop-blur-md rounded-3xl border border-gray-800 p-8 shadow-2xl flex flex-col justify-between h-56 transition-all duration-300 hover:-translate-y-2 hover:border-purple-500/30">
-            <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Reward Cycles Completed</span>
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Current Week</span>
             <span class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 font-mono tracking-tighter my-5">
-              {{ displayCycles }}
+              Week {{ displayWeek }}
             </span>
-            <span class="text-xs text-gray-400 font-semibold uppercase tracking-wider">Reward Cycles Completed</span>
+            <span class="text-xs text-gray-400 font-semibold uppercase tracking-wider">Current Week</span>
           </div>
         </div>
       </div>
@@ -167,6 +167,7 @@ const props = defineProps({
   activeProviders: { type: Number, default: 0 },
   weeklyRewardPool: { type: Number, default: 16000 },
   completedCycles: { type: Number, default: 0 },
+  currentWeek: { type: Number, default: 0 },
   cyclesList: { type: Array, default: () => [] },
 });
 
@@ -176,7 +177,7 @@ const emit = defineEmits(['open-add-liquidity']);
 const displayTotalDistributed = ref("0 TKG");
 const displayTotalWallets = ref("0 Wallets");
 const displayWeeklyPool = ref("16,000 TKG");
-const displayCycles = ref("0 Weeks");
+const displayWeek = ref("0");
 
 function animateValue(target, refVar, suffix = "", duration = 1200) {
   if (!target || target <= 0) {
@@ -200,7 +201,7 @@ function runAnimations() {
   animateValue(props.totalDistributed, displayTotalDistributed, " TKG");
   animateValue(props.activeProviders, displayTotalWallets, " Wallets");
   animateValue(props.weeklyRewardPool, displayWeeklyPool, " TKG");
-  animateValue(props.completedCycles, displayCycles, " Weeks");
+  animateValue(props.currentWeek, displayWeek, "");
 }
 
 onMounted(() => {
@@ -211,7 +212,7 @@ watch([
   () => props.totalDistributed,
   () => props.activeProviders,
   () => props.weeklyRewardPool,
-  () => props.completedCycles
+  () => props.currentWeek
 ], () => {
   runAnimations();
 });
