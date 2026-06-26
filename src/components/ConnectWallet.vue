@@ -190,7 +190,7 @@ const displayedWalletOptions = computed(() => {
     }
 
     return walletOptions.value.filter(
-        (wallet) => (wallet.key || "").toLowerCase() === "lobstr"
+        (wallet) => (wallet.key || "").toLowerCase() === "albedo"
     );
 });
 
@@ -475,7 +475,7 @@ async function handleConnect() {
             icon: 'warning',
             title: 'Select a wallet',
             text: isMobileDevice()
-                ? 'Choose LOBSTR to connect on mobile.'
+                ? 'Choose Albedo to connect on mobile.'
                 : 'Choose a wallet to connect.',
         });
         return;
