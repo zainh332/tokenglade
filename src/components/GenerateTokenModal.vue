@@ -16,8 +16,7 @@
             leave-from="opacity-100 translate-y-0 sm:scale-100"
             leave-to="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-95">
             <DialogPanel
-              class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-white/95 shadow-lg
-+        transform-gpu will-change-[transform,opacity]">
+              class="relative w-full max-w-lg mx-4 sm:mx-0 overflow-hidden rounded-2xl border border-white/10 bg-white/95 shadow-lg transform-gpu will-change-[transform,opacity]">
               <!-- Close -->
               <div class="h-1 bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-pink-500"></div>
 
