@@ -502,12 +502,6 @@ async function handleConnect() {
             meta.blockchainTypeId
         );
         if (ok !== true) {
-            // Don’t silently bail — show a clear error so you know why it didn’t reload.
-            Swal.fire({
-                icon: 'error',
-                title: 'Could not save wallet',
-                text: 'Your wallet was connected locally but could not be saved on the server.',
-            });
             return;
         }
 
