@@ -302,8 +302,23 @@ const schema = Yup.object({
   website_url: Yup.string()
     .transform(toNullIfEmpty)
     .nullable()
-    .matches(/^https?:\/\//, 'Must start with http:// or https://')
-    .url('Enter a valid URL')
+    .test('starts-with-http', 'Must start with http:// or https://', (value) => {
+      if (value === null || value === undefined || value === '') {
+        return true;
+      }
+      return /^https?:\/\//.test(value);
+    })
+    .test('valid-url', 'Enter a valid URL', (value) => {
+      if (value === null || value === undefined || value === '') {
+        return true;
+      }
+      try {
+        new URL(value);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    })
     .max(255, 'Website URL must be at most 255 characters'),
 
   asset_code: Yup.string()
