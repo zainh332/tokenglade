@@ -4,7 +4,7 @@
     :class="{
       '-translate-y-[120%] scale-y-90': hideHeader,
       'translate-y-0 scale-y-100': !hideHeader
-    }" v-slot="{ open }">
+    }" v-slot="{ open, close }">
 
 
     <div class="max-w-6xl px-4 mx-auto sm:px-6 lg:px-8 rounded-[10rem] shadow-lg bg-white">
@@ -100,22 +100,22 @@
         <div class="max-w-6xl mx-auto px-4 py-3">
           <!-- render both internal + external links -->
           <template v-for="link in Links" :key="link.name">
-            <router-link v-if="link.to" :to="link.to"
+            <router-link v-if="link.to" :to="link.to" @click="close"
               class="block py-3 px-3 text-base font-medium text-gray-800 hover:bg-gray-50 rounded-lg">
               {{ link.name }}
             </router-link>
-            <button v-else-if="link.openBuy" type="button" @click="openBuyTkgModal"
+            <button v-else-if="link.openBuy" type="button" @click="() => { openBuyTkgModal(); close(); }"
               class="block w-full py-3 px-3 text-base font-medium text-gray-800 hover:bg-gray-50 rounded-lg text-left">
               {{ link.name }}
             </button>
           </template>
 
-          <button @click="tokenSearchModal = true"
+          <button @click="() => { tokenSearchModal = true; close(); }"
             class="w-full py-3 px-3 text-base font-medium text-gray-800 hover:bg-gray-50 rounded-lg text-left">
             Search Token
           </button>
 
-          <button v-if="!isConnected" id="walletConnected" @click="OpenWalletModal" type="button" class="w-full py-3 mt-2 text-base font-medium text-white rounded-lg
+          <button v-if="!isConnected" id="walletConnected" @click="() => { OpenWalletModal(); close(); }" type="button" class="w-full py-3 mt-2 text-base font-medium text-white rounded-lg
              bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]">
             Connect Wallet
           </button>
