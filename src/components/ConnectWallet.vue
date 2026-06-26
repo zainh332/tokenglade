@@ -175,13 +175,12 @@ function selectStellarBlockchain() {
     }
 }
 
-function applyMobileDefaults() {
-    if (!isMobileDevice()) {
-        return;
-    }
-
-    selectedWallet.value = "";
+function applyDefaults() {
     selectStellarBlockchain();
+
+    if (isMobileDevice()) {
+        selectedWallet.value = "";
+    }
 }
 
 const displayedWalletOptions = computed(() => {
@@ -221,7 +220,7 @@ async function fetchblockchains() {
 
         if (response.data.status === "success") {
             blockchainOptions.value = response.data.blockchains;
-            applyMobileDefaults();
+            applyDefaults();
         } else {
             Swal.fire({
                 icon: "error",
