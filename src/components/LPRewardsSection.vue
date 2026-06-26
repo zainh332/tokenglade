@@ -1,5 +1,5 @@
 <template>
-  <div id="lp-rewards" class="py-28 bg-[#0b0c10] border-y border-gray-800/40 relative overflow-hidden text-white transition-all duration-300">
+  <div id="lp-rewards" class="py-16 md:py-28 bg-[#0b0c10] border-y border-gray-800/40 relative overflow-hidden text-white transition-all duration-300">
     <!-- Background Glows & Slow-moving gradient animations -->
     <div class="absolute -top-40 -left-40 w-[600px] h-[600px] bg-purple-600/15 rounded-full blur-[160px] pointer-events-none animate-pulse-slow"></div>
     <div class="absolute -bottom-40 -right-40 w-[600px] h-[600px] bg-cyan-500/15 rounded-full blur-[160px] pointer-events-none animate-pulse-slow"></div>
@@ -28,7 +28,7 @@
           </div>
         </div>
 
-        <h2 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
+        <h2 class="text-3xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
           Earn Your Share of <span class="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent bg-[length:200%_200%] animate-gradientMove">16,000 TKG</span> Every Week
         </h2>
         <p class="text-gray-400 mt-6 text-lg md:text-xl font-normal max-w-3xl mx-auto leading-relaxed">
@@ -37,48 +37,48 @@
       </div>
 
       <!-- Statistics Cards with Subtle Gradient Borders & Soft Glow Effects -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
         <!-- Stat Card 1 -->
-        <div class="group relative rounded-3xl p-[1px] bg-gradient-to-br from-cyan-500/20 via-transparent to-purple-500/20 hover:from-cyan-400 hover:to-purple-500 transition-all duration-300">
-          <div class="bg-gray-950/90 rounded-[23px] p-6 min-h-[13rem] flex flex-col justify-between hover:shadow-[0_0_25px_rgba(6,182,212,0.12)] transition-all duration-300">
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest leading-normal">Total TKG Distributed</span>
-            <span class="text-3xl sm:text-4xl xl:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 font-mono tracking-tighter my-3 leading-none">
+        <div class="group relative rounded-2xl md:rounded-3xl p-[1px] bg-gradient-to-br from-cyan-500/20 via-transparent to-purple-500/20 hover:from-cyan-400 hover:to-purple-500 transition-all duration-300">
+          <div class="bg-gray-950/90 rounded-[15px] md:rounded-[23px] p-4 md:p-6 min-h-[9rem] md:min-h-[13rem] flex flex-col justify-between hover:shadow-[0_0_25px_rgba(6,182,212,0.12)] transition-all duration-300">
+            <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest leading-normal">Total TKG Distributed</span>
+            <span class="text-xl sm:text-3xl md:text-4xl xl:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 font-mono tracking-tighter my-1.5 md:my-3 leading-none">
               {{ displayTotalDistributed }}
             </span>
-            <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider leading-normal">Verified On-Chain Payouts</span>
+            <span class="text-[10px] md:text-xs text-gray-500 font-semibold uppercase tracking-wider leading-normal">Verified On-Chain Payouts</span>
           </div>
         </div>
 
         <!-- Stat Card 2 -->
-        <div class="group relative rounded-3xl p-[1px] bg-gradient-to-br from-purple-500/20 via-transparent to-pink-500/20 hover:from-purple-400 hover:to-pink-500 transition-all duration-300">
-          <div class="bg-gray-950/90 rounded-[23px] p-6 min-h-[13rem] flex flex-col justify-between hover:shadow-[0_0_25px_rgba(168,85,247,0.12)] transition-all duration-300">
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest leading-normal">LP Providers Rewarded</span>
-            <span class="text-3xl sm:text-4xl xl:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 font-mono tracking-tighter my-3 leading-none">
+        <div class="group relative rounded-2xl md:rounded-3xl p-[1px] bg-gradient-to-br from-purple-500/20 via-transparent to-pink-500/20 hover:from-purple-400 hover:to-pink-500 transition-all duration-300">
+          <div class="bg-gray-950/90 rounded-[15px] md:rounded-[23px] p-4 md:p-6 min-h-[9rem] md:min-h-[13rem] flex flex-col justify-between hover:shadow-[0_0_25px_rgba(168,85,247,0.12)] transition-all duration-300">
+            <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest leading-normal">LP Providers Rewarded</span>
+            <span class="text-xl sm:text-3xl md:text-4xl xl:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 font-mono tracking-tighter my-1.5 md:my-3 leading-none">
               {{ displayTotalWallets }}
             </span>
-            <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider leading-normal">Active Yield Participants</span>
+            <span class="text-[10px] md:text-xs text-gray-500 font-semibold uppercase tracking-wider leading-normal">Active Yield Participants</span>
           </div>
         </div>
 
         <!-- Stat Card 3 -->
-        <div class="group relative rounded-3xl p-[1px] bg-gradient-to-br from-cyan-500/20 via-transparent to-blue-500/20 hover:from-cyan-400 hover:to-blue-500 transition-all duration-300">
-          <div class="bg-gray-950/90 rounded-[23px] p-6 min-h-[13rem] flex flex-col justify-between hover:shadow-[0_0_25px_rgba(6,182,212,0.12)] transition-all duration-300">
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest leading-normal">Weekly Reward Pool</span>
-            <span class="text-3xl sm:text-4xl xl:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 font-mono tracking-tighter my-3 leading-none">
+        <div class="group relative rounded-2xl md:rounded-3xl p-[1px] bg-gradient-to-br from-cyan-500/20 via-transparent to-blue-500/20 hover:from-cyan-400 hover:to-blue-500 transition-all duration-300">
+          <div class="bg-gray-950/90 rounded-[15px] md:rounded-[23px] p-4 md:p-6 min-h-[9rem] md:min-h-[13rem] flex flex-col justify-between hover:shadow-[0_0_25px_rgba(6,182,212,0.12)] transition-all duration-300">
+            <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest leading-normal">Weekly Reward Pool</span>
+            <span class="text-xl sm:text-3xl md:text-4xl xl:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 font-mono tracking-tighter my-1.5 md:my-3 leading-none">
               {{ displayWeeklyPool }}
             </span>
-            <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider leading-normal">Distributed Every Sunday</span>
+            <span class="text-[10px] md:text-xs text-gray-500 font-semibold uppercase tracking-wider leading-normal">Distributed Every Sunday</span>
           </div>
         </div>
 
         <!-- Stat Card 4 -->
-        <div class="group relative rounded-3xl p-[1px] bg-gradient-to-br from-pink-500/20 via-transparent to-purple-500/20 hover:from-pink-400 hover:to-purple-500 transition-all duration-300">
-          <div class="bg-gray-950/90 rounded-[23px] p-6 min-h-[13rem] flex flex-col justify-between hover:shadow-[0_0_25px_rgba(236,72,153,0.12)] transition-all duration-300">
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest leading-normal">Current Week</span>
-            <span class="text-3xl sm:text-4xl xl:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 font-mono tracking-tighter my-3 leading-none">
+        <div class="group relative rounded-2xl md:rounded-3xl p-[1px] bg-gradient-to-br from-pink-500/20 via-transparent to-purple-500/20 hover:from-pink-400 hover:to-purple-500 transition-all duration-300">
+          <div class="bg-gray-950/90 rounded-[15px] md:rounded-[23px] p-4 md:p-6 min-h-[9rem] md:min-h-[13rem] flex flex-col justify-between hover:shadow-[0_0_25px_rgba(236,72,153,0.12)] transition-all duration-300">
+            <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest leading-normal">Current Week</span>
+            <span class="text-xl sm:text-3xl md:text-4xl xl:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 font-mono tracking-tighter my-1.5 md:my-3 leading-none">
               Week {{ displayWeek }}
             </span>
-            <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider leading-normal">Current Week</span>
+            <span class="text-[10px] md:text-xs text-gray-500 font-semibold uppercase tracking-wider leading-normal">Current Week</span>
           </div>
         </div>
       </div>
@@ -105,15 +105,14 @@
           Recent Distribution Events
           <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
         </h3>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+           <div class="flex overflow-x-auto pb-6 gap-6 snap-x md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-8 scrollbar-none">
           <div 
             v-for="cycle in finalCyclesList" 
             :key="cycle.week" 
-            class="bg-gray-900/40 border border-gray-800/60 rounded-3xl p-8 shadow-xl flex flex-col justify-between min-h-[240px] group hover:border-purple-500/40 hover:bg-gray-900/60 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] transition-all duration-300"
+            class="snap-start flex-shrink-0 w-[280px] md:w-auto bg-gray-900/40 border border-gray-800/60 rounded-3xl p-6 md:p-8 shadow-xl flex flex-col justify-between min-h-[200px] md:min-h-[240px] group hover:border-purple-500/40 hover:bg-gray-900/60 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] transition-all duration-300"
           >
             <div>
-              <div class="flex items-center justify-between border-b border-gray-850 pb-4 mb-6">
+              <div class="flex items-center justify-between border-b border-gray-855 pb-4 mb-6">
                 <span class="text-xs font-black text-cyan-400 uppercase tracking-widest flex items-center gap-1.5">
                   <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                   Week {{ cycle.week }}
@@ -127,7 +126,7 @@
               <div class="space-y-4">
                 <div>
                   <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block mb-1">Total Distributed</span>
-                  <span class="font-mono text-2xl font-black text-white flex items-center gap-2">
+                  <span class="font-mono text-xl md:text-2xl font-black text-white flex items-center gap-2">
                     <!-- Reward Icon -->
                     <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     {{ cycle.distributed.toLocaleString() }} TKG
@@ -153,7 +152,7 @@
       </div>
 
       <!-- Call To Action -->
-      <div class="relative rounded-[2.5rem] bg-gradient-to-br from-purple-950/40 to-indigo-950/40 border border-purple-500/20 p-10 md:p-16 text-center overflow-hidden group hover:border-purple-500/30 transition-all duration-300 shadow-[0_0_50px_rgba(168,85,247,0.05)]">
+      <div class="relative rounded-[2rem] md:rounded-[2.5rem] bg-gradient-to-br from-purple-950/40 to-indigo-950/40 border border-purple-500/20 p-6 md:p-16 text-center overflow-hidden group hover:border-purple-500/30 transition-all duration-300 shadow-[0_0_50px_rgba(168,85,247,0.05)]">
         <div class="absolute -top-32 -left-32 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute -bottom-32 -right-32 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
         
@@ -164,10 +163,10 @@
             {{ displayTotalWallets }} liquidity providers are currently earning rewards
           </div>
 
-          <h3 class="text-3xl md:text-5xl font-black mb-6 tracking-tight leading-tight text-white">
+          <h3 class="text-2xl md:text-5xl font-black mb-4 md:mb-6 tracking-tight leading-tight text-white">
             Start Earning Weekly TKG Rewards
           </h3>
-          <p class="text-base md:text-lg text-gray-300/80 mb-10 max-w-2xl leading-relaxed">
+          <p class="text-sm md:text-lg text-gray-300/80 mb-6 md:mb-10 max-w-2xl leading-relaxed">
             Join the TokenGlade liquidity program and earn your share of the 16,000 TKG weekly reward pool.
           </p>
 
@@ -176,7 +175,7 @@
             <button 
             type="button"
             @click="emit('open-add-liquidity')"
-            class="inline-flex items-center justify-center font-bold px-10 py-5 rounded-full text-white bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] hover:opacity-95 hover:scale-[1.03] active:scale-[0.97] transition transform duration-200 shadow-2xl shadow-cyan-500/30 gap-2 text-base md:text-lg uppercase tracking-wider cursor-pointer"
+            class="inline-flex items-center justify-center font-bold px-8 py-4 md:px-10 md:py-5 rounded-full text-white bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] hover:opacity-95 hover:scale-[1.03] active:scale-[0.97] transition transform duration-200 shadow-2xl shadow-cyan-500/30 gap-2 text-sm md:text-base lg:text-lg uppercase tracking-wider cursor-pointer"
           >
             <span>Start Earning TKG</span>
           </button>
@@ -293,6 +292,15 @@ watch([() => props.totalDistributed, () => props.activeProviders, () => props.we
 <style scoped>
 * {
   font-family: 'Inter', sans-serif !important;
+}
+
+/* Hide scrollbars for premium horizontal scroll */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 
 /* Float animations for premium background particles */
