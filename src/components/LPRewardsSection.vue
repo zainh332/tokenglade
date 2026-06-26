@@ -15,15 +15,15 @@
       
       <!-- Top Live Indicators Badge & Heading -->
       <div class="text-center mb-16">
-        <div class="inline-flex items-center gap-2 mb-6 p-[1.5px] rounded-full bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 shadow-[0_0_20px_rgba(168,85,247,0.25)]">
-          <div class="px-5 py-2 rounded-full bg-gray-950/95 flex items-center gap-3">
-            <span class="flex items-center gap-1.5 text-green-400 text-xs font-black uppercase tracking-widest">
-              <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
+        <div class="inline-flex items-center gap-2 mb-6 p-[1.5px] rounded-2xl sm:rounded-full bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 shadow-[0_0_20px_rgba(168,85,247,0.25)]">
+          <div class="px-4 py-2 sm:px-5 sm:py-2 rounded-[14px] sm:rounded-full bg-gray-950/95 flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+            <span class="flex items-center gap-1.5 text-green-400 text-[10px] sm:text-xs font-black uppercase tracking-widest">
+              <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-500 animate-ping"></span>
               Rewards Live
             </span>
-            <span class="w-[1px] h-3 bg-gray-800"></span>
-            <span class="text-gray-400 text-xs font-bold uppercase tracking-wider">
-              Next Distribution: Within {{ daysLeft }} Days
+            <span class="hidden sm:inline-block w-[1px] h-3 bg-gray-800"></span>
+            <span class="text-gray-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-center sm:text-left">
+              Next Distribution: <span class="bg-gradient-to-r from-amber-300 to-yellow-400 bg-clip-text text-transparent font-black">Within {{ daysLeft }} Days</span>
             </span>
           </div>
         </div>
@@ -40,9 +40,9 @@
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
         <!-- Stat Card 1 -->
         <div class="group relative rounded-2xl md:rounded-3xl p-[1px] bg-gradient-to-br from-cyan-500/20 via-transparent to-purple-500/20 hover:from-cyan-400 hover:to-purple-500 transition-all duration-300">
-          <div class="bg-gray-950/90 rounded-[15px] md:rounded-[23px] p-4 md:p-6 min-h-[9rem] md:min-h-[13rem] flex flex-col justify-between hover:shadow-[0_0_25px_rgba(6,182,212,0.12)] transition-all duration-300">
+          <div class="bg-gray-950/90 rounded-[15px] md:rounded-[23px] p-4 md:p-6 min-h-[9rem] md:min-h-[13rem] flex flex-col justify-between items-center text-center hover:shadow-[0_0_25px_rgba(6,182,212,0.12)] transition-all duration-300">
             <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest leading-normal">Total TKG Distributed</span>
-            <span class="text-xl sm:text-3xl md:text-4xl xl:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 font-mono tracking-tighter my-1.5 md:my-3 leading-none">
+            <span class="text-[16px] sm:text-2xl md:text-3xl xl:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 font-mono tracking-tighter my-1.5 md:my-3 leading-none">
               {{ displayTotalDistributed }}
             </span>
             <span class="text-[10px] md:text-xs text-gray-500 font-semibold uppercase tracking-wider leading-normal">Verified On-Chain Payouts</span>
@@ -51,9 +51,9 @@
 
         <!-- Stat Card 2 -->
         <div class="group relative rounded-2xl md:rounded-3xl p-[1px] bg-gradient-to-br from-purple-500/20 via-transparent to-pink-500/20 hover:from-purple-400 hover:to-pink-500 transition-all duration-300">
-          <div class="bg-gray-950/90 rounded-[15px] md:rounded-[23px] p-4 md:p-6 min-h-[9rem] md:min-h-[13rem] flex flex-col justify-between hover:shadow-[0_0_25px_rgba(168,85,247,0.12)] transition-all duration-300">
+          <div class="bg-gray-950/90 rounded-[15px] md:rounded-[23px] p-4 md:p-6 min-h-[9rem] md:min-h-[13rem] flex flex-col justify-between items-center text-center hover:shadow-[0_0_25px_rgba(168,85,247,0.12)] transition-all duration-300">
             <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest leading-normal">LP Providers Rewarded</span>
-            <span class="text-xl sm:text-3xl md:text-4xl xl:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 font-mono tracking-tighter my-1.5 md:my-3 leading-none">
+            <span class="text-[16px] sm:text-2xl md:text-3xl xl:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 font-mono tracking-tighter my-1.5 md:my-3 leading-none">
               {{ displayTotalWallets }}
             </span>
             <span class="text-[10px] md:text-xs text-gray-500 font-semibold uppercase tracking-wider leading-normal">Active Yield Participants</span>
@@ -62,9 +62,9 @@
 
         <!-- Stat Card 3 -->
         <div class="group relative rounded-2xl md:rounded-3xl p-[1px] bg-gradient-to-br from-cyan-500/20 via-transparent to-blue-500/20 hover:from-cyan-400 hover:to-blue-500 transition-all duration-300">
-          <div class="bg-gray-950/90 rounded-[15px] md:rounded-[23px] p-4 md:p-6 min-h-[9rem] md:min-h-[13rem] flex flex-col justify-between hover:shadow-[0_0_25px_rgba(6,182,212,0.12)] transition-all duration-300">
+          <div class="bg-gray-950/90 rounded-[15px] md:rounded-[23px] p-4 md:p-6 min-h-[9rem] md:min-h-[13rem] flex flex-col justify-between items-center text-center hover:shadow-[0_0_25px_rgba(6,182,212,0.12)] transition-all duration-300">
             <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest leading-normal">Weekly Reward Pool</span>
-            <span class="text-xl sm:text-3xl md:text-4xl xl:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 font-mono tracking-tighter my-1.5 md:my-3 leading-none">
+            <span class="text-[16px] sm:text-2xl md:text-3xl xl:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 font-mono tracking-tighter my-1.5 md:my-3 leading-none">
               {{ displayWeeklyPool }}
             </span>
             <span class="text-[10px] md:text-xs text-gray-500 font-semibold uppercase tracking-wider leading-normal">Distributed Every Sunday</span>
@@ -73,9 +73,9 @@
 
         <!-- Stat Card 4 -->
         <div class="group relative rounded-2xl md:rounded-3xl p-[1px] bg-gradient-to-br from-pink-500/20 via-transparent to-purple-500/20 hover:from-pink-400 hover:to-purple-500 transition-all duration-300">
-          <div class="bg-gray-950/90 rounded-[15px] md:rounded-[23px] p-4 md:p-6 min-h-[9rem] md:min-h-[13rem] flex flex-col justify-between hover:shadow-[0_0_25px_rgba(236,72,153,0.12)] transition-all duration-300">
+          <div class="bg-gray-950/90 rounded-[15px] md:rounded-[23px] p-4 md:p-6 min-h-[9rem] md:min-h-[13rem] flex flex-col justify-between items-center text-center hover:shadow-[0_0_25px_rgba(236,72,153,0.12)] transition-all duration-300">
             <span class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest leading-normal">Current Week</span>
-            <span class="text-xl sm:text-3xl md:text-4xl xl:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 font-mono tracking-tighter my-1.5 md:my-3 leading-none">
+            <span class="text-[16px] sm:text-2xl md:text-3xl xl:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 font-mono tracking-tighter my-1.5 md:my-3 leading-none">
               Week {{ displayWeek }}
             </span>
             <span class="text-[10px] md:text-xs text-gray-500 font-semibold uppercase tracking-wider leading-normal">Current Week</span>
