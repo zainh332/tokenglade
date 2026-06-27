@@ -54,7 +54,7 @@
 
           <!-- Navigation -->
           <div>
-            <h3 class="mb-4 text-sm font-semibold text-black">
+            <h3 class="mb-4 text-sm font-semibold text-white">
               Navigation
             </h3>
 
@@ -70,7 +70,7 @@
 
           <!-- Legal -->
           <div>
-            <h3 class="mb-4 text-sm font-semibold text-black">
+            <h3 class="mb-4 text-sm font-semibold text-white">
               Legal
             </h3>
 
@@ -87,7 +87,7 @@
 
           <!-- Contact -->
           <div>
-            <h3 class="mb-4 text-sm font-semibold text-black">
+            <h3 class="mb-4 text-sm font-semibold text-white">
               Contact
             </h3>
 

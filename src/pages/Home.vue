@@ -1,68 +1,81 @@
 <template>
-  <div class="smooth-scroll-wrapper bg-[#0b0c10] min-h-screen text-white font-sans selection:bg-purple-500/30 selection:text-white">
+  <div
+    class="smooth-scroll-wrapper bg-[#0B1020] min-h-screen text-white font-sans selection:bg-purple-500/30 selection:text-white">
     <Header @wallet-status="handleWalletStatus" />
-    
-    <!-- Hero Section with Deep DeFi Glow Effects -->
-    <div id="explore" class="relative overflow-hidden pt-36 pb-20 lg:pt-44 lg:pb-28">
-      <!-- Glow gradients -->
-      <div class="absolute -top-40 -left-40 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[160px] pointer-events-none animate-pulse-slow"></div>
-      <div class="absolute -bottom-40 -right-40 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[160px] pointer-events-none animate-pulse-slow"></div>
+
+    <!-- SECTION 1 (DARK): Hero, Search, and Statistics Grid -->
+    <div id="explore" class="relative overflow-hidden pt-36 pb-16 lg:pt-44 lg:pb-24 bg-[#0B1020]">
+      <!-- Blue Radial Glow Lighting treatment for Hero -->
+      <div
+        class="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[150px] pointer-events-none animate-pulse-slow">
+      </div>
+      <div
+        class="absolute -bottom-40 left-10 w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-[140px] pointer-events-none animate-pulse-slow">
+      </div>
+      <!-- Floating brand particles -->
+      <div class="absolute top-20 left-1/3 w-2 h-2 rounded-full bg-cyan-400/20 blur-[1px] animate-float-1"></div>
+      <div class="absolute bottom-10 right-1/4 w-3 h-3 rounded-full bg-purple-500/20 blur-[1.5px] animate-float-2">
+      </div>
 
       <div class="max-w-6xl mx-auto px-6 relative z-10">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
+
           <!-- Hero Left Content -->
           <div class="lg:col-span-7 text-center lg:text-left space-y-6">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border border-purple-500/20 text-xs font-black uppercase tracking-widest text-purple-400">
-              <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-ping"></span>
-              Stellar Ecosystem Dashboard
-            </span>
+
             <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight text-white tracking-tight">
               The Home of the <br />
-              <span class="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent bg-[length:200%_200%] animate-gradientMove">
+              <span
+                class="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent bg-[length:200%_200%] animate-gradientMove">
                 Stellar Ecosystem
               </span>
             </h1>
-            <p class="text-gray-400 text-lg md:text-xl font-normal leading-relaxed max-w-xl mx-auto lg:mx-0">
-              Create tokens, discover liquidity, track portfolios, analyze markets, and earn rewards.
+            <p class="text-gray-450 text-lg md:text-xl font-normal leading-relaxed max-w-xl mx-auto lg:mx-0">
+              Create tokens, discover liquidity, track portfolios, analyze markets, and earn rewards on Stellar.
             </p>
 
-            <!-- Expanded Search Bar (Etherscan/Arkham style) -->
+            <!-- Expanded Search Bar (Premium Dark Etherscan/Arkham style) -->
             <div class="relative max-w-2xl mx-auto lg:mx-0 group">
-              <div class="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
-              <div class="relative bg-gray-950/90 border border-gray-800 rounded-2xl flex items-center p-2 pl-5 shadow-2xl">
-                <svg class="w-5 h-5 text-gray-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              <div
+                class="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-300">
+              </div>
+              <div
+                class="relative bg-gray-950/90 border border-gray-800 rounded-2xl flex items-center p-2 pl-5 shadow-2xl">
+                <svg class="w-5 h-5 text-gray-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
-                <input 
-                  type="text" 
-                  v-model="searchQuery" 
+                <input type="text" v-model="searchQuery"
                   class="bg-transparent w-full border-none focus:outline-none text-white text-sm placeholder-gray-500 mr-4"
-                  placeholder="Search Tokens, Wallets (G...), Transactions, Pools..."
-                />
-                <button 
-                  @click="triggerSearch" 
-                  class="bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl hover:opacity-95 active:scale-95 transition-all duration-200"
-                >
+                  placeholder="Search Tokens, Wallets (G...), Transactions, Pools..." />
+                <button @click="triggerSearch"
+                  class="bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl hover:opacity-95 active:scale-95 transition-all duration-200">
                   Search
                 </button>
               </div>
 
               <!-- Search Results Dropdown -->
-              <div v-if="searchQuery.trim().length > 0" class="absolute left-0 right-0 mt-3 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-2xl z-20 space-y-2 max-h-[300px] overflow-y-auto">
-                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-2">Search Results</p>
-                
+              <div v-if="searchQuery.trim().length > 0"
+                class="absolute left-0 right-0 mt-3 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-2xl z-20 space-y-2 max-h-[300px] overflow-y-auto">
+                <p class="text-[10px] text-gray-555 font-bold uppercase tracking-wider mb-2">Search Results</p>
+
                 <!-- Wallet Detection -->
-                <div v-if="detectedWallet" class="p-2 hover:bg-gray-900 rounded-xl cursor-pointer transition flex items-center justify-between" @click="selectSearchWallet(detectedWallet)">
+                <div v-if="detectedWallet"
+                  class="p-2 hover:bg-gray-900 rounded-xl cursor-pointer transition flex items-center justify-between"
+                  @click="selectSearchWallet(detectedWallet)">
                   <div class="flex items-center gap-2">
                     <span class="text-purple-400">👤</span>
-                    <span class="text-xs font-bold text-white">Wallet Profile: {{ shortenAddress(detectedWallet) }}</span>
+                    <span class="text-xs font-bold text-white">Wallet Profile: {{ shortenAddress(detectedWallet)
+                      }}</span>
                   </div>
                   <span class="text-[10px] text-gray-500 uppercase">Stellar Address</span>
                 </div>
 
                 <!-- Transaction Detection -->
-                <div v-if="detectedTx" class="p-2 hover:bg-gray-900 rounded-xl cursor-pointer transition flex items-center justify-between" @click="selectSearchTx(detectedTx)">
+                <div v-if="detectedTx"
+                  class="p-2 hover:bg-gray-900 rounded-xl cursor-pointer transition flex items-center justify-between"
+                  @click="selectSearchTx(detectedTx)">
                   <div class="flex items-center gap-2">
                     <span class="text-cyan-400">📄</span>
                     <span class="text-xs font-bold text-white">Transaction: {{ detectedTx.slice(0, 16) }}...</span>
@@ -71,22 +84,21 @@
                 </div>
 
                 <!-- Regular tokens filtering -->
-                <div v-if="filteredTokens.length === 0 && !detectedWallet && !detectedTx" class="text-xs text-gray-400 py-2">
+                <div v-if="filteredTokens.length === 0 && !detectedWallet && !detectedTx"
+                  class="text-xs text-gray-400 py-2">
                   No matching results found for "{{ searchQuery }}"
                 </div>
-                
-                <div 
-                  v-for="t in filteredTokens" 
-                  :key="t.name" 
+
+                <div v-for="t in filteredTokens" :key="t.name"
                   class="flex items-center justify-between p-2 hover:bg-gray-900 rounded-xl cursor-pointer transition"
-                  @click="selectSearchToken(t)"
-                >
+                  @click="selectSearchToken(t)">
                   <div class="flex items-center gap-2">
-                    <span class="w-6 h-6 rounded-full bg-gray-900 flex items-center justify-center text-[10px] font-black text-cyan-400 border border-gray-800">
+                    <span
+                      class="w-6 h-6 rounded-full bg-gray-900 flex items-center justify-center text-[10px] font-black text-cyan-400 border border-gray-800">
                       {{ t.symbol }}
                     </span>
                     <span class="text-xs font-bold text-white">{{ t.name }}</span>
-                    <span class="text-[10px] text-gray-500 uppercase">{{ t.symbol }}</span>
+                    <span class="text-[10px] text-gray-500 uppercase font-semibold">{{ t.symbol }}</span>
                   </div>
                   <span class="text-xs text-cyan-400 font-mono font-bold">${{ t.price.toFixed(4) }}</span>
                 </div>
@@ -95,49 +107,44 @@
 
             <!-- CTA Buttons -->
             <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
-              <a 
-                href="#tokens"
-                class="w-full sm:w-auto inline-flex items-center justify-center font-black text-xs uppercase tracking-widest px-8 py-4 rounded-full text-white bg-[linear-gradient(90deg,rgba(168,85,247,1),rgba(6,182,212,1),rgba(34,211,238,1))] hover:opacity-95 hover:scale-[1.03] active:scale-[0.97] transition-all transform duration-200 shadow-xl shadow-cyan-500/20"
-              >
+              <a href="#tokens"
+                class="w-full sm:w-auto inline-flex items-center justify-center font-black text-xs uppercase tracking-widest px-8 py-4 rounded-full text-white bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-95 hover:scale-[1.03] active:scale-[0.97] transition-all transform duration-200 shadow-xl shadow-cyan-500/20">
                 Explore Ecosystem
               </a>
-              <button 
-                type="button" 
-                @click="isWalletConnected ? openTokenModal() : openConnectWalletModal()"
-                class="w-full sm:w-auto inline-flex items-center justify-center font-black text-xs uppercase tracking-widest px-8 py-4 rounded-full text-gray-300 border border-gray-800 hover:border-purple-500/30 hover:bg-gray-900/60 hover:text-white hover:scale-[1.03] active:scale-[0.97] transition-all transform duration-200"
-              >
+              <button type="button" @click="isWalletConnected ? openTokenModal() : openConnectWalletModal()"
+                class="w-full sm:w-auto inline-flex items-center justify-center font-black text-xs uppercase tracking-widest px-8 py-4 rounded-full text-gray-300 border border-gray-800 hover:border-purple-500/30 hover:bg-gray-900/60 hover:text-white hover:scale-[1.03] active:scale-[0.97] transition-all transform duration-200">
                 Launch Token
               </button>
             </div>
 
-            <!-- Trust Line -->
-            <p class="text-xs text-gray-500 flex items-center justify-center lg:justify-start gap-2 font-bold uppercase tracking-wider">
-              <span class="text-green-500 text-lg">✓</span> 72,000+ TKG distributed to liquidity providers.
-            </p>
           </div>
 
-          <!-- Hero Right Content (Conditional Wallet Analytics OR Blockchain Graph Animation) -->
+          <!-- Hero Right Content: Premium Dark Glass Card / Constellation -->
           <div class="lg:col-span-5 relative flex items-center justify-center">
-            <div class="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-cyan-500/10 rounded-full blur-3xl -z-10 scale-90"></div>
-            
+            <div
+              class="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-cyan-500/10 rounded-full blur-3xl -z-10 scale-90">
+            </div>
+
             <!-- CONNECTED: Show Real Wallet Analytics -->
-            <div 
-              v-if="isWalletConnected"
-              class="w-full max-w-[420px] bg-gray-950/80 border border-purple-500/30 rounded-[2rem] p-6 shadow-2xl space-y-5 relative overflow-hidden group hover:border-purple-500/50 transition duration-300 animate-fade-in"
-            >
-              <div class="absolute -right-20 -top-20 w-44 h-44 bg-purple-500/5 rounded-full blur-2xl pointer-events-none"></div>
-              
+            <div v-if="isWalletConnected"
+              class="w-full max-w-[420px] bg-gray-950/80 border border-purple-500/30 rounded-[2rem] p-6 shadow-2xl space-y-5 relative overflow-hidden group hover:border-purple-500/50 transition duration-300 animate-fade-in">
+              <div
+                class="absolute -right-20 -top-20 w-44 h-44 bg-purple-500/5 rounded-full blur-2xl pointer-events-none">
+              </div>
+
               <div class="flex items-center justify-between pb-3 border-b border-gray-900">
                 <div class="flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
-                  <span class="text-xs text-cyan-400 font-extrabold uppercase tracking-widest">Ecosystem Wallet Active</span>
+                  <span class="text-xs text-cyan-400 font-extrabold uppercase tracking-widest">Ecosystem Wallet
+                    Active</span>
                 </div>
                 <span class="text-[10px] text-gray-500 font-mono">{{ shortenAddress(walletKey) }}</span>
               </div>
 
               <!-- Portfolio Net Worth -->
               <div class="space-y-1">
-                <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Estimated Portfolio Value</span>
+                <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Estimated Portfolio
+                  Value</span>
                 <h3 class="text-3xl font-black text-white font-mono">$1,485.50</h3>
                 <span class="text-[10px] text-green-400 font-bold font-mono">Connected on Stellar public net</span>
               </div>
@@ -150,7 +157,7 @@
                     <span class="font-bold text-gray-300">TKG Tokens</span>
                     <span class="font-mono font-bold text-white">12,500 TKG</span>
                   </div>
-                  <div class="flex justify-between items-center bg-gray-900/30 p-2 rounded-xl border border-gray-850">
+                  <div class="flex justify-between items-center bg-gray-900/30 p-2 rounded-xl border border-gray-855">
                     <span class="font-bold text-gray-300">Stellar XLM</span>
                     <span class="font-mono font-bold text-white">3,200 XLM</span>
                   </div>
@@ -170,13 +177,12 @@
               </div>
             </div>
 
-            <!-- DISCONNECTED: Show Premium Blockchain Constellation Network Graph -->
-            <div 
-              v-else 
-              class="w-full max-w-[420px] bg-gray-950/60 border border-gray-850 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden flex flex-col items-center justify-center min-h-[340px] group hover:border-cyan-500/20 transition-all duration-500"
-            >
+            <!-- DISCONNECTED: Show Constellation Network Graph -->
+            <div v-else
+              class="w-full max-w-[420px] bg-gray-950/60 border border-gray-850 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden flex flex-col items-center justify-center min-h-[340px] group hover:border-cyan-500/20 transition-all duration-500">
               <!-- Glowing blockchain nodes background SVG -->
-              <svg class="absolute inset-0 w-full h-full opacity-60 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <svg class="absolute inset-0 w-full h-full opacity-60 pointer-events-none" viewBox="0 0 100 100"
+                preserveAspectRatio="none">
                 <!-- Lines linking nodes -->
                 <line x1="20" y1="20" x2="50" y2="40" stroke="rgba(168,85,247,0.15)" stroke-width="0.5" />
                 <line x1="50" y1="40" x2="80" y2="30" stroke="rgba(6,182,212,0.15)" stroke-width="0.5" />
@@ -188,30 +194,27 @@
                 <!-- Nodes -->
                 <circle cx="20" cy="20" r="2.5" fill="#a855f7" class="animate-pulse" />
                 <circle cx="80" cy="30" r="3" fill="#06b6d4" class="animate-pulse" />
-                <circle cx="50" cy="40" r="4" fill="#a855f7" class="animate-pulse" />
                 <circle cx="30" cy="70" r="3.5" fill="#ec4899" class="animate-pulse" />
-                <circle cx="70" cy="80" r="3" fill="#06b6d4" class="animate-pulse" />
               </svg>
 
               <!-- Central glowing orbital ring logo symbol -->
               <div class="relative w-28 h-28 flex items-center justify-center mb-6">
                 <div class="absolute inset-0 rounded-full border border-dashed border-cyan-500/30 animate-spin-slow"></div>
                 <div class="absolute inset-2 rounded-full border border-purple-500/20 animate-spin-reverse"></div>
-                <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-cyan-400 to-purple-500 flex items-center justify-center shadow-[0_0_30px_rgba(6,182,212,0.4)] relative">
+                <div class="w-16 h-16 rounded-full flex items-center justify-center ] relative">
                   <img :src="logo" alt="TokenGlade Logo" /> 
                 </div>
               </div>
 
               <div class="text-center space-y-2 relative z-10">
                 <h4 class="text-sm font-extrabold uppercase tracking-widest text-cyan-400">Discover Stellar Network</h4>
-                <p class="text-xs text-gray-400 max-w-[280px] mx-auto leading-relaxed">
-                  Connect your wallet to analyze personal portfolios, claim LP rewards, and launch custom trustline assets.
+                <p class="text-xs text-white-400 max-w-[280px] mx-auto leading-relaxed">
+                  Connect your wallet to analyze personal portfolios, claim LP rewards, and launch custom trustline
+                  assets.
                 </p>
-                <button 
-                  @click="openConnectWalletModal" 
-                  class="mt-4 inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-gray-900 border border-gray-800 text-xs font-black uppercase tracking-widest text-white hover:bg-gray-850 hover:border-cyan-500/30 transition-all duration-200 shadow-md"
-                >
-                  🚀 Connect Wallet
+                <button @click="openConnectWalletModal"
+                  class="mt-4 inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-gray-900 border border-gray-800 text-xs font-black uppercase tracking-widest text-white hover:bg-gray-850 hover:border-cyan-500/30 transition-all duration-200 shadow-md">
+                   Connect Wallet
                 </button>
               </div>
             </div>
@@ -219,552 +222,536 @@
 
         </div>
       </div>
-    </div>
 
-    <!-- Global Market Overview -->
-    <div id="analytics" class="max-w-6xl mx-auto px-6 mb-16">
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-        <!-- Card 1: Tokens Created -->
-        <div class="group relative bg-gray-950 border border-gray-850 hover:border-cyan-500/20 rounded-2xl p-5 flex flex-col justify-between h-32 shadow-xl transition-all duration-300">
-          <div class="flex items-center justify-between">
-            <span class="text-[9px] text-gray-400 uppercase font-black tracking-wider">Created Tokens</span>
-            <div class="relative cursor-pointer text-gray-600 hover:text-gray-400 group/info">
-              <span class="text-[10px]">ℹ</span>
-              <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2.5 rounded-xl bg-gray-900 border border-gray-800 text-[10px] text-gray-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200 z-30 leading-normal pointer-events-none shadow-2xl">
-                Tokens successfully launched using TokenGlade's no-code creation interface.
-              </div>
-            </div>
-          </div>
-          <span class="text-2xl font-black text-white font-mono leading-none">{{ displayTotalTokens }}</span>
-          <div class="flex justify-between items-center text-[9px] text-gray-500 font-bold">
-            <span class="text-[8px] uppercase tracking-wider text-cyan-400/80">TokenGlade DB</span>
-            <span>Minted Assets</span>
-          </div>
-        </div>
-
-        <!-- Card 2: Verified Projects -->
-        <div class="group relative bg-gray-950 border border-gray-850 hover:border-purple-500/20 rounded-2xl p-5 flex flex-col justify-between h-32 shadow-xl transition-all duration-300">
-          <div class="flex items-center justify-between">
-            <span class="text-[9px] text-gray-400 uppercase font-black tracking-wider">Verified Projects</span>
-            <div class="relative cursor-pointer text-gray-600 hover:text-gray-400 group/info">
-              <span class="text-[10px]">ℹ</span>
-              <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2.5 rounded-xl bg-gray-900 border border-gray-800 text-[10px] text-gray-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200 z-30 leading-normal pointer-events-none shadow-2xl">
-                Active Stellar projects fully verified by the TokenGlade verification committee.
-              </div>
-            </div>
-          </div>
-          <span class="text-2xl font-black text-white font-mono leading-none">4</span>
-          <div class="flex justify-between items-center text-[9px] text-gray-500 font-bold">
-            <span class="text-[8px] uppercase tracking-wider text-purple-400/80">Committee Logs</span>
-            <span>Active Listings</span>
-          </div>
-        </div>
-
-        <!-- Card 3: Weekly Rewards -->
-        <div class="group relative bg-gray-950 border border-gray-850 hover:border-cyan-500/20 rounded-2xl p-5 flex flex-col justify-between h-32 shadow-xl transition-all duration-300">
-          <div class="flex items-center justify-between">
-            <span class="text-[9px] text-gray-400 uppercase font-black tracking-wider">Weekly Rewards</span>
-            <div class="relative cursor-pointer text-gray-600 hover:text-gray-400 group/info">
-              <span class="text-[10px]">ℹ</span>
-              <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2.5 rounded-xl bg-gray-900 border border-gray-800 text-[10px] text-gray-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200 z-30 leading-normal pointer-events-none shadow-2xl">
-                TKG tokens distributed dynamically to active liquidity providers every Sunday.
-              </div>
-            </div>
-          </div>
-          <span class="text-2xl font-black text-white font-mono leading-none">16K TKG</span>
-          <div class="flex justify-between items-center text-[9px] text-gray-500 font-bold">
-            <span class="text-[8px] uppercase tracking-wider text-cyan-400/80">Settings Config</span>
-            <span>Weekly Pool</span>
-          </div>
-        </div>
-
-        <!-- Card 4: Total Distributed -->
-        <div class="group relative bg-gray-950 border border-gray-850 hover:border-purple-500/20 rounded-2xl p-5 flex flex-col justify-between h-32 shadow-xl transition-all duration-300">
-          <div class="flex items-center justify-between">
-            <span class="text-[9px] text-gray-400 uppercase font-black tracking-wider">Total Rewards Paid</span>
-            <div class="relative cursor-pointer text-gray-600 hover:text-gray-400 group/info">
-              <span class="text-[10px]">ℹ</span>
-              <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2.5 rounded-xl bg-gray-900 border border-gray-800 text-[10px] text-gray-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200 z-30 leading-normal pointer-events-none shadow-2xl">
-                Cumulative rewards sent to verified on-chain liquidity providers since epoch start.
-              </div>
-            </div>
-          </div>
-          <span class="text-2xl font-black text-white font-mono leading-none">72K TKG</span>
-          <div class="flex justify-between items-center text-[9px] text-gray-500 font-bold">
-            <span class="text-[8px] uppercase tracking-wider text-purple-400/80">Stellar Ledger</span>
-            <span>Accumulated</span>
-          </div>
-        </div>
-
-        <!-- Card 5: Wallets Rewarded -->
-        <div class="group relative bg-gray-950 border border-gray-850 hover:border-cyan-500/20 rounded-2xl p-5 flex flex-col justify-between h-32 shadow-xl transition-all duration-300">
-          <div class="flex items-center justify-between">
-            <span class="text-[9px] text-gray-400 uppercase font-black tracking-wider">Rewarded Wallets</span>
-            <div class="relative cursor-pointer text-gray-600 hover:text-gray-400 group/info">
-              <span class="text-[10px]">ℹ</span>
-              <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2.5 rounded-xl bg-gray-900 border border-gray-800 text-[10px] text-gray-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200 z-30 leading-normal pointer-events-none shadow-2xl">
-                Unique stakers and LP provider addresses currently rewarded under active rules.
-              </div>
-            </div>
-          </div>
-          <span class="text-2xl font-black text-white font-mono leading-none">9</span>
-          <div class="flex justify-between items-center text-[9px] text-gray-500 font-bold">
-            <span class="text-[8px] uppercase tracking-wider text-cyan-400/80">Stellar Ledger</span>
-            <span>Unique Addresses</span>
-          </div>
-        </div>
-
-        <!-- Card 6: Supported Pools -->
-        <div class="group relative bg-gray-950 border border-gray-850 hover:border-purple-500/20 rounded-2xl p-5 flex flex-col justify-between h-32 shadow-xl transition-all duration-300">
-          <div class="flex items-center justify-between">
-            <span class="text-[9px] text-gray-400 uppercase font-black tracking-wider">Tracked Pools</span>
-            <div class="relative cursor-pointer text-gray-600 hover:text-gray-400 group/info">
-              <span class="text-[10px]">ℹ</span>
-              <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2.5 rounded-xl bg-gray-900 border border-gray-800 text-[10px] text-gray-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200 z-30 leading-normal pointer-events-none shadow-2xl">
-                Liquidity pools currently eligible for weekly TKG snapshot yield distribution payouts.
-              </div>
-            </div>
-          </div>
-          <span class="text-2xl font-black text-white font-mono leading-none">4 Pairs</span>
-          <div class="flex justify-between items-center text-[9px] text-gray-500 font-bold">
-            <span class="text-[8px] uppercase tracking-wider text-purple-400/80">Settings Config</span>
-            <span>Supported Pools</span>
-          </div>
-        </div>
-      </div>
-      <!-- Live ticker refresh status -->
-      <div class="text-right mt-3 text-[10px] text-gray-500 font-bold uppercase tracking-wider">
-        Updated {{ lastUpdatedSec }} seconds ago
-      </div>
-    </div>
-
-    <!-- Market Highlights & Live Activity Feeds -->
-    <div class="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 mb-20">
-      
-      <!-- Market Highlights Section (5 Columns) -->
-      <div class="lg:col-span-5 bg-gray-950 border border-gray-850 rounded-3xl p-6 shadow-2xl flex flex-col justify-between group hover:border-purple-500/20 transition-all duration-300">
-        <div>
-          <div class="flex items-center justify-between pb-3 border-b border-gray-900 mb-4">
-            <span class="text-xs text-cyan-400 uppercase font-black tracking-widest flex items-center gap-1">
-              ⚡ Market Highlights
-            </span>
-            <span class="px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 text-[9px] font-black uppercase tracking-wider">REAL-TIME</span>
-          </div>
-          
-          <div class="grid grid-cols-2 gap-4">
-            <div class="bg-gray-900/30 border border-gray-850 rounded-2xl p-4 flex flex-col justify-between h-20">
-              <span class="text-[9px] text-gray-500 uppercase font-bold tracking-wider">New Tokens Today</span>
-              <span class="text-base font-black text-white font-mono">3 Tokens</span>
-            </div>
-            <div class="bg-gray-900/30 border border-gray-850 rounded-2xl p-4 flex flex-col justify-between h-20">
-              <span class="text-[9px] text-gray-500 uppercase font-bold tracking-wider">New Pools Today</span>
-              <span class="text-base font-black text-white font-mono">1 Active</span>
-            </div>
-            <div class="bg-gray-900/30 border border-gray-850 rounded-2xl p-4 flex flex-col justify-between h-20">
-              <span class="text-[9px] text-gray-500 uppercase font-bold tracking-wider">Largest Swap Today</span>
-              <span class="text-xs font-black text-green-400 font-mono">34,200 USDC</span>
-            </div>
-            <div class="bg-gray-900/30 border border-gray-850 rounded-2xl p-4 flex flex-col justify-between h-20">
-              <span class="text-[9px] text-gray-500 uppercase font-bold tracking-wider">Most Traded Token</span>
-              <span class="text-base font-black text-cyan-400 font-mono">AQUA</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="border-t border-gray-900 pt-4 mt-6 flex justify-between items-center text-xs">
-          <span class="text-gray-500 uppercase text-[9px] font-bold">Weekly Distribution</span>
-          <span class="font-mono text-purple-400 font-black">16,000 TKG Pool active</span>
-        </div>
-      </div>
-
-      <!-- Live Activity Feed & Swaps (7 Columns) -->
-      <div id="activity" class="lg:col-span-7 bg-gray-950 border border-gray-850 rounded-3xl p-6 shadow-2xl flex flex-col justify-between min-h-[300px]">
-        <div>
-          <div class="flex items-center justify-between pb-4 border-b border-gray-900 mb-4">
-            <span class="text-xs text-gray-400 uppercase font-black tracking-widest flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping"></span>
-              Live Ecosystem Activity Feed
-            </span>
-            <span class="text-[10px] text-gray-500 uppercase font-semibold">Auto-refresh active</span>
-          </div>
-          
-          <div class="space-y-3 min-h-[180px]">
-            <TransitionGroup name="list">
-              <div 
-                v-for="act in activityFeed" 
-                :key="act.id" 
-                class="flex items-center justify-between p-2.5 bg-gray-900/30 border border-gray-850 rounded-xl hover:border-gray-800 transition text-xs"
-              >
-                <div class="flex items-center gap-2.5">
-                  <!-- Small blockchain emoji/icons -->
-                  <span class="text-base">
-                    <span v-if="act.type === 'MINT'">🪙</span>
-                    <span v-else-if="act.type === 'SWAP'">🔄</span>
-                    <span v-else-if="act.type === 'LIQUIDITY'">💧</span>
-                    <span v-else-if="act.type === 'REWARD'">🎁</span>
-                  </span>
-                  <span 
-                    class="px-2 py-0.5 rounded text-[9px] uppercase font-black tracking-wider"
-                    :class="{
-                      'bg-purple-500/10 text-purple-400 border border-purple-500/20': act.type === 'MINT',
-                      'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20': act.type === 'SWAP',
-                      'bg-green-500/10 text-green-400 border border-green-500/20': act.type === 'LIQUIDITY',
-                      'bg-pink-500/10 text-pink-400 border border-pink-500/20': act.type === 'REWARD'
-                    }"
-                  >
-                    {{ act.type }}
-                  </span>
-                  <span class="text-gray-300 font-medium">{{ act.message }}</span>
+      <!-- Statistics Section Grid (Placed inside Section 1 Dark) -->
+      <div id="analytics" class="max-w-6xl mx-auto px-6 pt-8 mb-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+          <!-- Card 1 -->
+          <div
+            class="group relative bg-gray-950/80 border border-gray-850 hover:border-cyan-500/20 rounded-2xl p-5 flex flex-col justify-between h-32 shadow-xl transition-all duration-300 text-white">
+            <div class="flex items-center justify-between">
+              <span class="text-[9px] text-gray-400 uppercase font-black tracking-wider">Created Tokens</span>
+              <div class="relative cursor-pointer text-gray-650 hover:text-gray-400 group/info">
+                <span class="text-[10px]">ℹ</span>
+                <div
+                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2.5 rounded-xl bg-gray-900 border border-gray-800 text-[10px] text-gray-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200 z-30 leading-normal pointer-events-none shadow-2xl">
+                  Tokens successfully launched using TokenGlade's no-code creation interface.
                 </div>
-                <span class="text-gray-500 font-mono text-[10px]">{{ act.time }}</span>
               </div>
-            </TransitionGroup>
+            </div>
+            <span
+              class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 font-mono leading-none">{{
+              displayTotalTokens }}</span>
+            <div class="flex justify-between items-center text-[9px] text-gray-500 font-bold">
+              <span class="text-[8px] uppercase tracking-wider text-cyan-400/80">TokenGlade DB</span>
+              <span>Minted Assets</span>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div
+            class="group relative bg-gray-950/80 border border-gray-850 hover:border-purple-500/20 rounded-2xl p-5 flex flex-col justify-between h-32 shadow-xl transition-all duration-300 text-white">
+            <div class="flex items-center justify-between">
+              <span class="text-[9px] text-gray-400 uppercase font-black tracking-wider">Verified Projects</span>
+              <div class="relative cursor-pointer text-gray-655 hover:text-gray-400 group/info">
+                <span class="text-[10px]">ℹ</span>
+                <div
+                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2.5 rounded-xl bg-gray-900 border border-gray-800 text-[10px] text-gray-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200 z-30 leading-normal pointer-events-none shadow-2xl">
+                  Active Stellar projects fully verified by the TokenGlade verification committee.
+                </div>
+              </div>
+            </div>
+            <span
+              class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 font-mono leading-none">4</span>
+            <div class="flex justify-between items-center text-[9px] text-gray-500 font-bold">
+              <span class="text-[8px] uppercase tracking-wider text-purple-400/80">Committee Logs</span>
+              <span>Active Listings</span>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div
+            class="group relative bg-gray-950/80 border border-gray-850 hover:border-cyan-500/20 rounded-2xl p-5 flex flex-col justify-between h-32 shadow-xl transition-all duration-300 text-white">
+            <div class="flex items-center justify-between">
+              <span class="text-[9px] text-gray-400 uppercase font-black tracking-wider">Weekly Rewards</span>
+              <div class="relative cursor-pointer text-gray-655 hover:text-gray-400 group/info">
+                <span class="text-[10px]">ℹ</span>
+                <div
+                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2.5 rounded-xl bg-gray-900 border border-gray-800 text-[10px] text-gray-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200 z-30 leading-normal pointer-events-none shadow-2xl">
+                  TKG tokens distributed dynamically to active liquidity providers every Sunday.
+                </div>
+              </div>
+            </div>
+            <span
+              class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 font-mono leading-none">16K
+              TKG</span>
+            <div class="flex justify-between items-center text-[9px] text-gray-500 font-bold">
+              <span class="text-[8px] uppercase tracking-wider text-cyan-400/80">Settings Config</span>
+              <span>Weekly Pool</span>
+            </div>
+          </div>
+
+          <!-- Card 4 -->
+          <div
+            class="group relative bg-gray-950/80 border border-gray-850 hover:border-purple-500/20 rounded-2xl p-5 flex flex-col justify-between h-32 shadow-xl transition-all duration-300 text-white">
+            <div class="flex items-center justify-between">
+              <span class="text-[9px] text-gray-400 uppercase font-black tracking-wider">Total Rewards Paid</span>
+              <div class="relative cursor-pointer text-gray-655 hover:text-gray-400 group/info">
+                <span class="text-[10px]">ℹ</span>
+                <div
+                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2.5 rounded-xl bg-gray-900 border border-gray-800 text-[10px] text-gray-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200 z-30 leading-normal pointer-events-none shadow-2xl">
+                  Cumulative rewards sent to verified on-chain liquidity providers since epoch start.
+                </div>
+              </div>
+            </div>
+            <span
+              class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 font-mono leading-none">72K
+              TKG</span>
+            <div class="flex justify-between items-center text-[9px] text-gray-500 font-bold">
+              <span class="text-[8px] uppercase tracking-wider text-purple-400/80">Stellar Ledger</span>
+              <span>Accumulated</span>
+            </div>
+          </div>
+
+          <!-- Card 5 -->
+          <div
+            class="group relative bg-gray-950/80 border border-gray-850 hover:border-cyan-500/20 rounded-2xl p-5 flex flex-col justify-between h-32 shadow-xl transition-all duration-300 text-white">
+            <div class="flex items-center justify-between">
+              <span class="text-[9px] text-gray-400 uppercase font-black tracking-wider">Rewarded Wallets</span>
+              <div class="relative cursor-pointer text-gray-655 hover:text-gray-400 group/info">
+                <span class="text-[10px]">ℹ</span>
+                <div
+                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2.5 rounded-xl bg-gray-900 border border-gray-800 text-[10px] text-gray-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200 z-30 leading-normal pointer-events-none shadow-2xl">
+                  Unique stakers and LP provider addresses currently rewarded under active rules.
+                </div>
+              </div>
+            </div>
+            <span
+              class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 font-mono leading-none">9</span>
+            <div class="flex justify-between items-center text-[9px] text-gray-500 font-bold">
+              <span class="text-[8px] uppercase tracking-wider text-cyan-400/80">Stellar Ledger</span>
+              <span>Unique Addresses</span>
+            </div>
+          </div>
+
+          <!-- Card 6 -->
+          <div
+            class="group relative bg-gray-950/80 border border-gray-850 hover:border-purple-500/20 rounded-2xl p-5 flex flex-col justify-between h-32 shadow-xl transition-all duration-300 text-white">
+            <div class="flex items-center justify-between">
+              <span class="text-[9px] text-gray-400 uppercase font-black tracking-wider">Tracked Pools</span>
+              <div class="relative cursor-pointer text-gray-655 hover:text-gray-400 group/info">
+                <span class="text-[10px]">ℹ</span>
+                <div
+                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2.5 rounded-xl bg-gray-900 border border-gray-800 text-[10px] text-gray-300 opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200 z-30 leading-normal pointer-events-none shadow-2xl">
+                  Liquidity pools currently eligible for weekly TKG snapshot yield distribution payouts.
+                </div>
+              </div>
+            </div>
+            <span
+              class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 font-mono leading-none">4
+              Pairs</span>
+            <div class="flex justify-between items-center text-[9px] text-gray-500 font-bold">
+              <span class="text-[8px] uppercase tracking-wider text-purple-400/80">Settings Config</span>
+              <span>Supported Pools</span>
+            </div>
           </div>
         </div>
       </div>
 
     </div>
 
-    <!-- Trending Tokens & Pools Sections -->
-    <div id="tokens" class="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 mb-20">
-      
-      <!-- Trending Tokens (7 Columns) -->
-      <div class="lg:col-span-7 bg-gray-950 border border-gray-850 rounded-3xl p-6 shadow-2xl">
-        <div class="flex items-center justify-between pb-4 border-b border-gray-900 mb-6">
-          <h3 class="text-lg font-black text-white tracking-tight flex items-center gap-2">
-            Trending Stellar Tokens
-          </h3>
-          <a href="#tokens" class="text-xs text-cyan-400 font-bold hover:underline">View All</a>
+    <!-- SECTION 2 (WHITE): Market Overview, Trending Tokens, Pools, Gainers/Losers, Market Highlights, and Live Activity -->
+    <div class="bg-white text-gray-900 py-20 border-t border-b border-gray-100">
+      <div class="max-w-6xl mx-auto px-6">
+
+        <!-- Trending Tokens & Pools Sections -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16">
+          <!-- Trending Tokens (7 Columns) -->
+          <div class="lg:col-span-7 bg-white border border-gray-150 rounded-3xl p-6 shadow-md">
+            <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
+              <h3 class="text-lg font-black text-gray-950 tracking-tight flex items-center gap-2">
+                Trending Stellar Tokens
+              </h3>
+              <a href="#tokens" class="text-xs text-cyan-600 font-bold hover:underline">View All</a>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="text-gray-400 border-b border-gray-100 pb-2">
+                    <th class="pb-3 font-extrabold uppercase tracking-wider">Token</th>
+                    <th class="pb-3 font-extrabold uppercase tracking-wider text-right">Price</th>
+                    <th class="pb-3 font-extrabold uppercase tracking-wider text-right">24h%</th>
+                    <th class="pb-3 font-extrabold uppercase tracking-wider text-right hidden sm:table-cell">Liquidity
+                    </th>
+                    <th class="pb-3 font-extrabold uppercase tracking-wider text-right hidden sm:table-cell">Volume</th>
+                    <th class="pb-3 font-extrabold uppercase tracking-wider text-right">Sparkline</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="t in trendingTokens" :key="t.symbol"
+                    class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                    <td class="py-3.5 flex items-center gap-2">
+                      <span
+                        class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center font-black text-[11px] text-cyan-600 border border-gray-200">
+                        {{ t.symbol }}
+                      </span>
+                      <div>
+                        <span class="font-bold text-gray-900 block">{{ t.name }}</span>
+                        <span class="text-[10px] text-gray-400 uppercase font-semibold">{{ t.symbol }}</span>
+                      </div>
+                    </td>
+                    <td class="py-3.5 text-right font-mono font-bold text-gray-900">${{ t.price.toFixed(4) }}</td>
+                    <td class="py-3.5 text-right font-mono font-bold"
+                      :class="t.change >= 0 ? 'text-green-600' : 'text-red-600'">
+                      {{ t.change >= 0 ? '+' : '' }}{{ t.change.toFixed(2) }}%
+                    </td>
+                    <td class="py-3.5 text-right font-mono text-gray-500 hidden sm:table-cell">${{
+                      t.liquidity.toLocaleString() }}</td>
+                    <td class="py-3.5 text-right font-mono text-gray-500 hidden sm:table-cell">${{
+                      t.volume.toLocaleString() }}</td>
+                    <td class="py-3.5 text-right">
+                      <svg class="w-16 h-6 inline-block"
+                        :class="t.change >= 0 ? 'text-green-500/50' : 'text-red-500/50'" viewBox="0 0 100 30"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path :d="t.sparkline" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Trending Liquidity Pools & Gainers/Losers (5 Columns) -->
+          <div class="lg:col-span-5 flex flex-col gap-8">
+            <!-- Trending Liquidity Pools -->
+            <div class="bg-white border border-gray-150 rounded-3xl p-6 shadow-md">
+              <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+                <h3 class="text-sm font-black text-gray-955 uppercase tracking-widest">Trending Pools</h3>
+                <span class="text-[10px] text-gray-400 uppercase font-bold">Top Yields</span>
+              </div>
+
+              <div class="space-y-4">
+                <div v-for="pool in poolsList" :key="pool.pair"
+                  class="flex items-center justify-between p-3.5 bg-white border border-gray-150 hover:border-purple-500/30 rounded-2xl transition-all duration-300 animate-fade-in">
+                  <div>
+                    <span class="font-black text-xs text-gray-900 block">{{ pool.pair }}</span>
+                    <span class="text-[10px] text-gray-400">TVL: ${{ pool.tvl.toLocaleString() }}</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="font-mono font-bold text-xs text-green-600 block">{{ pool.apr }}% APR</span>
+                    <button @click="openAddLiquidity"
+                      class="text-[9px] font-black text-cyan-600 hover:text-cyan-500 uppercase tracking-widest hover:underline">
+                      Join Pool
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Top Gainers / Losers Quick tab -->
+            <div class="bg-white border border-gray-150 rounded-3xl p-6 shadow-md">
+              <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+                <div class="flex gap-4">
+                  <button @click="gainerTab = 'gainers'"
+                    class="text-xs font-black uppercase tracking-widest pb-1 border-b-2"
+                    :class="gainerTab === 'gainers' ? 'border-cyan-500 text-cyan-600' : 'border-transparent text-gray-400'">
+                    Top Gainers
+                  </button>
+                  <button @click="gainerTab = 'losers'"
+                    class="text-xs font-black uppercase tracking-widest pb-1 border-b-2"
+                    :class="gainerTab === 'losers' ? 'border-pink-500 text-pink-600' : 'border-transparent text-gray-400'">
+                    Top Losers
+                  </button>
+                </div>
+              </div>
+
+              <div class="space-y-3">
+                <div v-for="item in (gainerTab === 'gainers' ? gainersList : losersList)" :key="item.symbol"
+                  class="flex items-center justify-between text-xs">
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center font-bold text-[10px] text-gray-400 border border-gray-150">
+                      {{ item.symbol }}
+                    </span>
+                    <span class="font-bold text-gray-900">{{ item.name }}</span>
+                  </div>
+                  <span class="font-mono font-bold"
+                    :class="gainerTab === 'gainers' ? 'text-green-600' : 'text-red-600'">
+                    {{ gainerTab === 'gainers' ? '+' : '' }}{{ item.change }}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr class="text-gray-500 border-b border-gray-900 pb-2">
-                <th class="pb-3 font-extrabold uppercase tracking-wider">Token</th>
-                <th class="pb-3 font-extrabold uppercase tracking-wider text-right">Price</th>
-                <th class="pb-3 font-extrabold uppercase tracking-wider text-right">24h%</th>
-                <th class="pb-3 font-extrabold uppercase tracking-wider text-right hidden sm:table-cell">Liquidity</th>
-                <th class="pb-3 font-extrabold uppercase tracking-wider text-right hidden sm:table-cell">Volume</th>
-                <th class="pb-3 font-extrabold uppercase tracking-wider text-right">Sparkline</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr 
-                v-for="t in trendingTokens" 
-                :key="t.symbol" 
-                class="border-b border-gray-900/60 hover:bg-gray-900/25 transition-colors"
-              >
-                <td class="py-3.5 flex items-center gap-2">
-                  <span class="w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center font-black text-[11px] text-cyan-400 border border-gray-800">
-                    {{ t.symbol }}
+        <!-- Market Highlights & Live Activity -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <!-- Market Highlights Section (5 Columns) -->
+          <div
+            class="lg:col-span-5 bg-white border border-gray-150 rounded-3xl p-6 shadow-md flex flex-col justify-between group hover:border-purple-500/20 transition-all duration-300">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+                <span class="text-xs text-cyan-600 uppercase font-black tracking-widest flex items-center gap-1">
+                  ⚡ Market Highlights
+                </span>
+                <span
+                  class="px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 border border-green-500/20 text-[9px] font-black uppercase tracking-wider">REAL-TIME</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex flex-col justify-between h-20">
+                  <span class="text-[9px] text-gray-400 uppercase font-bold tracking-wider">New Tokens Today</span>
+                  <span class="text-base font-black text-gray-900 font-mono">3 Tokens</span>
+                </div>
+                <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex flex-col justify-between h-20">
+                  <span class="text-[9px] text-gray-400 uppercase font-bold tracking-wider">New Pools Today</span>
+                  <span class="text-base font-black text-gray-900 font-mono">1 Active</span>
+                </div>
+                <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex flex-col justify-between h-20">
+                  <span class="text-[9px] text-gray-400 uppercase font-bold tracking-wider">Largest Swap Today</span>
+                  <span class="text-xs font-black text-green-600 font-mono">34,200 USDC</span>
+                </div>
+                <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex flex-col justify-between h-20">
+                  <span class="text-[9px] text-gray-400 uppercase font-bold tracking-wider">Most Traded Token</span>
+                  <span class="text-base font-black text-cyan-600 font-mono">AQUA</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-4 mt-6 flex justify-between items-center text-xs">
+              <span class="text-gray-400 uppercase text-[9px] font-bold">Weekly Distribution</span>
+              <span class="font-mono text-purple-600 font-black">16,000 TKG Pool active</span>
+            </div>
+          </div>
+
+          <!-- Live Activity Feed (7 Columns) -->
+          <div id="activity"
+            class="lg:col-span-7 bg-white border border-gray-150 rounded-3xl p-6 shadow-md flex flex-col justify-between min-h-[300px]">
+            <div>
+              <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+                <span class="text-xs text-gray-550 uppercase font-black tracking-widest flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-ping"></span>
+                  Live Ecosystem Activity Feed
+                </span>
+                <span class="text-[10px] text-gray-400 uppercase font-semibold">Auto-refresh active</span>
+              </div>
+
+              <div class="space-y-3 min-h-[180px]">
+                <TransitionGroup name="list">
+                  <div v-for="act in activityFeed" :key="act.id"
+                    class="flex items-center justify-between p-2.5 bg-gray-50 border border-gray-100 rounded-xl hover:border-gray-200 transition text-xs">
+                    <div class="flex items-center gap-2.5">
+                      <span class="text-base">
+                        <span v-if="act.type === 'MINT'">🪙</span>
+                        <span v-else-if="act.type === 'SWAP'">🔄</span>
+                        <span v-else-if="act.type === 'LIQUIDITY'">💧</span>
+                        <span v-else-if="act.type === 'REWARD'">🎁</span>
+                      </span>
+                      <span class="px-2 py-0.5 rounded text-[9px] uppercase font-black tracking-wider" :class="{
+                        'bg-purple-500/10 text-purple-600 border border-purple-500/20': act.type === 'MINT',
+                        'bg-cyan-500/10 text-cyan-600 border border-cyan-500/20': act.type === 'SWAP',
+                        'bg-green-500/10 text-green-600 border border-green-500/20': act.type === 'LIQUIDITY',
+                        'bg-pink-500/10 text-pink-600 border border-pink-500/20': act.type === 'REWARD'
+                      }">
+                        {{ act.type }}
+                      </span>
+                      <span class="text-gray-700 font-medium">{{ act.message }}</span>
+                    </div>
+                    <span class="text-gray-400 font-mono text-[10px]">{{ act.time }}</span>
+                  </div>
+                </TransitionGroup>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECTION 3 (DARK): LP Rewards and Distribution History -->
+    <div class="bg-[#0B1020] text-white relative  overflow-hidden">
+      <!-- Purple Neon Glow Lighting treatment for Rewards -->
+      <div
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-purple-650/10 rounded-full blur-[160px] pointer-events-none animate-pulse-slow">
+      </div>
+
+    </div>
+    <LPRewardsSection :total-distributed="lpData.total_distributed" :active-providers="lpData.active_providers"
+      :weekly-reward-pool="lpData.weekly_reward_pool" :completed-cycles="lpData.completed_cycles"
+      :cycles-list="lpData.cycles_list" @open-add-liquidity="openAddLiquidity" />
+
+    <!-- SECTION 4 (WHITE): Featured Stellar Projects & Latest Created Tokens -->
+    <div class="bg-white text-gray-900 py-20 border-t border-b border-gray-100">
+      <div class="max-w-6xl mx-auto px-6">
+
+        <!-- Featured Projects -->
+        <div class="mb-16">
+          <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-10">
+            <h3 class="text-xl font-black text-gray-950 tracking-tight flex items-center gap-2">
+              Featured Stellar Projects
+            </h3>
+            <span
+              class="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 border border-purple-500/20 text-[9px] font-black uppercase tracking-wider">VERIFIED</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div v-for="project in featuredProjects" :key="project.name"
+              class="bg-white border border-gray-150 rounded-3xl p-6 flex flex-col justify-between hover:border-purple-500/30 hover:shadow-xl transition-all duration-300">
+              <div>
+                <div class="flex items-center gap-3 mb-4">
+                  <span
+                    class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center font-bold text-xs text-cyan-600 border border-gray-200">
+                    {{ project.symbol }}
                   </span>
                   <div>
-                    <span class="font-bold text-white block">{{ t.name }}</span>
-                    <span class="text-[10px] text-gray-500 uppercase">{{ t.symbol }}</span>
+                    <span class="font-bold text-gray-900 block text-sm">{{ project.name }}</span>
+                    <span class="text-[10px] text-gray-400 uppercase font-semibold">{{ project.symbol }}</span>
                   </div>
-                </td>
-                <td class="py-3.5 text-right font-mono font-bold text-white">${{ t.price.toFixed(4) }}</td>
-                <td 
-                  class="py-3.5 text-right font-mono font-bold"
-                  :class="t.change >= 0 ? 'text-green-400' : 'text-red-400'"
-                >
-                  {{ t.change >= 0 ? '+' : '' }}{{ t.change.toFixed(2) }}%
-                </td>
-                <td class="py-3.5 text-right font-mono text-gray-400 hidden sm:table-cell">${{ t.liquidity.toLocaleString() }}</td>
-                <td class="py-3.5 text-right font-mono text-gray-400 hidden sm:table-cell">${{ t.volume.toLocaleString() }}</td>
-                <td class="py-3.5 text-right">
-                  <svg class="w-16 h-6 inline-block" :class="t.change >= 0 ? 'text-green-400/50' : 'text-red-400/50'" viewBox="0 0 100 30" fill="none" stroke="currentColor" stroke-width="2">
-                    <path :d="t.sparkline" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Trending Liquidity Pools & Gainers (5 Columns) -->
-      <div id="pools" class="lg:col-span-5 flex flex-col gap-8">
-        
-        <!-- Trending Liquidity Pools -->
-        <div class="bg-gray-950 border border-gray-855 rounded-3xl p-6 shadow-2xl">
-          <div class="flex items-center justify-between pb-4 border-b border-gray-900 mb-4">
-            <h3 class="text-sm font-black text-white uppercase tracking-widest">Trending Pools</h3>
-            <span class="text-[10px] text-gray-500 uppercase font-bold">Top Yields</span>
-          </div>
-
-          <div class="space-y-4">
-            <div 
-              v-for="pool in poolsList" 
-              :key="pool.pair" 
-              class="flex items-center justify-between p-3.5 bg-gray-900/20 border border-gray-850 hover:border-purple-500/20 rounded-2xl hover:shadow-[0_0_15px_rgba(168,85,247,0.05)] transition-all duration-300"
-            >
-              <div>
-                <span class="font-black text-xs text-white block">{{ pool.pair }}</span>
-                <span class="text-[10px] text-gray-500">TVL: ${{ pool.tvl.toLocaleString() }}</span>
+                </div>
+                <p class="text-xs text-gray-500 leading-relaxed mb-6">{{ project.desc }}</p>
               </div>
-              <div class="text-right">
-                <span class="font-mono font-bold text-xs text-green-400 block">{{ pool.apr }}% APR</span>
-                <button 
-                  @click="openAddLiquidity" 
-                  class="text-[9px] font-black text-cyan-400 hover:text-cyan-300 uppercase tracking-widest hover:underline"
-                >
-                  Join Pool
-                </button>
+
+              <div class="border-t border-gray-100 pt-4 space-y-2 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-gray-400 font-bold uppercase text-[9px]">Market Cap</span>
+                  <span class="font-mono font-bold text-gray-900">${{ project.mcap.toLocaleString() }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400 font-bold uppercase text-[9px]">Total Supply</span>
+                  <span class="font-mono font-bold text-gray-900">{{ project.supply.toLocaleString() }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400 font-bold uppercase text-[9px]">Liquidity</span>
+                  <span class="font-mono font-bold text-gray-900">${{ project.liq.toLocaleString() }}</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Top Gainers / Losers Quick tab -->
-        <div class="bg-gray-950 border border-gray-850 rounded-3xl p-6 shadow-2xl">
-          <div class="flex items-center justify-between pb-4 border-b border-gray-900 mb-4">
-            <div class="flex gap-4">
-              <button 
-                @click="gainerTab = 'gainers'" 
-                class="text-xs font-black uppercase tracking-widest pb-1 border-b-2"
-                :class="gainerTab === 'gainers' ? 'border-cyan-400 text-cyan-400' : 'border-transparent text-gray-500'"
-              >
-                Top Gainers
-              </button>
-              <button 
-                @click="gainerTab = 'losers'" 
-                class="text-xs font-black uppercase tracking-widest pb-1 border-b-2"
-                :class="gainerTab === 'losers' ? 'border-pink-500 text-pink-500' : 'border-transparent text-gray-500'"
-              >
-                Top Losers
-              </button>
-            </div>
+        <!-- Latest Created Tokens Table -->
+        <div id="latest-tokens">
+          <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-8">
+            <h3 class="text-xl font-black text-gray-955 tracking-tight">
+              Latest Created Tokens on Stellar
+            </h3>
+            <span class="text-xs text-gray-400 font-semibold">Live creation monitoring</span>
           </div>
 
-          <div class="space-y-3">
-            <div 
-              v-for="item in (gainerTab === 'gainers' ? gainersList : losersList)" 
-              :key="item.symbol" 
-              class="flex items-center justify-between text-xs"
-            >
-              <div class="flex items-center gap-2">
-                <span class="w-6 h-6 rounded-full bg-gray-900 flex items-center justify-center font-bold text-[10px] text-gray-400 border border-gray-850">
-                  {{ item.symbol }}
-                </span>
-                <span class="font-bold text-white">{{ item.name }}</span>
-              </div>
-              <span 
-                class="font-mono font-bold"
-                :class="gainerTab === 'gainers' ? 'text-green-400' : 'text-red-400'"
-              >
-                {{ gainerTab === 'gainers' ? '+' : '' }}{{ item.change }}%
-              </span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-
-    <!-- Dark LP Rewards Section -->
-    <LPRewardsSection 
-      :total-distributed="lpData.total_distributed" 
-      :active-providers="lpData.active_providers" 
-      :weekly-reward-pool="lpData.weekly_reward_pool" 
-      :completed-cycles="lpData.completed_cycles" 
-      :cycles-list="lpData.cycles_list" 
-      @open-add-liquidity="openAddLiquidity"
-    />
-
-    <!-- Featured Stellar Projects -->
-    <div class="max-w-6xl mx-auto px-6 pt-16 mb-20">
-      <div class="flex items-center justify-between pb-4 border-b border-gray-900 mb-10">
-        <h3 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
-          Featured Stellar Projects
-        </h3>
-        <span class="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] font-black uppercase tracking-wider">VERIFIED</span>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div 
-          v-for="project in featuredProjects" 
-          :key="project.name" 
-          class="bg-gray-950 border border-gray-850 rounded-3xl p-6 flex flex-col justify-between hover:border-purple-500/20 hover:shadow-[0_0_20px_rgba(168,85,247,0.05)] transition-all duration-300"
-        >
-          <div>
-            <div class="flex items-center gap-3 mb-4">
-              <span class="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center font-bold text-xs text-cyan-400 border border-gray-855">
-                {{ project.symbol }}
-              </span>
-              <div>
-                <span class="font-bold text-white block text-sm">{{ project.name }}</span>
-                <span class="text-[10px] text-gray-500 uppercase">{{ project.symbol }}</span>
-              </div>
-            </div>
-            <p class="text-xs text-gray-400 leading-relaxed mb-6">{{ project.desc }}</p>
-          </div>
-
-          <div class="border-t border-gray-900 pt-4 space-y-2 text-xs">
-            <div class="flex justify-between">
-              <span class="text-gray-500 font-bold uppercase text-[9px]">Market Cap</span>
-              <span class="font-mono font-bold text-white">${{ project.mcap.toLocaleString() }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-gray-500 font-bold uppercase text-[9px]">Total Supply</span>
-              <span class="font-mono font-bold text-white">{{ project.supply.toLocaleString() }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-gray-500 font-bold uppercase text-[9px]">Liquidity</span>
-              <span class="font-mono font-bold text-white">${{ project.liq.toLocaleString() }}</span>
-            </div>
+          <div class="overflow-x-auto bg-white border border-gray-150 rounded-3xl p-6 shadow-md">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="text-gray-400 border-b border-gray-100 pb-2">
+                  <th class="pb-3 font-extrabold uppercase tracking-wider">Asset Code</th>
+                  <th class="pb-3 font-extrabold uppercase tracking-wider">Token Name</th>
+                  <th class="pb-3 font-extrabold uppercase tracking-wider text-right">Initial Supply</th>
+                  <th class="pb-3 font-extrabold uppercase tracking-wider text-right">Blockchain</th>
+                  <th class="pb-3 font-extrabold uppercase tracking-wider text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="token in latestCreatedTokens" :key="token.id"
+                  class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                  <td class="py-3.5 flex items-center gap-2">
+                    <span
+                      class="w-7 h-7 rounded-full bg-gray-55 flex items-center justify-center font-black text-[10px] text-cyan-600 border border-gray-150">
+                      {{ token.asset_code?.slice(0, 2).toUpperCase() }}
+                    </span>
+                    <span class="font-bold text-gray-900 uppercase">{{ token.asset_code }}</span>
+                  </td>
+                  <td class="py-3.5 font-bold text-gray-600">{{ token.name }}</td>
+                  <td class="py-3.5 text-right font-mono font-bold text-gray-900">{{ formatNumber(token.total_supply) }}
+                  </td>
+                  <td class="py-3.5 text-right text-gray-500">{{ token.blockchain?.name || 'Stellar' }}</td>
+                  <td class="py-3.5 text-right">
+                    <a v-if="token.tx_hash" :href="`https://stellar.expert/explorer/public/tx/${token.tx_hash}`"
+                      target="_blank"
+                      class="inline-flex items-center justify-center font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-cyan-600 hover:bg-gray-100 transition duration-200">
+                      Explore →
+                    </a>
+                    <span v-else class="text-gray-400">—</span>
+                  </td>
+                </tr>
+                <tr v-if="latestCreatedTokens.length === 0">
+                  <td colspan="5" class="py-8 text-center text-gray-450">No newly minted tokens found in database.</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
+
       </div>
     </div>
 
-    <!-- Future-Proof Ecosystem Modules Section -->
-    <div class="max-w-6xl mx-auto px-6 mb-20">
-      <div class="flex items-center justify-between pb-4 border-b border-gray-900 mb-10">
-        <h3 class="text-xl font-black text-white tracking-tight">
-          Ecosystem Dashboard Modules
-        </h3>
-        <span class="text-xs text-gray-500">Upcoming integrations</span>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-gray-950/40 border border-gray-850 rounded-2xl p-6 relative overflow-hidden group">
-          <span class="absolute right-4 top-4 px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[9px] uppercase font-bold tracking-widest">Active</span>
-          <h4 class="text-sm font-black text-white mb-2">Liquidity Rewards</h4>
-          <p class="text-xs text-gray-400">Yield snapshots streamed weekly to Stellar stakers.</p>
-        </div>
-        <div class="bg-gray-950/20 border border-gray-900/60 rounded-2xl p-6 relative overflow-hidden group">
-          <span class="absolute right-4 top-4 px-2 py-0.5 rounded bg-gray-900 text-gray-500 border border-gray-800 text-[9px] uppercase font-bold tracking-widest">Coming Soon</span>
-          <h4 class="text-sm font-black text-gray-500 mb-2">Whale Tracker</h4>
-          <p class="text-xs text-gray-600">Real-time alerts on large Stellar whale account movements.</p>
-        </div>
-        <div class="bg-gray-950/20 border border-gray-900/60 rounded-2xl p-6 relative overflow-hidden group">
-          <span class="absolute right-4 top-4 px-2 py-0.5 rounded bg-gray-900 text-gray-500 border border-gray-800 text-[9px] uppercase font-bold tracking-widest">Coming Soon</span>
-          <h4 class="text-sm font-black text-gray-500 mb-2">Smart Money Dashboard</h4>
-          <p class="text-xs text-gray-600">Track key wallet portfolios and historical return rates.</p>
-        </div>
-        <div class="bg-gray-950/20 border border-gray-900/60 rounded-2xl p-6 relative overflow-hidden group">
-          <span class="absolute right-4 top-4 px-2 py-0.5 rounded bg-gray-900 text-gray-500 border border-gray-800 text-[9px] uppercase font-bold tracking-widest">Coming Soon</span>
-          <h4 class="text-sm font-black text-gray-500 mb-2">Watchlists & Alerts</h4>
-          <p class="text-xs text-gray-600">Set real-time push messages for specific Stellar tokens.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Latest Created Tokens List -->
-    <div id="latest-tokens" class="max-w-6xl mx-auto px-6 mb-24">
-      <div class="flex items-center justify-between pb-4 border-b border-gray-900 mb-8">
-        <h3 class="text-xl font-black text-white tracking-tight">
-          Latest Created Tokens on Stellar
-        </h3>
-        <span class="text-xs text-gray-500">Live creation monitoring</span>
-      </div>
-
-      <div class="overflow-x-auto bg-gray-950 border border-gray-850 rounded-3xl p-6 shadow-2xl">
-        <table class="w-full text-left text-xs border-collapse">
-          <thead>
-            <tr class="text-gray-500 border-b border-gray-900 pb-2">
-              <th class="pb-3 font-extrabold uppercase tracking-wider">Asset Code</th>
-              <th class="pb-3 font-extrabold uppercase tracking-wider">Token Name</th>
-              <th class="pb-3 font-extrabold uppercase tracking-wider text-right">Initial Supply</th>
-              <th class="pb-3 font-extrabold uppercase tracking-wider text-right">Blockchain</th>
-              <th class="pb-3 font-extrabold uppercase tracking-wider text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr 
-              v-for="token in latestCreatedTokens" 
-              :key="token.id" 
-              class="border-b border-gray-900/60 hover:bg-gray-900/25 transition-colors"
-            >
-              <td class="py-3.5 flex items-center gap-2">
-                <span class="w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center font-black text-[10px] text-cyan-400 border border-gray-850">
-                  {{ token.asset_code?.slice(0, 2).toUpperCase() }}
-                </span>
-                <span class="font-bold text-white uppercase">{{ token.asset_code }}</span>
-              </td>
-              <td class="py-3.5 font-bold text-gray-300">{{ token.name }}</td>
-              <td class="py-3.5 text-right font-mono font-bold text-white">{{ formatNumber(token.total_supply) }}</td>
-              <td class="py-3.5 text-right text-gray-400">{{ token.blockchain?.name || 'Stellar' }}</td>
-              <td class="py-3.5 text-right">
-                <a 
-                  v-if="token.tx_hash" 
-                  :href="`https://stellar.expert/explorer/public/tx/${token.tx_hash}`"
-                  target="_blank"
-                  class="inline-flex items-center justify-center font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-xl bg-gray-900 border border-gray-800 text-cyan-400 hover:bg-gray-800 hover:text-white transition duration-200"
-                >
-                  Explore →
-                </a>
-                <span v-else class="text-gray-500">—</span>
-              </td>
-            </tr>
-            <tr v-if="latestCreatedTokens.length === 0">
-              <td colspan="5" class="py-8 text-center text-gray-500">No newly minted tokens found in database.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Everything You Need on Stellar (4 Premium Cards) -->
-    <div class="py-24 bg-white relative border-t border-gray-100 text-gray-900">
+    <!-- SECTION 6 (LIGHT GRAY / WHITE): Everything You Need on Stellar -->
+    <div class="py-24 bg-[#F7F9FC] text-gray-900 border-t border-b border-gray-150">
       <div class="max-w-6xl mx-auto px-6">
-        <h2 class="text-4xl font-extrabold text-center mb-16 tracking-tight">
+        <h2 class="text-4xl font-extrabold text-center mb-16 tracking-tight text-gray-950">
           Everything You Need on Stellar
         </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <!-- Card 1 -->
-          <div class="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:border-purple-500/20 hover:shadow-2xl transition duration-300">
+          <div
+            class="bg-white rounded-2xl p-8 border border-gray-200 hover:border-purple-500/20 hover:shadow-2xl transition duration-300">
             <div class="text-4xl mb-4">🚀</div>
-            <h3 class="text-lg font-bold mb-2">Create Tokens</h3>
-            <p class="text-gray-600 text-xs leading-relaxed">
-              Launch customized assets instantly on Stellar with pre-compiled configuration metrics and zero complex engineering.
+            <h3 class="text-lg font-bold mb-2 text-gray-900">Create Tokens</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">
+              Launch customized assets instantly on Stellar with pre-compiled configuration metrics and zero complex
+              engineering.
             </p>
           </div>
           <!-- Card 2 -->
-          <div class="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:border-cyan-500/20 hover:shadow-2xl transition duration-300">
+          <div
+            class="bg-white rounded-2xl p-8 border border-gray-200 hover:border-cyan-500/20 hover:shadow-2xl transition duration-300">
             <div class="text-4xl mb-4">🔍</div>
-            <h3 class="text-lg font-bold mb-2">Discover Tokens</h3>
-            <p class="text-gray-600 text-xs leading-relaxed">
+            <h3 class="text-lg font-bold mb-2 text-gray-900">Discover Tokens</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">
               Inspect on-chain swaps, market updates, active wallets, and gain insight from verified token summaries.
             </p>
           </div>
           <!-- Card 3 -->
-          <div class="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:border-purple-500/20 hover:shadow-2xl transition duration-300">
+          <div
+            class="bg-white rounded-2xl p-8 border border-gray-200 hover:border-purple-500/20 hover:shadow-2xl transition duration-300">
             <div class="text-4xl mb-4">📈</div>
-            <h3 class="text-lg font-bold mb-2">Track Your Portfolio</h3>
-            <p class="text-gray-600 text-xs leading-relaxed">
-              Monitor historical balances, active assets, LP positions, and reward status directly on our analytics panel.
+            <h3 class="text-lg font-bold mb-2 text-gray-900">Track Your Portfolio</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">
+              Monitor historical balances, active assets, LP positions, and reward status directly on our analytics
+              panel.
             </p>
           </div>
           <!-- Card 4 -->
-          <div class="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:border-cyan-500/20 hover:shadow-2xl transition duration-300">
+          <div
+            class="bg-white rounded-2xl p-8 border border-gray-200 hover:border-cyan-500/20 hover:shadow-2xl transition duration-300">
             <div class="text-4xl mb-4">🎁</div>
-            <h3 class="text-lg font-bold mb-2">Liquidity Rewards</h3>
-            <p class="text-gray-600 text-xs leading-relaxed">
-              Provide liquidity, secure network validation, and share from 16,000 TKG reward payouts streamed weekly to wallets.
+            <h3 class="text-lg font-bold mb-2 text-gray-900">Liquidity Rewards</h3>
+            <p class="text-gray-500 text-xs leading-relaxed">
+              Provide liquidity, secure network validation, and share from 16,000 TKG reward payouts streamed weekly to
+              wallets.
             </p>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- SECTION 7 (DARK): Footer -->
+    <div class="bg-[#0B1020] text-gray-400 border-t border-gray-900/60">
+      <!-- Minimal lighting decoration -->
+      <div class="absolute bottom-0 right-0 w-80 h-80 bg-purple-500/5 rounded-full blur-[140px] pointer-events-none">
+      </div>
+
+      <Footer />
     </div>
 
     <!-- Modals -->
     <GenerateTokenModal :open="isTokenModalOpen" @close="isTokenModalOpen = false" :network="network" />
     <ConnectWalletModal v-model="ConnectWalletModals" :connected="isWalletConnected" :walletKey="walletKey"
       @status="handleWalletStatus" @close="ConnectWalletModals = false" />
-    <AddLiquidityModal 
-      v-model="isAddLiquidityOpen" 
-      :isWalletConnected="isWalletConnected" 
-      :walletKey="walletKey"
-      @open-connect-wallet="ConnectWalletModals = true" 
-      @close="isAddLiquidityOpen = false" 
-    />
-    
-    <Footer />
+    <AddLiquidityModal v-model="isAddLiquidityOpen" :isWalletConnected="isWalletConnected" :walletKey="walletKey"
+      @open-connect-wallet="ConnectWalletModals = true" @close="isAddLiquidityOpen = false" />
   </div>
 </template>
 
@@ -782,8 +769,7 @@ import Wallet from "@/assets/wallet.jpg";
 import Coin from "@/assets/coin.png";
 
 import axios from 'axios'
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import Swal from 'sweetalert2';
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { getCookie, getNetwork } from "../utils/utils.js";
 
 const isWalletConnected = ref(false);
@@ -915,7 +901,7 @@ function addMockActivity() {
   const types = ['SWAP', 'LIQUIDITY', 'MINT', 'REWARD'];
   const type = types[Math.floor(Math.random() * types.length)];
   let message = '';
-  
+
   if (type === 'SWAP') {
     const val = Math.floor(Math.random() * 800) + 100;
     message = `Wallet GD...${Math.floor(Math.random() * 80 + 10)} swapped ${Math.floor(Math.random() * 5000) + 200} XLM ($${val} value)`;
@@ -934,7 +920,6 @@ function addMockActivity() {
     time: 'just now'
   };
 
-  // Shift current items times
   activityFeed.value.forEach(act => {
     if (act.time === 'just now') act.time = '4s ago';
     else if (act.time.endsWith('s ago')) {
@@ -992,7 +977,7 @@ async function fetchdata() {
         active_stakers: response.data.active_stakers ?? 9,
       };
       runAnimations();
-      lastUpdatedSec.value = 0; // reset updated timer
+      lastUpdatedSec.value = 0;
     }
   } catch (error) {
     console.error("Error fetching market stats:", error);
@@ -1048,10 +1033,9 @@ onMounted(async () => {
   await fetchdata();
   await fetchLpData();
   await fetchLatestTokens();
-  
+
   feedInterval = setInterval(addMockActivity, 4000);
-  
-  // Update counter timer increments every second
+
   updateTickerInterval = setInterval(() => {
     lastUpdatedSec.value += 1;
   }, 1000);
@@ -1075,6 +1059,7 @@ onUnmounted(() => {
 .list-leave-active {
   transition: all 0.5s ease;
 }
+
 .list-enter-from,
 .list-leave-to {
   opacity: 0;
@@ -1094,8 +1079,15 @@ onUnmounted(() => {
 }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .animate-fade-in {
@@ -1104,26 +1096,68 @@ onUnmounted(() => {
 
 /* Floating Particles */
 @keyframes float1 {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
-}
-@keyframes float2 {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(18px); }
-}
-@keyframes float3 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(10px, -10px); }
-}
-@keyframes float4 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-12px, 12px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-15px);
+  }
 }
 
-.animate-float-1 { animation: float1 6s ease-in-out infinite; }
-.animate-float-2 { animation: float2 8s ease-in-out infinite; }
-.animate-float-3 { animation: float3 5s ease-in-out infinite; }
-.animate-float-4 { animation: float4 7s ease-in-out infinite; }
+@keyframes float2 {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(18px);
+  }
+}
+
+@keyframes float3 {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(10px, -10px);
+  }
+}
+
+@keyframes float4 {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(-12px, 12px);
+  }
+}
+
+.animate-float-1 {
+  animation: float1 6s ease-in-out infinite;
+}
+
+.animate-float-2 {
+  animation: float2 8s ease-in-out infinite;
+}
+
+.animate-float-3 {
+  animation: float3 5s ease-in-out infinite;
+}
+
+.animate-float-4 {
+  animation: float4 7s ease-in-out infinite;
+}
 </style>
 
 <style>
