@@ -339,8 +339,10 @@
                 <div v-for="item in (gainerTab === 'gainers' ? gainersList : losersList)" :key="item.symbol"
                   class="flex items-center justify-between text-xs">
                   <div class="flex items-center gap-2">
-                    <span
-                      class="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center font-bold text-[10px] text-gray-400 border border-gray-150">
+                    <img v-if="item.logo" :src="item.logo" :alt="item.symbol"
+                      class="w-6 h-6 rounded-full border border-gray-150 object-contain bg-gray-50 flex-shrink-0" />
+                    <span v-else
+                      class="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center font-bold text-[10px] text-gray-400 border border-gray-150 flex-shrink-0">
                       {{ item.symbol }}
                     </span>
                     <span class="font-bold text-gray-900">{{ item.name }}</span>
@@ -919,7 +921,7 @@ async function fetchTrendingPools() {
 
 async function fetchTrendingTokens() {
   try {
-    const res = await fetch('https://api.stellar.expert/explorer/public/asset?sort=rating&limit=10');
+    const res = await fetch('https://api.stellar.expert/explorer/public/asset?sort=rating&limit=100');
     const data = await res.json();
     const records = data._embedded?.records || data;
     if (Array.isArray(records)) {
@@ -978,6 +980,17 @@ async function fetchTrendingTokens() {
 
       if (mapped.length > 0) {
         trendingTokens.value = mapped.slice(0, 8);
+
+        // Filter out tokens with 0% change for gainers/losers lists
+        const activeTokens = mapped.filter(t => t.change !== 0);
+
+        // Sort by change descending for Top Gainers
+        const sortedGainers = [...activeTokens].sort((a, b) => b.change - a.change);
+        gainersList.value = sortedGainers.slice(0, 3);
+
+        // Sort by change ascending for Top Losers
+        const sortedLosers = [...activeTokens].sort((a, b) => a.change - b.change);
+        losersList.value = sortedLosers.slice(0, 3);
       }
     }
   } catch (error) {
