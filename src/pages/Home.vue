@@ -500,50 +500,70 @@
         <div id="latest-tokens">
           <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-8">
             <h3 class="text-xl font-black text-gray-955 tracking-tight">
-              Latest Created Tokens on Stellar
+              Latest Tokens Launched on TokenGlade
             </h3>
             <span class="text-xs text-gray-400 font-semibold">Live creation monitoring</span>
           </div>
 
-          <div class="overflow-x-auto bg-white border border-gray-150 rounded-3xl p-6 shadow-md">
-            <table class="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr class="text-gray-400 border-b border-gray-100 pb-2">
-                  <th class="pb-3 font-extrabold uppercase tracking-wider">Asset Code</th>
-                  <th class="pb-3 font-extrabold uppercase tracking-wider">Token Name</th>
-                  <th class="pb-3 font-extrabold uppercase tracking-wider text-right">Initial Supply</th>
-                  <th class="pb-3 font-extrabold uppercase tracking-wider text-right">Blockchain</th>
-                  <th class="pb-3 font-extrabold uppercase tracking-wider text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="token in latestCreatedTokens" :key="token.id"
-                  class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                  <td class="py-3.5 flex items-center gap-2">
-                    <span
-                      class="w-7 h-7 rounded-full bg-gray-55 flex items-center justify-center font-black text-[10px] text-cyan-600 border border-gray-150">
-                      {{ token.asset_code?.slice(0, 2).toUpperCase() }}
-                    </span>
-                    <span class="font-bold text-gray-900 uppercase">{{ token.asset_code }}</span>
-                  </td>
-                  <td class="py-3.5 font-bold text-gray-600">{{ token.name }}</td>
-                  <td class="py-3.5 text-right font-mono font-bold text-gray-900">{{ formatNumber(token.total_supply) }}
-                  </td>
-                  <td class="py-3.5 text-right text-gray-500">{{ token.blockchain?.name || 'Stellar' }}</td>
-                  <td class="py-3.5 text-right">
-                    <a v-if="token.tx_hash" :href="`https://stellar.expert/explorer/public/tx/${token.tx_hash}`"
-                      target="_blank"
-                      class="inline-flex items-center justify-center font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-cyan-600 hover:bg-gray-100 transition duration-200">
-                      Explore →
-                    </a>
-                    <span v-else class="text-gray-400">—</span>
-                  </td>
-                </tr>
-                <tr v-if="latestCreatedTokens.length === 0">
-                  <td colspan="5" class="py-8 text-center text-gray-450">No newly minted tokens found in database.</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-for="token in latestCreatedTokens" :key="token.id"
+              class="relative bg-white rounded-3xl border border-gray-150 shadow-md p-6 flex flex-col justify-between hover:shadow-lg transition duration-300">
+              
+              <!-- Header -->
+              <div class="flex items-center gap-3.5 mb-4">
+                <!-- Logo -->
+                <div
+                  class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border border-gray-150 flex-shrink-0">
+                  <img v-if="token.logo_url" :src="token.logo_url" class="w-full h-full object-contain p-1" />
+                  <span v-else class="text-xs font-black text-cyan-600">
+                    {{ token.asset_code?.slice(0, 2).toUpperCase() }}
+                  </span>
+                </div>
+
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1">
+                    <p class="text-sm font-black text-gray-900 truncate">
+                      {{ token.name }}
+                    </p>
+                    <img v-if="Number(token.token_verify) === 1" :src="verified" alt="Verified" class="w-3.5 h-3.5 flex-shrink-0"
+                      title="Verified Token" />
+                  </div>
+                  <p class="text-[11px] font-bold text-gray-450 uppercase">
+                    {{ token.asset_code }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Stats -->
+              <div class="flex justify-between items-center text-xs text-gray-600 mb-4 pt-3 border-t border-gray-50">
+                <div>
+                  <p class="text-[9px] text-gray-400 uppercase font-black tracking-wider">Supply</p>
+                  <p class="font-mono font-black text-gray-900 mt-0.5">
+                    {{ formatNumber(token.total_supply) }}
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="text-[9px] text-gray-400 uppercase font-black tracking-wider">Chain</p>
+                  <p class="font-bold text-gray-500 mt-0.5">
+                    {{ token.blockchain?.name || 'Stellar' }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Slim Action Button -->
+              <a v-if="token.tx_hash" :href="`https://stellar.expert/explorer/public/tx/${token.tx_hash}`"
+                target="_blank"
+                class="text-xs text-center font-black py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-cyan-600 hover:bg-gray-100 transition duration-200 mt-2">
+                Explore →
+              </a>
+              <span v-else class="text-xs text-center text-gray-400 py-2.5 mt-2">—</span>
+
+            </div>
+
+            <!-- Empty State -->
+            <div v-if="latestCreatedTokens.length === 0" class="col-span-full py-12 text-center text-gray-450 bg-white border border-gray-150 rounded-3xl p-6 shadow-md">
+              No newly minted tokens found in database.
+            </div>
           </div>
         </div>
 
@@ -631,6 +651,7 @@ import logo from "@/assets/Xl-logo.png";
 import Phone from "@/assets/phone.png";
 import Wallet from "@/assets/wallet.jpg";
 import Coin from "@/assets/coin.png";
+import verified from "@/assets/verify.png";
 
 import axios from 'axios'
 import { ref, computed, onMounted, onUnmounted } from "vue";
@@ -881,8 +902,8 @@ async function fetchLatestTokens() {
     const response = await axios.get('/api/global/generated_tokens', {
       headers: { 'X-CSRF-TOKEN': csrfToken }
     });
-    if (response.data && response.data.length > 0) {
-      latestCreatedTokens.value = response.data.slice(0, 10);
+    if (response.data && response.data.status === "success" && Array.isArray(response.data.tokens)) {
+      latestCreatedTokens.value = response.data.tokens.slice(0, 10);
     }
   } catch (error) {
     console.error("Error fetching latest tokens:", error);
