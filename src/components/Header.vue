@@ -246,10 +246,6 @@ const Links = [
   {
     name: 'Portfolio',
     to: '/#portfolio'
-  },
-  {
-    name: 'Analytics',
-    to: '/#analytics'
   }
 ]
 
