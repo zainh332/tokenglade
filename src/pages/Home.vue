@@ -411,8 +411,10 @@
 
               <div class="space-y-3 h-[230px] overflow-hidden relative">
                 <TransitionGroup name="list">
-                  <div v-for="act in activityFeed" :key="act.id"
-                    class="flex items-center justify-between p-2.5 bg-gray-50 border border-gray-100 rounded-xl hover:border-gray-200 transition text-xs h-[46px] box-border">
+                  <a v-for="act in activityFeed" :key="act.id"
+                    :href="act.txHash ? `https://stellar.expert/explorer/public/tx/${act.txHash}` : '#'"
+                    target="_blank"
+                    class="group flex items-center justify-between p-2.5 bg-gray-50 border border-gray-100 rounded-xl hover:border-purple-200 hover:bg-purple-50/30 hover:shadow-sm transition text-xs h-[46px] box-border cursor-pointer">
                     <div class="flex items-center gap-2.5 min-w-0">
                       <span class="px-2 py-0.5 rounded text-[9px] uppercase font-black tracking-wider flex-shrink-0" :class="{
                         'bg-purple-500/10 text-purple-600 border border-purple-500/20': act.type === 'MINT',
@@ -422,10 +424,15 @@
                       }">
                         {{ act.type }}
                       </span>
-                      <span class="text-gray-700 font-medium truncate">{{ act.message }}</span>
+                      <span class="text-gray-700 font-medium truncate group-hover:text-gray-900 transition-colors">{{ act.message }}</span>
                     </div>
-                    <span class="text-gray-400 font-mono text-[10px] flex-shrink-0 ml-2">{{ act.time }}</span>
-                  </div>
+                    <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                      <span class="text-gray-400 font-mono text-[10px]">{{ act.time }}</span>
+                      <svg v-if="act.txHash" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3 text-gray-400 group-hover:text-purple-600 transition-colors">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                      </svg>
+                    </div>
+                  </a>
                 </TransitionGroup>
               </div>
             </div>
@@ -793,31 +800,10 @@ const liveActivityQueue = [];
 let queueIndex = 0;
 
 function addMockActivity() {
-  let newAct = null;
-  if (liveActivityQueue.length > 0) {
-    newAct = liveActivityQueue[queueIndex];
-    queueIndex = (queueIndex + 1) % liveActivityQueue.length;
-  } else {
-    const types = ['SWAP', 'LIQUIDITY', 'MINT', 'REWARD'];
-    const type = types[Math.floor(Math.random() * types.length)];
-    let message = '';
-    if (type === 'SWAP') {
-      const val = Math.floor(Math.random() * 800) + 100;
-      message = `Wallet GD...${Math.floor(Math.random() * 80 + 10)} swapped ${Math.floor(Math.random() * 5000) + 200} XLM ($${val} value)`;
-    } else if (type === 'LIQUIDITY') {
-      message = `Added ${Math.floor(Math.random() * 15000) + 1000} TKG to Liquidity Pool`;
-    } else if (type === 'MINT') {
-      message = `New verified trustline asset created on Stellar`;
-    } else {
-      message = `Distributed ${Math.floor(Math.random() * 2000) + 500} TKG reward payout`;
-    }
-    newAct = {
-      id: Date.now(),
-      type,
-      message,
-      time: 'just now'
-    };
-  }
+  if (liveActivityQueue.length === 0) return;
+
+  const newAct = liveActivityQueue[queueIndex];
+  queueIndex = (queueIndex + 1) % liveActivityQueue.length;
 
   const actToPush = {
     ...newAct,
@@ -1141,6 +1127,7 @@ async function fetchLiveActivity() {
             id: r.id,
             type,
             message,
+            txHash: r.transaction_hash,
             time: 'just now'
           });
         }
