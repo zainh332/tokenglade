@@ -258,8 +258,10 @@
                   <tr v-for="t in trendingTokens" :key="t.symbol"
                     class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                     <td class="py-3.5 flex items-center gap-2">
-                      <span
-                        class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center font-black text-[11px] text-cyan-600 border border-gray-200">
+                      <img v-if="t.logo" :src="t.logo" :alt="t.symbol"
+                        class="w-7 h-7 rounded-full border border-gray-200 object-contain bg-gray-50 flex-shrink-0" />
+                      <span v-else
+                        class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center font-black text-[11px] text-cyan-600 border border-gray-200 flex-shrink-0">
                         {{ t.symbol }}
                       </span>
                       <div>
@@ -915,6 +917,74 @@ async function fetchTrendingPools() {
   }
 }
 
+async function fetchTrendingTokens() {
+  try {
+    const res = await fetch('https://api.stellar.expert/explorer/public/asset?sort=rating&limit=10');
+    const data = await res.json();
+    const records = data._embedded?.records || data;
+    if (Array.isArray(records)) {
+      const mapped = records.map(r => {
+        const code = r.tomlInfo?.code || r.asset.split('-')[0];
+        if (code === 'XLM') return null;
+
+        let name = r.tomlInfo?.name || r.tomlInfo?.orgName || code;
+        if (name.length > 20) {
+          name = r.tomlInfo?.orgName || r.tomlInfo?.name || code;
+        }
+        if (name.length > 25) {
+          name = code;
+        }
+
+        let logo = r.tomlInfo?.image || '';
+
+        const price = r.price;
+        const history = r.price7d || [];
+
+        let change = 0;
+        if (history.length >= 2) {
+          const prevPrice = history[history.length - 2][1];
+          change = ((price - prevPrice) / prevPrice) * 100;
+        }
+
+        const dailyVolume = Math.round(r.volume7d / 10000000 / 7);
+        const liquidity = Math.round(dailyVolume * 5.5);
+
+        let sparkline = '';
+        if (history.length > 0) {
+          const prices = history.map(p => p[1]);
+          const min = Math.min(...prices);
+          const max = Math.max(...prices);
+          const diff = max - min || 1;
+          sparkline = prices.map((pr, idx) => {
+            const x = (idx / (prices.length - 1)) * 100;
+            const y = 30 - ((pr - min) / diff) * 20 - 5;
+            return `${idx === 0 ? 'M' : 'L'}${x.toFixed(0)},${y.toFixed(1)}`;
+          }).join(' ');
+        } else {
+          sparkline = 'M0,15 L100,15';
+        }
+
+        return {
+          name,
+          symbol: code,
+          price,
+          change: parseFloat(change.toFixed(2)),
+          liquidity,
+          volume: dailyVolume,
+          sparkline,
+          logo
+        };
+      }).filter(t => t !== null);
+
+      if (mapped.length > 0) {
+        trendingTokens.value = mapped.slice(0, 8);
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching trending tokens:", error);
+  }
+}
+
 function formatNumber(num) {
   if (!num) return '0';
   return Number(num).toLocaleString();
@@ -939,6 +1009,7 @@ onMounted(async () => {
   await fetchLpData();
   await fetchLatestTokens();
   await fetchTrendingPools();
+  await fetchTrendingTokens();
 
   feedInterval = setInterval(addMockActivity, 4000);
 
