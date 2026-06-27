@@ -224,12 +224,32 @@ const openBuyTkgModal = () => { buyTkgModal.value = true; };
 
 const Links = [
   {
-    name: 'Stake',
-    to: '/stake'
+    name: 'Home',
+    to: '/'
   },
   {
-    name: 'Buy TKG Tokens',
-    openBuy: true,
+    name: 'Explore',
+    to: '/#explore'
+  },
+  {
+    name: 'Tokens',
+    to: '/#tokens'
+  },
+  {
+    name: 'Pools',
+    to: '/#pools'
+  },
+  {
+    name: 'Rewards',
+    to: '/#lp-rewards'
+  },
+  {
+    name: 'Portfolio',
+    to: '/#portfolio'
+  },
+  {
+    name: 'Analytics',
+    to: '/#analytics'
   }
 ]
 
