@@ -271,6 +271,62 @@ class GlobalController extends Controller
         }
     }
 
+    public function verified_projects()
+    {
+        try {
+            $projects = \App\Models\VerifiedProject::where('status', 1)
+                ->get()
+                ->map(function ($p) {
+                    $supply = 0;
+                    $price = 0.0;
+                    $liq = 0;
+                    $desc = "Verified asset \"{$p->asset_code}\" on the Stellar network.";
+                    $logoUrl = null;
+
+                    try {
+                        // Fetch details from StellarExpert on backend (immune to CORS!)
+                        $response = \Illuminate\Support\Facades\Http::timeout(5)
+                            ->get("https://api.stellar.expert/explorer/public/asset/{$p->asset_code}-{$p->identifier}");
+
+                        if ($response->successful()) {
+                            $data = $response->json();
+                            $supply = isset($data['supply']) ? (float)$data['supply'] / 10000000 : 0;
+                            $price = isset($data['price']) ? (float)$data['price'] : 0.0;
+                            $liq = isset($data['liquidity']) ? (float)$data['liquidity'] / 10000000 : 0;
+                            $desc = $data['toml_info']['conditions'] ?? ($data['toml_info']['desc'] ?? $desc);
+                            $logoUrl = $data['toml_info']['image'] ?? null;
+                        }
+                    } catch (\Throwable $seEx) {
+                        \Illuminate\Support\Facades\Log::warning("StellarExpert fetch failed for {$p->asset_code}", ['msg' => $seEx->getMessage()]);
+                    }
+
+                    return [
+                        'id' => $p->id,
+                        'name' => $p->name ?? $p->asset_code,
+                        'symbol' => $p->asset_code,
+                        'desc' => $desc,
+                        'mcap' => round($supply * $price),
+                        'supply' => round($supply),
+                        'liq' => round($liq),
+                        'logo_url' => $logoUrl,
+                        'website' => $p->website,
+                        'twitter' => $p->twitter,
+                    ];
+                });
+
+            return response()->json([
+                'status' => 'success',
+                'projects' => $projects,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('verified_projects error', ['message' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch verified projects.',
+            ], 500);
+        }
+    }
+
     public function count_data()
     {
         try {

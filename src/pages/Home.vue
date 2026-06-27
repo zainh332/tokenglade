@@ -461,35 +461,52 @@
               class="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 border border-purple-500/20 text-[9px] font-black uppercase tracking-wider">VERIFIED</span>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div v-for="project in featuredProjects" :key="project.name"
-              class="bg-white border border-gray-150 rounded-3xl p-6 flex flex-col justify-between hover:border-purple-500/30 hover:shadow-xl transition-all duration-300">
-              <div>
-                <div class="flex items-center gap-3 mb-4">
-                  <span
-                    class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center font-bold text-xs text-cyan-600 border border-gray-200">
-                    {{ project.symbol }}
-                  </span>
-                  <div>
-                    <span class="font-bold text-gray-900 block text-sm">{{ project.name }}</span>
-                    <span class="text-[10px] text-gray-400 uppercase font-semibold">{{ project.symbol }}</span>
+          <div class="relative group/slider">
+            <!-- Navigation Arrows (Absolute) -->
+            <button @click="scrollSlider(-1)"
+              class="absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-600 hover:text-purple-600 hover:border-purple-200 transition opacity-0 group-hover/slider:opacity-100 focus:opacity-100">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+            </button>
+            
+            <button @click="scrollSlider(1)"
+              class="absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-600 hover:text-purple-600 hover:border-purple-200 transition opacity-0 group-hover/slider:opacity-100 focus:opacity-100">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+
+            <!-- Scrollable Slider Container -->
+            <div ref="sliderContainer"
+              class="flex overflow-x-auto scrollbar-hide gap-6 pb-4 scroll-smooth snap-x snap-mandatory">
+              <div v-for="project in featuredProjects" :key="project.symbol"
+                class="snap-start flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] bg-white border border-gray-150 rounded-3xl p-6 flex flex-col justify-between hover:border-purple-500/30 hover:shadow-xl transition-all duration-300">
+                <div>
+                  <div class="flex items-center gap-3 mb-4">
+                    <div
+                      class="w-8 h-8 rounded-full bg-gray-55 flex items-center justify-center overflow-hidden border border-gray-150 flex-shrink-0">
+                      <img v-if="project.logo_url" :src="project.logo_url" class="w-full h-full object-contain p-1" />
+                      <span v-else class="text-[10px] font-black text-cyan-600">
+                        {{ project.symbol?.slice(0, 2).toUpperCase() }}
+                      </span>
+                    </div>
+                    <div>
+                      <span class="font-bold text-gray-900 block text-sm">{{ project.name }}</span>
+                      <span class="text-[10px] text-gray-400 uppercase font-semibold">{{ project.symbol }}</span>
+                    </div>
                   </div>
                 </div>
-                <p class="text-xs text-gray-500 leading-relaxed mb-6">{{ project.desc }}</p>
-              </div>
 
-              <div class="border-t border-gray-100 pt-4 space-y-2 text-xs">
-                <div class="flex justify-between">
-                  <span class="text-gray-400 font-bold uppercase text-[9px]">Market Cap</span>
-                  <span class="font-mono font-bold text-gray-900">${{ project.mcap.toLocaleString() }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-400 font-bold uppercase text-[9px]">Total Supply</span>
-                  <span class="font-mono font-bold text-gray-900">{{ project.supply.toLocaleString() }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-400 font-bold uppercase text-[9px]">Liquidity</span>
-                  <span class="font-mono font-bold text-gray-900">${{ project.liq.toLocaleString() }}</span>
+                <div class="border-t border-gray-100 pt-4 space-y-2 text-xs">
+                  <div class="flex justify-between">
+                    <span class="text-gray-400 font-bold uppercase text-[9px]">Market Cap</span>
+                    <span class="font-mono font-bold text-gray-900">${{ project.mcap.toLocaleString() }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-400 font-bold uppercase text-[9px]">Total Supply</span>
+                    <span class="font-mono font-bold text-gray-900">{{ project.supply.toLocaleString() }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -758,24 +775,12 @@ function shortenAddress(str) {
 }
 
 // Top Gainers & Losers
-const gainersList = ref([
-  { name: 'TokenGlade', symbol: 'TKG', change: 8.42 },
-  { name: 'Stellar XLM', symbol: 'XLM', change: 4.82 },
-  { name: 'Yield XLM', symbol: 'yXLM', change: 4.60 }
-]);
+const gainersList = ref([]);
 
-const losersList = ref([
-  { name: 'Aquarius', symbol: 'AQUA', change: -1.25 },
-  { name: 'Stellar yUSDC', symbol: 'yUSDC', change: -0.42 }
-]);
+const losersList = ref([]);
 
 // Featured Projects
-const featuredProjects = ref([
-  { name: 'TokenGlade Platform', symbol: 'TKG', desc: 'The direct launchpad and staking yield ecosystem on Stellar.', mcap: 4500000, supply: 100000000, liq: 180000 },
-  { name: 'Aquarius Liquidity', symbol: 'AQUA', desc: 'On-chain liquidity engine providing marketmaker rewards.', mcap: 12000000, supply: 1400000000, liq: 145000 },
-  { name: 'Stellar USDC', symbol: 'USDC', desc: 'Secure, digital dollar representation issued on Stellar.', mcap: 154000000, supply: 154000000, liq: 850000 },
-  { name: 'Ultra Stellar yXLM', symbol: 'yXLM', desc: 'Interest-bearing yield wrapping protocol for XLM positions.', mcap: 22000000, supply: 174000000, liq: 98000 }
-]);
+const featuredProjects = ref([]);
 
 const latestCreatedTokens = ref([]);
 
@@ -907,6 +912,28 @@ async function fetchLatestTokens() {
     }
   } catch (error) {
     console.error("Error fetching latest tokens:", error);
+  }
+}
+
+async function fetchFeaturedProjects() {
+  try {
+    const response = await axios.get('/api/global/verified_projects', {
+      headers: { 'X-CSRF-TOKEN': csrfToken }
+    });
+    if (response.data && response.data.status === "success" && Array.isArray(response.data.projects)) {
+      featuredProjects.value = response.data.projects;
+    }
+  } catch (error) {
+    console.error("Error fetching verified projects:", error);
+  }
+}
+
+const sliderContainer = ref(null);
+
+function scrollSlider(direction) {
+  if (sliderContainer.value) {
+    const cardWidth = sliderContainer.value.firstElementChild?.offsetWidth || 280;
+    sliderContainer.value.scrollLeft += direction * (cardWidth + 24);
   }
 }
 
@@ -1156,6 +1183,7 @@ onMounted(async () => {
   await fetchdata();
   await fetchLpData();
   await fetchLatestTokens();
+  await fetchFeaturedProjects();
   await fetchTrendingPools();
   await fetchTrendingTokens();
   await fetchMarketHighlights();
@@ -1290,6 +1318,14 @@ onUnmounted(() => {
 
 .animate-float-4 {
   animation: float4 7s ease-in-out infinite;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 </style>
 

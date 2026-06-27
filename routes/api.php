@@ -25,6 +25,7 @@ Route::prefix('global')->group(function () {
     Route::get('wallet_types', 'GlobalController@wallet_types')->name('global.walletTypes');
     Route::get('blockchains', 'GlobalController@blockchains')->name('global.blockchains');
     Route::get('generated_tokens', 'GlobalController@generated_tokens')->name('global.generatedTokens');
+    Route::get('verified_projects', 'GlobalController@verified_projects')->name('global.verifiedProjects');
     Route::get('count_data', 'GlobalController@count_data')->name('global.countData');
     Route::get('check_xlm_balance', 'GlobalController@check_xlm_balance')->name('global.checkXlmBalance');
     Route::get('check_tkg_balance', 'GlobalController@check_tkg_balance')->name('global.checkTkgBalance');
