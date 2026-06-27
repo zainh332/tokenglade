@@ -361,7 +361,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <!-- Market Highlights Section (5 Columns) -->
           <div
-            class="lg:col-span-5 bg-white border border-gray-150 rounded-3xl p-6 shadow-md flex flex-col justify-between group hover:border-purple-500/20 transition-all duration-300">
+            class="lg:col-span-5 bg-white border border-gray-150 rounded-3xl p-6 shadow-md flex flex-col justify-between group hover:border-purple-500/20 transition-all duration-300 lg:h-[380px] overflow-hidden">
             <div>
               <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
                 <span class="text-xs text-cyan-600 uppercase font-black tracking-widest flex items-center gap-1">
@@ -399,7 +399,7 @@
 
           <!-- Live Activity Feed (7 Columns) -->
           <div id="activity"
-            class="lg:col-span-7 bg-white border border-gray-150 rounded-3xl p-6 shadow-md flex flex-col justify-between min-h-[300px]">
+            class="lg:col-span-7 bg-white border border-gray-150 rounded-3xl p-6 shadow-md flex flex-col justify-between lg:h-[380px] overflow-hidden">
             <div>
               <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
                 <span class="text-xs text-gray-550 uppercase font-black tracking-widest flex items-center gap-1.5">
@@ -409,18 +409,12 @@
                 <span class="text-[10px] text-gray-400 uppercase font-semibold">Auto-refresh active</span>
               </div>
 
-              <div class="space-y-3 min-h-[180px]">
+              <div class="space-y-3 h-[230px] overflow-hidden relative">
                 <TransitionGroup name="list">
                   <div v-for="act in activityFeed" :key="act.id"
-                    class="flex items-center justify-between p-2.5 bg-gray-50 border border-gray-100 rounded-xl hover:border-gray-200 transition text-xs">
-                    <div class="flex items-center gap-2.5">
-                      <span class="text-base">
-                        <span v-if="act.type === 'MINT'">🪙</span>
-                        <span v-else-if="act.type === 'SWAP'">🔄</span>
-                        <span v-else-if="act.type === 'LIQUIDITY'">💧</span>
-                        <span v-else-if="act.type === 'REWARD'">🎁</span>
-                      </span>
-                      <span class="px-2 py-0.5 rounded text-[9px] uppercase font-black tracking-wider" :class="{
+                    class="flex items-center justify-between p-2.5 bg-gray-50 border border-gray-100 rounded-xl hover:border-gray-200 transition text-xs h-[46px] box-border">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <span class="px-2 py-0.5 rounded text-[9px] uppercase font-black tracking-wider flex-shrink-0" :class="{
                         'bg-purple-500/10 text-purple-600 border border-purple-500/20': act.type === 'MINT',
                         'bg-cyan-500/10 text-cyan-600 border border-cyan-500/20': act.type === 'SWAP',
                         'bg-green-500/10 text-green-600 border border-green-500/20': act.type === 'LIQUIDITY',
@@ -428,9 +422,9 @@
                       }">
                         {{ act.type }}
                       </span>
-                      <span class="text-gray-700 font-medium">{{ act.message }}</span>
+                      <span class="text-gray-700 font-medium truncate">{{ act.message }}</span>
                     </div>
-                    <span class="text-gray-400 font-mono text-[10px]">{{ act.time }}</span>
+                    <span class="text-gray-400 font-mono text-[10px] flex-shrink-0 ml-2">{{ act.time }}</span>
                   </div>
                 </TransitionGroup>
               </div>
@@ -774,26 +768,39 @@ const activityFeed = ref([
 
 let feedInterval = null;
 
-function addMockActivity() {
-  const types = ['SWAP', 'LIQUIDITY', 'MINT', 'REWARD'];
-  const type = types[Math.floor(Math.random() * types.length)];
-  let message = '';
+const liveActivityQueue = [];
+let queueIndex = 0;
 
-  if (type === 'SWAP') {
-    const val = Math.floor(Math.random() * 800) + 100;
-    message = `Wallet GD...${Math.floor(Math.random() * 80 + 10)} swapped ${Math.floor(Math.random() * 5000) + 200} XLM ($${val} value)`;
-  } else if (type === 'LIQUIDITY') {
-    message = `Added ${Math.floor(Math.random() * 15000) + 1000} TKG to Liquidity Pool`;
-  } else if (type === 'MINT') {
-    message = `New verified trustline asset created on Stellar`;
+function addMockActivity() {
+  let newAct = null;
+  if (liveActivityQueue.length > 0) {
+    newAct = liveActivityQueue[queueIndex];
+    queueIndex = (queueIndex + 1) % liveActivityQueue.length;
   } else {
-    message = `Distributed ${Math.floor(Math.random() * 2000) + 500} TKG reward payout`;
+    const types = ['SWAP', 'LIQUIDITY', 'MINT', 'REWARD'];
+    const type = types[Math.floor(Math.random() * types.length)];
+    let message = '';
+    if (type === 'SWAP') {
+      const val = Math.floor(Math.random() * 800) + 100;
+      message = `Wallet GD...${Math.floor(Math.random() * 80 + 10)} swapped ${Math.floor(Math.random() * 5000) + 200} XLM ($${val} value)`;
+    } else if (type === 'LIQUIDITY') {
+      message = `Added ${Math.floor(Math.random() * 15000) + 1000} TKG to Liquidity Pool`;
+    } else if (type === 'MINT') {
+      message = `New verified trustline asset created on Stellar`;
+    } else {
+      message = `Distributed ${Math.floor(Math.random() * 2000) + 500} TKG reward payout`;
+    }
+    newAct = {
+      id: Date.now(),
+      type,
+      message,
+      time: 'just now'
+    };
   }
 
-  const newAct = {
+  const actToPush = {
+    ...newAct,
     id: Date.now(),
-    type,
-    message,
     time: 'just now'
   };
 
@@ -805,7 +812,7 @@ function addMockActivity() {
     }
   });
 
-  activityFeed.value.unshift(newAct);
+  activityFeed.value.unshift(actToPush);
   if (activityFeed.value.length > 5) {
     activityFeed.value.pop();
   }
@@ -1052,6 +1059,64 @@ async function fetchMarketHighlights() {
   }
 }
 
+async function fetchLiveActivity() {
+  try {
+    const res = await fetch('https://horizon.stellar.org/payments?limit=100&order=desc');
+    const data = await res.json();
+    const records = data._embedded?.records || [];
+    const filtered = records.filter(r => 
+      r.type === 'payment' || 
+      r.type === 'create_account' || 
+      r.type === 'path_payment_strict_receive' || 
+      r.type === 'path_payment_strict_send'
+    );
+
+    if (filtered.length > 0) {
+      liveActivityQueue.length = 0; // clear
+      filtered.forEach(r => {
+        const asset = r.asset_code || (r.asset_type === 'native' ? 'XLM' : 'unknown');
+        let message = '';
+        let type = 'SWAP';
+
+        const fromAddr = r.from || r.source_account || '';
+        const toAddr = r.to || r.funder || r.account || '';
+        const amt = r.amount || r.starting_balance || '0';
+
+        if (r.type === 'create_account') {
+          type = 'MINT';
+          message = `New account funded with ${parseFloat(amt).toLocaleString()} XLM`;
+        } else if (r.type === 'path_payment_strict_receive' || r.type === 'path_payment_strict_send') {
+          type = 'SWAP';
+          message = `Wallet ${shortenAddress(fromAddr)} swapped to ${parseFloat(amt).toLocaleString()} ${asset}`;
+        } else if (r.type === 'payment') {
+          type = 'LIQUIDITY'; // value transfer/trade
+          message = `Wallet ${shortenAddress(fromAddr)} transferred ${parseFloat(amt).toLocaleString()} ${asset} to ${shortenAddress(toAddr)}`;
+        }
+
+        if (message) {
+          liveActivityQueue.push({
+            id: r.id,
+            type,
+            message,
+            time: 'just now'
+          });
+        }
+      });
+
+      // Load initial feed
+      if (liveActivityQueue.length > 0) {
+        activityFeed.value = liveActivityQueue.slice(0, 4).map((act, idx) => ({
+          ...act,
+          time: `${idx * 4 + 2}s ago`
+        }));
+        queueIndex = 4 % liveActivityQueue.length;
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching live activity feed:", error);
+  }
+}
+
 function formatNumber(num) {
   if (!num) return '0';
   return Number(num).toLocaleString();
@@ -1078,6 +1143,7 @@ onMounted(async () => {
   await fetchTrendingPools();
   await fetchTrendingTokens();
   await fetchMarketHighlights();
+  await fetchLiveActivity();
 
   feedInterval = setInterval(addMockActivity, 4000);
 
@@ -1100,9 +1166,15 @@ onUnmounted(() => {
 
 <style scoped>
 /* Page Animations */
+.list-move,
 .list-enter-active,
 .list-leave-active {
   transition: all 0.5s ease;
+}
+
+.list-leave-active {
+  position: absolute;
+  width: 100%;
 }
 
 .list-enter-from,
