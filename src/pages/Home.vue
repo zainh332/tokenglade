@@ -759,12 +759,7 @@ const featuredProjects = ref([
 const latestCreatedTokens = ref([]);
 
 // Real-time activity feed stream
-const activityFeed = ref([
-  { id: 1, type: 'SWAP', message: 'Wallet GC...24 swapped 4,500 XLM for TKG ($560 value)', time: '2s ago' },
-  { id: 2, type: 'LIQUIDITY', message: 'Added 12,000 TKG to TKG/XLM pool', time: '1m ago' },
-  { id: 3, type: 'MINT', message: 'New token "StellarGold" (STG) created by GZ...88', time: '5m ago' },
-  { id: 4, type: 'REWARD', message: 'Distributed 1,450 TKG to active LP provider GC...15', time: '8m ago' }
-]);
+const activityFeed = ref([]);
 
 let feedInterval = null;
 
