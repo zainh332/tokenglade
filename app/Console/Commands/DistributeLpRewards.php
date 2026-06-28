@@ -73,20 +73,16 @@ class DistributeLpRewards extends Command
         $minimumEligible = 0.099;
 
         // Prevent duplicate weekly distribution
-        if (!$this->option('force')) {
-            $existing = LpRewardCycle::where('week_number', $weekNumber)
-                ->whereYear('snapshot_date', Carbon::now()->year)
-                ->first();
+        $existing = LpRewardCycle::where('week_number', $weekNumber)
+            ->whereYear('snapshot_date', Carbon::now()->year)
+            ->first();
 
-            if ($existing) {
-                $this->info('Rewards already distributed for this week.');
-                Log::error('LP distribution aborted: Rewards already distributed for this week.', [
-                    'week_number' => $weekNumber
-                ]);
-                return;
-            }
-        } else {
-            $this->info('Force flag detected. Bypassing duplicate week check.');
+        if ($existing) {
+            $this->info('Rewards already distributed for this week.');
+            Log::error('LP distribution aborted: Rewards already distributed for this week.', [
+                'week_number' => $weekNumber
+            ]);
+            return;
         }
 
         // Fetch participants from API
