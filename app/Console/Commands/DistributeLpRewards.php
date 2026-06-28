@@ -21,7 +21,7 @@ use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 
 class DistributeLpRewards extends Command
 {
-    protected $signature = 'lp:distribute-rewards';
+    protected $signature = 'lp:distribute-rewards {--force : Force the distribution even if already run this week}';
     protected $description = 'Distribute weekly LP rewards';
     private $sdk, $network, $tkgIssuer, $assetCode;
     private bool $isTestnet;
@@ -47,6 +47,23 @@ class DistributeLpRewards extends Command
 
     public function handle(LpSyncService $syncService)
     {
+        $sourceSecret = env('LP_REWARD_WALLET_KEY');
+        $sourcePublic = env('LP_REWARD_PUBLIC_WALLET');
+
+        if (empty($sourceSecret) || empty($sourcePublic)) {
+            $this->error('LP_REWARD_WALLET_KEY or LP_REWARD_PUBLIC_WALLET is not configured in the environment variables.');
+            Log::error('LP distribution aborted: Environment variables for LP reward wallets are missing.');
+            return;
+        }
+
+        try {
+            $this->sdk->requestAccount($sourcePublic);
+        } catch (\Throwable $e) {
+            $this->error('Failed to request LP Reward source account: ' . $e->getMessage());
+            Log::error('LP distribution aborted: Source account request failed.', ['error' => $e->getMessage()]);
+            return;
+        }
+
         $this->info('Syncing liquidity pool participants before reward distribution...');
         $syncService->sync();
 
@@ -56,11 +73,20 @@ class DistributeLpRewards extends Command
         $minimumEligible = 0.099;
 
         // Prevent duplicate weekly distribution
-        $existing = LpRewardCycle::where('week_number', $weekNumber)->first();
+        if (!$this->option('force')) {
+            $existing = LpRewardCycle::where('week_number', $weekNumber)
+                ->whereYear('snapshot_date', Carbon::now()->year)
+                ->first();
 
-        if ($existing) {
-            $this->info('Rewards already distributed for this week.');
-            return;
+            if ($existing) {
+                $this->info('Rewards already distributed for this week.');
+                Log::error('LP distribution aborted: Rewards already distributed for this week.', [
+                    'week_number' => $weekNumber
+                ]);
+                return;
+            }
+        } else {
+            $this->info('Force flag detected. Bypassing duplicate week check.');
         }
 
         // Fetch participants from API
@@ -196,35 +222,38 @@ class DistributeLpRewards extends Command
 
             return $response->getHash();
         } catch (\Soneso\StellarSDK\Exceptions\HorizonRequestException $e) {
+            $errResponse = $e->getHorizonErrorResponse();
+            $resultCodes = null;
+            $rawDetail = $e->getMessage();
+            
+            if ($errResponse) {
+                $rawDetail = $errResponse->getDetail();
+                if ($errResponse->getExtras()) {
+                    $extras = $errResponse->getExtras();
+                    $resultCodes = [
+                        'transaction' => $extras->getResultCodesTransaction(),
+                        'operations' => $extras->getResultCodesOperation(),
+                    ];
+                }
+            }
 
-            $message = $e->getMessage();
-
-            Log::error('Horizon Error RAW', [
+            Log::error('LP Distribute Reward Horizon Request Exception', [
                 'wallet' => $wallet,
                 'amount' => $amount,
                 'memo' => $memo,
-                'message' => $message,
+                'message' => $rawDetail,
+                'result_codes' => $resultCodes,
+                'http_status_code' => $e->getStatusCode(),
             ]);
 
-            // Try to extract JSON from message
-            if (preg_match('/\{.*\}/', $message, $matches)) {
-                $json = json_decode($matches[0], true);
-
-                Log::error('Parsed Horizon Error', [
-                    'wallet' => $wallet,
-                    'result_codes' => $json['extras']['result_codes'] ?? null,
-                    'full' => $json
-                ]);
-            }
-
             return false;
-        } catch (\Exception $e) {
-
-            Log::error('Reward send failed (generic)', [
+        } catch (\Throwable $e) {
+            Log::error('LP Distribute Reward Generic Exception', [
                 'wallet' => $wallet,
                 'amount' => $amount,
                 'memo' => $memo,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return false;
