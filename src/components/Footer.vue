@@ -1,6 +1,10 @@
 <template>
-  <footer class="border-t border-gray-800">
-    <div class="max-w-6xl px-4 pt-12 pb-6 mx-auto sm:px-6 lg:px-8">
+  <footer class="bg-[#0B1020] text-gray-400 border-t border-gray-900/60 relative overflow-hidden">
+    <!-- Minimal lighting decoration -->
+    <div class="absolute bottom-0 right-0 w-80 h-80 bg-purple-500/5 rounded-full blur-[140px] pointer-events-none">
+    </div>
+
+    <div class="max-w-6xl px-4 pt-12 pb-6 mx-auto sm:px-6 lg:px-8 relative z-10">
 
       <!-- Top -->
       <div class="flex flex-col gap-10 md:flex-row md:justify-between">

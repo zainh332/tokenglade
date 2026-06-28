@@ -635,13 +635,7 @@
     </div>
 
     <!-- SECTION 7 (DARK): Footer -->
-    <div class="bg-[#0B1020] text-gray-400 border-t border-gray-900/60">
-      <!-- Minimal lighting decoration -->
-      <div class="absolute bottom-0 right-0 w-80 h-80 bg-purple-500/5 rounded-full blur-[140px] pointer-events-none">
-      </div>
-
-      <Footer />
-    </div>
+    <Footer />
 
     <!-- Modals -->
     <GenerateTokenModal :open="isTokenModalOpen" @close="isTokenModalOpen = false" :network="network" />
