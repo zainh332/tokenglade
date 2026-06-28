@@ -145,7 +145,9 @@
               <div class="space-y-1">
                 <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Estimated Portfolio
                   Value</span>
-                <h3 class="text-3xl font-black text-white font-mono">$1,485.50</h3>
+                <h3 class="text-3xl font-black text-white font-mono">
+                  ${{ walletAnalytics.net_worth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+                </h3>
                 <span class="text-[10px] text-green-400 font-bold font-mono">Connected on Stellar public net</span>
               </div>
 
@@ -155,11 +157,11 @@
                 <div class="space-y-1.5 text-xs">
                   <div class="flex justify-between items-center bg-gray-900/30 p-2 rounded-xl border border-gray-850">
                     <span class="font-bold text-gray-300">TKG Tokens</span>
-                    <span class="font-mono font-bold text-white">12,500 TKG</span>
+                    <span class="font-mono font-bold text-white">{{ walletAnalytics.tkg_balance.toLocaleString() }} TKG</span>
                   </div>
-                  <div class="flex justify-between items-center bg-gray-900/30 p-2 rounded-xl border border-gray-855">
+                  <div class="flex justify-between items-center bg-gray-900/30 p-2 rounded-xl border border-gray-850">
                     <span class="font-bold text-gray-300">Stellar XLM</span>
-                    <span class="font-mono font-bold text-white">3,200 XLM</span>
+                    <span class="font-mono font-bold text-white">{{ walletAnalytics.xlm_balance.toLocaleString() }} XLM</span>
                   </div>
                 </div>
               </div>
@@ -168,11 +170,13 @@
               <div class="grid grid-cols-2 gap-4">
                 <div class="bg-gray-900/40 border border-gray-850 rounded-2xl p-3.5 flex flex-col justify-between h-20">
                   <span class="text-[9px] text-gray-400 font-bold uppercase">LP Positions</span>
-                  <span class="text-xs font-black font-mono text-cyan-400">1 Active Pool</span>
+                  <span class="text-xs font-black font-mono text-cyan-400">
+                    {{ walletAnalytics.lp_pools_count }} Active {{ walletAnalytics.lp_pools_count === 1 ? 'Pool' : 'Pools' }}
+                  </span>
                 </div>
                 <div class="bg-gray-900/40 border border-gray-850 rounded-2xl p-3.5 flex flex-col justify-between h-20">
                   <span class="text-[9px] text-gray-400 font-bold uppercase">Claimable Rewards</span>
-                  <span class="text-xs font-black font-mono text-purple-400">240 TKG</span>
+                  <span class="text-xs font-black font-mono text-purple-400">{{ walletAnalytics.total_rewards.toLocaleString() }} TKG</span>
                 </div>
               </div>
             </div>
@@ -688,6 +692,14 @@ const isAddLiquidityOpen = ref(false);
 const network = ref('public')
 const isTokenModalOpen = ref(false)
 
+const walletAnalytics = ref({
+  xlm_balance: 0,
+  tkg_balance: 0,
+  lp_pools_count: 0,
+  total_rewards: 0,
+  net_worth: 0
+});
+
 const searchQuery = ref('');
 const gainerTab = ref('gainers');
 
@@ -1159,10 +1171,28 @@ function readPk() {
   return (s === "null" || s === "undefined") ? "" : s;
 }
 
+async function fetchWalletAnalytics() {
+  if (!isWalletConnected.value || !walletKey.value) return;
+  try {
+    const response = await axios.get('/api/global/wallet_analytics', {
+      params: { public_wallet: walletKey.value },
+      headers: { 'X-CSRF-TOKEN': csrfToken }
+    });
+    if (response.data && response.data.status === "success") {
+      walletAnalytics.value = response.data.data;
+    }
+  } catch (error) {
+    console.error("Error fetching wallet analytics:", error);
+  }
+}
+
 function refreshWalletState() {
   const pk = readPk();
   walletKey.value = pk || "";
   isWalletConnected.value = !!(pk && pk.startsWith("G") && pk.length === 56);
+  if (isWalletConnected.value) {
+    fetchWalletAnalytics();
+  }
 }
 
 onMounted(async () => {

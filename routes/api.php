@@ -29,6 +29,7 @@ Route::prefix('global')->group(function () {
     Route::get('count_data', 'GlobalController@count_data')->name('global.countData');
     Route::get('check_xlm_balance', 'GlobalController@check_xlm_balance')->name('global.checkXlmBalance');
     Route::get('check_tkg_balance', 'GlobalController@check_tkg_balance')->name('global.checkTkgBalance');
+    Route::get('wallet_analytics', 'GlobalController@wallet_analytics')->name('global.walletAnalytics');
     Route::get('staking_reward', 'GlobalController@staking_reward')->name('global.countData');
     Route::get('stats', 'GlobalController@live_staking_stats')->name('global.stats');
     Route::get('lp_rewards_data', 'GlobalController@lp_rewards_data')->name('global.lpRewardsData');

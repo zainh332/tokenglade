@@ -327,6 +327,75 @@ class GlobalController extends Controller
         }
     }
 
+    public function wallet_analytics(Request $request)
+    {
+        try {
+            $request->validate([
+                'public_wallet' => 'required|string|size:56|starts_with:G',
+            ]);
+
+            $publicKey = $request->public_wallet;
+
+            // Fetch balances from Stellar Network via Horizon SDK
+            $sdk = \Soneso\StellarSDK\StellarSDK::getPublicNetInstance();
+            $xlm = 0.0;
+            $tkg = 0.0;
+            try {
+                $account = $sdk->requestAccount($publicKey);
+                if ($account) {
+                    foreach ($account->getBalances() as $bal) {
+                        if ($bal->getAssetType() === 'native') {
+                            $xlm = (float) $bal->getBalance();
+                        } else if ($bal->getAssetCode() === 'TKG') {
+                            $tkg = (float) $bal->getBalance();
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Account not created or request failed
+            }
+
+            // Active LP Positions
+            $lpActivePoolsCount = \App\Models\LiquidityPoolParticipant::where('wallet_address', $publicKey)
+                ->where('is_active', 1)
+                ->count();
+
+            // Total Earned Staking Rewards
+            $stakingRewardsSum = \App\Models\StakingReward::whereHas('staking', function ($q) use ($publicKey) {
+                $q->whereHas('user', function ($u) use ($publicKey) {
+                    $u->where('public_key', $publicKey);
+                });
+            })->sum('amount');
+
+            // Total Earned LP Rewards
+            $lpRewardsSum = \App\Models\LpRewardDistribution::where('wallet_address', $publicKey)->sum('reward_amount');
+
+            $totalRewards = $stakingRewardsSum + $lpRewardsSum;
+
+            // Estimated Portfolio Net Worth (XLM price: $0.1254, TKG price: $0.0450 as fallbacks)
+            $xlmPrice = 0.1254;
+            $tkgPrice = 0.0450;
+            $netWorth = ($xlm * $xlmPrice) + ($tkg * $tkgPrice);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'xlm_balance' => $xlm,
+                    'tkg_balance' => $tkg,
+                    'lp_pools_count' => $lpActivePoolsCount,
+                    'total_rewards' => $totalRewards,
+                    'net_worth' => $netWorth,
+                ]
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('wallet_analytics error', ['message' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch wallet analytics.',
+            ], 500);
+        }
+    }
+
     public function count_data()
     {
         try {
