@@ -222,30 +222,42 @@ const OpenWalletModal = () => {
 };
 const openBuyTkgModal = () => { buyTkgModal.value = true; };
 
+
+// const Links = [
+//   {
+//     name: 'Home',
+//     to: '/'
+//   },
+//   {
+//     name: 'Explore',
+//     to: '/#explore'
+//   },
+//   {
+//     name: 'Tokens',
+//     to: '/#tokens'
+//   },
+//   {
+//     name: 'Pools',
+//     to: '/#pools'
+//   },
+//   {
+//     name: 'Rewards',
+//     to: '/#lp-rewards'
+//   },
+//   {
+//     name: 'Portfolio',
+//     to: '/#portfolio'
+//   }
+// ]
+
 const Links = [
   {
-    name: 'Home',
-    to: '/'
+    name: 'Stake',
+    to: '/stake'
   },
   {
-    name: 'Explore',
-    to: '/#explore'
-  },
-  {
-    name: 'Tokens',
-    to: '/#tokens'
-  },
-  {
-    name: 'Pools',
-    to: '/#pools'
-  },
-  {
-    name: 'Rewards',
-    to: '/#lp-rewards'
-  },
-  {
-    name: 'Portfolio',
-    to: '/#portfolio'
+    name: 'Buy TKG Tokens',
+    openBuy: true,
   }
 ]
 
