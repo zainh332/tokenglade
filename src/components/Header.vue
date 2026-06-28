@@ -34,20 +34,6 @@
 
           <!-- Connect Wallet Button -->
           <div class="flex items-center gap-2 ">
-            <button @click="tokenSearchModal = true"
-              class="flex items-center gap-2 px-4 py-2 text-sm border rounded-full hover:bg-slate-50 transition">
-
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M21 21l-4.3-4.3m0 0A7.5 7.5 0 105.4 5.4a7.5 7.5 0 0011.3 11.3z" />
-
-              </svg>
-
-              <span class="text-slate-600">Search Token</span>
-
-            </button>
             <button v-if="!isConnected" @click="OpenWalletModal" class="text-xs text-white rounded-full btn-padding sm:text-t14
            bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]
            bg-[length:200%_200%] bg-no-repeat animate-gradientMove">
@@ -110,10 +96,7 @@
             </button>
           </template>
 
-          <button @click="() => { tokenSearchModal = true; close(); }"
-            class="w-full py-3 px-3 text-base font-medium text-gray-800 hover:bg-gray-50 rounded-lg text-left">
-            Search Token
-          </button>
+
 
           <button v-if="!isConnected" id="walletConnected" @click="() => { OpenWalletModal(); close(); }" type="button" class="w-full py-3 mt-2 text-base font-medium text-white rounded-lg
              bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]">
@@ -137,7 +120,6 @@
 
   <Modal :open="signInModal" />
   <ConnectWalletModal v-model="ConnectWalletModals" />
-  <TokenSearchModal v-model="tokenSearchModal" />
   <BuyTkgModal v-model="buyTkgModal" @open-wallet="OpenWalletModal" />
 
 </template>
@@ -152,7 +134,6 @@ import Modal from '@/components/Modal.vue';
 import ConnectWalletModal from './ConnectWallet.vue';
 import Swal from "sweetalert2";
 import { getCookie, disconnectWalletSession } from "../utils/utils.js";
-import TokenSearchModal from "@/components/TokenSearchModal.vue"
 import BuyTkgModal from "@/components/BuyTkgModal.vue"
 
 const signInModal = ref(false);
@@ -160,8 +141,6 @@ const ConnectWalletModals = ref(false);
 const buyTkgModal = ref(false);
 const walletPk = ref('')
 const emit = defineEmits(['wallet-status']);
-
-const tokenSearchModal = ref(false)
 
 const isConnected = computed(() => !!walletPk.value)
 
@@ -221,6 +200,34 @@ const OpenWalletModal = () => {
   ConnectWalletModals.value = true;
 };
 const openBuyTkgModal = () => { buyTkgModal.value = true; };
+
+
+// const Links = [
+//   {
+//     name: 'Home',
+//     to: '/'
+//   },
+//   {
+//     name: 'Explore',
+//     to: '/#explore'
+//   },
+//   {
+//     name: 'Tokens',
+//     to: '/#tokens'
+//   },
+//   {
+//     name: 'Pools',
+//     to: '/#pools'
+//   },
+//   {
+//     name: 'Rewards',
+//     to: '/#lp-rewards'
+//   },
+//   {
+//     name: 'Portfolio',
+//     to: '/#portfolio'
+//   }
+// ]
 
 const Links = [
   {

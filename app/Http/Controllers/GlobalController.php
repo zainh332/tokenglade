@@ -271,6 +271,131 @@ class GlobalController extends Controller
         }
     }
 
+    public function verified_projects()
+    {
+        try {
+            $projects = \App\Models\VerifiedProject::where('status', 1)
+                ->get()
+                ->map(function ($p) {
+                    $supply = 0;
+                    $price = 0.0;
+                    $liq = 0;
+                    $desc = "Verified asset \"{$p->asset_code}\" on the Stellar network.";
+                    $logoUrl = null;
+
+                    try {
+                        // Fetch details from StellarExpert on backend (immune to CORS!)
+                        $response = \Illuminate\Support\Facades\Http::timeout(5)
+                            ->get("https://api.stellar.expert/explorer/public/asset/{$p->asset_code}-{$p->identifier}");
+
+                        if ($response->successful()) {
+                            $data = $response->json();
+                            $supply = isset($data['supply']) ? (float)$data['supply'] / 10000000 : 0;
+                            $price = isset($data['price']) ? (float)$data['price'] : 0.0;
+                            $liq = isset($data['liquidity']) ? (float)$data['liquidity'] / 10000000 : 0;
+                            $desc = $data['toml_info']['conditions'] ?? ($data['toml_info']['desc'] ?? $desc);
+                            $logoUrl = $data['toml_info']['image'] ?? null;
+                        }
+                    } catch (\Throwable $seEx) {
+                        \Illuminate\Support\Facades\Log::warning("StellarExpert fetch failed for {$p->asset_code}", ['msg' => $seEx->getMessage()]);
+                    }
+
+                    return [
+                        'id' => $p->id,
+                        'name' => $p->name ?? $p->asset_code,
+                        'symbol' => $p->asset_code,
+                        'desc' => $desc,
+                        'mcap' => round($supply * $price),
+                        'supply' => round($supply),
+                        'liq' => round($liq),
+                        'logo_url' => $logoUrl,
+                        'website' => $p->website,
+                        'twitter' => $p->twitter,
+                    ];
+                });
+
+            return response()->json([
+                'status' => 'success',
+                'projects' => $projects,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('verified_projects error', ['message' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch verified projects.',
+            ], 500);
+        }
+    }
+
+    public function wallet_analytics(Request $request)
+    {
+        try {
+            $request->validate([
+                'public_wallet' => 'required|string|size:56|starts_with:G',
+            ]);
+
+            $publicKey = $request->public_wallet;
+
+            // Fetch balances from Stellar Network via Horizon SDK
+            $sdk = \Soneso\StellarSDK\StellarSDK::getPublicNetInstance();
+            $xlm = 0.0;
+            $tkg = 0.0;
+            try {
+                $account = $sdk->requestAccount($publicKey);
+                if ($account) {
+                    foreach ($account->getBalances() as $bal) {
+                        if ($bal->getAssetType() === 'native') {
+                            $xlm = (float) $bal->getBalance();
+                        } else if ($bal->getAssetCode() === 'TKG') {
+                            $tkg = (float) $bal->getBalance();
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Account not created or request failed
+            }
+
+            // Active LP Positions
+            $lpActivePoolsCount = \App\Models\LiquidityPoolParticipant::where('wallet_address', $publicKey)
+                ->where('is_active', 1)
+                ->count();
+
+            // Total Earned Staking Rewards
+            $stakingRewardsSum = \App\Models\StakingReward::whereHas('staking', function ($q) use ($publicKey) {
+                $q->whereHas('user', function ($u) use ($publicKey) {
+                    $u->where('public_key', $publicKey);
+                });
+            })->sum('amount');
+
+            // Total Earned LP Rewards
+            $lpRewardsSum = \App\Models\LpRewardDistribution::where('wallet_address', $publicKey)->sum('reward_amount');
+
+            $totalRewards = $stakingRewardsSum + $lpRewardsSum;
+
+            // Estimated Portfolio Net Worth (XLM price: $0.1254, TKG price: $0.0450 as fallbacks)
+            $xlmPrice = 0.1254;
+            $tkgPrice = 0.0450;
+            $netWorth = ($xlm * $xlmPrice) + ($tkg * $tkgPrice);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'xlm_balance' => $xlm,
+                    'tkg_balance' => $tkg,
+                    'lp_pools_count' => $lpActivePoolsCount,
+                    'total_rewards' => $totalRewards,
+                    'net_worth' => $netWorth,
+                ]
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('wallet_analytics error', ['message' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch wallet analytics.',
+            ], 500);
+        }
+    }
+
     public function count_data()
     {
         try {

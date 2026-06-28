@@ -1,8 +1,16 @@
 <template>
     <div>
         <Header />
-        <div class="container-fluid mx-auto pt-[8rem] pb-[6rem] relative top-0 z-0 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove">
-            <div class="flex flex-col lg:flex-row items-center justify-center gap-12">
+        <div class="container-fluid mx-auto pt-[8rem] pb-[6rem] relative top-0 z-0 bg-[#0B1020] overflow-hidden">
+            <!-- Blue Radial Glow Lighting treatment for Hero -->
+            <div
+                class="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[150px] pointer-events-none animate-pulse-slow">
+            </div>
+            <div
+                class="absolute -bottom-40 left-10 w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-[140px] pointer-events-none animate-pulse-slow">
+            </div>
+
+            <div class="flex flex-col lg:flex-row items-center justify-center gap-12 relative z-10">
                 <!-- Text Content -->
                 <div class="text-center lg:text-left max-w-3xl">
                     <h1 class="text-[32px] sm:text-[48px] lg:text-[64px] font-normal leading-tight text-white">
@@ -11,10 +19,8 @@
                             TKG, Earn More
                         </span>
                     </h1>
-                    <p class="text-[18px] sm:text-[20px] mt-4 text-white max-w-xl mx-auto lg:mx-0 px-4 sm:px-0">
-                        Put your tokens to work with TokenGlade’s staking module.
-                        Secure, seamless, and built for long-term rewards — up to 18% APY.
-                        The stronger you hold, the more you earn
+                    <p class="text-[18px] sm:text-[20px] mt-4 text-gray-400 max-w-xl mx-auto lg:mx-0 px-4 sm:px-0">
+                        Put your tokens to work with TokenGlade's staking module. Earn competitive rewards while helping strengthen the ecosystem through secure, transparent, and fully on-chain staking. Rewards of up to <strong class="font-extrabold text-cyan-400">18% APY</strong> are available based on the staking program.
                     </p>
                 </div>
 
@@ -519,12 +525,12 @@
             </div>
         </div>
 
-        <section class="container mx-auto mt-16 py-10 ">
-            <div class="w-full max-w-[80%] mx-auto bg-white rounded-2xl shadow-md overflow-hidden text-center">
-                <h2 class="text-3xl font-bold mb-2 mt-8">How Staking Works</h2>
+        <section class="container mx-auto mt-16 pb-10">
+            <div class="max-w-6xl px-4 pt-12 pb-8 mx-auto bg-white sm:px-6 lg:px-8 rounded-3xl sm:drop-shadow text-center">
+                <h2 class="text-3xl font-bold mb-2">How Staking Works</h2>
                 <p class="text-sm text-gray-600 mb-10">Earn rewards every 24 hours by staking $TKG</p>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-10 max-w-6xl mx-auto px-6 md:px-0 pb-10">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-10 max-w-6xl mx-auto pb-6">
                     <div class="flex flex-col items-center">
                         <div class="bg-green-100 p-4 rounded-full mb-4 animate-pulseSoft">
                             <img :src="Wallet" alt="Connect Wallet" class="w-12 h-12" />
@@ -569,9 +575,9 @@
         </section>
 
 
-        <section class="container mx-auto mt-16 py-10">
-            <div class="w-full max-w-[80%] mx-auto bg-white rounded-2xl shadow-md overflow-hidden">
-                <div class="px-6 py-5 border-b">
+        <section class="container mx-auto mt-16 pb-10">
+            <div class="max-w-6xl px-4 pt-8 pb-8 mx-auto bg-white sm:px-6 lg:px-8 rounded-3xl sm:drop-shadow">
+                <div class="px-6 py-5 border-b border-gray-100">
                     <h3 class="text-xl font-semibold">Frequently Asked Questions</h3>
                 </div>
 
@@ -1223,3 +1229,13 @@ async function refreshStats() {
 }
 
 </script>
+
+<style scoped>
+.animate-pulse-slow {
+  animation: pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+</style>
