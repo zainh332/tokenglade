@@ -96,12 +96,8 @@
 
             <!-- CTA Buttons -->
             <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
-              <a href="#tokens"
+              <button type="button" @click="openTokenModal"
                 class="w-full sm:w-auto inline-flex items-center justify-center font-black text-xs uppercase tracking-widest px-8 py-4 rounded-full text-white bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-95 hover:scale-[1.03] active:scale-[0.97] transition-all transform duration-200 shadow-xl shadow-cyan-500/20">
-                Explore Ecosystem
-              </a>
-              <button type="button" @click="isWalletConnected ? openTokenModal() : openConnectWalletModal()"
-                class="w-full sm:w-auto inline-flex items-center justify-center font-black text-xs uppercase tracking-widest px-8 py-4 rounded-full text-gray-300 border border-gray-800 hover:border-purple-500/30 hover:bg-gray-900/60 hover:text-white hover:scale-[1.03] active:scale-[0.97] transition-all transform duration-200">
                 Launch Token
               </button>
             </div>
