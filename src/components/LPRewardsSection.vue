@@ -67,7 +67,7 @@
             <span class="text-[16px] sm:text-2xl md:text-3xl xl:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 font-mono tracking-tighter my-1.5 md:my-3 leading-none">
               {{ displayWeeklyPool }}
             </span>
-            <span class="text-[10px] md:text-xs text-gray-500 font-semibold uppercase tracking-wider leading-normal">Distributed Every Sunday</span>
+            <span class="text-[10px] md:text-xs text-gray-500 font-semibold uppercase tracking-wider leading-normal">Distributed Every Monday</span>
           </div>
         </div>
 
@@ -201,13 +201,14 @@ const props = defineProps({
 
 const emit = defineEmits(['open-add-liquidity']);
 
-// Calculate days remaining to Sunday dynamically
+// Calculate days remaining to Monday dynamically
 const daysLeft = computed(() => {
   const now = new Date();
-  const nextSunday = new Date();
-  nextSunday.setUTCDate(nextSunday.getUTCDate() + (7 - nextSunday.getUTCDay()) % 7);
-  nextSunday.setUTCHours(0, 0, 0, 0);
-  const diffTime = nextSunday.getTime() - now.getTime();
+  const nextMonday = new Date();
+  const daysToAdd = (1 - nextMonday.getUTCDay() + 7) % 7 || 7;
+  nextMonday.setUTCDate(nextMonday.getUTCDate() + daysToAdd);
+  nextMonday.setUTCHours(0, 0, 0, 0);
+  const diffTime = nextMonday.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays > 0 ? diffDays : 7;
 });

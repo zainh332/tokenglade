@@ -20,7 +20,7 @@ class Kernel extends ConsoleKernel
 
         // LP rewards (controlled execution)
         $schedule->command('lp:distribute-rewards')
-            ->sundays()
+            ->mondays()
             ->hourly()
             ->withoutOverlapping()
             ->onOneServer();
