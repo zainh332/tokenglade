@@ -227,7 +227,6 @@
               <h3 class="text-lg font-black text-gray-950 tracking-tight flex items-center gap-2">
                 Trending Stellar Tokens
               </h3>
-              <a href="#tokens" class="text-xs text-cyan-600 font-bold hover:underline">View All</a>
             </div>
 
             <div class="overflow-x-auto">
@@ -380,10 +379,6 @@
               </div>
             </div>
 
-            <div class="border-t border-gray-100 pt-4 mt-6 flex justify-between items-center text-xs">
-              <span class="text-gray-400 uppercase text-[9px] font-bold">Weekly Distribution</span>
-              <span class="font-mono text-purple-600 font-black">{{ formatNumber(lpData.weekly_reward_pool) }} TKG Pool active</span>
-            </div>
           </div>
 
           <!-- Live Activity Feed (7 Columns) -->
