@@ -4,7 +4,7 @@
     <Header @wallet-status="handleWalletStatus" />
 
     <!-- SECTION 1 (DARK): Hero, Search, and Statistics Grid -->
-    <div id="explore" class="relative overflow-hidden pt-36 pb-16 lg:pt-44 lg:pb-24 bg-[#0B1020]">
+    <div id="explore" class="relative overflow-x-clip overflow-y-visible z-10 pt-36 pb-16 lg:pt-44 lg:pb-24 bg-[#0B1020]">
       <!-- Blue Radial Glow Lighting treatment for Hero -->
       <div
         class="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[150px] pointer-events-none animate-pulse-slow">
@@ -35,7 +35,7 @@
             </p>
 
             <!-- Expanded Search Bar (Premium Dark Etherscan/Arkham style) -->
-            <div class="relative max-w-2xl mx-auto lg:mx-0 group">
+            <div ref="searchContainerRef" class="relative max-w-2xl mx-auto lg:mx-0 group">
               <div
                 class="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-300">
               </div>
@@ -46,61 +46,50 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
-                <input type="text" v-model="searchQuery"
+                <input type="text" v-model="searchQuery" @focus="showDropdown = true"
                   class="bg-transparent w-full border-none focus:outline-none text-white text-sm placeholder-gray-500 mr-4"
-                  placeholder="Search Tokens, Wallets (G...), Transactions, Pools..." />
-                <button @click="triggerSearch"
-                  class="bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl hover:opacity-95 active:scale-95 transition-all duration-200">
-                  Search
+                  placeholder="Search Tokens" />
+                <button :disabled="loading" @click="searchAssets"
+                  class="bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-xl hover:opacity-95 active:scale-95 transition-all duration-200 disabled:opacity-50">
+                  {{ loading ? "Checking..." : "Search" }}
                 </button>
               </div>
 
               <!-- Search Results Dropdown -->
-              <div v-if="searchQuery.trim().length > 0"
-                class="absolute left-0 right-0 mt-3 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-2xl z-20 space-y-2 max-h-[300px] overflow-y-auto">
+              <div v-if="showDropdown && searchQuery.trim().length > 0"
+                class="absolute left-0 right-0 mt-3 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-2xl z-50 space-y-2 max-h-[300px] overflow-y-auto">
                 <p class="text-[10px] text-gray-555 font-bold uppercase tracking-wider mb-2">Search Results</p>
 
-                <!-- Wallet Detection -->
-                <div v-if="detectedWallet"
-                  class="p-2 hover:bg-gray-900 rounded-xl cursor-pointer transition flex items-center justify-between"
-                  @click="selectSearchWallet(detectedWallet)">
-                  <div class="flex items-center gap-2">
-                    <span class="text-purple-400">👤</span>
-                    <span class="text-xs font-bold text-white">Wallet Profile: {{ shortenAddress(detectedWallet)
-                      }}</span>
-                  </div>
-                  <span class="text-[10px] text-gray-500 uppercase">Stellar Address</span>
+                <!-- Loading State -->
+                <div v-if="loading" class="text-xs text-gray-400 py-2 flex items-center gap-2">
+                  <span class="animate-spin text-cyan-400">⌛</span> Checking Stellar Network...
                 </div>
 
-                <!-- Transaction Detection -->
-                <div v-if="detectedTx"
-                  class="p-2 hover:bg-gray-900 rounded-xl cursor-pointer transition flex items-center justify-between"
-                  @click="selectSearchTx(detectedTx)">
-                  <div class="flex items-center gap-2">
-                    <span class="text-cyan-400">📄</span>
-                    <span class="text-xs font-bold text-white">Transaction: {{ detectedTx.slice(0, 16) }}...</span>
-                  </div>
-                  <span class="text-[10px] text-gray-500 uppercase">Explorer Link</span>
+                <!-- Error State -->
+                <div v-else-if="error" class="text-xs text-red-400 py-2">
+                  {{ error }}
                 </div>
 
-                <!-- Regular tokens filtering -->
-                <div v-if="filteredTokens.length === 0 && !detectedWallet && !detectedTx"
-                  class="text-xs text-gray-400 py-2">
-                  No matching results found for "{{ searchQuery }}"
-                </div>
-
-                <div v-for="t in filteredTokens" :key="t.name"
-                  class="flex items-center justify-between p-2 hover:bg-gray-900 rounded-xl cursor-pointer transition"
-                  @click="selectSearchToken(t)">
-                  <div class="flex items-center gap-2">
-                    <span
-                      class="w-6 h-6 rounded-full bg-gray-900 flex items-center justify-center text-[10px] font-black text-cyan-400 border border-gray-800">
-                      {{ t.symbol }}
-                    </span>
-                    <span class="text-xs font-bold text-white">{{ t.name }}</span>
-                    <span class="text-[10px] text-gray-500 uppercase font-semibold">{{ t.symbol }}</span>
+                <!-- Empty State -->
+                <div v-else-if="assets.length === 0" class="text-xs text-gray-400 py-2">
+                  No matching tokens found for "{{ searchQuery }}"
+                </div>                <!-- Results List -->
+                <div v-else v-for="asset in assets" :key="`${asset.asset_code}_${asset.asset_issuer}`"
+                  @click="selectAsset(asset)"
+                  class="p-4 border-b border-gray-900 cursor-pointer last:border-b-0 hover:bg-gray-900 transition text-left">
+                  <div class="flex items-center gap-1.5 font-medium text-sm text-white">
+                      {{ asset.asset_code }}
+                      <img v-if="asset.is_verified" :src="verified" alt="Verified"
+                          class="flex-shrink-0 w-4 h-4" title="Verified Token" />
                   </div>
-                  <span class="text-xs text-cyan-400 font-mono font-bold">${{ t.price.toFixed(4) }}</span>
+
+                  <div class="mt-1 text-xs break-all text-gray-400">
+                      {{ asset.asset_issuer }}
+                  </div>
+
+                  <div class="mt-2 text-xs text-cyan-400">
+                      Holders: {{ asset.accounts.authorized }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -682,7 +671,8 @@ import Coin from "@/assets/coin.png";
 import verified from "@/assets/verify.png";
 
 import axios from 'axios'
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
 import { getCookie, getNetwork } from "../utils/utils.js";
 
 const isWalletConnected = ref(false);
@@ -701,6 +691,8 @@ const walletAnalytics = ref({
 });
 
 const searchQuery = ref('');
+const showDropdown = ref(false);
+const searchContainerRef = ref(null);
 const gainerTab = ref('gainers');
 
 // Last updated counter
@@ -742,27 +734,111 @@ const trendingTokens = ref([
 ]);
 
 // Search Helpers
-const detectedWallet = computed(() => {
-  const q = searchQuery.value.trim();
-  if (q.startsWith('G') && q.length === 56) {
-    return q;
-  }
-  return null;
-});
+const router = useRouter()
+const assets = ref([])
+const loading = ref(false)
+const error = ref("")
+let debounceTimeout = null
+let searchRequestId = 0
 
-const detectedTx = computed(() => {
-  const q = searchQuery.value.trim();
-  if (q.length === 64 && /^[a-fA-F0-9]+$/.test(q)) {
-    return q;
-  }
-  return null;
-});
+async function enrichVerificationStatus(assetList) {
+    const issuers = assetList.map((asset) => asset.asset_issuer)
+    if (!issuers.length) return;
+    try {
+        const { data } = await axios.post("/api/token/check-verification", {
+            issuers,
+        })
+        for (const asset of assetList) {
+            asset.is_verified = data.verified?.[asset.asset_issuer] === true
+        }
+    } catch {
+        for (const asset of assetList) {
+            asset.is_verified = false
+        }
+    }
+}
 
-const filteredTokens = computed(() => {
-  if (!searchQuery.value.trim()) return [];
-  const q = searchQuery.value.toLowerCase();
-  return trendingTokens.value.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q));
-});
+async function searchAssets() {
+    error.value = ""
+    const rawInput = searchQuery.value.trim()
+    if (!rawInput) {
+        assets.value = []
+        return
+    }
+    const requestId = ++searchRequestId
+    loading.value = true
+    try {
+        const queries = [rawInput]
+        if (rawInput !== rawInput.toUpperCase()) {
+            queries.push(rawInput.toUpperCase())
+        }
+        let allRecords = []
+        for (const code of queries) {
+            const res = await fetch(
+                `https://horizon.stellar.org/assets?asset_code=${encodeURIComponent(code)}&limit=200`
+            )
+            const data = await res.json()
+            if (data._embedded?.records?.length) {
+                allRecords = [...allRecords, ...data._embedded.records]
+            }
+        }
+        if (requestId !== searchRequestId) return;
+        if (!allRecords.length) {
+            assets.value = []
+            error.value = "No token found"
+            return
+        }
+        const uniqueAssets = Object.values(
+            allRecords.reduce((acc, asset) => {
+                const key = `${asset.asset_code}_${asset.asset_issuer}`
+                acc[key] = asset
+                return acc
+            }, {})
+        )
+        const sortedAssets = uniqueAssets.sort((a, b) => {
+            if (b.num_liquidity_pools !== a.num_liquidity_pools) {
+                return b.num_liquidity_pools - a.num_liquidity_pools
+            }
+            return b.accounts.authorized - a.accounts.authorized
+        })
+        await enrichVerificationStatus(sortedAssets)
+        if (requestId !== searchRequestId) return;
+        assets.value = sortedAssets.slice(0, 10)
+        error.value = ""
+    } catch (e) {
+        if (requestId !== searchRequestId) return;
+        error.value = "Failed to fetch assets"
+        assets.value = []
+    } finally {
+        if (requestId === searchRequestId) {
+            loading.value = false
+        }
+    }
+}
+
+watch(searchQuery, (newValue) => {
+    clearTimeout(debounceTimeout)
+    if (!newValue.trim()) {
+        assets.value = []
+        error.value = ""
+        return
+    }
+    debounceTimeout = setTimeout(() => {
+        searchAssets()
+    }, 500)
+})
+
+function selectAsset(asset) {
+    router.push({
+        path: "/token-insight",
+        query: {
+            asset_code: asset.asset_code,
+            issuer: asset.asset_issuer
+        }
+    })
+    searchQuery.value = ""
+    assets.value = []
+}
 
 const newTokensToday = ref(3);
 const newPoolsToday = ref(1);
@@ -1195,7 +1271,14 @@ function refreshWalletState() {
   }
 }
 
+function handleClickOutside(e) {
+  if (searchContainerRef.value && !searchContainerRef.value.contains(e.target)) {
+    showDropdown.value = false;
+  }
+}
+
 onMounted(async () => {
+  window.addEventListener('click', handleClickOutside);
   refreshWalletState();
   await fetchdata();
   await fetchLpData();
@@ -1220,6 +1303,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  window.removeEventListener('click', handleClickOutside);
   if (feedInterval) clearInterval(feedInterval);
   if (updateTickerInterval) clearInterval(updateTickerInterval);
 });
