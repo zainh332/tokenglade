@@ -242,7 +242,14 @@
                     <th class="pb-3 font-extrabold uppercase tracking-wider text-right">Sparkline</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody v-if="loadingTrendingTokens">
+                     <tr v-for="i in 6" :key="i">
+                         <td colspan="6" class="py-4">
+                             <div class="h-10 rounded-xl bg-gray-100 animate-pulse"></div>
+                         </td>
+                     </tr>
+                 </tbody>
+                <tbody v-else>
                   <tr v-for="t in trendingTokens" :key="t.symbol"
                     class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                     <td class="py-3.5 flex items-center gap-2">
@@ -288,11 +295,13 @@
                 <span class="text-[10px] text-gray-400 uppercase font-bold">Top Yields</span>
               </div>
 
-              <div class="space-y-4">
-                <div v-for="pool in poolsList" :key="pool.pair"
-                  class="flex items-center justify-between p-3.5 bg-white border border-gray-150 hover:border-purple-500/30 rounded-2xl transition-all duration-300 animate-fade-in">
-                  <div>
-                    <span class="font-black text-xs text-gray-900 block">{{ pool.pair }}</span>
+              <div v-if="loadingPoolsList" class="space-y-4">
+                    <div v-for="i in 4" :key="i" class="h-20 rounded-2xl border border-gray-150 bg-gray-100 animate-pulse"></div>
+              </div>
+              <div v-else class="space-y-4">
+                    <div v-for="pool in poolsList" :key="pool.pair" class="flex items-center justify-between p-3.5 bg-white border border-gray-150 hover:border-purple-500/30 rounded-2xl transition-all duration-300 animate-fade-in">
+                        <div>
+                            <span class="font-black text-xs text-gray-900 block">{{ pool.pair }}</span>
                     <span class="text-[10px] text-gray-400">TVL: ${{ pool.tvl.toLocaleString() }}</span>
                   </div>
                   <div class="text-right">
@@ -359,7 +368,12 @@
                   class="px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 border border-green-500/20 text-[9px] font-black uppercase tracking-wider">REAL-TIME</span>
               </div>
 
-              <div class="grid grid-cols-2 gap-4">
+              <div v-if="loadingHighlights" class="grid grid-cols-2 gap-4">
+                <div v-for="i in 4" :key="i" class="h-20 rounded-2xl bg-gray-100 animate-pulse">
+                </div>
+              </div>
+
+              <div v-else class="grid grid-cols-2 gap-4">
                 <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex flex-col justify-between h-20">
                   <span class="text-[9px] text-gray-400 uppercase font-bold tracking-wider">New Tokens Today</span>
                   <span class="text-base font-black text-gray-900 font-mono">{{ newTokensToday }} Tokens</span>
@@ -393,7 +407,13 @@
                 <span class="text-[10px] text-gray-400 uppercase font-semibold">Auto-refresh active</span>
               </div>
 
-              <div class="space-y-3 h-[230px] overflow-hidden relative">
+              <div v-if="loadingActivity" class="space-y-3">
+                  <div v-for="i in 5" :key="i"
+                      class="h-12 rounded-xl bg-gray-100 animate-pulse">
+                  </div>
+              </div>
+
+              <div v-else class="space-y-3 h-[230px] overflow-hidden relative">
                 <TransitionGroup name="list">
                   <a v-for="act in activityFeed" :key="act.id"
                     :href="act.txHash ? `https://stellar.expert/explorer/public/tx/${act.txHash}` : '#'"
@@ -666,6 +686,15 @@ const ConnectWalletModals = ref(false);
 const isAddLiquidityOpen = ref(false);
 const network = ref('public')
 const isTokenModalOpen = ref(false)
+
+// Loading States
+const loadingAnalytics = ref(false);
+const loadingLatestCreatedTokens = ref(false);
+const loadingFeaturedProjects = ref(false);
+const loadingTrendingTokens = ref(false);
+const loadingPoolsList = ref(false);
+const loadingHighlights = ref(false);
+const loadingActivity = ref(false);
 
 const walletAnalytics = ref({
   xlm_balance: 0,
@@ -962,6 +991,7 @@ async function fetchLpData() {
 }
 
 async function fetchLatestTokens() {
+  loadingLatestCreatedTokens.value = true;
   try {
     const response = await axios.get('/api/global/generated_tokens', {
       headers: { 'X-CSRF-TOKEN': csrfToken }
@@ -971,10 +1001,13 @@ async function fetchLatestTokens() {
     }
   } catch (error) {
     console.error("Error fetching latest tokens:", error);
+  } finally {
+    loadingLatestCreatedTokens.value = false;
   }
 }
 
 async function fetchFeaturedProjects() {
+  loadingFeaturedProjects.value = true;
   try {
     const response = await axios.get('/api/global/verified_projects', {
       headers: { 'X-CSRF-TOKEN': csrfToken }
@@ -984,11 +1017,14 @@ async function fetchFeaturedProjects() {
     }
   } catch (error) {
     console.error("Error fetching verified projects:", error);
+  } finally {
+    loadingFeaturedProjects.value = false;
   }
 }
 
 const sliderContainer = ref(null);
 
+// Slider navigation
 function scrollSlider(direction) {
   if (sliderContainer.value) {
     const cardWidth = sliderContainer.value.firstElementChild?.offsetWidth || 280;
@@ -997,6 +1033,7 @@ function scrollSlider(direction) {
 }
 
 async function fetchTrendingPools() {
+  loadingPoolsList.value = true;
   try {
     const res = await fetch('https://api.stellar.expert/explorer/public/liquidity-pool?limit=100');
     const data = await res.json();
@@ -1037,10 +1074,13 @@ async function fetchTrendingPools() {
     }
   } catch (error) {
     console.error("Error fetching trending pools:", error);
+  } finally {
+    loadingPoolsList.value = false;
   }
 }
 
 async function fetchTrendingTokens() {
+  loadingTrendingTokens.value = true;
   try {
     const res = await fetch('https://api.stellar.expert/explorer/public/asset?sort=rating&limit=100');
     const data = await res.json();
@@ -1116,10 +1156,13 @@ async function fetchTrendingTokens() {
     }
   } catch (error) {
     console.error("Error fetching trending tokens:", error);
+  } finally {
+    loadingTrendingTokens.value = false;
   }
 }
 
 async function fetchMarketHighlights() {
+  loadingHighlights.value = true;
   try {
     // 1. Fetch new tokens today
     const tokensRes = await fetch('https://api.stellar.expert/explorer/public/asset?limit=100&sort=created');
@@ -1158,10 +1201,13 @@ async function fetchMarketHighlights() {
     }
   } catch (error) {
     console.error("Error fetching market highlights:", error);
+  } finally {
+    loadingHighlights.value = false;
   }
 }
 
 async function fetchLiveActivity() {
+  loadingActivity.value = true;
   try {
     const res = await fetch('https://horizon.stellar.org/payments?limit=100&order=desc');
     const data = await res.json();
@@ -1217,6 +1263,8 @@ async function fetchLiveActivity() {
     }
   } catch (error) {
     console.error("Error fetching live activity feed:", error);
+  } finally {
+    loadingActivity.value = false;
   }
 }
 
@@ -1265,14 +1313,16 @@ function handleClickOutside(e) {
 onMounted(async () => {
   window.addEventListener('click', handleClickOutside);
   refreshWalletState();
-  await fetchdata();
-  await fetchLpData();
-  await fetchLatestTokens();
-  await fetchFeaturedProjects();
-  await fetchTrendingPools();
-  await fetchTrendingTokens();
-  await fetchMarketHighlights();
-  await fetchLiveActivity();
+await Promise.all([
+    fetchdata(),
+    fetchLpData(),
+    fetchLatestTokens(),
+    fetchFeaturedProjects(),
+    fetchTrendingPools(),
+    fetchTrendingTokens(),
+    fetchMarketHighlights(),
+    fetchLiveActivity(),
+]);
 
   feedInterval = setInterval(addMockActivity, 4000);
 
