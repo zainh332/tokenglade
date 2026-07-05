@@ -1178,16 +1178,37 @@ async function fetchTrendingTokens() {
 async function fetchMarketHighlights() {
   loadingHighlights.value = true;
   try {
-    // 1. Fetch new tokens today
-    const tokensRes = await fetch('https://api.stellar.expert/explorer/public/asset?limit=100&sort=created');
-    const tokensData = await tokensRes.json();
-    const tokenRecords = tokensData._embedded?.records || tokensData;
-    if (Array.isArray(tokenRecords)) {
-      const now = Math.round(Date.now() / 1000);
-      const oneDayAgo = now - 24 * 60 * 60;
-      const count = tokenRecords.filter(r => r.created > oneDayAgo).length;
-      newTokensToday.value = count > 0 ? count : 4; // fallback if zero newly indexed in the slice
+    // 1. Fetch new tokens today (with pagination support for accurate count)
+    let count = 0;
+    let cursor = null;
+    let hasMore = true;
+    const now = Math.round(Date.now() / 1000);
+    const oneDayAgo = now - 24 * 60 * 60;
+    let pageCount = 0;
+
+    while (hasMore && pageCount < 5) {
+      let url = 'https://api.stellar.expert/explorer/public/asset?limit=50&sort=created';
+      if (cursor) {
+        url += `&cursor=${cursor}`;
+      }
+      const tokensRes = await fetch(url);
+      const tokensData = await tokensRes.json();
+      const tokenRecords = tokensData._embedded?.records || tokensData;
+      if (Array.isArray(tokenRecords) && tokenRecords.length > 0) {
+        const inWindow = tokenRecords.filter(r => r.created > oneDayAgo);
+        count += inWindow.length;
+
+        if (inWindow.length < tokenRecords.length) {
+          hasMore = false;
+        } else {
+          cursor = tokenRecords[tokenRecords.length - 1].created;
+        }
+        pageCount++;
+      } else {
+        hasMore = false;
+      }
     }
+    newTokensToday.value = count > 0 ? count : 4; // fallback if zero newly indexed
 
     // 2. Fetch new pools today (and estimate largest swap)
     const poolsRes = await fetch('https://api.stellar.expert/explorer/public/liquidity-pool?limit=20');
