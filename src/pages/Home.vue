@@ -1066,8 +1066,8 @@ async function fetchTrendingPools() {
         };
       }).filter(p => p !== null && p.tvl > 100);
 
-      // Sort by TVL desc and take top 4
-      mappedPools.sort((a, b) => b.tvl - a.tvl);
+      // Sort by APR desc and take top 4
+      mappedPools.sort((a, b) => b.apr - a.apr);
       if (mappedPools.length > 0) {
         poolsList.value = mappedPools.slice(0, 4);
       }
