@@ -337,15 +337,19 @@ class GlobalController extends Controller
             $publicKey = $request->public_wallet;
 
             // Fetch balances from Stellar Network via Horizon SDK
-            $sdk = \Soneso\StellarSDK\StellarSDK::getPublicNetInstance();
             $xlm = 0.0;
             $tkg = 0.0;
+            $lpActivePoolsCount = 0;
             try {
-                $account = $sdk->requestAccount($publicKey);
+                $account = $this->sdk->requestAccount($publicKey);
                 if ($account) {
                     foreach ($account->getBalances() as $bal) {
                         if ($bal->getAssetType() === 'native') {
                             $xlm = (float) $bal->getBalance();
+                        } else if ($bal->getAssetType() === 'liquidity_pool_shares') {
+                            if ((float)$bal->getBalance() > 0) {
+                                $lpActivePoolsCount++;
+                            }
                         } else if ($bal->getAssetCode() === 'TKG') {
                             $tkg = (float) $bal->getBalance();
                         }
@@ -355,10 +359,26 @@ class GlobalController extends Controller
                 // Account not created or request failed
             }
 
-            // Active LP Positions
-            $lpActivePoolsCount = \App\Models\LiquidityPoolParticipant::where('wallet_address', $publicKey)
-                ->where('is_active', 1)
-                ->count();
+            // Active LP Positions from DB fallback
+            if ($lpActivePoolsCount === 0) {
+                $lpActivePoolsCount = \App\Models\LiquidityPoolParticipant::where('wallet_address', $publicKey)
+                    ->where(function($q) {
+                        $q->where('pool_shares', '>', 0)
+                          ->orWhere('is_active', 1);
+                    })
+                    ->count();
+            }
+
+            // Fetch Claimable Balances Count from Horizon API via SDK
+            $claimableBalancesCount = 0;
+            try {
+                $cbPage = $this->sdk->claimableBalances()->forClaimant($publicKey)->limit(200)->execute();
+                if ($cbPage && $cbPage->getClaimableBalances()) {
+                    $claimableBalancesCount = $cbPage->getClaimableBalances()->count();
+                }
+            } catch (\Throwable $cbEx) {
+                Log::warning("Failed to fetch claimable balances via SDK for {$publicKey}: " . $cbEx->getMessage());
+            }
 
             // Total Earned Staking Rewards
             $stakingRewardsSum = \App\Models\StakingReward::whereHas('staking', function ($q) use ($publicKey) {
@@ -384,6 +404,7 @@ class GlobalController extends Controller
                     'tkg_balance' => $tkg,
                     'lp_pools_count' => $lpActivePoolsCount,
                     'total_rewards' => $totalRewards,
+                    'claimable_balances_count' => $claimableBalancesCount,
                     'net_worth' => $netWorth,
                 ]
             ]);

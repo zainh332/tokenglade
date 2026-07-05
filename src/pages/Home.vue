@@ -160,8 +160,10 @@
                   </span>
                 </div>
                 <div class="bg-gray-900/40 border border-gray-850 rounded-2xl p-3.5 flex flex-col justify-between h-20">
-                  <span class="text-[9px] text-gray-400 font-bold uppercase">Claimable Rewards</span>
-                  <span class="text-xs font-black font-mono text-purple-400">{{ walletAnalytics.total_rewards.toLocaleString() }} TKG</span>
+                  <span class="text-[9px] text-gray-400 font-bold uppercase">Claimable Balances</span>
+                  <span class="text-xs font-black font-mono text-purple-400">
+                    {{ walletAnalytics.claimable_balances_count }} Active {{ walletAnalytics.claimable_balances_count === 1 ? 'Balance' : 'Balances' }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -701,6 +703,7 @@ const walletAnalytics = ref({
   tkg_balance: 0,
   lp_pools_count: 0,
   total_rewards: 0,
+  claimable_balances_count: 0,
   net_worth: 0
 });
 
