@@ -304,6 +304,7 @@ class GlobalController extends Controller
                         'id' => $p->id,
                         'name' => $p->name ?? $p->asset_code,
                         'symbol' => $p->asset_code,
+                        'issuer' => $p->identifier,
                         'desc' => $desc,
                         'mcap' => round($supply * $price),
                         'supply' => round($supply),

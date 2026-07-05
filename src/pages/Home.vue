@@ -504,7 +504,8 @@
             <div ref="sliderContainer"
               class="flex overflow-x-auto scrollbar-hide gap-6 pb-4 scroll-smooth snap-x snap-mandatory">
               <div v-for="project in featuredProjects" :key="project.symbol"
-                class="snap-start flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] bg-white border border-gray-150 rounded-3xl p-6 flex flex-col justify-between hover:border-purple-500/30 hover:shadow-xl transition-all duration-300">
+                @click="goToProject(project)"
+                class="snap-start flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] bg-white border border-gray-150 rounded-3xl p-6 flex flex-col justify-between hover:border-purple-500/30 hover:shadow-xl transition-all duration-300 cursor-pointer">
                 <div>
                   <div class="flex items-center gap-3 mb-4">
                     <div
@@ -514,9 +515,12 @@
                         {{ project.symbol?.slice(0, 2).toUpperCase() }}
                       </span>
                     </div>
-                    <div>
-                      <span class="font-bold text-gray-900 block text-sm">{{ project.name }}</span>
-                      <span class="text-[10px] text-gray-400 uppercase font-semibold">{{ project.symbol }}</span>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-1">
+                        <span class="font-bold text-gray-900 truncate text-sm" :title="project.name">{{ project.name }}</span>
+                        <img :src="verified" alt="Verified" class="w-3.5 h-3.5 flex-shrink-0" title="Verified Token" />
+                      </div>
+                      <span class="text-[10px] text-gray-400 uppercase font-semibold block">{{ project.symbol }}</span>
                     </div>
                   </div>
                 </div>
@@ -865,6 +869,18 @@ function selectAsset(asset) {
     })
     searchQuery.value = ""
     assets.value = []
+}
+
+function goToProject(project) {
+    if (project.symbol && project.issuer) {
+        router.push({
+            path: "/token-insight",
+            query: {
+                asset_code: project.symbol,
+                issuer: project.issuer
+            }
+        })
+    }
 }
 
 const newTokensToday = ref(3);
