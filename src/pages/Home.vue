@@ -130,10 +130,12 @@
               <div class="space-y-1">
                 <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Estimated Portfolio
                   Value</span>
-                <h3 class="text-3xl font-black text-white font-mono">
+                <h3 v-if="loadingWalletAnalytics" class="text-3xl font-black text-white/50 font-mono animate-pulse">
+                  Loading...
+                </h3>
+                <h3 v-else class="text-3xl font-black text-white font-mono">
                   ${{ walletAnalytics.net_worth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
                 </h3>
-                <span class="text-[10px] text-green-400 font-bold font-mono">Connected on Stellar public net</span>
               </div>
 
               <!-- Asset Allocation -->
@@ -142,11 +144,13 @@
                 <div class="space-y-1.5 text-xs">
                   <div class="flex justify-between items-center bg-gray-900/30 p-2 rounded-xl border border-gray-850">
                     <span class="font-bold text-gray-300">TKG Tokens</span>
-                    <span class="font-mono font-bold text-white">{{ walletAnalytics.tkg_balance.toLocaleString() }} TKG</span>
+                    <span v-if="loadingWalletAnalytics" class="font-mono text-gray-500 animate-pulse">Loading...</span>
+                    <span v-else class="font-mono font-bold text-white">{{ walletAnalytics.tkg_balance.toLocaleString() }} TKG</span>
                   </div>
                   <div class="flex justify-between items-center bg-gray-900/30 p-2 rounded-xl border border-gray-850">
                     <span class="font-bold text-gray-300">Stellar XLM</span>
-                    <span class="font-mono font-bold text-white">{{ walletAnalytics.xlm_balance.toLocaleString() }} XLM</span>
+                    <span v-if="loadingWalletAnalytics" class="font-mono text-gray-500 animate-pulse">Loading...</span>
+                    <span v-else class="font-mono font-bold text-white">{{ walletAnalytics.xlm_balance.toLocaleString() }} XLM</span>
                   </div>
                 </div>
               </div>
@@ -155,13 +159,19 @@
               <div class="grid grid-cols-2 gap-4">
                 <div class="bg-gray-900/40 border border-gray-850 rounded-2xl p-3.5 flex flex-col justify-between h-20">
                   <span class="text-[9px] text-gray-400 font-bold uppercase">LP Positions</span>
-                  <span class="text-xs font-black font-mono text-cyan-400">
+                  <span v-if="loadingWalletAnalytics" class="text-xs font-black font-mono text-cyan-500/70 animate-pulse">
+                    Loading...
+                  </span>
+                  <span v-else class="text-xs font-black font-mono text-cyan-400">
                     {{ walletAnalytics.lp_pools_count }} Active {{ walletAnalytics.lp_pools_count === 1 ? 'Pool' : 'Pools' }}
                   </span>
                 </div>
                 <div class="bg-gray-900/40 border border-gray-850 rounded-2xl p-3.5 flex flex-col justify-between h-20">
                   <span class="text-[9px] text-gray-400 font-bold uppercase">Claimable Balances</span>
-                  <span class="text-xs font-black font-mono text-purple-400">
+                  <span v-if="loadingWalletAnalytics" class="text-xs font-black font-mono text-purple-500/70 animate-pulse">
+                    Loading...
+                  </span>
+                  <span v-else class="text-xs font-black font-mono text-purple-400">
                     {{ walletAnalytics.claimable_balances_count }} Active {{ walletAnalytics.claimable_balances_count === 1 ? 'Balance' : 'Balances' }}
                   </span>
                 </div>
@@ -697,6 +707,7 @@ const loadingTrendingTokens = ref(false);
 const loadingPoolsList = ref(false);
 const loadingHighlights = ref(false);
 const loadingActivity = ref(false);
+const loadingWalletAnalytics = ref(false);
 
 const walletAnalytics = ref({
   xlm_balance: 0,
@@ -1285,6 +1296,7 @@ function readPk() {
 
 async function fetchWalletAnalytics() {
   if (!isWalletConnected.value || !walletKey.value) return;
+  loadingWalletAnalytics.value = true;
   try {
     const response = await axios.get('/api/global/wallet_analytics', {
       params: { public_wallet: walletKey.value },
@@ -1295,6 +1307,8 @@ async function fetchWalletAnalytics() {
     }
   } catch (error) {
     console.error("Error fetching wallet analytics:", error);
+  } finally {
+    loadingWalletAnalytics.value = false;
   }
 }
 
