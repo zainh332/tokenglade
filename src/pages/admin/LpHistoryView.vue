@@ -53,17 +53,31 @@
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-gray-950/40 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-850">
-              <th class="py-4 px-6">Wallet Address</th>
-              <th class="py-4 px-6">Cycle / Week</th>
-              <th class="py-4 px-6">Pool Share</th>
-              <th class="py-4 px-6">Amount Distributed</th>
-              <th class="py-4 px-6">TX Hash</th>
-              <th class="py-4 px-6">Status</th>
-              <th class="py-4 px-6">Timestamp</th>
+              <th @click="sortBy('wallet_address')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Wallet Address <span v-if="sortKey === 'wallet_address'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('cycle.week_number')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Cycle / Week <span v-if="sortKey === 'cycle.week_number'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('pool_share_percentage')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Pool Share <span v-if="sortKey === 'pool_share_percentage'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('reward_amount')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Amount Distributed <span v-if="sortKey === 'reward_amount'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('tx_hash')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                TX Hash <span v-if="sortKey === 'tx_hash'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('status')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Status <span v-if="sortKey === 'status'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('created_at')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Timestamp <span v-if="sortKey === 'created_at'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-850 text-sm text-gray-300">
-            <tr v-for="log in items" :key="log.id" class="hover:bg-gray-850/30 transition">
+            <tr v-for="log in sortedItems" :key="log.id" class="hover:bg-gray-850/30 transition">
               <td class="py-4 px-6 font-mono text-xs select-all" :title="log.wallet_address">
                 {{ shortAddress(log.wallet_address) }}
               </td>
@@ -141,7 +155,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 
 const items = ref([]);
@@ -149,6 +163,38 @@ const cycles = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
 const totalPages = ref(1);
+
+const sortKey = ref('');
+const sortOrder = ref('asc');
+
+function sortBy(key) {
+  if (sortKey.value === key) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortKey.value = key;
+    sortOrder.value = 'asc';
+  }
+}
+
+function getVal(obj, path) {
+  if (!path) return '';
+  return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+}
+
+const sortedItems = computed(() => {
+  if (!sortKey.value) return items.value;
+  return [...items.value].sort((a, b) => {
+    let aVal = getVal(a, sortKey.value);
+    let bVal = getVal(b, sortKey.value);
+    if (aVal === undefined || aVal === null) aVal = '';
+    if (bVal === undefined || bVal === null) bVal = '';
+    if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+    if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+    if (aVal < bVal) return sortOrder.value === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortOrder.value === 'asc' ? 1 : -1;
+    return 0;
+  });
+});
 
 const searchQuery = ref('');
 const selectedCycle = ref('');

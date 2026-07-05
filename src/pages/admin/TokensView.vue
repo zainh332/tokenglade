@@ -21,15 +21,25 @@
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-gray-950/40 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-850">
-              <th class="py-4 px-6">Asset Code</th>
-              <th class="py-4 px-6">Total Supply</th>
-              <th class="py-4 px-6">Issuer Public Key</th>
-              <th class="py-4 px-6">Creator Wallet</th>
-              <th class="py-4 px-6">Minted Date</th>
+              <th @click="sortBy('code')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Asset Code <span v-if="sortKey === 'code'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('supply')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Total Supply <span v-if="sortKey === 'supply'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('issuer')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Issuer Public Key <span v-if="sortKey === 'issuer'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('creator')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Creator Wallet <span v-if="sortKey === 'creator'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('created_at')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Minted Date <span v-if="sortKey === 'created_at'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-850 text-sm text-gray-300">
-            <tr v-for="token in items" :key="token.id" class="hover:bg-gray-850/30 transition">
+            <tr v-for="token in sortedItems" :key="token.id" class="hover:bg-gray-850/30 transition">
               <td class="py-4 px-6">
                 <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
                   {{ token.code }}
@@ -77,10 +87,41 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 
 const items = ref([]);
+const sortKey = ref('');
+const sortOrder = ref('asc');
+
+function sortBy(key) {
+  if (sortKey.value === key) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortKey.value = key;
+    sortOrder.value = 'asc';
+  }
+}
+
+function getVal(obj, path) {
+  if (!path) return '';
+  return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+}
+
+const sortedItems = computed(() => {
+  if (!sortKey.value) return items.value;
+  return [...items.value].sort((a, b) => {
+    let aVal = getVal(a, sortKey.value);
+    let bVal = getVal(b, sortKey.value);
+    if (aVal === undefined || aVal === null) aVal = '';
+    if (bVal === undefined || bVal === null) bVal = '';
+    if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+    if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+    if (aVal < bVal) return sortOrder.value === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortOrder.value === 'asc' ? 1 : -1;
+    return 0;
+  });
+});
 const loading = ref(false);
 const totalCount = ref(0);
 const currentPage = ref(1);

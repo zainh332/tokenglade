@@ -25,16 +25,26 @@
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-gray-950/40 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-850">
-              <th class="py-4 px-6">Asset Code</th>
-              <th class="py-4 px-6">Issuer Account</th>
-              <th class="py-4 px-6">Fee Amount</th>
-              <th class="py-4 px-6">Sort Position</th>
-              <th class="py-4 px-6">Status</th>
+              <th @click="sortBy('asset_code')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Asset Code <span v-if="sortKey === 'asset_code'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('asset_issuer')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Issuer Account <span v-if="sortKey === 'asset_issuer'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('amount')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Fee Amount <span v-if="sortKey === 'amount'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('position')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Sort Position <span v-if="sortKey === 'position'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('is_active')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Status <span v-if="sortKey === 'is_active'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
               <th class="py-4 px-6 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-850 text-sm text-gray-300">
-            <tr v-for="asset in items" :key="asset.id" class="hover:bg-gray-850/30 transition">
+            <tr v-for="asset in sortedItems" :key="asset.id" class="hover:bg-gray-850/30 transition">
               <td class="py-4 px-6">
                 <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">
                   {{ asset.asset_code }}
@@ -157,6 +167,38 @@ const items = ref([]);
 const loading = ref(false);
 const saving = ref(false);
 const showModal = ref(false);
+
+const sortKey = ref('');
+const sortOrder = ref('asc');
+
+function sortBy(key) {
+  if (sortKey.value === key) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortKey.value = key;
+    sortOrder.value = 'asc';
+  }
+}
+
+function getVal(obj, path) {
+  if (!path) return '';
+  return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+}
+
+const sortedItems = computed(() => {
+  if (!sortKey.value) return items.value;
+  return [...items.value].sort((a, b) => {
+    let aVal = getVal(a, sortKey.value);
+    let bVal = getVal(b, sortKey.value);
+    if (aVal === undefined || aVal === null) aVal = '';
+    if (bVal === undefined || bVal === null) bVal = '';
+    if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+    if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+    if (aVal < bVal) return sortOrder.value === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortOrder.value === 'asc' ? 1 : -1;
+    return 0;
+  });
+});
 
 const form = ref({
   id: null,

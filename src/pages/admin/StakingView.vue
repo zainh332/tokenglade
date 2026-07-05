@@ -29,15 +29,25 @@
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-gray-950/40 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-850">
-              <th class="py-4 px-6">Staker Address</th>
-              <th class="py-4 px-6">Staked Amount</th>
-              <th class="py-4 px-6">Total Accrued Rewards</th>
-              <th class="py-4 px-6">Status</th>
-              <th class="py-4 px-6">Unlock Date</th>
+              <th @click="sortBy('address')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Staker Address <span v-if="sortKey === 'address'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('locked_amount')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Staked Amount <span v-if="sortKey === 'locked_amount'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('total_rewards')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Total Accrued Rewards <span v-if="sortKey === 'total_rewards'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('status')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Status <span v-if="sortKey === 'status'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('unlock_date')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Unlock Date <span v-if="sortKey === 'unlock_date'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-850 text-sm text-gray-300">
-            <tr v-for="stake in items" :key="stake.id" class="hover:bg-gray-850/30 transition">
+            <tr v-for="stake in sortedItems" :key="stake.id" class="hover:bg-gray-850/30 transition">
               <td class="py-4 px-6 font-mono text-xs select-all" :title="stake.address">{{ shortAddr(stake.address) }}</td>
               <td class="py-4 px-6 font-mono font-bold text-purple-400">{{ stake.locked_amount.toLocaleString(undefined, {minimumFractionDigits:2}) }} TKG</td>
               <td class="py-4 px-6 font-mono font-bold text-pink-400">{{ stake.total_rewards.toLocaleString(undefined, {minimumFractionDigits:7}) }} TKG</td>
@@ -87,10 +97,41 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 
 const items = ref([]);
+const sortKey = ref('');
+const sortOrder = ref('asc');
+
+function sortBy(key) {
+  if (sortKey.value === key) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortKey.value = key;
+    sortOrder.value = 'asc';
+  }
+}
+
+function getVal(obj, path) {
+  if (!path) return '';
+  return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+}
+
+const sortedItems = computed(() => {
+  if (!sortKey.value) return items.value;
+  return [...items.value].sort((a, b) => {
+    let aVal = getVal(a, sortKey.value);
+    let bVal = getVal(b, sortKey.value);
+    if (aVal === undefined || aVal === null) aVal = '';
+    if (bVal === undefined || bVal === null) bVal = '';
+    if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+    if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+    if (aVal < bVal) return sortOrder.value === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortOrder.value === 'asc' ? 1 : -1;
+    return 0;
+  });
+});
 const loading = ref(false);
 const currentPage = ref(1);
 const totalPages = ref(1);

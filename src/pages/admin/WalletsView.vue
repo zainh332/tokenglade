@@ -21,14 +21,22 @@
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-gray-950/40 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-850">
-              <th class="py-4 px-6">Public Key (Wallet)</th>
-              <th class="py-4 px-6">Native Balance (XLM)</th>
-              <th class="py-4 px-6">Connected date</th>
-              <th class="py-4 px-6">Last active</th>
+              <th @click="sortBy('address')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Public Key (Wallet) <span v-if="sortKey === 'address'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('balance')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Native Balance (XLM) <span v-if="sortKey === 'balance'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('created_at')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Connected date <span v-if="sortKey === 'created_at'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('last_active')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Last active <span v-if="sortKey === 'last_active'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-850 text-sm text-gray-300">
-            <tr v-for="user in items" :key="user.id" class="hover:bg-gray-850/30 transition">
+            <tr v-for="user in sortedItems" :key="user.id" class="hover:bg-gray-850/30 transition">
               <td class="py-4 px-6 font-mono select-all">{{ user.address }}</td>
               <td class="py-4 px-6 text-yellow-400 font-mono font-bold">{{ user.balance.toLocaleString(undefined, {minimumFractionDigits:2}) }} XLM</td>
               <td class="py-4 px-6">{{ formatDate(user.created_at) }}</td>
@@ -71,10 +79,41 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 
 const items = ref([]);
+const sortKey = ref('');
+const sortOrder = ref('asc');
+
+function sortBy(key) {
+  if (sortKey.value === key) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortKey.value = key;
+    sortOrder.value = 'asc';
+  }
+}
+
+function getVal(obj, path) {
+  if (!path) return '';
+  return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+}
+
+const sortedItems = computed(() => {
+  if (!sortKey.value) return items.value;
+  return [...items.value].sort((a, b) => {
+    let aVal = getVal(a, sortKey.value);
+    let bVal = getVal(b, sortKey.value);
+    if (aVal === undefined || aVal === null) aVal = '';
+    if (bVal === undefined || bVal === null) bVal = '';
+    if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+    if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+    if (aVal < bVal) return sortOrder.value === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortOrder.value === 'asc' ? 1 : -1;
+    return 0;
+  });
+});
 const loading = ref(false);
 const totalCount = ref(0);
 const currentPage = ref(1);

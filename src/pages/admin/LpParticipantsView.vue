@@ -72,17 +72,31 @@
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-gray-950/40 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-850">
-              <th class="py-4 px-6">Wallet Address</th>
-              <th class="py-4 px-6">Stellar Status</th>
-              <th class="py-4 px-6">App Status</th>
-              <th class="py-4 px-6">Shares</th>
-              <th class="py-4 px-6">TKG Added</th>
-              <th class="py-4 px-6">XLM Added</th>
-              <th class="py-4 px-6">Last Synced</th>
+              <th @click="sortBy('wallet_address')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Wallet Address <span v-if="sortKey === 'wallet_address'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('wallet_status')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Stellar Status <span v-if="sortKey === 'wallet_status'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('is_active')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                App Status <span v-if="sortKey === 'is_active'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('pool_shares')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Shares <span v-if="sortKey === 'pool_shares'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('tkg_amount')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                TKG Added <span v-if="sortKey === 'tkg_amount'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('xlm_amount')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                XLM Added <span v-if="sortKey === 'xlm_amount'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('updated_at')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
+                Last Synced <span v-if="sortKey === 'updated_at'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-850 text-sm text-gray-300">
-            <tr v-for="user in items" :key="user.id" class="hover:bg-gray-850/30 transition">
+            <tr v-for="user in sortedItems" :key="user.id" class="hover:bg-gray-850/30 transition">
               <td class="py-4 px-6 font-mono select-all text-xs" :title="user.wallet_address">{{ shortAddress(user.wallet_address) }}</td>
               <td class="py-4 px-6">
                 <span 
@@ -142,10 +156,41 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 
 const items = ref([]);
+const sortKey = ref('');
+const sortOrder = ref('asc');
+
+function sortBy(key) {
+  if (sortKey.value === key) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortKey.value = key;
+    sortOrder.value = 'asc';
+  }
+}
+
+function getVal(obj, path) {
+  if (!path) return '';
+  return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+}
+
+const sortedItems = computed(() => {
+  if (!sortKey.value) return items.value;
+  return [...items.value].sort((a, b) => {
+    let aVal = getVal(a, sortKey.value);
+    let bVal = getVal(b, sortKey.value);
+    if (aVal === undefined || aVal === null) aVal = '';
+    if (bVal === undefined || bVal === null) bVal = '';
+    if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+    if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+    if (aVal < bVal) return sortOrder.value === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortOrder.value === 'asc' ? 1 : -1;
+    return 0;
+  });
+});
 const loading = ref(false);
 const syncing = ref(false);
 const currentPage = ref(1);
