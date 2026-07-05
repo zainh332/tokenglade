@@ -5,6 +5,7 @@ import TokensView from "./pages/admin/TokensView.vue";
 import StakingView from "./pages/admin/StakingView.vue";
 import LpParticipantsView from "./pages/admin/LpParticipantsView.vue";
 import LpHistoryView from "./pages/admin/LpHistoryView.vue";
+import VerificationFeesView from "./pages/admin/VerificationFeesView.vue";
 
 const routes = [
     {
@@ -39,6 +40,11 @@ const routes = [
                 path: "lp-history",
                 component: LpHistoryView,
                 meta: { title: "Admin — LP Reward Payout History" }
+            },
+            {
+                path: "verification-fees",
+                component: VerificationFeesView,
+                meta: { title: "Admin — Verification Project Fees" }
             }
         ]
     }

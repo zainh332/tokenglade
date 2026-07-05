@@ -58,6 +58,9 @@ Route::middleware('admin')->prefix('admin')->group(function () {
     Route::get('settings', 'AdminController@getSettings');
     Route::post('settings', 'AdminController@updateSettings');
     Route::get('lp-history', 'AdminController@lpHistory');
+    Route::get('verification-fees', 'AdminController@getVerificationFees');
+    Route::post('verification-fees', 'AdminController@saveVerificationFee');
+    Route::delete('verification-fees/{id}', 'AdminController@deleteVerificationFee');
 });
 
 Route::prefix('token')->group(function () {

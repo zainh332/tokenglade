@@ -266,4 +266,61 @@ class AdminController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Get verification payment fees / assets list.
+     */
+    public function getVerificationFees(Request $request)
+    {
+        $fees = \App\Models\VerificationPaymentAsset::orderBy('position', 'asc')->get();
+        return response()->json([
+            'status' => 'success',
+            'data' => $fees
+        ]);
+    }
+
+    /**
+     * Create or update verification fee.
+     */
+    public function saveVerificationFee(Request $request)
+    {
+        $request->validate([
+            'asset_code' => 'required|string|max:12',
+            'asset_issuer' => 'nullable|string|size:56',
+            'amount' => 'required|numeric|min:0',
+            'is_active' => 'required|boolean',
+            'position' => 'required|integer',
+        ]);
+
+        $fee = \App\Models\VerificationPaymentAsset::updateOrCreate(
+            ['id' => $request->id],
+            [
+                'asset_code' => $request->asset_code,
+                'asset_issuer' => $request->asset_issuer,
+                'amount' => $request->amount,
+                'is_active' => $request->is_active,
+                'position' => $request->position,
+            ]
+        );
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Verification fee saved successfully.',
+            'data' => $fee
+        ]);
+    }
+
+    /**
+     * Delete verification fee.
+     */
+    public function deleteVerificationFee($id)
+    {
+        $fee = \App\Models\VerificationPaymentAsset::findOrFail($id);
+        $fee->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Verification fee deleted successfully.'
+        ]);
+    }
 }
