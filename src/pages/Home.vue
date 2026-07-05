@@ -743,7 +743,6 @@ const trendingTokens = ref([
   { name: 'Stellar XLM', symbol: 'XLM', price: 0.1254, change: 4.82, liquidity: 450000, volume: 82000, sparkline: 'M0,20 L20,15 L40,25 L60,10 L80,18 L100,5' },
   { name: 'TokenGlade', symbol: 'TKG', price: 0.0450, change: 8.42, liquidity: 180000, volume: 15450, sparkline: 'M0,25 L20,20 L40,15 L60,8 L80,5 L100,2' },
   { name: 'Aquarius', symbol: 'AQUA', price: 0.0084, change: -1.25, liquidity: 145000, volume: 48250, sparkline: 'M0,5 L20,10 L40,8 L60,18 L80,15 L100,22' },
-  { name: 'USD Coin', symbol: 'USDC', price: 1.0000, change: 0.00, liquidity: 850000, volume: 142000, sparkline: 'M0,15 L20,15 L40,15 L60,15 L80,15 L100,15' },
   { name: 'Yield XLM', symbol: 'yXLM', price: 0.1265, change: 4.60, liquidity: 98000, volume: 12400, sparkline: 'M0,18 L20,14 L40,22 L60,12 L80,16 L100,6' }
 ]);
 
@@ -1088,7 +1087,8 @@ async function fetchTrendingTokens() {
     if (Array.isArray(records)) {
       const mapped = records.map(r => {
         const code = r.tomlInfo?.code || r.asset.split('-')[0];
-        if (code === 'XLM') return null;
+        const upperCode = code.toUpperCase();
+        if (upperCode === 'XLM' || upperCode === 'USDC' || upperCode === 'YUSDC') return null;
 
         let name = r.tomlInfo?.name || r.tomlInfo?.orgName || code;
         if (name.length > 20) {
