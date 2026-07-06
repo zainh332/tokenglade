@@ -113,6 +113,14 @@ const FeeIcon = {
   `
 };
 
+const VerificationIcon = {
+  template: `
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+    </svg>
+  `
+};
+
 const route = useRoute();
 const adminPk = ref(getCookie('public_key') || localStorage.getItem('public_key') || 'Not Connected');
 const csrfToken = window.Laravel?.csrfToken || '';
@@ -124,6 +132,7 @@ const navItems = [
   { name: 'LP Participants', to: '/admin/lp-participants', icon: LpIcon },
   { name: 'LP Reward History', to: '/admin/lp-history', icon: HistoryIcon },
   { name: 'Verification Fees', to: '/admin/verification-fees', icon: FeeIcon },
+  { name: 'Project Verification', to: '/admin/project-verification', icon: VerificationIcon },
 ];
 
 const currentPageTitle = computed(() => {
@@ -133,6 +142,7 @@ const currentPageTitle = computed(() => {
   if (route.path.includes('/lp-participants')) return 'Liquidity Pool Participants';
   if (route.path.includes('/lp-history')) return 'LP Reward Payout History';
   if (route.path.includes('/verification-fees')) return 'Verification Project Fees';
+  if (route.path.includes('/project-verification')) return 'Project Verification Claims';
   return 'Admin dashboard';
 });
 

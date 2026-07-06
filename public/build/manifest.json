@@ -3,12 +3,12 @@
     "file": "assets/hearing-2a11677a.js"
   },
   "resources/css/app.css": {
-    "file": "assets/app-28e3a961.css",
+    "file": "assets/app-9000887a.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
   "src/admin-main.js": {
-    "file": "assets/admin-main-d3001bd8.js",
+    "file": "assets/admin-main-5da36553.js",
     "imports": [
       "_hearing-2a11677a.js"
     ],

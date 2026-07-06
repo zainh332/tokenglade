@@ -6,6 +6,7 @@ import StakingView from "./pages/admin/StakingView.vue";
 import LpParticipantsView from "./pages/admin/LpParticipantsView.vue";
 import LpHistoryView from "./pages/admin/LpHistoryView.vue";
 import VerificationFeesView from "./pages/admin/VerificationFeesView.vue";
+import ProjectVerificationView from "./pages/admin/ProjectVerificationView.vue";
 
 const routes = [
     {
@@ -45,6 +46,11 @@ const routes = [
                 path: "verification-fees",
                 component: VerificationFeesView,
                 meta: { title: "Admin — Verification Project Fees" }
+            },
+            {
+                path: "project-verification",
+                component: ProjectVerificationView,
+                meta: { title: "Admin — Project Verification Claims" }
             }
         ]
     }
