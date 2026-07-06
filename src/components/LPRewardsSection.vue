@@ -278,7 +278,13 @@ function runAnimations() {
   animateValue(props.totalDistributed, displayTotalDistributed, " TKG");
   animateValue(props.activeProviders, displayTotalWallets, " Wallets");
   animateValue(props.weeklyRewardPool, displayWeeklyPool, " TKG");
-  animateValue(props.currentWeek, displayWeek, "");
+  
+  let computedWeek = props.currentWeek;
+  if (!computedWeek || computedWeek === 0) {
+    const weeks = finalCyclesList.value.map(c => Number(c.week) || 0);
+    computedWeek = weeks.length > 0 ? Math.max(...weeks) + 1 : 27;
+  }
+  animateValue(computedWeek, displayWeek, "");
 }
 
 onMounted(() => {
