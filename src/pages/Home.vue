@@ -308,7 +308,9 @@
               </div>
 
               <div v-if="loadingPoolsList" class="space-y-4">
-                    <div v-for="i in 4" :key="i" class="h-20 rounded-2xl border border-gray-150 bg-gray-100 animate-pulse"></div>
+                    <div v-for="i in 4" :key="i" class="h-20 rounded-2xl border border-gray-150 bg-gray-50 p-3.5 flex items-center animate-pulse">
+                      <span class="text-xs text-gray-400 font-semibold">Loading Pools...</span>
+                    </div>
               </div>
               <div v-else class="space-y-4">
                     <div v-for="pool in poolsList" :key="pool.pair" class="flex items-center justify-between p-3.5 bg-white border border-gray-150 hover:border-purple-500/30 rounded-2xl transition-all duration-300 animate-fade-in">
@@ -377,7 +379,8 @@
               </div>
 
               <div v-if="loadingHighlights" class="grid grid-cols-2 gap-4">
-                <div v-for="i in 4" :key="i" class="h-20 rounded-2xl bg-gray-100 animate-pulse">
+                <div v-for="i in 4" :key="i" class="h-20 rounded-2xl bg-gray-50 border border-gray-100 p-4 flex flex-col justify-between animate-pulse">
+                  <span class="text-[9px] text-gray-400 font-bold uppercase">Loading...</span>
                 </div>
               </div>
 
@@ -417,7 +420,8 @@
 
               <div v-if="loadingActivity" class="space-y-3">
                   <div v-for="i in 5" :key="i"
-                      class="h-12 rounded-xl bg-gray-100 animate-pulse">
+                      class="h-[46px] rounded-xl bg-gray-50 border border-gray-100 p-2.5 flex items-center animate-pulse">
+                      <span class="text-xs text-gray-400">Loading Feed...</span>
                   </div>
               </div>
 
@@ -497,7 +501,12 @@
             </button>
 
             <!-- Scrollable Slider Container -->
-            <div ref="sliderContainer"
+            <div v-if="loadingFeaturedProjects" class="flex gap-6 pb-4">
+              <div v-for="i in 4" :key="i" class="flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] bg-gray-50 border border-gray-150 rounded-3xl p-6 flex flex-col justify-between h-44 animate-pulse">
+                <span class="text-xs text-gray-400 font-bold">Loading Projects...</span>
+              </div>
+            </div>
+            <div v-else ref="sliderContainer"
               class="flex overflow-x-auto scrollbar-hide gap-6 pb-4 scroll-smooth snap-x snap-mandatory">
               <div v-for="project in featuredProjects" :key="project.symbol"
                 @click="goToProject(project)"
@@ -545,7 +554,12 @@
             <span class="text-xs text-gray-400 font-semibold">Live creation monitoring</span>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-if="loadingLatestCreatedTokens" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-for="i in 3" :key="i" class="bg-gray-55 rounded-3xl border border-gray-150 p-6 h-48 animate-pulse flex flex-col justify-between">
+              <span class="text-xs text-gray-400 font-bold">Loading Tokens...</span>
+            </div>
+          </div>
+          <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div v-for="token in latestCreatedTokens" :key="token.id"
               class="relative bg-white rounded-3xl border border-gray-150 shadow-md p-6 flex flex-col justify-between hover:shadow-lg transition duration-300">
               
