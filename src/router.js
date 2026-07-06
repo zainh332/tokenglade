@@ -29,8 +29,8 @@ const routes = [
         path: "/",
         component: Home,
         meta: {
-            title: "TokenGlade — Create Tokens on Stellar (More Chains Coming Soon)",
-            description: "TokenGlade is a no-code platform that lets you create and launch tokens instantly on the Stellar blockchain. More blockchains like Ripple and Ethereum coming soon. Fast, secure, and developer-free token generation."
+            title: "TokenGlade | Create, Mint, Discover & Trade Stellar Tokens",
+            description: "Create and mint Stellar tokens in minutes, discover newly launched assets, explore liquidity pools, track wallet activity, and stay updated with the latest trends across the Stellar ecosystem with TokenGlade."
         },
     },
     // {
@@ -67,8 +67,8 @@ const routes = [
         path: "/about-us",
         component: aboutus,
         meta: {
-            title: "About TokenGlade — No-Code Blockchain Token Creation Platform",
-            description: "Learn more about TokenGlade, a no-code multi-chain token creation platform. Discover our mission to simplify blockchain, starting with Stellar and expanding to Ripple, Ethereum, and more."
+            title: "About TokenGlade | Building Tools for the Stellar Ecosystem",
+            description: "Learn about TokenGlade and our mission to simplify the Stellar ecosystem with powerful tools for token creation, discovery, liquidity management, staking, wallet analytics, and blockchain innovation."
         },
     },
     {
@@ -91,8 +91,8 @@ const routes = [
         path: "/stake",
         component: Staking,
         meta: {
-            title: "Stake $TKG Tokens",
-            description: ""
+            title: "Stellar Token Staking | Earn Rewards with TokenGlade",
+            description: "Stake supported Stellar tokens through TokenGlade to earn rewards, monitor your staking positions, track earnings, and manage your assets with a simple and secure staking experience."
         },
     },
     {
