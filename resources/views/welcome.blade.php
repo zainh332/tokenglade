@@ -3,6 +3,9 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        @if(config('app.env') === 'staging')
+            <meta name="robots" content="noindex, nofollow">
+        @endif
         <meta name="csrf-token" content="{{ csrf_token() }}">
         @vite(['src/main.js', 'resources/css/app.css'])
         <link rel="icon" type="image/png" href="{{ Vite::asset('src/assets/token-glade-logo.png') }}">
