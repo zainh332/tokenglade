@@ -67,6 +67,8 @@
               <th class="py-4 px-6">Payment Asset</th>
               <th class="py-4 px-6">Amount</th>
               <th class="py-4 px-6">Payment Tx Link</th>
+              <th class="py-4 px-6">Submitted At</th>
+              <th class="py-4 px-6">Updated At</th>
               <th class="py-4 px-6">Status</th>
               <th class="py-4 px-6 text-right">Actions</th>
             </tr>
@@ -119,6 +121,14 @@
                   </svg>
                 </a>
               </td>
+              <!-- Submitted At -->
+              <td class="py-4 px-6 text-xs text-gray-400 font-mono">
+                {{ formatDate(claim.created_at) }}
+              </td>
+              <!-- Updated At -->
+              <td class="py-4 px-6 text-xs text-gray-400 font-mono">
+                {{ formatDate(claim.updated_at) }}
+              </td>
               <!-- Status -->
               <td class="py-4 px-6">
                 <div class="flex flex-col items-start gap-1">
@@ -152,12 +162,12 @@
               </td>
             </tr>
             <tr v-if="!filteredItems.length && !loading">
-              <td colspan="8" class="py-12 text-center text-gray-500">
+              <td colspan="10" class="py-12 text-center text-gray-500">
                 No verification claims matching your criteria.
               </td>
             </tr>
             <tr v-if="loading">
-              <td colspan="8" class="py-12 text-center">
+              <td colspan="10" class="py-12 text-center">
                 <span class="w-6 h-6 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin inline-block"></span>
               </td>
             </tr>
@@ -245,7 +255,8 @@ const defaultClaims = [
     payment_asset: 'TKG',
     payment_amount: 500,
     status: 'approved',
-    created_at: '2026-06-25T12:00:00Z'
+    created_at: '2026-06-25T12:00:00Z',
+    updated_at: '2026-06-25T14:30:00Z'
   },
   {
     id: 2,
@@ -258,7 +269,8 @@ const defaultClaims = [
     payment_asset: 'XLM',
     payment_amount: 150,
     status: 'pending',
-    created_at: '2026-07-04T15:30:00Z'
+    created_at: '2026-07-04T15:30:00Z',
+    updated_at: '2026-07-04T15:30:00Z'
   },
   {
     id: 3,
@@ -271,7 +283,8 @@ const defaultClaims = [
     payment_asset: 'USDC',
     payment_amount: 25,
     status: 'pending',
-    created_at: '2026-07-06T09:12:00Z'
+    created_at: '2026-07-06T09:12:00Z',
+    updated_at: '2026-07-06T09:12:00Z'
   },
   {
     id: 4,
@@ -285,7 +298,8 @@ const defaultClaims = [
     payment_amount: 500,
     status: 'rejected',
     rejection_reason: 'Domain mismatch and high risk factor detected.',
-    created_at: '2026-06-20T10:15:00Z'
+    created_at: '2026-06-20T10:15:00Z',
+    updated_at: '2026-06-21T08:00:00Z'
   }
 ];
 
@@ -364,10 +378,22 @@ function updateLocalClaim(id, newStatus, reason) {
   const idx = items.value.findIndex(item => item.id === id);
   if (idx !== -1) {
     items.value[idx].status = newStatus;
+    items.value[idx].updated_at = new Date().toISOString();
     if (newStatus === 'rejected') {
       items.value[idx].rejection_reason = reason;
     }
   }
+}
+
+function formatDate(isoStr) {
+  if (!isoStr) return '—';
+  return new Date(isoStr).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 }
 
 function shortAddr(addr) {
