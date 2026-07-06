@@ -3,7 +3,7 @@
     "file": "assets/hearing-2a11677a.js"
   },
   "resources/css/app.css": {
-    "file": "assets/app-f3d0e731.css",
+    "file": "assets/app-28e3a961.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
@@ -84,7 +84,7 @@
     "src": "src/assets/wallet.jpg"
   },
   "src/main.css": {
-    "file": "assets/main-1c0e25df.css",
+    "file": "assets/main-2c7136fb.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -106,9 +106,9 @@
       "assets/stop-abbef106.png"
     ],
     "css": [
-      "assets/main-1c0e25df.css"
+      "assets/main-2c7136fb.css"
     ],
-    "file": "assets/main-abf156cd.js",
+    "file": "assets/main-5a683f1f.js",
     "imports": [
       "_hearing-2a11677a.js"
     ],
