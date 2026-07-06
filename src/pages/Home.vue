@@ -318,10 +318,6 @@
                   </div>
                   <div class="text-right">
                     <span class="font-mono font-bold text-xs text-green-600 block">{{ pool.apr }}% APR</span>
-                    <button @click="openAddLiquidity"
-                      class="text-[9px] font-black text-cyan-600 hover:text-cyan-500 uppercase tracking-widest hover:underline">
-                      Join Pool
-                    </button>
                   </div>
                 </div>
               </div>
