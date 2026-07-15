@@ -30,7 +30,12 @@
           </div>
 
         </div>
-        <div class="hidden sm:ml-6 lg:flex sm:items-center">
+        <div class="hidden sm:ml-6 lg:flex sm:items-center gap-3">
+          <!-- Search Token Button -->
+          <button @click="showSearchModal = true" class="flex items-center gap-2 px-3.5 py-2 text-t14 text-gray-500 hover:text-gray-900 border border-gray-200 rounded-full bg-gray-50 hover:bg-gray-100 transition duration-150 focus:outline-none">
+            <MagnifyingGlassIcon class="w-4 h-4 text-gray-400" />
+            <span>Search tokens</span>
+          </button>
 
           <!-- Connect Wallet Button -->
           <div class="flex items-center gap-2 ">
@@ -69,7 +74,14 @@
             </Menu>
           </div>
         </div>
-        <div class="flex items-center -mr-2 lg:hidden">
+        <div class="flex items-center -mr-2 lg:hidden gap-1">
+          <!-- Mobile Search Button -->
+          <button type="button" @click="showSearchModal = true"
+            class="inline-flex items-center justify-center p-2 text-gray-400 rounded-md hover:bg-gray-100 hover:text-gray-500 focus:outline-none">
+            <span class="sr-only">Search tokens</span>
+            <MagnifyingGlassIcon class="w-6 h-6" aria-hidden="true" />
+          </button>
+
           <!-- Mobile menu button -->
           <DisclosureButton
             class="inline-flex items-center justify-center p-2 text-gray-400 rounded-md hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
@@ -84,6 +96,13 @@
     <DisclosurePanel class="lg:hidden fixed inset-x-0 top-[calc(1rem+5rem)] z-50 w-screen">
       <div class="bg-white shadow-xl">
         <div class="max-w-6xl mx-auto px-4 py-3">
+          <!-- Search Option -->
+          <button type="button" @click="() => { showSearchModal = true; close(); }"
+            class="flex items-center gap-2 w-full py-3 px-3 text-base font-medium text-gray-800 hover:bg-gray-50 rounded-lg text-left">
+            <MagnifyingGlassIcon class="w-5 h-5 text-gray-400" aria-hidden="true" />
+            <span>Search tokens</span>
+          </button>
+
           <!-- render both internal + external links -->
           <template v-for="link in Links" :key="link.name">
             <router-link v-if="link.to" :to="link.to" @click="close"
@@ -121,12 +140,13 @@
   <Modal :open="signInModal" />
   <ConnectWalletModal v-model="ConnectWalletModals" />
   <BuyTkgModal v-model="buyTkgModal" @open-wallet="OpenWalletModal" />
+  <TokenSearchModal v-model="showSearchModal" />
 
 </template>
 
 <script setup>
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { Bars3Icon, BellIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import logo from '@/assets/header-logo.png';
 
 import { ref, onMounted, onUnmounted, computed } from "vue";
@@ -135,10 +155,12 @@ import ConnectWalletModal from './ConnectWallet.vue';
 import Swal from "sweetalert2";
 import { getCookie, disconnectWalletSession } from "../utils/utils.js";
 import BuyTkgModal from "@/components/BuyTkgModal.vue"
+import TokenSearchModal from "./TokenSearchModal.vue"
 
 const signInModal = ref(false);
 const ConnectWalletModals = ref(false);
 const buyTkgModal = ref(false);
+const showSearchModal = ref(false);
 const walletPk = ref('')
 const emit = defineEmits(['wallet-status']);
 
@@ -156,6 +178,13 @@ const handleScroll = () => {
   lastScrollY = window.scrollY;
 };
 
+const handleKeyDown = (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    showSearchModal.value = !showSearchModal.value;
+  }
+};
+
 function refreshWalletPk() {
   walletPk.value =
     getCookie('public_key') ||
@@ -166,6 +195,7 @@ function refreshWalletPk() {
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
   window.addEventListener("tokenglade-open-buy-tkg", openBuyTkgModal);
+  window.addEventListener("keydown", handleKeyDown);
   refreshWalletPk();
 });
 
@@ -193,6 +223,7 @@ function shortMiddle(str, head = 4, tail = 4) {
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
   window.removeEventListener("tokenglade-open-buy-tkg", openBuyTkgModal);
+  window.removeEventListener("keydown", handleKeyDown);
 });
 
 const OpenWalletModal = () => {
