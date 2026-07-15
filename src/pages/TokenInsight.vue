@@ -304,7 +304,7 @@
                 <h3 class="text-base font-extrabold text-slate-800">AI Risk Summary</h3>
               </div>
               <p class="text-xs text-slate-600 leading-relaxed font-semibold">
-                "TokenGlade AI considers {{ token.asset_code || 'this token' }} <span class="text-emerald-600 font-bold">Low Risk</span> due to robust liquidity pool distribution, verified metadata standards, decentralized holder ratios, and clean smart-contract configuration flags."
+                "{{ aiRiskSummary.text }}"
               </p>
             </div>
 
@@ -615,6 +615,76 @@ const top10Percentage = computed(() => {
   const sum = token.top_holders.reduce((acc, h) => acc + parseFloat(h.balance || 0), 0);
   const pct = (sum / parseFloat(token.total_supply)) * 100;
   return pct < 0.01 ? pct.toFixed(4) : pct.toFixed(2);
+});
+
+const aiRiskSummary = computed(() => {
+  const code = token.asset_code || 'this token';
+  const score = token.rating?.average || 7.5;
+  const tvl = token.liquidity_pools_amount || 0;
+  const totalTrades = token.activity?.total_trades || 0;
+
+  // 1. Centralization check
+  let centralizationRisk = 'safe';
+  let maxHolderPct = 0;
+  if (token.top_holders && token.top_holders.length && token.total_supply) {
+    const maxBalance = Math.max(...token.top_holders.map(h => parseFloat(h.balance || 0)));
+    maxHolderPct = (maxBalance / parseFloat(token.total_supply)) * 100;
+    if (maxHolderPct > 50) {
+      centralizationRisk = 'critical'; // single wallet owns > 50%
+    } else if (maxHolderPct > 20) {
+      centralizationRisk = 'warning';  // single wallet owns > 20%
+    }
+  }
+
+  // 2. Liquidity check
+  let liquidityStatus = 'low';
+  if (tvl > 50000) {
+    liquidityStatus = 'robust';
+  } else if (tvl > 10000) {
+    liquidityStatus = 'moderate';
+  }
+
+  // 3. Synthesize risk assessment
+  let riskLevel = 'Low Risk';
+  let analysis = '';
+
+  if (score >= 8 && centralizationRisk === 'safe' && liquidityStatus === 'robust') {
+    riskLevel = 'Low Risk';
+    analysis = `TokenGlade AI identifies ${code} as a stable asset. It has a high health rating of ${score.toFixed(1)}/10, deep liquidity pool depth ($${formatNumber(tvl)} TVL), and a decentralized holder structure where the largest wallet holds a safe ${maxHolderPct.toFixed(1)}% of supply.`;
+  } else if (score < 5 || centralizationRisk === 'critical' || liquidityStatus === 'low') {
+    riskLevel = 'High Risk';
+    
+    let dangerReasons = [];
+    if (centralizationRisk === 'critical') {
+      dangerReasons.push(`extreme holder centralization (top wallet controls ${maxHolderPct.toFixed(1)}% of total supply)`);
+    }
+    if (liquidityStatus === 'low') {
+      dangerReasons.push(`shallow liquidity pool depth ($${formatNumber(tvl)} TVL) which could cause severe price slippage`);
+    }
+    if (score < 5) {
+      dangerReasons.push(`a low baseline trust score of ${score.toFixed(1)}/10`);
+    }
+    
+    analysis = `TokenGlade AI flags ${code} as High Risk due to ${dangerReasons.join(' and ')}. Exercise caution when trading.`;
+  } else {
+    riskLevel = 'Medium Risk';
+    
+    let warningReasons = [];
+    if (centralizationRisk === 'warning') {
+      warningReasons.push(`moderate centralization (top wallet owns ${maxHolderPct.toFixed(1)}%)`);
+    }
+    if (liquidityStatus === 'moderate') {
+      warningReasons.push(`moderate liquidity pool support ($${formatNumber(tvl)} TVL)`);
+    }
+    
+    const warningText = warningReasons.length ? ` showing ${warningReasons.join(' and ')}` : '';
+    analysis = `TokenGlade AI rates ${code} as Medium Risk. The asset displays steady trading velocity (${totalTrades} total trades) and moderate health parameters (${score.toFixed(1)}/10)${warningText}.`;
+  }
+
+  return {
+    level: riskLevel,
+    text: analysis
+  };
 });
 
 function shorten(str) {
