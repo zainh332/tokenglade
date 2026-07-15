@@ -50,6 +50,7 @@ class StellarTokenService
         $paymentsAmountRaw = $response?->json('payments_amount');
 
         $rating = $response?->json('rating') ?? [];
+        $decimals = (int) ($response?->json('decimals') ?? 7);
 
         $orderbook = Http::get($this->horizon . '/order_book', [
             'selling_asset_type' => 'credit_alphanum4',
@@ -75,9 +76,16 @@ class StellarTokenService
         if ($holdersResponse->ok()) {
             $records = $holdersResponse->json('_embedded.records') ?? [];
             foreach ($records as $record) {
+                $rawBalance = $record['balance'] ?? 0;
+                $formattedBalance = bcdiv(
+                    normalizeBcNumber($rawBalance),
+                    bcpow('10', (string) $decimals, 0),
+                    $decimals
+                );
+
                 $topHolders[] = [
-                    'address' => $record['address'],
-                    'balance' => $record['balance'],
+                    'address' => $record['account'] ?? $record['address'] ?? null,
+                    'balance' => (float) $formattedBalance,
                 ];
             }
         }
@@ -87,7 +95,6 @@ class StellarTokenService
         $holders = $response?->json('trustlines.funded');
         $toml = $this->fetchTomlMetadata($horizon);
         $supply = $response?->json('supply');
-        $decimals = (int) ($response?->json('decimals') ?? 7);
         $usd_price = $response?->json('price') ?? 7;
 
         $formattedSupply = 0;
