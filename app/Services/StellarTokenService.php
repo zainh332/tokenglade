@@ -52,18 +52,25 @@ class StellarTokenService
         $rating = $response?->json('rating') ?? [];
         $decimals = (int) ($response?->json('decimals') ?? 7);
 
-        $orderbook = Http::get($this->horizon . '/order_book', [
-            'selling_asset_type' => 'credit_alphanum4',
-            'selling_asset_code' => $code,
-            'selling_asset_issuer' => $issuer,
-            'buying_asset_type' => 'native',
-        ]);
+        $transactions = $this->getRecentTransactions($issuer, $code);
 
         $price_xlm = null;
+        if (!empty($transactions)) {
+            $price_xlm = (float) $transactions[0]['price'];
+        }
 
-        if ($orderbook->ok()) {
-            $bestBid = $orderbook->json('bids.0.price');
-            $price_xlm = $bestBid ? (float) $bestBid : null;
+        if ($price_xlm === null) {
+            $orderbook = Http::get($this->horizon . '/order_book', [
+                'selling_asset_type' => $this->getAssetType($code),
+                'selling_asset_code' => $code,
+                'selling_asset_issuer' => $issuer,
+                'buying_asset_type' => 'native',
+            ]);
+
+            if ($orderbook->ok()) {
+                $bestBid = $orderbook->json('bids.0.price');
+                $price_xlm = $bestBid ? (float) $bestBid : null;
+            }
         }
 
         // Fetch Top 10 Holders from StellarExpert
@@ -95,7 +102,8 @@ class StellarTokenService
         $holders = $response?->json('trustlines.funded');
         $toml = $this->fetchTomlMetadata($horizon);
         $supply = $response?->json('supply');
-        $usd_price = $response?->json('price') ?? 7;
+        $xlmUsdPrice = $this->getXlmUsdPrice();
+        $usd_price = $price_xlm !== null ? ($price_xlm * $xlmUsdPrice) : 0.0;
 
         $formattedSupply = 0;
         $normalizedSupply = normalizeBcNumber(
@@ -182,7 +190,7 @@ class StellarTokenService
             'claimable_balances_amount' => $horizon['claimable_balances_amount'] ?? 0,
             'liquidity_pools_amount' => $horizon['liquidity_pools_amount'] ?? 0,
             'contracts_amount' => $horizon['contracts_amount'] ?? 0,
-            'transactions' => $this->getRecentTransactions($issuer, $code),
+            'transactions' => $transactions,
             'volume_1h' => $this->getLastHourVolume($issuer, $code),
             'usd_price' => $usd_price,
             'xlm_price' => $price_xlm,
@@ -457,5 +465,120 @@ class StellarTokenService
         }
 
         return 'credit_alphanum12';
+    }
+
+    public function updateOhlcData(string $code, string $issuer, string $timeframe): void
+    {
+        $assetType = $this->getAssetType($code);
+        
+        $resolution = 86400000; // 1d
+        if ($timeframe === '1w') {
+            $resolution = 604800000;
+        } elseif ($timeframe === '4h') {
+            $resolution = 3600000; // fetch 1h, aggregate to 4h
+        }
+
+        $limit = 150;
+        if ($timeframe === '4h') {
+            $limit = 400; // fetch 400 hourly candles to aggregate
+        }
+
+        $url = $this->horizon . '/trade_aggregations?' . http_build_query([
+            'base_asset_type'   => $assetType,
+            'base_asset_code'   => $code,
+            'base_asset_issuer' => $issuer,
+            'counter_asset_type' => 'native',
+            'resolution'        => $resolution,
+            'limit'             => $limit,
+            'order'             => 'desc',
+        ]);
+
+        $response = Http::get($url);
+        if (!$response->ok()) {
+            throw new \Exception("Horizon trade aggregations request failed: " . $response->body());
+        }
+
+        $records = $response->json('_embedded.records') ?? [];
+
+        if ($timeframe === '4h') {
+            $records = $this->aggregate1hTo4h($records);
+        }
+
+        foreach ($records as $record) {
+            $timestamp = (int) ($record['timestamp'] / 1000); // ms to sec
+            
+            \App\Models\StellarOhlcData::updateOrCreate([
+                'asset_code' => $code,
+                'asset_issuer' => $issuer,
+                'timeframe' => $timeframe,
+                'timestamp' => $timestamp,
+            ], [
+                'open' => (float) $record['open'],
+                'high' => (float) $record['high'],
+                'low' => (float) $record['low'],
+                'close' => (float) $record['close'],
+                'volume' => (float) $record['base_volume'],
+            ]);
+        }
+    }
+
+    private function aggregate1hTo4h(array $hourlyRecords): array
+    {
+        usort($hourlyRecords, function ($a, $b) {
+            return (int) $a['timestamp'] <=> (int) $b['timestamp'];
+        });
+
+        $aggregated = [];
+        $current4hCandle = null;
+
+        foreach ($hourlyRecords as $record) {
+            $timestampMs = (int) $record['timestamp'];
+            $timestampSec = $timestampMs / 1000;
+            
+            $boundaryStartSec = $timestampSec - ($timestampSec % 14400);
+            $boundaryStartMs = $boundaryStartSec * 1000;
+
+            if ($current4hCandle === null || $current4hCandle['timestamp'] !== $boundaryStartMs) {
+                if ($current4hCandle !== null) {
+                    $aggregated[] = $current4hCandle;
+                }
+                $current4hCandle = [
+                    'timestamp' => $boundaryStartMs,
+                    'open' => (float) $record['open'],
+                    'high' => (float) $record['high'],
+                    'low' => (float) $record['low'],
+                    'close' => (float) $record['close'],
+                    'base_volume' => (float) $record['base_volume'],
+                ];
+            } else {
+                $current4hCandle['high'] = max($current4hCandle['high'], (float) $record['high']);
+                $current4hCandle['low'] = min($current4hCandle['low'], (float) $record['low']);
+                $current4hCandle['close'] = (float) $record['close'];
+                $current4hCandle['base_volume'] += (float) $record['base_volume'];
+            }
+        }
+
+        if ($current4hCandle !== null) {
+            $aggregated[] = $current4hCandle;
+        }
+
+        usort($aggregated, function ($a, $b) {
+            return (int) $b['timestamp'] <=> (int) $a['timestamp'];
+        });
+
+        return $aggregated;
+    }
+
+    public function getXlmUsdPrice(): float
+    {
+        try {
+            $response = Http::timeout(3)->get('https://api.stellar.expert/explorer/public/asset/XLM');
+            if ($response->ok()) {
+                return (float) ($response->json('price') ?? 0.18);
+            }
+        } catch (\Throwable $e) {
+            // fallback
+        }
+        return 0.18;
     }
 }

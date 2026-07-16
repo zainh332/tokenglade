@@ -157,7 +157,7 @@
             <div>
               <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Price (USD)</span>
               <div class="text-lg font-black text-slate-800 mt-1 break-all">
-                {{ formatPrice(token.usd_price) }}
+                ${{ formatPrice(token.usd_price) }}
               </div>
               <div class="text-xs font-bold mt-0.5 flex items-center gap-0.5" :class="(token.price_change_24h || 2.4) >= 0 ? 'text-emerald-500' : 'text-red-500'">
                 <ArrowUpRight v-if="(token.price_change_24h || 2.4) >= 0" class="w-3.5 h-3.5" />
@@ -169,7 +169,7 @@
             <div>
               <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Price (XLM)</span>
               <div class="text-lg font-black text-slate-800 mt-1 break-all">
-                {{ token.xlm_price || '—' }} XLM
+                {{ formatXlmPrice(token.xlm_price) }} XLM
               </div>
             </div>
 
@@ -225,68 +225,78 @@
           <!-- LEFT: CHART + STATS -->
           <div class="lg:col-span-2 space-y-8">
             
-            <!-- TradingView Candlestick Mock Chart -->
+            <!-- TradingView Candlestick Chart -->
             <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-4">
               <div class="flex justify-between items-center flex-wrap gap-2">
                 <div class="flex items-center gap-2">
                   <span class="text-base font-bold text-slate-900">Price Chart</span>
-                  <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-bold uppercase">{{ selectedTimeframe }}</span>
+                  <span class="text-xs bg-slate-150 text-slate-600 px-2 py-0.5 rounded-md font-bold uppercase">{{ selectedTimeframe }}</span>
                 </div>
-                <div class="flex bg-slate-100 p-1 rounded-xl gap-1">
-                  <button v-for="t in ['1H', '24H', '7D', '30D', '90D', 'ALL']" :key="t" @click="selectedTimeframe = t" class="px-3 py-1 text-xs font-bold uppercase rounded-lg transition" :class="selectedTimeframe === t ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'">
-                    {{ t }}
-                  </button>
+                <div class="flex items-center gap-3 flex-wrap">
+                  <!-- Chart Type Selector -->
+                  <div class="flex bg-slate-100/80 p-0.5 rounded-lg border border-slate-150 gap-0.5">
+                    <button 
+                      v-for="type in ['candlestick', 'line', 'area']" 
+                      :key="type" 
+                      @click="selectedChartType = type" 
+                      class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-md transition" 
+                      :class="selectedChartType === type ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-700'"
+                    >
+                      {{ type }}
+                    </button>
+                  </div>
+                  
+                  <!-- Timeframe Selector -->
+                  <div class="flex bg-slate-100 p-1 rounded-xl gap-1">
+                    <button 
+                      v-for="t in ['4H', '1D', '1W']" 
+                      :key="t" 
+                      @click="selectedTimeframe = t" 
+                      class="px-3 py-1 text-xs font-bold uppercase rounded-lg transition" 
+                      :class="selectedTimeframe === t ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'"
+                    >
+                      {{ t }}
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <!-- Mock Candlestick Chart Area using custom beautiful SVG -->
-              <div class="h-64 bg-slate-50/50 rounded-2xl relative border border-slate-100 overflow-hidden flex items-center justify-center">
-                <svg class="w-full h-full p-4" viewBox="0 0 600 240" fill="none">
-                  <!-- Grid Lines -->
-                  <line x1="0" y1="40" x2="600" y2="40" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="4" />
-                  <line x1="0" y1="100" x2="600" y2="100" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="4" />
-                  <line x1="0" y1="160" x2="600" y2="160" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="4" />
-                  
-                  <!-- Candlesticks (Green and Red) -->
-                  <g class="transition-all duration-300">
-                    <line x1="50" y1="120" x2="50" y2="170" stroke="#ef4444" stroke-width="2" />
-                    <rect x="44" y="130" width="12" height="30" fill="#ef4444" rx="2" />
+              <!-- Candle Legend Bar -->
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs px-3 py-2 bg-slate-50 rounded-2xl border border-slate-100/60 font-medium text-slate-500">
+                <div class="flex items-center gap-1">
+                  <span class="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Open</span>
+                  <span class="font-mono text-slate-800 font-black">{{ formatCandleValue(activeCandle.open) }} XLM</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span class="text-slate-400 font-bold uppercase text-[9px] tracking-wider">High</span>
+                  <span class="font-mono text-slate-800 font-black">{{ formatCandleValue(activeCandle.high) }} XLM</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span class="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Low</span>
+                  <span class="font-mono text-slate-800 font-black">{{ formatCandleValue(activeCandle.low) }} XLM</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span class="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Close</span>
+                  <span class="font-mono text-slate-800 font-black">{{ formatCandleValue(activeCandle.close) }} XLM</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span class="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Change</span>
+                  <span 
+                    class="font-mono font-black flex items-center"
+                    :class="activeCandle.change >= 0 ? 'text-emerald-600' : 'text-rose-600'"
+                  >
+                    {{ activeCandle.change >= 0 ? '+' : '' }}{{ activeCandle.change?.toFixed(2) }}%
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 sm:ml-auto">
+                  <span class="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Volume</span>
+                  <span class="font-mono text-slate-800 font-black">{{ formatNumber(activeCandle.volume) }}</span>
+                </div>
+              </div>
 
-                    <line x1="110" y1="100" x2="110" y2="150" stroke="#10b981" stroke-width="2" />
-                    <rect x="104" y="110" width="12" height="30" fill="#10b981" rx="2" />
-
-                    <line x1="170" y1="70" x2="170" y2="140" stroke="#10b981" stroke-width="2" />
-                    <rect x="164" y="80" width="12" height="40" fill="#10b981" rx="2" />
-
-                    <line x1="230" y1="110" x2="230" y2="180" stroke="#ef4444" stroke-width="2" />
-                    <rect x="224" y="130" width="12" height="40" fill="#ef4444" rx="2" />
-
-                    <line x1="290" y1="90" x2="290" y2="150" stroke="#10b981" stroke-width="2" />
-                    <rect x="284" y="100" width="12" height="35" fill="#10b981" rx="2" />
-
-                    <line x1="350" y1="60" x2="350" y2="120" stroke="#10b981" stroke-width="2" />
-                    <rect x="344" y="70" width="12" height="40" fill="#10b981" rx="2" />
-
-                    <line x1="410" y1="50" x2="410" y2="110" stroke="#10b981" stroke-width="2" />
-                    <rect x="404" y="60" width="12" height="35" fill="#10b981" rx="2" />
-
-                    <line x1="470" y1="80" x2="470" y2="140" stroke="#ef4444" stroke-width="2" />
-                    <rect x="464" y="90" width="12" height="40" fill="#ef4444" rx="2" />
-
-                    <line x1="530" y1="40" x2="530" y2="100" stroke="#10b981" stroke-width="2" />
-                    <rect x="524" y="50" width="12" height="40" fill="#10b981" rx="2" />
-                  </g>
-                  
-                  <!-- Gradient overlay for price history line -->
-                  <path d="M 50 150 Q 150 90, 250 140 T 450 70 T 550 50" fill="none" stroke="url(#bluePurpleGrad)" stroke-width="3" />
-                  <defs>
-                    <linearGradient id="bluePurpleGrad" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stop-color="#3b82f6" />
-                      <stop offset="100%" stop-color="#8b5cf6" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <div class="absolute bottom-3 left-4 text-[10px] text-slate-400 font-bold tracking-widest uppercase">Candlesticks simulated in real time</div>
+              <!-- Interactive Chart Container -->
+              <div class="relative w-full h-[320px] rounded-2xl bg-white border border-slate-50">
+                <div ref="chartContainer" class="w-full h-full"></div>
               </div>
             </div>
 
@@ -605,7 +615,11 @@ const walletKey = ref('')
 const ConnectWalletModals = ref(false)
 const verificationModal = ref(false)
 const verificationLoading = ref(false)
-const selectedTimeframe = ref('24H')
+const selectedTimeframe = ref('1D')
+const selectedChartType = ref('candlestick')
+
+const chartContainer = ref(null)
+const chartData = ref([])
 
 const token = reactive({
   name: "",
@@ -624,6 +638,15 @@ const token = reactive({
   price_change_24h: 2.4,
   total_supply: 10000000,
   top_holders: []
+})
+
+const activeCandle = ref({
+  open: null,
+  high: null,
+  low: null,
+  close: null,
+  change: null,
+  volume: null
 })
 
 const votes = ref({
@@ -811,6 +834,8 @@ async function fetchToken() {
     console.error("Error fetching token data:", error)
   } finally {
     loading.value = false
+    initChart()
+    fetchChartData()
   }
 }
 
@@ -950,4 +975,234 @@ watch(
   },
   { immediate: true }
 )
+
+function loadLightweightCharts() {
+  return new Promise((resolve, reject) => {
+    if (window.LightweightCharts) {
+      resolve(window.LightweightCharts);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js';
+    script.type = 'text/javascript';
+    script.onload = () => resolve(window.LightweightCharts);
+    script.onerror = (err) => reject(err);
+    document.head.appendChild(script);
+  });
+}
+
+let chartInstance = null;
+let candleSeries = null;
+let volumeSeries = null;
+let lineSeries = null;
+let areaSeries = null;
+
+async function initChart() {
+  try {
+    const LightweightCharts = await loadLightweightCharts();
+    if (!chartContainer.value) return;
+
+    chartContainer.value.innerHTML = '';
+
+    chartInstance = LightweightCharts.createChart(chartContainer.value, {
+      width: chartContainer.value.clientWidth,
+      height: 320,
+      layout: {
+        background: { type: 'solid', color: '#ffffff' },
+        textColor: '#64748b',
+      },
+      grid: {
+        vertLines: { color: '#f8fafc' },
+        horzLines: { color: '#f8fafc' },
+      },
+      crosshair: {
+        mode: LightweightCharts.CrosshairMode.Normal,
+      },
+      rightPriceScale: {
+        borderColor: '#f1f5f9',
+      },
+      timeScale: {
+        borderColor: '#f1f5f9',
+        timeVisible: true,
+        secondsVisible: false,
+      },
+    });
+
+    chartInstance.subscribeCrosshairMove(param => {
+      if (param.time) {
+        const currentSeries = candleSeries || lineSeries || areaSeries;
+        const data = currentSeries ? param.seriesData.get(currentSeries) : null;
+        const volData = volumeSeries ? param.seriesData.get(volumeSeries) : null;
+
+        if (data) {
+          const open = data.open !== undefined ? data.open : data.value;
+          const high = data.high !== undefined ? data.high : data.value;
+          const low = data.low !== undefined ? data.low : data.value;
+          const close = data.close !== undefined ? data.close : data.value;
+          const volume = volData ? volData.value : null;
+          
+          updateActiveCandle({ open, high, low, close, volume });
+        } else if (chartData.value.length > 0) {
+          updateActiveCandle(chartData.value[chartData.value.length - 1]);
+        }
+      } else {
+        if (chartData.value.length > 0) {
+          updateActiveCandle(chartData.value[chartData.value.length - 1]);
+        }
+      }
+    });
+
+    renderChartData();
+
+    window.addEventListener('resize', handleResize);
+  } catch (e) {
+    console.error("Error loading lightweight charts:", e);
+  }
+}
+
+function handleResize() {
+  if (chartInstance && chartContainer.value) {
+    chartInstance.applyOptions({ width: chartContainer.value.clientWidth });
+  }
+}
+
+async function fetchChartData() {
+  if (!token.issuer || !token.asset_code) return;
+  try {
+    const apiTimeframe = selectedTimeframe.value.toLowerCase();
+    const res = await axios.get('/api/token/chart', {
+      params: {
+        issuer: token.issuer,
+        code: token.asset_code,
+        timeframe: apiTimeframe
+      }
+    });
+    chartData.value = res.data;
+    renderChartData();
+  } catch (error) {
+    console.error("Failed to fetch chart data:", error);
+  }
+}
+
+function renderChartData() {
+  if (!chartInstance) return;
+  
+  if (candleSeries) { chartInstance.removeSeries(candleSeries); candleSeries = null; }
+  if (lineSeries) { chartInstance.removeSeries(lineSeries); lineSeries = null; }
+  if (areaSeries) { chartInstance.removeSeries(areaSeries); areaSeries = null; }
+  if (volumeSeries) { chartInstance.removeSeries(volumeSeries); volumeSeries = null; }
+
+  const formattedData = chartData.value.map(d => ({
+    time: d.time,
+    open: d.open,
+    high: d.high,
+    low: d.low,
+    close: d.close
+  }));
+
+  const formattedVolume = chartData.value.map(d => ({
+    time: d.time,
+    value: d.volume,
+    color: d.close >= d.open ? '#10b98144' : '#ef444444'
+  }));
+
+  if (selectedChartType.value === 'candlestick') {
+    candleSeries = chartInstance.addCandlestickSeries({
+      upColor: '#10b981',
+      downColor: '#ef4444',
+      borderVisible: false,
+      wickUpColor: '#10b981',
+      wickDownColor: '#ef4444',
+      priceFormat: {
+        type: 'price',
+        precision: 8,
+        minMove: 0.00000001,
+      },
+    });
+    candleSeries.setData(formattedData);
+  } else if (selectedChartType.value === 'line') {
+    lineSeries = chartInstance.addLineSeries({
+      color: '#3b82f6',
+      lineWidth: 2,
+      priceFormat: {
+        type: 'price',
+        precision: 8,
+        minMove: 0.00000001,
+      },
+    });
+    lineSeries.setData(formattedData.map(d => ({ time: d.time, value: d.close })));
+  } else if (selectedChartType.value === 'area') {
+    areaSeries = chartInstance.addAreaSeries({
+      topColor: '#3b82f688',
+      bottomColor: '#3b82f600',
+      lineColor: '#3b82f6',
+      lineWidth: 2,
+      priceFormat: {
+        type: 'price',
+        precision: 8,
+        minMove: 0.00000001,
+      },
+    });
+    areaSeries.setData(formattedData.map(d => ({ time: d.time, value: d.close })));
+  }
+
+  volumeSeries = chartInstance.addHistogramSeries({
+    priceFormat: {
+      type: 'volume',
+    },
+    priceScaleId: '',
+  });
+  
+  volumeSeries.priceScale().applyOptions({
+    scaleMargins: {
+      top: 0.8,
+      bottom: 0,
+    },
+  });
+
+  volumeSeries.setData(formattedVolume);
+  chartInstance.timeScale().fitContent();
+
+  if (chartData.value.length > 0) {
+    updateActiveCandle(chartData.value[chartData.value.length - 1]);
+  }
+}
+
+function updateActiveCandle(candle) {
+  if (!candle) return;
+  const change = candle.open > 0 ? ((candle.close - candle.open) / candle.open) * 100 : 0;
+  activeCandle.value = {
+    open: candle.open,
+    high: candle.high,
+    low: candle.low,
+    close: candle.close,
+    change: change,
+    volume: candle.volume
+  };
+}
+
+function formatCandleValue(val) {
+  if (val === null || val === undefined) return '—';
+  if (val === 0) return '0.000000';
+  if (val < 0.0001) return val.toFixed(8);
+  return val.toFixed(6);
+}
+
+function formatXlmPrice(num) {
+  if (num === null || num === undefined) return "—";
+  const n = Number(num);
+  if (n === 0) return "0.0000";
+  return n.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 7
+  });
+}
+
+watch(selectedTimeframe, () => {
+  fetchChartData();
+});
+
+watch(selectedChartType, () => {
+  renderChartData();
+});
 </script>
