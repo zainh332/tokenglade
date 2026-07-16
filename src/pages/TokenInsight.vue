@@ -92,7 +92,7 @@
               <div class="space-y-2">
                 <div class="flex flex-col gap-1.5">
                   <h1 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
-                    {{ token.name || 'Token Detail' }}
+                    {{ token.project?.org_name || token.name || 'Token Detail' }}
                   </h1>
                   <div class="flex items-center gap-2 flex-wrap">
                     <span class="px-2.5 py-1 bg-blue-50 text-blue-600 text-sm font-black rounded-lg border border-blue-100 uppercase tracking-wider shadow-sm">
@@ -547,7 +547,7 @@
 
         <!-- ABOUT SECTION -->
         <section class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-4">
-          <h2 class="text-xl font-bold text-slate-900">About {{ token.name }}</h2>
+          <h2 class="text-xl font-bold text-slate-900">About {{ token.project?.org_name || token.name }}</h2>
           <p class="text-slate-600 text-sm leading-relaxed max-w-4xl">
             {{ token.description || "No project documentation available for this asset. Make sure the issuer publishes structured TOML meta profiles." }}
           </p>
