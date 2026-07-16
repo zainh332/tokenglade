@@ -89,41 +89,48 @@
                 <span v-else>{{ getTokenInitials(token.asset_code) }}</span>
               </div>
 
-              <div class="space-y-1">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">{{ token.name || 'Token Detail' }}</h1>
-                  <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs font-black rounded-lg border border-blue-100 uppercase">
-                    {{ token.asset_code || 'N/A' }}
-                  </span>
-                  <img v-if="isVerified" :src="verified" class="w-4 h-4" title="Verified Asset" />
-                  <span v-else-if="isVerificationPending" class="text-xs bg-purple-50 text-purple-600 px-2 py-0.5 rounded-lg border border-purple-100 font-bold">
-                    Verification Pending
-                  </span>
-                  <span v-else @click="verificationModal = true" class="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-lg border border-amber-200 cursor-pointer hover:bg-amber-100 transition font-bold">
-                    Get Verified
-                  </span>
+              <div class="space-y-2">
+                <div class="flex flex-col gap-1.5">
+                  <h1 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                    {{ token.name || 'Token Detail' }}
+                  </h1>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="px-2.5 py-1 bg-blue-50 text-blue-600 text-sm font-black rounded-lg border border-blue-100 uppercase tracking-wider shadow-sm">
+                      {{ token.asset_code || 'N/A' }}
+                    </span>
+                    <span v-if="isVerified" class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-600 text-xs font-black px-2.5 py-1 rounded-lg border border-emerald-100 shadow-sm">
+                      <img :src="verified" class="w-3.5 h-3.5" title="Verified Asset" />
+                      Verified
+                    </span>
+                    <span v-else-if="isVerificationPending" class="inline-flex items-center bg-purple-50 text-purple-600 text-xs px-2.5 py-1 rounded-lg border border-purple-100 font-extrabold shadow-sm">
+                      Verification Pending
+                    </span>
+                    <span v-else @click="verificationModal = true" class="inline-flex items-center bg-amber-50 text-amber-600 text-xs px-2.5 py-1 rounded-lg border border-amber-200 cursor-pointer hover:bg-amber-100 transition font-extrabold shadow-sm">
+                      Get Verified
+                    </span>
+                  </div>
                 </div>
 
-                <div class="flex items-center gap-3 text-xs text-slate-500 font-medium">
-                  <span class="flex items-center gap-1">
-                    <Globe class="w-3.5 h-3.5" /> Stellar Network
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-500 font-medium">
+                  <span class="flex items-center gap-1 text-slate-400">
+                    <Globe class="w-3.5 h-3.5" /> Stellar
                   </span>
                   <span class="text-slate-300">•</span>
-                  <span class="font-mono text-slate-400 select-all">
-                    Issuer: 
-                    <a 
-                      :href="`https://stellar.expert/explorer/public/account/${token.issuer}`" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      class="text-blue-500 hover:text-blue-600 hover:underline transition font-bold"
-                      :title="token.issuer"
-                    >
-                      {{ shorten(token.issuer) }}
-                    </a>
+                  <span class="text-slate-400">Issuer</span>
+                  <span class="font-mono text-slate-800 font-black select-all" :title="token.issuer">
+                    {{ shorten(token.issuer) }}
                   </span>
                   <button @click="copyIssuer" class="text-blue-500 hover:text-blue-600 font-bold transition flex items-center gap-0.5">
                     <Copy class="w-3 h-3" /> {{ copied ? 'Copied!' : 'Copy' }}
                   </button>
+                  <a 
+                    :href="`https://stellar.expert/explorer/public/account/${token.issuer}`" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    class="text-blue-500 hover:text-blue-600 font-bold transition flex items-center gap-1"
+                  >
+                    <span>↗</span> View Wallet
+                  </a>
                 </div>
               </div>
             </div>
