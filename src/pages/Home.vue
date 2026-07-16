@@ -458,17 +458,7 @@
       </div>
     </div>
 
-    <!-- SECTION 3 (DARK): LP Rewards and Distribution History -->
-    <div class="bg-[#0B1020] text-white relative  overflow-hidden">
-      <!-- Purple Neon Glow Lighting treatment for Rewards -->
-      <div
-        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-purple-650/10 rounded-full blur-[160px] pointer-events-none animate-pulse-slow">
-      </div>
 
-    </div>
-    <LPRewardsSection :total-distributed="lpData.total_distributed" :active-providers="lpData.active_providers"
-      :weekly-reward-pool="lpData.weekly_reward_pool" :completed-cycles="lpData.completed_cycles"
-      :cycles-list="lpData.cycles_list" @open-add-liquidity="openAddLiquidity" />
 
     <!-- SECTION 4 (WHITE): Featured Stellar Projects & Latest Created Tokens -->
     <div class="bg-white text-gray-900 py-20 border-t border-b border-gray-100">
@@ -692,7 +682,7 @@ import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
 import GenerateTokenModal from '@/components/GenerateTokenModal.vue'
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
-import LPRewardsSection from '@/components/LPRewardsSection.vue';
+
 import AddLiquidityModal from '@/components/AddLiquidityModal.vue';
 
 import logo from "@/assets/Xl-logo.png";
@@ -758,13 +748,7 @@ const data = ref({
   active_stakers: 9,
 });
 
-const lpData = ref({
-  total_distributed: 0,
-  active_providers: 0,
-  weekly_reward_pool: 16000,
-  completed_cycles: 0,
-  cycles_list: []
-});
+
 
 // Trending mock tokens with sparkline points
 const trendingTokens = ref([
@@ -1016,18 +1000,7 @@ async function fetchdata() {
   }
 }
 
-async function fetchLpData() {
-  try {
-    const response = await axios.get('/api/global/lp_rewards_data', {
-      headers: { 'X-CSRF-TOKEN': csrfToken }
-    });
-    if (response.data.status === "success") {
-      lpData.value = response.data.data;
-    }
-  } catch (error) {
-    console.error("Error fetching LP data:", error);
-  }
-}
+
 
 async function fetchLatestTokens() {
   loadingLatestCreatedTokens.value = true;
@@ -1378,16 +1351,15 @@ function handleClickOutside(e) {
 onMounted(async () => {
   window.addEventListener('click', handleClickOutside);
   refreshWalletState();
-await Promise.all([
+  await Promise.all([
     fetchdata(),
-    fetchLpData(),
     fetchLatestTokens(),
     fetchFeaturedProjects(),
     fetchTrendingPools(),
     fetchTrendingTokens(),
     fetchMarketHighlights(),
     fetchLiveActivity(),
-]);
+  ]);
 
   feedInterval = setInterval(addMockActivity, 4000);
 
