@@ -317,6 +317,46 @@
               </p>
             </div>
 
+            <!-- Ecosystem Voting -->
+            <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-base font-extrabold text-slate-900">Ecosystem Voting</h3>
+                <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-lg border border-blue-100 font-bold uppercase">Community</span>
+              </div>
+              <p class="text-xs text-slate-500 leading-relaxed font-semibold">
+                Help the Stellar ecosystem stay secure. Vote on this token's trust level based on your experience.
+              </p>
+              
+              <div class="grid grid-cols-3 gap-2 pt-2">
+                <button 
+                  @click="submitVote('trusted')"
+                  class="flex flex-col items-center justify-center p-3 bg-slate-50/50 hover:bg-emerald-50/60 border border-slate-100 hover:border-emerald-200 rounded-2xl transition group"
+                >
+                  <span class="text-xl">✅</span>
+                  <span class="text-[11px] font-extrabold text-slate-600 mt-2 group-hover:text-emerald-700">Trusted</span>
+                  <span class="font-mono font-black text-slate-800 text-sm mt-1 group-hover:text-emerald-700">{{ votes.trusted }}</span>
+                </button>
+                
+                <button 
+                  @click="submitVote('suspicious')"
+                  class="flex flex-col items-center justify-center p-3 bg-slate-50/50 hover:bg-amber-50/60 border border-slate-100 hover:border-amber-200 rounded-2xl transition group"
+                >
+                  <span class="text-xl">⚠️</span>
+                  <span class="text-[11px] font-extrabold text-slate-600 mt-2 group-hover:text-amber-700">Suspicious</span>
+                  <span class="font-mono font-black text-slate-800 text-sm mt-1 group-hover:text-amber-700">{{ votes.suspicious }}</span>
+                </button>
+                
+                <button 
+                  @click="submitVote('scam')"
+                  class="flex flex-col items-center justify-center p-3 bg-slate-50/50 hover:bg-rose-50/60 border border-slate-100 hover:border-rose-200 rounded-2xl transition group"
+                >
+                  <span class="text-xl">❌</span>
+                  <span class="text-[11px] font-extrabold text-slate-600 mt-2 group-hover:text-rose-700">Scam</span>
+                  <span class="font-mono font-black text-slate-800 text-sm mt-1 group-hover:text-rose-700">{{ votes.scam }}</span>
+                </button>
+              </div>
+            </div>
+
             <!-- Security Parameters -->
             <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-6">
               <h3 class="text-lg font-bold text-slate-900">Security Parameters</h3>
@@ -764,6 +804,37 @@ async function fetchToken() {
     console.error("Error fetching token data:", error)
   } finally {
     loading.value = false
+  }
+}
+
+async function submitVote(voteType) {
+  const publicKey = getCookie('public_key') || localStorage.getItem('public_key');
+  if (!publicKey) {
+    ConnectWalletModals.value = true;
+    return;
+  }
+  try {
+    const res = await axios.post('/api/token/vote', {
+      asset_code: token.asset_code,
+      issuer: token.issuer,
+      vote_type: voteType,
+      public_key: publicKey
+    });
+    if (res.data.votes) {
+      votes.value = res.data.votes;
+    }
+    Swal.fire({
+      icon: 'success',
+      title: 'Vote Submitted',
+      text: res.data.message || 'Vote submitted successfully!'
+    });
+  } catch (error) {
+    console.error("Error voting:", error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Failed to Vote',
+      text: error.response?.data?.message || 'Failed to submit vote. Please try again.'
+    });
   }
 }
 
