@@ -11,6 +11,33 @@ class StellarTokenService
 {
     protected string $horizon = 'https://horizon.stellar.org';
 
+    protected array $knownProjectWallets = [
+        'GD6VHARSVOPDRQUITPOF6IPIB47RUJ4X4YZ5Q3B2D6AUNESDIUEO5XHV' => [
+            'name' => 'Staking Treasury',
+            'tags' => ['custodian', 'treasury', 'staking']
+        ],
+        'GB3HIAGFQSF5EUPL5JWA5K5YJWY5LXTEAJP7ZMZIMR3XBQWSK3MZIUGR' => [
+            'name' => 'Team Wallet',
+            'tags' => ['treasury', 'team']
+        ],
+        'GD5ZQ7XA4FKJOXPAEU2BGUPRUJ4IDZZX7BNURFNHG4TO5M7OQYPXF6NU' => [
+            'name' => 'Reserve Wallet',
+            'tags' => ['treasury', 'reserve']
+        ],
+        'GCHBC63WM2IGFODFBO6IDOD46OA4QD7NRD6457N2QMP63YWEPESWVCZF' => [
+            'name' => 'Airdrop & Rewards',
+            'tags' => ['custodian', 'rewards', 'airdrop']
+        ],
+        'GD534Y4JUU4CUUPKCSMO36QU5X3XKIBQAT4ZS4YLGVN62SBZIOWXBD4C' => [
+            'name' => 'Public Trading Hold',
+            'tags' => ['treasury', 'hold']
+        ],
+        'GC2E7736MDO5BACXRG2AQYNVN6LEE2ZG6G3JIWDU7EAZWMSD3RQ5IWKZ' => [
+            'name' => 'LP Weekly Rewards',
+            'tags' => ['custodian', 'rewards']
+        ],
+    ];
+
     public function getTokenInsight(string $issuer, string $code): array
     {
         if (!$this->isValidStellarAddress($issuer)) {
@@ -73,16 +100,88 @@ class StellarTokenService
             }
         }
 
-        // Fetch Top 10 Holders from StellarExpert
+        $horizon = $horizonResponse->json('_embedded.records.0');
+        $toml = $this->fetchTomlMetadata($horizon);
+
+        $tokenDomain = null;
+        $rawDomain = $response?->json('home_domain') ?? $toml['token']['website'] ?? $toml['project']['org_url'] ?? null;
+        if ($rawDomain) {
+            $tokenDomain = parse_url($rawDomain, PHP_URL_HOST) ?: $rawDomain;
+            $tokenDomain = str_replace('www.', '', strtolower($tokenDomain));
+        }
+
+        // Fetch Top 35 Holders from StellarExpert
         $holdersResponse = Http::timeout(8)->get("{$expertUrl}/holders", [
-            'limit' => 10,
+            'limit' => 35,
             'order' => 'desc'
         ]);
 
         $topHolders = [];
         if ($holdersResponse->ok()) {
             $records = $holdersResponse->json('_embedded.records') ?? [];
+            
+            // Collect all addresses
+            $addresses = [];
             foreach ($records as $record) {
+                $addr = $record['account'] ?? $record['address'] ?? null;
+                if ($addr) {
+                    $addresses[] = $addr;
+                }
+            }
+
+            // Fetch directory info in bulk
+            $directoryMap = [];
+            if (!empty($addresses)) {
+                $queryString = implode('&', array_map(fn($a) => 'address=' . urlencode($a), $addresses));
+                try {
+                    $dirResponse = Http::timeout(4)->get("https://api.stellar.expert/explorer/public/directory?{$queryString}");
+                    if ($dirResponse->ok()) {
+                        $dirRecords = $dirResponse->json('_embedded.records') ?? [];
+                        foreach ($dirRecords as $dir) {
+                            $directoryMap[$dir['address']] = [
+                                'name' => $dir['name'] ?? null,
+                                'domain' => $dir['domain'] ?? null,
+                                'tags' => $dir['tags'] ?? [],
+                            ];
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore and proceed
+                }
+            }
+            // Merge local known project wallets
+            foreach ($addresses as $addr) {
+                if (isset($this->knownProjectWallets[$addr])) {
+                    $directoryMap[$addr] = $this->knownProjectWallets[$addr];
+                }
+            }
+
+            // Fallback: Fetch home domain from Horizon for any wallet not listed in directory
+            foreach ($addresses as $addr) {
+                if (!isset($directoryMap[$addr])) {
+                    try {
+                        $horizonAcc = Http::timeout(2)->get($this->horizon . "/accounts/{$addr}");
+                        if ($horizonAcc->ok()) {
+                            $homeDomain = $horizonAcc->json('home_domain');
+                            if ($homeDomain) {
+                                $directoryMap[$addr] = [
+                                    'name' => ucwords(str_replace(['-', '_'], ' ', $homeDomain)),
+                                    'domain' => $homeDomain,
+                                    'tags' => ['custodian', 'project']
+                                ];
+                            }
+                        }
+                    } catch (\Throwable $e) {
+                        // ignore timeouts
+                    }
+                }
+            }
+
+            $projectHolders = [];
+            $individualHolders = [];
+
+            foreach ($records as $record) {
+                $addr = $record['account'] ?? $record['address'] ?? null;
                 $rawBalance = $record['balance'] ?? 0;
                 $formattedBalance = bcdiv(
                     normalizeBcNumber($rawBalance),
@@ -90,17 +189,59 @@ class StellarTokenService
                     $decimals
                 );
 
-                $topHolders[] = [
-                    'address' => $record['account'] ?? $record['address'] ?? null,
+                $dirInfo = $directoryMap[$addr] ?? [];
+
+                $walletData = [
+                    'address' => $addr,
                     'balance' => (float) $formattedBalance,
+                    'name'    => $dirInfo['name'] ?? null,
+                    'domain'  => $dirInfo['domain'] ?? null,
+                    'tags'    => $dirInfo['tags'] ?? [],
                 ];
+
+                $isIssuer = ($addr === $issuer);
+                $tags = $dirInfo['tags'] ?? [];
+                $holderDomain = $dirInfo['domain'] ?? null;
+                if ($holderDomain) {
+                    $holderDomain = str_replace('www.', '', strtolower($holderDomain));
+                }
+
+                $isPlatform = false;
+                if (isset($this->knownProjectWallets[$addr])) {
+                    $isPlatform = true;
+                } elseif ($isIssuer) {
+                    $isPlatform = true;
+                } else {
+                    $hasProjectTag = in_array('custodian', $tags) || in_array('treasury', $tags) || in_array('issuer', $tags);
+                    
+                    if (!$hasProjectTag && !empty($dirInfo['name'])) {
+                        $nameLower = strtolower($dirInfo['name']);
+                        if (str_contains($nameLower, 'rewards') || str_contains($nameLower, 'treasury') || str_contains($nameLower, 'pool') || str_contains($nameLower, 'custodian') || str_contains($nameLower, 'escrow')) {
+                            $hasProjectTag = true;
+                        }
+                    }
+                    
+                    if ($hasProjectTag) {
+                        if ($holderDomain && $tokenDomain) {
+                            if ($holderDomain === $tokenDomain) {
+                                $isPlatform = true;
+                            }
+                        } else {
+                            $isPlatform = true;
+                        }
+                    }
+                }
+
+                if ($isPlatform) {
+                    $projectHolders[] = $walletData;
+                } else {
+                    $individualHolders[] = $walletData;
+                }
             }
         }
 
-        $horizon = $horizonResponse->json('_embedded.records.0');
         $mintDateRaw = $response?->json('created');
         $holders = $response?->json('trustlines.funded');
-        $toml = $this->fetchTomlMetadata($horizon);
         $xlmUsdPrice = $this->getXlmUsdPrice();
         $usd_price = $price_xlm !== null ? ($price_xlm * $xlmUsdPrice) : 0.0;
         $formattedSupply = (float) ($horizon['balances']['authorized'] ?? 0)
@@ -150,7 +291,8 @@ class StellarTokenService
             'total_supply' => $formattedSupply,
             'trustlines'     => (int) ($horizon['accounts']['authorized'] ?? 0),
             'holders'     => (int) ($holders ?? 0),
-            'top_holders'  => $topHolders,
+            'top_holders'  => array_slice($individualHolders, 0, 10),
+            'project_holders' => $projectHolders,
 
             'issuer_locked'    => $issuerData['flags']['auth_immutable'] ?? false,
             'minting_possible' => !($issuerData['flags']['auth_immutable'] ?? false),
