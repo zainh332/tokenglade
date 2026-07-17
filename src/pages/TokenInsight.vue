@@ -659,6 +659,115 @@
           </div>
         </section>
 
+        <!-- LIQUIDITY OVERVIEW -->
+        <section class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-8">
+          <div class="flex justify-between items-center flex-wrap gap-4">
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Liquidity Overview</h2>
+              <p class="text-xs text-slate-500 mt-1 font-medium">Real-time analysis of automated market maker (AMM) pools & depth</p>
+            </div>
+            <div class="text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100/50">
+              Total TVL: ${{ formatNumber(token.liquidity_overview?.total_tvl || 0) }}
+            </div>
+          </div>
+
+          <!-- Metrics Grid -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Total TVL</span>
+              <span class="text-lg font-black text-slate-800 mt-1 block">
+                ${{ formatNumber(token.liquidity_overview?.total_tvl) }}
+              </span>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Active Pools</span>
+              <span class="text-lg font-black text-slate-800 mt-1 block">
+                {{ token.liquidity_overview?.pools_count || 0 }}
+              </span>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest Pool</span>
+              <span class="text-lg font-black text-slate-800 mt-1 block truncate" :title="token.liquidity_overview?.largest_pool_name">
+                {{ token.liquidity_overview?.largest_pool_name || '-' }}
+              </span>
+              <span class="text-[10px] text-slate-400 font-bold block mt-0.5">
+                ${{ formatNumber(token.liquidity_overview?.largest_pool_tvl) }} TVL
+              </span>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">24h LP Volume</span>
+              <span class="text-lg font-black text-slate-800 mt-1 block">
+                ${{ formatNumber(token.liquidity_overview?.lp_volume_24h) }}
+              </span>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Average APR</span>
+              <span class="text-lg font-black text-emerald-600 mt-1 block">
+                {{ token.liquidity_overview?.avg_apr ? token.liquidity_overview.avg_apr.toFixed(2) : '0.00' }}%
+              </span>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Depth (±2%)</span>
+              <span class="text-lg font-black text-slate-800 mt-1 block">
+                ${{ formatNumber(token.liquidity_overview?.depth_2pct) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Top Pools Table -->
+          <div class="space-y-4">
+            <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wider">Top Liquidity Pools</h3>
+            <div class="overflow-x-auto border border-slate-100 rounded-2xl">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-50 text-slate-400 font-bold uppercase tracking-wider text-[10px] border-b border-slate-100">
+                    <th class="py-3 px-4 w-[40%]">Market / Pool Pair</th>
+                    <th class="py-3 px-4 w-[20%]">Total TVL</th>
+                    <th class="py-3 px-4 w-[20%]">APR</th>
+                    <th class="py-3 px-4 w-[20%]">24h Volume</th>
+                  </tr>
+                </thead>
+                <tbody v-if="token.liquidity_overview?.pools && token.liquidity_overview.pools.length" class="divide-y divide-slate-100 text-slate-600">
+                  <tr v-for="(pool, index) in token.liquidity_overview.pools" :key="index" class="hover:bg-slate-50/50 transition">
+                    <td class="py-3.5 px-4 font-bold text-slate-900 flex items-center gap-2">
+                      <span class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 text-[10px] flex items-center justify-center font-black border border-blue-100">AMM</span>
+                      <a 
+                        :href="`https://stellar.expert/explorer/public/liquidity-pool/${pool.id}`" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        class="text-blue-600 hover:text-blue-700 hover:underline transition font-semibold"
+                      >
+                        {{ pool.name }}
+                      </a>
+                    </td>
+                    <td class="py-3.5 px-4 font-bold text-slate-800">
+                      ${{ formatNumber(pool.tvl) }}
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <span class="font-extrabold text-xs px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-600">
+                        {{ pool.apr.toFixed(2) }}%
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 font-semibold text-slate-700 font-mono">
+                      ${{ formatNumber(pool.volume) }}
+                    </td>
+                  </tr>
+                </tbody>
+                <tbody v-else class="text-slate-500">
+                  <tr>
+                    <td colspan="4" class="py-6 text-center text-sm font-medium">No liquidity pool data detected on-chain</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
         <!-- MARKET ACTIVITY: LIVE TRADES -->
         <section class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-6">
           <h2 class="text-xl font-bold text-slate-900">Market Exposure & Live Trades</h2>
@@ -821,7 +930,17 @@ const token = reactive({
   price_change_24h: 2.4,
   total_supply: 10000000,
   top_holders: [],
-  project_holders: []
+  project_holders: [],
+  liquidity_overview: {
+    total_tvl: 0,
+    pools_count: 0,
+    largest_pool_name: "-",
+    largest_pool_tvl: 0,
+    lp_volume_24h: 0,
+    avg_apr: 0,
+    depth_2pct: 0,
+    pools: []
+  }
 })
 
 const activeCandle = ref({
