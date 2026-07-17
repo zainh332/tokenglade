@@ -298,6 +298,44 @@
               <div class="relative w-full h-[320px] rounded-2xl bg-white border border-slate-50">
                 <div ref="chartContainer" class="w-full h-full"></div>
               </div>
+
+              <!-- Buy/Sell Volume Ratio Bar -->
+              <div class="bg-slate-50 rounded-2xl border border-slate-100/60 p-4 space-y-3">
+                <div class="flex justify-between items-center text-xs font-bold text-slate-500">
+                  <div class="flex items-center gap-1.5 text-emerald-600">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>Buy Volume</span>
+                    <span class="font-mono bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded">{{ buySellVolume.buyPercent }}%</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-rose-600">
+                    <span>Sell Volume</span>
+                    <span class="font-mono bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded">{{ buySellVolume.sellPercent }}%</span>
+                    <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                  </div>
+                </div>
+                
+                <!-- Dual-colored progress bar -->
+                <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden flex">
+                  <div 
+                    class="h-full bg-emerald-500 transition-all duration-500" 
+                    :style="{ width: `${buySellVolume.buyPercent}%` }"
+                  ></div>
+                  <div 
+                    class="h-full bg-rose-500 transition-all duration-500" 
+                    :style="{ width: `${buySellVolume.sellPercent}%` }"
+                  ></div>
+                </div>
+
+                <div class="flex flex-col gap-1 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                  <div class="flex justify-between">
+                    <span>Buy volume: {{ formatNumber(buySellVolume.buyVol) }} {{ token.asset_code }}</span>
+                    <span>Sell volume: {{ formatNumber(buySellVolume.sellVol) }} {{ token.asset_code }}</span>
+                  </div>
+                  <div class="text-center text-[9px] text-slate-400 mt-1 font-bold">
+                    Based on {{ buySellVolume.totalTrades }} recent trades
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Health Scorecard -->
@@ -519,7 +557,7 @@
             </div>
 
             <div class="divide-y divide-slate-100 text-sm">
-              <div v-for="(tx, i) in token.transactions || []" :key="i" class="flex flex-col gap-2 sm:grid sm:grid-cols-5 sm:gap-x-4 px-4 py-3.5 hover:bg-slate-50/50 transition">
+              <div v-for="(tx, i) in (token.transactions || []).slice(0, 10)" :key="i" class="flex flex-col gap-2 sm:grid sm:grid-cols-5 sm:gap-x-4 px-4 py-3.5 hover:bg-slate-50/50 transition">
                 <div class="flex justify-between sm:block">
                   <span class="text-xs text-slate-400 sm:hidden">Side</span>
                   <span class="font-extrabold px-2 py-0.5 rounded-lg text-xs" :class="tx.side === 'buy' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'">
@@ -575,7 +613,7 @@
 </template>
 
 <script setup>
-import { reactive, onMounted, watch, ref, computed } from "vue"
+import { reactive, onMounted, watch, ref, computed, nextTick } from "vue"
 import { useRoute } from "vue-router"
 import axios from "axios"
 import verified from "@/assets/verify.png";
@@ -585,6 +623,12 @@ import ConnectWalletModal from '@/components/ConnectWallet.vue';
 import VerificationModal from '@/components/VerificationModal.vue'
 import Header from "@/components/Header.vue"
 import Footer from "@/components/Footer.vue"
+
+let chartInstance = null;
+let candleSeries = null;
+let volumeSeries = null;
+let lineSeries = null;
+let areaSeries = null;
 
 import {
   Users,
@@ -662,6 +706,38 @@ const isVerificationPending = computed(
   () => token.is_verification_pending === true
 )
 const isVerified = computed(() => token.is_verified === true)
+
+const buySellVolume = computed(() => {
+  const txs = token.transactions || [];
+  let buyVol = 0;
+  let sellVol = 0;
+  
+  txs.forEach(tx => {
+    const vol = Number(tx.amount);
+    if (tx.side === 'buy') {
+      buyVol += vol;
+    } else if (tx.side === 'sell') {
+      sellVol += vol;
+    }
+  });
+
+  const total = buyVol + sellVol;
+  if (total === 0) {
+    return {
+      buyVol: 0,
+      sellVol: 0,
+      buyPercent: 50,
+      sellPercent: 50
+    };
+  }
+
+  return {
+    buyVol,
+    sellVol,
+    buyPercent: Math.round((buyVol / total) * 100),
+    sellPercent: Math.round((sellVol / total) * 100)
+  };
+});
 
 const healthLabel = computed(() => {
   const score = token.rating?.average || 7.5
@@ -818,6 +894,14 @@ function fallbackCopy(onSuccess) {
 async function fetchToken() {
   if (!issuerInput.value) return
   loading.value = true
+  if (chartInstance) {
+    try {
+      chartInstance.remove()
+    } catch (e) {
+      console.error("Error removing chart instance:", e)
+    }
+    chartInstance = null
+  }
   try {
     const res = await axios.get("/api/token/show", {
       params: {
@@ -834,8 +918,10 @@ async function fetchToken() {
     console.error("Error fetching token data:", error)
   } finally {
     loading.value = false
-    initChart()
-    fetchChartData()
+    nextTick(() => {
+      initChart()
+      fetchChartData()
+    })
   }
 }
 
@@ -961,6 +1047,10 @@ onMounted(async () => {
   walletKey.value = getCookie('public_key') || ''
   isWalletConnected.value = !!walletKey.value
   await fetchVerificationAssets()
+  if (token.asset_code) {
+    await initChart()
+    await fetchChartData()
+  }
 })
 
 watch(
@@ -991,16 +1081,11 @@ function loadLightweightCharts() {
   });
 }
 
-let chartInstance = null;
-let candleSeries = null;
-let volumeSeries = null;
-let lineSeries = null;
-let areaSeries = null;
-
 async function initChart() {
   try {
     const LightweightCharts = await loadLightweightCharts();
     if (!chartContainer.value) return;
+    if (chartInstance) return;
 
     chartContainer.value.innerHTML = '';
 

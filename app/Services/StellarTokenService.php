@@ -101,23 +101,12 @@ class StellarTokenService
         $mintDateRaw = $response?->json('created');
         $holders = $response?->json('trustlines.funded');
         $toml = $this->fetchTomlMetadata($horizon);
-        $supply = $response?->json('supply');
         $xlmUsdPrice = $this->getXlmUsdPrice();
         $usd_price = $price_xlm !== null ? ($price_xlm * $xlmUsdPrice) : 0.0;
-
-        $formattedSupply = 0;
-        $normalizedSupply = normalizeBcNumber(
-            $supply
-        );
-
-        if ($normalizedSupply !== '0') {
-
-            $formattedSupply = bcdiv(
-                $normalizedSupply,
-                bcpow('10', (string) $decimals, 0),
-                $decimals
-            );
-        }
+        $formattedSupply = (float) ($horizon['balances']['authorized'] ?? 0)
+            + (float) ($horizon['claimable_balances_amount'] ?? 0)
+            + (float) ($horizon['liquidity_pools_amount'] ?? 0)
+            + (float) ($horizon['contracts_amount'] ?? 0);
 
         $tradedAmount = 0;
         $normalizedTradedAmount = normalizeBcNumber(
@@ -224,7 +213,7 @@ class StellarTokenService
             'base_asset_issuer' => $issuer,
             'counter_asset_type' => 'native',
             'order'             => 'desc',
-            'limit'             => 10,
+            'limit'             => 100,
         ]);
 
         if (!$response->ok()) {
@@ -232,16 +221,33 @@ class StellarTokenService
         }
 
         return collect($response->json()['_embedded']['records'])
-            ->map(function ($trade) {
+            ->map(function ($trade) use ($code, $issuer) {
+                $isBase = (($trade['base_asset_code'] ?? null) === $code && ($trade['base_asset_issuer'] ?? null) === $issuer);
+                $isLiquidityPool = ($trade['trade_type'] === 'liquidity_pool');
 
-                $amount = (float) $trade['base_amount'];
-                $value  = (float) $trade['counter_amount'];
+                if ($isBase) {
+                    if ($isLiquidityPool) {
+                        $side = $trade['base_is_seller'] ? 'sell' : 'buy';
+                    } else {
+                        $side = $trade['base_is_seller'] ? 'buy' : 'sell';
+                    }
+                    $amount = (float) $trade['base_amount'];
+                    $value  = (float) $trade['counter_amount'];
+                } else {
+                    if ($isLiquidityPool) {
+                        $side = $trade['base_is_seller'] ? 'buy' : 'sell';
+                    } else {
+                        $side = $trade['base_is_seller'] ? 'sell' : 'buy';
+                    }
+                    $amount = (float) $trade['counter_amount'];
+                    $value  = (float) $trade['base_amount'];
+                }
 
                 $price = $amount > 0 ? $value / $amount : 0;
 
                 return [
                     'type'   => $trade['trade_type'],
-                    'side'   => $trade['base_is_seller'] ? 'sell' : 'buy',
+                    'side'   => $side,
                     'amount' => $amount,
                     'value'  => $value,
                     'price'  => $price,
