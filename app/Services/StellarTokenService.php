@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Collection;
 use Yosymfony\Toml\Toml;
 
@@ -38,20 +39,25 @@ class StellarTokenService
         ],
     ];
 
-    public function getTokenInsight(string $issuer, string $code): array
+    public function getTokenInsight(string $issuer, string $code, ?array $horizonAsset = null): array
     {
         if (!$this->isValidStellarAddress($issuer)) {
             throw new \Exception('Invalid Stellar address format.');
         }
 
-        $horizonResponse = Http::get($this->horizon . '/assets', [
-            'asset_issuer' => $issuer,
-            'asset_code' => $code,
-            'limit' => 1
-        ]);
+        if ($horizonAsset === null) {
+            $horizonResponse = Http::get($this->horizon . '/assets', [
+                'asset_issuer' => $issuer,
+                'asset_code' => $code,
+                'limit' => 1
+            ]);
 
-        if (!$horizonResponse->ok()) {
-            throw new \Exception('Asset not found.');
+            if (!$horizonResponse->ok()) {
+                throw new \Exception('Asset not found.');
+            }
+            $horizon = $horizonResponse->json('_embedded.records.0');
+        } else {
+            $horizon = $horizonAsset;
         }
 
         $assetId = "{$code}-{$issuer}";
@@ -100,7 +106,7 @@ class StellarTokenService
             }
         }
 
-        $horizon = $horizonResponse->json('_embedded.records.0');
+        $horizon = $horizonAsset ?? $horizonResponse->json('_embedded.records.0');
         $toml = $this->fetchTomlMetadata($horizon);
 
         $tokenDomain = null;
@@ -110,135 +116,8 @@ class StellarTokenService
             $tokenDomain = str_replace('www.', '', strtolower($tokenDomain));
         }
 
-        // Fetch Top 35 Holders from StellarExpert
-        $holdersResponse = Http::timeout(8)->get("{$expertUrl}/holders", [
-            'limit' => 35,
-            'order' => 'desc'
-        ]);
-
-        $topHolders = [];
-        if ($holdersResponse->ok()) {
-            $records = $holdersResponse->json('_embedded.records') ?? [];
-            
-            // Collect all addresses
-            $addresses = [];
-            foreach ($records as $record) {
-                $addr = $record['account'] ?? $record['address'] ?? null;
-                if ($addr) {
-                    $addresses[] = $addr;
-                }
-            }
-
-            // Fetch directory info in bulk
-            $directoryMap = [];
-            if (!empty($addresses)) {
-                $queryString = implode('&', array_map(fn($a) => 'address=' . urlencode($a), $addresses));
-                try {
-                    $dirResponse = Http::timeout(4)->get("https://api.stellar.expert/explorer/public/directory?{$queryString}");
-                    if ($dirResponse->ok()) {
-                        $dirRecords = $dirResponse->json('_embedded.records') ?? [];
-                        foreach ($dirRecords as $dir) {
-                            $directoryMap[$dir['address']] = [
-                                'name' => $dir['name'] ?? null,
-                                'domain' => $dir['domain'] ?? null,
-                                'tags' => $dir['tags'] ?? [],
-                            ];
-                        }
-                    }
-                } catch (\Throwable $e) {
-                    // Ignore and proceed
-                }
-            }
-            // Merge local known project wallets
-            foreach ($addresses as $addr) {
-                if (isset($this->knownProjectWallets[$addr])) {
-                    $directoryMap[$addr] = $this->knownProjectWallets[$addr];
-                }
-            }
-
-            // Fallback: Fetch home domain from Horizon for any wallet not listed in directory
-            foreach ($addresses as $addr) {
-                if (!isset($directoryMap[$addr])) {
-                    try {
-                        $horizonAcc = Http::timeout(2)->get($this->horizon . "/accounts/{$addr}");
-                        if ($horizonAcc->ok()) {
-                            $homeDomain = $horizonAcc->json('home_domain');
-                            if ($homeDomain) {
-                                $directoryMap[$addr] = [
-                                    'name' => ucwords(str_replace(['-', '_'], ' ', $homeDomain)),
-                                    'domain' => $homeDomain,
-                                    'tags' => ['custodian', 'project']
-                                ];
-                            }
-                        }
-                    } catch (\Throwable $e) {
-                        // ignore timeouts
-                    }
-                }
-            }
-
-            $projectHolders = [];
-            $individualHolders = [];
-
-            foreach ($records as $record) {
-                $addr = $record['account'] ?? $record['address'] ?? null;
-                $rawBalance = $record['balance'] ?? 0;
-                $formattedBalance = bcdiv(
-                    normalizeBcNumber($rawBalance),
-                    bcpow('10', (string) $decimals, 0),
-                    $decimals
-                );
-
-                $dirInfo = $directoryMap[$addr] ?? [];
-
-                $walletData = [
-                    'address' => $addr,
-                    'balance' => (float) $formattedBalance,
-                    'name'    => $dirInfo['name'] ?? null,
-                    'domain'  => $dirInfo['domain'] ?? null,
-                    'tags'    => $dirInfo['tags'] ?? [],
-                ];
-
-                $isIssuer = ($addr === $issuer);
-                $tags = $dirInfo['tags'] ?? [];
-                $holderDomain = $dirInfo['domain'] ?? null;
-                if ($holderDomain) {
-                    $holderDomain = str_replace('www.', '', strtolower($holderDomain));
-                }
-
-                $isPlatform = false;
-                if (isset($this->knownProjectWallets[$addr])) {
-                    $isPlatform = true;
-                } elseif ($isIssuer) {
-                    $isPlatform = true;
-                } else {
-                    $hasProjectTag = in_array('custodian', $tags) || in_array('treasury', $tags) || in_array('issuer', $tags);
-                    
-                    if (!$hasProjectTag && !empty($dirInfo['name'])) {
-                        $nameLower = strtolower($dirInfo['name']);
-                        if (str_contains($nameLower, 'rewards') || str_contains($nameLower, 'treasury') || str_contains($nameLower, 'pool') || str_contains($nameLower, 'custodian') || str_contains($nameLower, 'escrow')) {
-                            $hasProjectTag = true;
-                        }
-                    }
-                    
-                    if ($hasProjectTag) {
-                        if ($holderDomain && $tokenDomain) {
-                            if ($holderDomain === $tokenDomain) {
-                                $isPlatform = true;
-                            }
-                        } else {
-                            $isPlatform = true;
-                        }
-                    }
-                }
-
-                if ($isPlatform) {
-                    $projectHolders[] = $walletData;
-                } else {
-                    $individualHolders[] = $walletData;
-                }
-            }
-        }
+        $individualHolders = [];
+        $projectHolders = [];
 
         $mintDateRaw = $response?->json('created');
         $holders = $response?->json('trustlines.funded');
@@ -322,7 +201,7 @@ class StellarTokenService
             'liquidity_pools_amount' => $horizon['liquidity_pools_amount'] ?? 0,
             'contracts_amount' => $horizon['contracts_amount'] ?? 0,
             'transactions' => $transactions,
-            'volume_1h' => $this->getLastHourVolume($issuer, $code),
+            'volume_1h' => 0.0,
             'usd_price' => $usd_price,
             'xlm_price' => $price_xlm,
 
@@ -342,7 +221,8 @@ class StellarTokenService
                 'interop' => $rating['interop'] ?? 0,
                 'average' => $rating['average'] ?? 0,
             ],
-            'liquidity_overview' => $this->getLiquidityPoolsInfo($code, $issuer, $xlmUsdPrice, $usd_price),
+            'liquidity_overview' => null,
+            'token_domain'       => $tokenDomain,
         ];
     }
 
@@ -356,7 +236,7 @@ class StellarTokenService
             'base_asset_issuer' => $issuer,
             'counter_asset_type' => 'native',
             'order'             => 'desc',
-            'limit'             => 100,
+            'limit'             => 30,
         ]);
 
         if (!$response->ok()) {
@@ -553,56 +433,65 @@ class StellarTokenService
             ];
         }
 
-        $response = Http::timeout(6)->get($tomlUrl);
+        $code = $asset['asset_code'] ?? null;
+        $issuer = $asset['asset_issuer'] ?? null;
 
-        if (!$response->ok()) {
-            return [];
-        }
+        return Cache::remember("toml_metadata_" . md5($tomlUrl) . "_" . md5("{$code}_{$issuer}"), 7200, function () use ($tomlUrl, $code, $issuer) {
+            try {
+                $response = Http::timeout(6)->get($tomlUrl);
 
-        $body = preg_replace('/\[\s*\]/', '[]', $response->body());
-        try {
-            $parsed = Toml::parse($body);
-        } catch (\Exception $e) {
-            return [];
-        }
+                if (!$response->ok()) {
+                    return [
+                        'project' => [],
+                        'token'   => [],
+                    ];
+                }
 
-        $documentation = $parsed['DOCUMENTATION'] ?? [];
+                $body = preg_replace('/\[\s*\]/', '[]', $response->body());
+                $parsed = Toml::parse($body);
 
-        $project = [
-            'org_name'        => $documentation['ORG_NAME'] ?? null,
-            'org_dba'         => $documentation['ORG_DBA'] ?? null,
-            'org_url'         => $documentation['ORG_URL'] ?? null,
-            'org_logo'        => $documentation['ORG_LOGO'] ?? null,
-            'org_description' => $documentation['ORG_DESCRIPTION'] ?? null,
-            'org_twitter'     => $documentation['ORG_TWITTER'] ?? null,
-            'org_email'       => $documentation['ORG_OFFICIAL_EMAIL'] ?? null,
-            'org_support'     => $documentation['ORG_SUPPORT_EMAIL'] ?? null,
-        ];
+                $documentation = $parsed['DOCUMENTATION'] ?? [];
 
-        $token = [];
-
-        foreach (($parsed['CURRENCIES'] ?? []) as $currency) {
-
-            if (
-                ($currency['code'] ?? null) === $asset['asset_code'] &&
-                ($currency['issuer'] ?? null) === $asset['asset_issuer']
-            ) {
-                $token = [
-                    'name'        => $currency['name'] ?? $asset['asset_code'],
-                    'image'       => $currency['image'] ?? null,
-                    'description' => $currency['desc'] ?? null,
-                    'decimals'    => $currency['display_decimals'] ?? 7,
-                    'website'     => $currency['website'] ?? null,
+                $project = [
+                    'org_name'        => $documentation['ORG_NAME'] ?? null,
+                    'org_dba'         => $documentation['ORG_DBA'] ?? null,
+                    'org_url'         => $documentation['ORG_URL'] ?? null,
+                    'org_logo'        => $documentation['ORG_LOGO'] ?? null,
+                    'org_description' => $documentation['ORG_DESCRIPTION'] ?? null,
+                    'org_twitter'     => $documentation['ORG_TWITTER'] ?? null,
+                    'org_email'       => $documentation['ORG_OFFICIAL_EMAIL'] ?? null,
+                    'org_support'     => $documentation['ORG_SUPPORT_EMAIL'] ?? null,
                 ];
 
-                break;
-            }
-        }
+                $token = [];
 
-        return [
-            'project' => $project,
-            'token'   => $token,
-        ];
+                foreach (($parsed['CURRENCIES'] ?? []) as $currency) {
+                    if (
+                        ($currency['code'] ?? null) === $code &&
+                        ($currency['issuer'] ?? null) === $issuer
+                    ) {
+                        $token = [
+                            'name'        => $currency['name'] ?? $code,
+                            'image'       => $currency['image'] ?? null,
+                            'description' => $currency['desc'] ?? null,
+                            'decimals'    => $currency['display_decimals'] ?? 7,
+                            'website'     => $currency['website'] ?? null,
+                        ];
+                        break;
+                    }
+                }
+
+                return [
+                    'project' => $project,
+                    'token'   => $token,
+                ];
+            } catch (\Exception $e) {
+                return [
+                    'project' => [],
+                    'token'   => [],
+                ];
+            }
+        });
     }
 
     private function getAssetType(string $code): string
@@ -720,15 +609,16 @@ class StellarTokenService
 
     public function getXlmUsdPrice(): float
     {
-        try {
-            $response = Http::timeout(3)->get('https://api.stellar.expert/explorer/public/asset/XLM');
-            if ($response->ok()) {
-                return (float) ($response->json('price') ?? 0.18);
-            }
-        } catch (\Throwable $e) {
-            // fallback
-        }
-        return 0.18;
+        return Cache::remember('xlm_usd_price', 60, function () {
+            try {
+                $response = Http::timeout(3)->get('https://api.stellar.expert/explorer/public/asset/XLM');
+                if ($response->ok()) {
+                    return (float) ($response->json('price') ?? 0.18);
+                }
+            } catch (\Throwable $e) {}
+
+            return 0.18;
+        });
     }
 
     public function getLiquidityPoolsInfo(string $code, string $issuer, float $xlmUsdPrice, float $usd_price): array
@@ -876,5 +766,159 @@ class StellarTokenService
         if ($asset === 'native') return 'XLM';
         $parts = explode(':', $asset);
         return $parts[0] ?? $asset;
+    }
+
+    public function getHoldersData(string $issuer, string $code, ?string $tokenDomain): array
+    {
+        $cacheKey = "holders_data_v2_{$issuer}_{$code}";
+        
+        return Cache::remember($cacheKey, 120, function () use ($issuer, $code, $tokenDomain) {
+            $expertUrl = "https://api.stellar.expert/explorer/public/asset/{$code}-{$issuer}";
+            
+            $assetResponse = Http::get($expertUrl);
+            $decimals = 7;
+            if ($assetResponse->ok()) {
+                $decimals = (int) ($assetResponse->json('decimals') ?? 7);
+            }
+
+            $holdersResponse = Http::timeout(8)->get("{$expertUrl}/holders", [
+                'limit' => 35,
+                'order' => 'desc'
+            ]);
+
+            $projectHolders = [];
+            $individualHolders = [];
+
+            if ($holdersResponse->ok()) {
+                $records = $holdersResponse->json('_embedded.records') ?? [];
+                
+                $addresses = [];
+                foreach ($records as $record) {
+                    $addr = $record['account'] ?? $record['address'] ?? null;
+                    if ($addr) {
+                        $addresses[] = $addr;
+                    }
+                }
+
+                $directoryMap = [];
+                if (!empty($addresses)) {
+                    $queryString = implode('&', array_map(fn($a) => 'address=' . urlencode($a), $addresses));
+                    try {
+                        $dirResponse = Http::timeout(4)->get("https://api.stellar.expert/explorer/public/directory?{$queryString}");
+                        if ($dirResponse->ok()) {
+                            $dirRecords = $dirResponse->json('_embedded.records') ?? [];
+                            foreach ($dirRecords as $dir) {
+                                $directoryMap[$dir['address']] = [
+                                    'name' => $dir['name'] ?? null,
+                                    'domain' => $dir['domain'] ?? null,
+                                    'tags' => $dir['tags'] ?? [],
+                                ];
+                            }
+                        }
+                    } catch (\Throwable $e) {}
+                }
+                
+                foreach ($addresses as $addr) {
+                    if (isset($this->knownProjectWallets[$addr])) {
+                        $directoryMap[$addr] = $this->knownProjectWallets[$addr];
+                    }
+                }
+
+                foreach ($addresses as $addr) {
+                    if (!isset($directoryMap[$addr])) {
+                        $domainInfo = Cache::remember("acc_domain_v2_{$addr}", 86400, function () use ($addr) {
+                            try {
+                                $horizonAcc = Http::timeout(1.5)->get($this->horizon . "/accounts/{$addr}");
+                                if ($horizonAcc->ok()) {
+                                    $homeDomain = $horizonAcc->json('home_domain');
+                                    if ($homeDomain) {
+                                        return [
+                                            'has_domain' => true,
+                                            'name' => ucwords(str_replace(['-', '_'], ' ', $homeDomain)),
+                                            'domain' => $homeDomain,
+                                            'tags' => ['custodian', 'project']
+                                        ];
+                                    }
+                                }
+                            } catch (\Throwable $e) {}
+                            return ['has_domain' => false];
+                        });
+
+                        if ($domainInfo && ($domainInfo['has_domain'] ?? false)) {
+                            $directoryMap[$addr] = $domainInfo;
+                        }
+                    }
+                }
+
+                foreach ($records as $record) {
+                    $addr = $record['account'] ?? $record['address'] ?? null;
+                    $rawBalance = $record['balance'] ?? 0;
+                    $formattedBalance = bcdiv(
+                        normalizeBcNumber($rawBalance),
+                        bcpow('10', (string) $decimals, 0),
+                        $decimals
+                    );
+
+                    $dirInfo = $directoryMap[$addr] ?? [];
+
+                    $walletData = [
+                        'address' => $addr,
+                        'balance' => (float) $formattedBalance,
+                        'name'    => $dirInfo['name'] ?? null,
+                        'domain'  => $dirInfo['domain'] ?? null,
+                        'tags'    => $dirInfo['tags'] ?? [],
+                    ];
+
+                    $isIssuer = ($addr === $issuer);
+                    $tags = $dirInfo['tags'] ?? [];
+                    $holderDomain = $dirInfo['domain'] ?? null;
+                    if ($holderDomain) {
+                        $holderDomain = str_replace('www.', '', strtolower($holderDomain));
+                    }
+
+                    $isPlatform = false;
+                    if (str_starts_with($addr, 'C')) {
+                        $isPlatform = true;
+                        if (empty($walletData['name'])) {
+                            $walletData['name'] = 'Smart Contract Reserve';
+                        }
+                    } elseif (isset($this->knownProjectWallets[$addr])) {
+                        $isPlatform = true;
+                    } elseif ($isIssuer) {
+                        $isPlatform = true;
+                    } else {
+                        $hasProjectTag = in_array('custodian', $tags) || in_array('treasury', $tags) || in_array('issuer', $tags);
+                        
+                        if (!$hasProjectTag && !empty($dirInfo['name'])) {
+                            $nameLower = strtolower($dirInfo['name']);
+                            if (str_contains($nameLower, 'rewards') || str_contains($nameLower, 'treasury') || str_contains($nameLower, 'pool') || str_contains($nameLower, 'custodian') || str_contains($nameLower, 'escrow')) {
+                                $hasProjectTag = true;
+                            }
+                        }
+                        
+                        if ($hasProjectTag) {
+                            if ($holderDomain && $tokenDomain) {
+                                if ($holderDomain === $tokenDomain) {
+                                    $isPlatform = true;
+                                }
+                            } else {
+                                $isPlatform = true;
+                            }
+                        }
+                    }
+
+                    if ($isPlatform) {
+                        $projectHolders[] = $walletData;
+                    } else {
+                        $individualHolders[] = $walletData;
+                    }
+                }
+            }
+
+            return [
+                'top_holders' => array_slice($individualHolders, 0, 10),
+                'project_holders' => $projectHolders,
+            ];
+        });
     }
 }

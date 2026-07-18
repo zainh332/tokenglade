@@ -66,6 +66,8 @@ Route::middleware('admin')->prefix('admin')->group(function () {
 Route::prefix('token')->group(function () {
     Route::post('check-verification', 'TokenController@checkVerification')->name('token.checkVerification');
     Route::get('show', 'TokenController@show')->name('token.show');
+    Route::get('holders', 'TokenController@holders')->name('token.holders');
+    Route::get('liquidity', 'TokenController@liquidity')->name('token.liquidity');
     Route::post('vote', 'TokenController@stellarTokenVote')->name('token.vote');
     Route::get('chart', 'TokenController@getChartData')->name('token.chart');
     Route::get(

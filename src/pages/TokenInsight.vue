@@ -219,8 +219,33 @@
           </div>
         </section>
 
+        <!-- TAB NAVIGATION BAR -->
+        <div class="flex border-b border-slate-200 gap-6 text-sm font-semibold mb-6">
+          <button 
+            @click="switchTab('overview')" 
+            class="pb-3 transition-all relative"
+            :class="activeTab === 'overview' ? 'text-blue-600 font-extrabold border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-800'"
+          >
+            Overview
+          </button>
+          <button 
+            @click="switchTab('holders')" 
+            class="pb-3 transition-all relative"
+            :class="activeTab === 'holders' ? 'text-blue-600 font-extrabold border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-800'"
+          >
+            Holders
+          </button>
+          <button 
+            @click="switchTab('liquidity')" 
+            class="pb-3 transition-all relative"
+            :class="activeTab === 'liquidity' ? 'text-blue-600 font-extrabold border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-800'"
+          >
+            Liquidity
+          </button>
+        </div>
+
         <!-- DASHBOARD GRID: ANALYTICS + RATINGS -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" v-if="activeTab === 'overview'">
           
           <!-- LEFT: CHART + STATS -->
           <div class="lg:col-span-2 space-y-8">
@@ -353,7 +378,6 @@
                 </div>
               </div>
             </div>
-
           </div>
 
           <!-- RIGHT: SECURITY & AI RISK -->
@@ -468,7 +492,12 @@
         </div>
 
         <!-- HOLDER DISTRIBUTION -->
-        <section class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-8">
+        <section class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-8" v-if="activeTab === 'holders'">
+          <div v-if="holdersLoading" class="flex flex-col items-center justify-center py-20">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="text-xs text-slate-500 font-bold mt-3">Loading holder distribution data...</span>
+          </div>
+          <template v-else>
           <div class="flex justify-between items-center flex-wrap gap-4">
             <h2 class="text-xl font-bold text-slate-900">Holder Distribution</h2>
             <div class="text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100/50">
@@ -657,10 +686,16 @@
               </div>
             </div>
           </div>
+          </template>
         </section>
 
         <!-- LIQUIDITY OVERVIEW -->
-        <section class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-8">
+        <section class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-8" v-if="activeTab === 'liquidity'">
+          <div v-if="liquidityLoading" class="flex flex-col items-center justify-center py-20">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="text-xs text-slate-500 font-bold mt-3">Loading on-chain AMM liquidity stats...</span>
+          </div>
+          <template v-else>
           <div class="flex justify-between items-center flex-wrap gap-4">
             <div>
               <h2 class="text-xl font-bold text-slate-900">Liquidity Overview</h2>
@@ -766,10 +801,11 @@
               </table>
             </div>
           </div>
+          </template>
         </section>
 
         <!-- MARKET ACTIVITY: LIVE TRADES -->
-        <section class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-6">
+        <section class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-6" v-if="activeTab === 'overview'">
           <h2 class="text-xl font-bold text-slate-900">Market Exposure & Live Trades</h2>
           
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
@@ -805,7 +841,7 @@
             </div>
 
             <div class="divide-y divide-slate-100 text-sm">
-              <div v-for="(tx, i) in (token.transactions || []).slice(0, 10)" :key="i" class="flex flex-col gap-2 sm:grid sm:grid-cols-5 sm:gap-x-4 px-4 py-3.5 hover:bg-slate-50/50 transition">
+              <div v-for="(tx, i) in (token.transactions || []).slice(0, showAllTrades ? 30 : 5)" :key="i" class="flex flex-col gap-2 sm:grid sm:grid-cols-5 sm:gap-x-4 px-4 py-3.5 hover:bg-slate-50/50 transition">
                 <div class="flex justify-between sm:block">
                   <span class="text-xs text-slate-400 sm:hidden">Side</span>
                   <span class="font-extrabold px-2 py-0.5 rounded-lg text-xs" :class="tx.side === 'buy' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'">
@@ -838,11 +874,20 @@
                 </div>
               </div>
             </div>
+            
+            <div v-if="(token.transactions || []).length > 5" class="p-4 bg-slate-50/50 border-t border-slate-100 flex justify-center">
+              <button 
+                @click="showAllTrades = !showAllTrades" 
+                class="text-xs text-blue-600 hover:text-blue-700 font-extrabold flex items-center gap-1 transition"
+              >
+                {{ showAllTrades ? 'Show compact list ↑' : 'View all trades (' + (token.transactions || []).length + ') ↓' }}
+              </button>
+            </div>
           </div>
         </section>
 
         <!-- ABOUT SECTION -->
-        <section class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-4">
+        <section class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-4" v-if="activeTab === 'overview'">
           <h2 class="text-xl font-bold text-slate-900">About {{ token.project?.org_name || token.name }}</h2>
           <p class="text-slate-600 text-sm leading-relaxed max-w-4xl">
             {{ token.description || "No project documentation available for this asset. Make sure the issuer publishes structured TOML meta profiles." }}
@@ -899,6 +944,10 @@ import {
 } from "lucide-vue-next";
 
 const loading = ref(true)
+const activeTab = ref('overview')
+const showAllTrades = ref(false)
+const holdersLoading = ref(false)
+const liquidityLoading = ref(false)
 const copied = ref(false)
 const issuerInput = ref("")
 const route = useRoute()
@@ -1198,11 +1247,30 @@ async function fetchToken() {
       }
     })
     Object.assign(token, res.data)
+    
+    // Reset holders and liquidity to empty state initially
+    token.top_holders = []
+    token.project_holders = []
+    token.liquidity_overview = {
+      total_tvl: 0,
+      pools_count: 0,
+      largest_pool_name: "-",
+      largest_pool_tvl: 0,
+      lp_volume_24h: 0,
+      avg_apr: 0,
+      depth_2pct: 0,
+      pools: []
+    }
+    
     votes.value = res.data.votes || {
       trusted: 0,
       suspicious: 0,
       scam: 0
     }
+    
+    // Trigger background loads immediately in the background
+    fetchHolders()
+    fetchLiquidity()
   } catch (error) {
     console.error("Error fetching token data:", error)
   } finally {
@@ -1211,6 +1279,63 @@ async function fetchToken() {
       initChart()
       fetchChartData()
     })
+  }
+}
+
+function switchTab(tab) {
+  activeTab.value = tab
+  if (tab === 'holders' && (!token.top_holders || token.top_holders.length === 0) && !holdersLoading.value) {
+    fetchHolders()
+  } else if (tab === 'liquidity' && (!token.liquidity_overview || !token.liquidity_overview.pools || token.liquidity_overview.pools.length === 0) && !liquidityLoading.value) {
+    fetchLiquidity()
+  }
+}
+
+async function fetchHolders() {
+  if (!token.issuer || !token.asset_code) return
+  holdersLoading.value = true
+  try {
+    const res = await axios.get("/api/token/holders", {
+      params: {
+        issuer: token.issuer,
+        code: token.asset_code,
+        token_domain: token.token_domain
+      }
+    })
+    token.top_holders = res.data.top_holders || []
+    token.project_holders = res.data.project_holders || []
+  } catch (error) {
+    console.error("Error fetching holders:", error)
+  } finally {
+    holdersLoading.value = false
+  }
+}
+
+async function fetchLiquidity() {
+  if (!token.issuer || !token.asset_code) return
+  liquidityLoading.value = true
+  try {
+    const res = await axios.get("/api/token/liquidity", {
+      params: {
+        issuer: token.issuer,
+        code: token.asset_code,
+        usd_price: token.usd_price
+      }
+    })
+    token.liquidity_overview = res.data || {
+      total_tvl: 0,
+      pools_count: 0,
+      largest_pool_name: "-",
+      largest_pool_tvl: 0,
+      lp_volume_24h: 0,
+      avg_apr: 0,
+      depth_2pct: 0,
+      pools: []
+    }
+  } catch (error) {
+    console.error("Error fetching liquidity:", error)
+  } finally {
+    liquidityLoading.value = false
   }
 }
 

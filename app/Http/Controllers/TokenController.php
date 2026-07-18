@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
@@ -1047,7 +1048,9 @@ class TokenController extends Controller
             ->where('created_token_transfer_status', 1)
             ->latest()->first();
 
-        $assets = $service->getAssetsByIssuer($issuer);
+        $assets = Cache::remember("issuer_assets_{$issuer}", 3600, function () use ($service, $issuer) {
+            return $service->getAssetsByIssuer($issuer);
+        });
 
         if (empty($assets)) {
             return response()->json(['error' => 'No assets found'], 400);
@@ -1055,7 +1058,10 @@ class TokenController extends Controller
 
         $code = $assets[0]['asset_code'];
 
-        $insight = $service->getTokenInsight($issuer, $code);
+        $cacheKey = "token_insight_v2_{$issuer}_{$code}";
+        $insight = Cache::remember($cacheKey, 15, function () use ($service, $issuer, $code, $assets) {
+            return $service->getTokenInsight($issuer, $code, $assets[0]);
+        });
 
         $isDbVerified = false;
 
@@ -1118,6 +1124,35 @@ class TokenController extends Controller
             'is_verification_pending' => $isVerificationPending,
             'votes' => $votes
         ]);
+    }
+
+    public function holders(Request $request, StellarTokenService $service)
+    {
+        $request->validate([
+            'issuer' => 'required|string',
+            'code' => 'required|string',
+            'token_domain' => 'nullable|string',
+        ]);
+        
+        $holders = $service->getHoldersData($request->issuer, $request->code, $request->token_domain);
+        
+        return response()->json($holders);
+    }
+
+    public function liquidity(Request $request, StellarTokenService $service)
+    {
+        $request->validate([
+            'issuer' => 'required|string',
+            'code' => 'required|string',
+            'usd_price' => 'nullable|numeric',
+        ]);
+        
+        $xlmUsdPrice = $service->getXlmUsdPrice();
+        $usdPrice = (float) ($request->usd_price ?? 0);
+        
+        $liquidity = $service->getLiquidityPoolsInfo($request->code, $request->issuer, $xlmUsdPrice, $usdPrice);
+        
+        return response()->json($liquidity);
     }
 
     public function stellarTokenVote(Request $request)
