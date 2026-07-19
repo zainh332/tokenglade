@@ -191,7 +191,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="t in displayedMovers" :key="t.symbol">
+                <tr v-for="t in displayedMovers" :key="t.symbol" @click="goToProject(t)" class="cursor-pointer hover:bg-slate-900/60 transition">
                   <td>
                     <div class="sym">
                       <img v-if="t.logo_url" :src="t.logo_url"
@@ -328,8 +328,8 @@
           </div>
         </div>
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <div v-for="token in latestCreatedTokens.slice(0, 6)" :key="token.id"
-            class="bg-slate-950/20 border border-slate-900 rounded-3xl p-5 hover:border-slate-800 transition flex flex-col justify-between h-44">
+          <div v-for="token in latestCreatedTokens.slice(0, 6)" :key="token.id" @click="goToProject(token)"
+            class="bg-slate-950/20 border border-slate-900 rounded-3xl p-5 hover:border-slate-800 transition flex flex-col justify-between h-44 cursor-pointer">
 
             <!-- Top: Logo + Info -->
             <div class="flex items-center gap-3">
@@ -806,14 +806,25 @@ function selectAsset(asset) {
 }
 
 function goToProject(project) {
-  if (project.symbol && project.issuer) {
+  if (!project) return;
+  const code = project.symbol || project.asset_code || project.created_token_symbol;
+  const issuer = project.issuer || project.asset_issuer || project.identifier || project.issuer_public_key;
+
+  if (code && issuer) {
     router.push({
       path: "/token-insight",
       query: {
-        asset_code: project.symbol,
-        issuer: project.issuer
+        asset_code: code,
+        issuer: issuer
       }
-    })
+    });
+  } else if (code) {
+    router.push({
+      path: "/token-insight",
+      query: {
+        asset_code: code
+      }
+    });
   }
 }
 
@@ -915,6 +926,7 @@ async function fetchTrendingTokens() {
     if (Array.isArray(records)) {
       const mapped = records.map(r => {
         const code = r.tomlInfo?.code || r.asset.split('-')[0];
+        const issuer = r.asset.includes('-') ? r.asset.split('-')[1] : null;
         const upperCode = code.toUpperCase();
         if (upperCode === 'XLM' || upperCode === 'USDC' || upperCode === 'YUSDC') return null;
 
@@ -938,6 +950,7 @@ async function fetchTrendingTokens() {
         return {
           name,
           symbol: code,
+          issuer: issuer,
           logo_url: r.tomlInfo?.image,
           price,
           change: parseFloat(change.toFixed(2)),
