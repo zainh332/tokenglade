@@ -380,6 +380,11 @@ html {
     scrollbar-gutter: stable;
 }
 
+/* Fix double scrollbar/gutter when modals are open */
+html[style*="overflow: hidden"] {
+    scrollbar-gutter: auto !important;
+}
+
 body {
     overflow-x: hidden;
 }

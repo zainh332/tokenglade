@@ -16,13 +16,14 @@
             leave-from="opacity-100 translate-y-0 sm:scale-100"
             leave-to="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-95">
             <DialogPanel
-              class="relative w-full max-w-lg mx-4 sm:mx-0 overflow-hidden rounded-2xl border border-white/10 bg-white/95 shadow-lg transform-gpu will-change-[transform,opacity]">
-              <!-- Close -->
-              <div class="h-1 bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-pink-500"></div>
+              class="relative w-full max-w-lg mx-4 sm:mx-0 overflow-hidden rounded-2xl border border-[rgba(148,163,184,0.16)] bg-[#111827] shadow-2xl transform-gpu will-change-[transform,opacity]">
+              
+              <!-- Gradient top border -->
+              <div class="h-1 bg-gradient-to-r from-purple-600 via-fuchsia-500 to-cyan-500"></div>
 
-              <!-- Close -->
+              <!-- Close button -->
               <button @click="closeModal"
-                class="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/80 text-gray-600 shadow-sm ring-1 ring-black/5 hover:bg-white"
+                class="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#151D2D] text-slate-400 border border-[rgba(148,163,184,0.16)] hover:text-white hover:bg-[#182235] transition focus:outline-none"
                 aria-label="Close">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                   stroke="currentColor">
@@ -34,14 +35,14 @@
               <header class="px-6 pt-5 pb-4">
                 <div class="flex items-center gap-3">
                   <div
-                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 ring-1 ring-inset ring-indigo-100">
+                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#182235] border border-[rgba(148,163,184,0.16)]">
                     <img :src="Logo" alt="TokenGlade" class="h-6 w-6 object-contain" width="24" height="24" decoding="async" />
                   </div>
                   <div class="min-w-0">
-                    <DialogTitle class="text-base font-semibold text-gray-900">
+                    <DialogTitle class="text-base font-bold text-white tracking-tight">
                       Create a Native Stellar Token
                     </DialogTitle>
-                    <p class="mt-0.5 text-sm text-gray-500">
+                    <p class="mt-0.5 text-xs text-slate-400">
                       Deploy directly from your connected wallet
                     </p>
                   </div>
@@ -49,17 +50,17 @@
               </header>
 
               <!-- Subtle divider -->
-              <hr class="border-t border-gray-100" />
+              <hr class="border-t border-[rgba(148,163,184,0.16)]" />
 
               <!-- Body -->
               <div class="px-6 pb-5">
                 <!-- Connected Wallet row -->
-                <div class="mb-4 flex items-center justify-between">
+                <div class="mb-4 mt-4 flex items-center justify-between">
                   <div class="flex items-center gap-2">
                     <span
-                      class="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-200"
+                      class="inline-flex items-center gap-2 rounded-xl bg-[#151D2D] px-3.5 py-1.5 text-xs font-mono font-bold text-slate-300 border border-[rgba(148,163,184,0.16)]"
                       title="This wallet will receive your tokens once the transaction succeeds.">
-                      <span class="h-2 w-2 rounded-full bg-indigo-600"></span>
+                      <span class="h-2 w-2 rounded-full bg-cyan-500 shadow-[0_0_8px_#22d3ee]"></span>
                       {{ shortWallet }}
                     </span>
                   </div>
@@ -69,37 +70,37 @@
                 <Form @submit="submitForm" :validationSchema="schema" class="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <!-- Name -->
                   <div class="col-span-1">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700">
+                    <label class="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
                       Name <span class="text-red-500">*</span>
                     </label>
                     <Field id="name" name="name" v-model="form.name" type="text"
-                      class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                      class="block w-full rounded-xl border border-[rgba(148,163,184,0.16)] bg-[#182235] px-3.5 py-2.5 text-sm text-white placeholder-slate-600 shadow-sm focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 transition"
                       placeholder="e.g., TokenGlade" />
                     <ErrorMessage class="mt-1 text-xs text-red-500" name="name" />
                   </div>
 
                   <!-- Website -->
                   <div class="col-span-1">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700">
+                    <label class="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
                       Website
                     </label>
                     <Field id="website_url" name="website_url" v-model="form.website_url" type="text"
-                      class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                      class="block w-full rounded-xl border border-[rgba(148,163,184,0.16)] bg-[#182235] px-3.5 py-2.5 text-sm text-white placeholder-slate-600 shadow-sm focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 transition"
                       placeholder="https://example.com" />
                     <ErrorMessage class="mt-1 text-xs text-red-500" name="website_url" />
                   </div>
 
                   <!-- Description (full width) -->
                   <div class="col-span-1 md:col-span-2">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700">
+                    <label class="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
                       Description <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
                       <Field id="desc" name="desc" v-model="form.desc" as="textarea" rows="3" maxlength="200"
-                        class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 pr-16 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                        class="block w-full rounded-xl border border-[rgba(148,163,184,0.16)] bg-[#182235] px-3.5 py-2.5 pr-16 text-sm text-white placeholder-slate-600 shadow-sm focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 transition"
                         placeholder="Brief description of your token" />
                       <!-- Counter -->
-                      <span class="absolute bottom-2 right-3 text-xs text-gray-400">
+                      <span class="absolute bottom-2 right-3 text-xs text-slate-500">
                         {{ form.desc?.length || 0 }}/200
                       </span>
                     </div>
@@ -108,26 +109,26 @@
 
                   <!-- Logo -->
                   <div class="col-span-1 md:col-span-2">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700">
+                    <label class="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
                       Logo <span class="text-red-500">*</span>
                     </label>
 
                     <div
-                      class="rounded-2xl border-2 border-dashed border-gray-300 bg-white/70 p-4 transition hover:border-indigo-300">
+                      class="rounded-2xl border border-dashed border-[rgba(148,163,184,0.16)] bg-[#151D2D] p-4 transition hover:border-violet-500/50">
                       <div class="flex items-center gap-4">
-                        <div class="h-16 w-16 overflow-hidden rounded-xl border bg-white">
+                        <div class="h-16 w-16 overflow-hidden rounded-xl border border-[rgba(148,163,184,0.16)] bg-[#182235]">
                           <img v-if="logoPreview" :src="logoPreview" alt="Logo preview"
                             class="h-full w-full object-contain" />
-                          <div v-else class="flex h-full w-full items-center justify-center text-gray-400">🖼️</div>
+                          <div v-else class="flex h-full w-full items-center justify-center text-slate-600">🖼️</div>
                         </div>
                         <div class="flex-1">
-                          <p class="text-sm text-gray-700">
+                          <p class="text-xs text-slate-300">
                             Drag & drop or
                             <label for="logo"
-                              class="cursor-pointer font-medium text-indigo-600 hover:underline">browse</label>
+                              class="cursor-pointer font-medium text-cyan-400 hover:underline">browse</label>
                             (PNG, JPG, WEBP, SVG, ≤ 5 MB)
                           </p>
-                          <p class="text-xs text-gray-500">Tip: square 512×512 looks best.</p>
+                          <p class="text-[10px] text-slate-500">Tip: square 512×512 looks best.</p>
                         </div>
                         <!-- Native file input -->
                         <Field name="logo" v-slot="{ handleChange }">
@@ -143,15 +144,15 @@
 
                   <!-- Asset Code -->
                   <div class="col-span-1">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700">
+                    <label class="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
                       Asset Code <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
                       <Field id="asset_code" name="asset_code" v-model="form.asset_code" type="text" maxlength="12"
-                        class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 pr-16 text-sm tracking-wider shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                        placeholder="e.g., XLM" />
+                        class="block w-full rounded-xl border border-[rgba(148,163,184,0.16)] bg-[#182235] px-3.5 py-2.5 pr-16 text-sm text-white placeholder-slate-600 tracking-wider shadow-sm focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 transition"
+                        placeholder="e.g., TKG" />
                       <span
-                        class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-gray-400">
+                        class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-slate-500">
                         {{ 12 - (form.asset_code?.length || 0) }} left
                       </span>
                     </div>
@@ -160,12 +161,12 @@
 
                   <!-- Total Supply -->
                   <div class="col-span-1">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700">
+                    <label class="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
                       Total Supply <span class="text-red-500">*</span>
                     </label>
                     <Field id="total_supply" name="total_supply" v-model="form.total_supply" type="text"
                       @input="onlyNumberInput"
-                      class="block w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                      class="block w-full rounded-xl border border-[rgba(148,163,184,0.16)] bg-[#182235] px-3.5 py-2.5 text-sm text-white placeholder-slate-600 shadow-sm focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 transition"
                       placeholder="e.g., 1000000" />
                     <ErrorMessage class="mt-1 text-xs text-red-500" name="total_supply" />
                     <p v-if="maxValueExceeded" class="mt-1 text-xs text-red-500">
@@ -177,15 +178,15 @@
                   <div class="col-span-1 md:col-span-2">
                     <Field name="lockIssuer" type="checkbox" v-slot="{ value, handleChange }">
                       <div
-                        class="flex items-center justify-between rounded-xl bg-gray-50 px-3.5 py-3 ring-1 ring-inset ring-gray-200">
+                        class="flex items-center justify-between rounded-xl bg-[#151D2D] px-3.5 py-3 border border-[rgba(148,163,184,0.16)]">
                         <div>
-                          <label class="block text-sm font-medium text-gray-700">Lock Issuer Wallet</label>
-                          <p class="text-xs text-gray-500">Disables future minting. Irreversible.</p>
+                          <label class="block text-sm font-bold text-slate-300">Lock Issuer Wallet</label>
+                          <p class="text-xs text-slate-500">Disables future minting. Irreversible.</p>
                         </div>
 
                         <button type="button" role="switch" :aria-checked="value" @click="handleChange(!value)"
                           class="relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-300"
-                          :class="value ? 'bg-indigo-600' : 'bg-gray-300'">
+                          :class="value ? 'bg-violet-600' : 'bg-[#182235] border border-[rgba(148,163,184,0.16)]'">
                           <span
                             class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-300"
                             :class="value ? 'translate-x-7' : 'translate-x-1'" />
@@ -197,8 +198,8 @@
 
                   <!-- Notice -->
                   <div class="col-span-1 md:col-span-2">
-                    <div class="rounded-xl border border-yellow-200 bg-yellow-50 px-3.5 py-2.5 text-sm text-yellow-800">
-                      ⚠ Please ensure your wallet has at least <span class="font-medium">50 XLM</span> before
+                    <div class="rounded-xl border border-amber-500/20 bg-amber-500/5 px-3.5 py-2.5 text-xs text-amber-400 font-mono leading-relaxed">
+                      ⚠ Please ensure your wallet has at least <span class="font-bold">50 XLM</span> before
                       proceeding.
                       The created token will be sent to your connected wallet.
                     </div>
@@ -207,7 +208,7 @@
                   <!-- Submit -->
                   <div class="col-span-1 md:col-span-2 pt-1">
                     <button type="submit" :disabled="isLoading"
-                      class="w-full rounded-full bg-gradient px-4 py-2.5 text-sm font-semibold text-white shadow hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-60">
+                      class="w-full rounded-xl bg-gradient-to-r from-purple-600 to-cyan-500 py-3 text-sm font-extrabold uppercase tracking-wider text-white shadow-xl hover:opacity-95 hover:scale-[1.01] active:scale-[0.99] transition-all focus:outline-none disabled:opacity-60">
                       <span v-if="isLoading">Generating…</span>
                       <span v-else>Generate Token</span>
                     </button>
