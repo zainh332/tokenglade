@@ -471,7 +471,7 @@ import verified from "@/assets/verify.png";
 
 import axios from 'axios'
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { getCookie, getNetwork } from "../utils/utils.js";
 
 const isWalletConnected = ref(false);
@@ -481,6 +481,18 @@ const isAddLiquidityOpen = ref(false);
 const network = ref('public')
 const isTokenModalOpen = ref(false)
 const router = useRouter();
+const route = useRoute();
+
+const handleOpenLaunchToken = () => {
+  isTokenModalOpen.value = true;
+};
+
+watch(() => route.query.launch, (newVal) => {
+  if (newVal === 'true') {
+    isTokenModalOpen.value = true;
+    router.replace({ query: {} });
+  }
+});
 
 // Loading States
 const loadingLatestCreatedTokens = ref(false);
@@ -1204,7 +1216,13 @@ function formatPrice(val) {
 
 onMounted(() => {
   window.addEventListener('click', handleClickOutside);
+  window.addEventListener("tokenglade-open-launch-token", handleOpenLaunchToken);
   refreshWalletState();
+
+  if (route.query.launch === 'true') {
+    isTokenModalOpen.value = true;
+    router.replace({ query: {} });
+  }
 
   // Populate fallback events so the ticker begins immediately on load
   generateFallbackActivity();
@@ -1261,6 +1279,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('click', handleClickOutside);
+  window.removeEventListener("tokenglade-open-launch-token", handleOpenLaunchToken);
   if (feedInterval) clearInterval(feedInterval);
   if (realtimeMetricsInterval) clearInterval(realtimeMetricsInterval);
 });

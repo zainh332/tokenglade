@@ -16,12 +16,8 @@
           </router-link>
           
           <div class="hidden lg:flex items-center space-x-6">
-            <a href="/#explore" class="text-xs font-black uppercase tracking-wider text-slate-400 hover:text-white transition-colors">Markets</a>
-            <a href="/#pools" class="text-xs font-black uppercase tracking-wider text-slate-400 hover:text-white transition-colors">Pools</a>
-            <a href="/#wallet-explorer" class="text-xs font-black uppercase tracking-wider text-slate-400 hover:text-white transition-colors">Wallets</a>
-            <a href="/#featured-projects" class="text-xs font-black uppercase tracking-wider text-slate-400 hover:text-white transition-colors">Projects</a>
-            <a href="/#latest-tokens" class="text-xs font-black uppercase tracking-wider text-slate-400 hover:text-white transition-colors">Launches</a>
-            <a href="/#portfolio" class="text-xs font-black uppercase tracking-wider text-slate-400 hover:text-white transition-colors">Portfolio</a>
+            <router-link to="/stake" class="text-xs font-black uppercase tracking-wider text-slate-400 hover:text-white transition-colors">Staking</router-link>
+            <button @click="triggerLaunchToken" class="text-xs font-black uppercase tracking-wider text-slate-400 hover:text-white transition-colors focus:outline-none">Launch Token</button>
           </div>
         </div>
         
@@ -32,19 +28,14 @@
             <MagnifyingGlassIcon class="w-3.5 h-3.5 text-slate-500" />
             <span>Search...</span>
           </button>
-          
-          <router-link to="/stake" class="text-xs font-black uppercase tracking-wider text-slate-300 hover:text-white hover:bg-slate-900 px-4 py-2 rounded-xl transition-colors border border-slate-800 bg-slate-950/40">
-            Stake
-          </router-link>
-          
           <!-- Connect Wallet -->
           <div class="flex items-center">
-            <button v-if="!isConnected" @click="OpenWalletModal" class="text-xs text-white font-extrabold uppercase tracking-wider px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] transition-all">
+            <button v-if="!isConnected" @click="OpenWalletModal" class="text-xs text-white font-extrabold uppercase tracking-wider px-5 py-[8px] rounded-[7px] bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] transition-all">
               Connect Wallet
             </button>
             
             <Menu v-else as="div" class="relative inline-block text-left">
-              <MenuButton class="text-xs text-white font-extrabold px-5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition">
+              <MenuButton class="text-xs text-white font-extrabold px-5 py-[7px] rounded-[7px] bg-slate-900 border border-slate-800 hover:border-slate-700 transition">
                 {{ shortMiddle(walletPk) }}
               </MenuButton>
               <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
@@ -81,13 +72,8 @@
     <!-- Mobile Navigation Drawer -->
     <DisclosurePanel class="lg:hidden bg-[#070A13] border-b border-slate-900 absolute top-full left-0 w-full z-50">
       <div class="px-4 py-4 space-y-3">
-        <a href="/#explore" @click="close" class="block py-2.5 px-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-900 rounded-lg">Markets</a>
-        <a href="/#pools" @click="close" class="block py-2.5 px-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-900 rounded-lg">Pools</a>
-        <a href="/#wallet-explorer" @click="close" class="block py-2.5 px-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-900 rounded-lg">Wallets</a>
-        <a href="/#featured-projects" @click="close" class="block py-2.5 px-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-900 rounded-lg">Projects</a>
-        <a href="/#latest-tokens" @click="close" class="block py-2.5 px-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-900 rounded-lg">Launches</a>
-        <a href="/#portfolio" @click="close" class="block py-2.5 px-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-900 rounded-lg">Portfolio</a>
-        <router-link to="/stake" @click="close" class="block py-2.5 px-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-900 rounded-lg">Stake</router-link>
+        <router-link to="/stake" @click="close" class="block py-2.5 px-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-900 rounded-lg">Staking</router-link>
+        <button @click="() => { triggerLaunchToken(); close(); }" class="block w-full text-left py-2.5 px-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-900 rounded-lg focus:outline-none">Launch Token</button>
         
         <div class="pt-3 border-t border-slate-900">
           <button v-if="!isConnected" @click="() => { OpenWalletModal(); close(); }" class="w-full py-3 text-center text-sm font-extrabold uppercase tracking-wider text-white bg-gradient-to-r from-purple-600 to-cyan-500 rounded-xl">
@@ -119,12 +105,23 @@ import { Bars3Icon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/out
 import logo from '@/assets/token-glade-logo.png';
 
 import { ref, onMounted, onUnmounted, computed } from "vue";
+import { useRouter } from "vue-router";
 import Modal from '@/components/Modal.vue';
 import ConnectWalletModal from './ConnectWallet.vue';
 import Swal from "sweetalert2";
 import { getCookie, disconnectWalletSession } from "../utils/utils.js";
 import BuyTkgModal from "@/components/BuyTkgModal.vue"
 import TokenSearchModal from "./TokenSearchModal.vue"
+
+const router = useRouter();
+
+const triggerLaunchToken = () => {
+  if (router.currentRoute.value.path !== '/') {
+    router.push({ path: '/', query: { launch: 'true' } });
+  } else {
+    window.dispatchEvent(new CustomEvent("tokenglade-open-launch-token"));
+  }
+};
 
 const signInModal = ref(false);
 const ConnectWalletModals = ref(false);
