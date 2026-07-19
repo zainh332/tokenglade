@@ -1,10 +1,9 @@
 <template>
-  <div class="bg-[#070A13] min-h-screen text-slate-100 font-sans antialiased selection:bg-purple-500/30 selection:text-white">
+  <div class="asset-page-wrapper min-h-screen selection:bg-cyan-500/20 selection:text-white">
     <Header />
-    <div class="asset-page-wrapper selection:bg-cyan-500/20 selection:text-white">
-      
-      <!-- MAIN CONTAINER -->
-      <div class="wrap space-y-8">
+    
+    <!-- MAIN CONTAINER -->
+    <div class="wrap space-y-8">
 
         <!-- SKELETON LOADER (Visible when loading is true) -->
         <div v-if="loading" class="space-y-8 animate-pulse mt-4">
@@ -646,7 +645,6 @@
           </div>
         </div>
       </div>
-    </div>
     
     <!-- Connect Wallet Modals -->
     <ConnectWalletModal v-model="ConnectWalletModals" :connected="isWalletConnected" :walletKey="walletKey" />
