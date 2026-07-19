@@ -1581,7 +1581,8 @@ watch(selectedChartType, () => {
   width: 52px;
   height: 52px;
   border-radius: 12px;
-  background: linear-gradient(160deg, #0A5CE0, #12CBEE);
+  background: var(--panel2);
+  border: 1px solid var(--line);
   display: grid;
   place-items: center;
   font-family: var(--disp);
