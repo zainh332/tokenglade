@@ -23,11 +23,60 @@
         
         <!-- Right: Actions -->
         <div class="hidden lg:flex items-center gap-4">
-          <!-- Search Button -->
-          <button @click="showSearchModal = true" class="hsearch focus:outline-none">
-            <MagnifyingGlassIcon class="w-3.5 h-3.5 text-slate-500" />
-            <span>Search...</span>
-          </button>
+          <!-- Search Box Input (Inline dropdown autocomplete) -->
+          <div class="relative" ref="searchContainer">
+            <div class="hsearch flex items-center gap-2">
+              <MagnifyingGlassIcon class="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+              <input 
+                v-model="searchQuery" 
+                @focus="isFocused = true"
+                type="text" 
+                placeholder="Search symbol..." 
+                class="bg-transparent border-0 outline-none text-xs text-white placeholder-slate-500 font-mono w-[180px] p-0 focus:ring-0"
+              />
+              <span v-if="loading && searchQuery.trim() !== ''" class="animate-spin rounded-full h-3 w-3 border-b-2 border-cyan-400 flex-shrink-0"></span>
+            </div>
+
+            <!-- Autocomplete dropdown -->
+            <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
+              <div v-if="isFocused" class="absolute right-0 mt-2 w-[340px] bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-xl shadow-2xl z-[99] max-h-[300px] overflow-y-auto custom-scrollbar divide-y divide-[rgba(148,163,184,0.12)]">
+                <!-- If search input is empty -->
+                <div v-if="searchQuery.trim() === ''" class="p-4 text-center text-xs text-slate-400 font-mono">
+                  Type a token symbol (e.g. TKG, XLM) to search
+                </div>
+                <!-- If Loading -->
+                <div v-else-if="loading && assets.length === 0" class="p-4 text-center text-xs text-slate-400 font-mono">
+                  Searching Horizon ledger...
+                </div>
+                <!-- If Error/No results -->
+                <div v-else-if="error" class="p-4 text-center text-xs text-rose-400 font-mono">
+                  {{ error }}
+                </div>
+                <!-- Results -->
+                <div v-else-if="assets.length > 0">
+                  <div v-for="asset in assets" :key="`${asset.asset_code}_${asset.asset_issuer}`"
+                      @click="selectAsset(asset)"
+                      class="p-3.5 cursor-pointer hover:bg-[#182235]/70 transition duration-150 text-left">
+                      <div class="flex items-center gap-1.5 font-bold text-xs text-white">
+                          <span class="font-mono uppercase">{{ asset.asset_code }}</span>
+                          <img v-if="asset.is_verified" :src="verifiedImg" alt="Verified"
+                              class="flex-shrink-0 w-3.5 h-3.5" title="Verified Token" />
+                      </div>
+
+                      <div class="mt-1 text-[10px] font-mono break-all text-slate-400 flex flex-wrap gap-1 leading-normal">
+                          <span class="text-slate-500">Issuer:</span>
+                          <span class="text-slate-400 select-all">{{ shorten(asset.asset_issuer) }}</span>
+                      </div>
+
+                      <div class="mt-1.5 text-[9.5px] font-mono text-cyan-400 font-semibold flex items-center gap-1">
+                          <span>●</span> Holders: {{ formatNumber(asset.accounts.authorized) }}
+                      </div>
+                  </div>
+                </div>
+              </div>
+            </transition>
+          </div>
+
           <!-- Connect Wallet -->
           <div class="flex items-center">
             <button v-if="!isConnected" @click="OpenWalletModal" class="text-xs text-white font-extrabold uppercase tracking-wider px-5 py-[8px] rounded-[7px] bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] transition-all">
@@ -57,11 +106,11 @@
 
         <!-- Mobile Toggle -->
         <div class="flex items-center lg:hidden gap-2">
-          <button type="button" @click="showSearchModal = true" class="p-2 text-slate-400 hover:text-white transition">
-            <MagnifyingGlassIcon class="w-5 h-5" />
+          <!-- Connect Wallet (mini) -->
+          <button v-if="!isConnected" @click="OpenWalletModal" class="text-[10px] text-white font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-[6px] bg-gradient-to-r from-purple-600 to-cyan-500 focus:outline-none">
+            Connect
           </button>
-          
-          <DisclosureButton class="p-2 text-slate-400 hover:text-white transition">
+          <DisclosureButton class="p-2 text-slate-400 hover:text-white transition focus:outline-none">
             <Bars3Icon v-if="!open" class="block w-5 h-5" />
             <XMarkIcon v-else class="block w-5 h-5" />
           </DisclosureButton>
@@ -72,6 +121,58 @@
     <!-- Mobile Navigation Drawer -->
     <DisclosurePanel class="lg:hidden bg-[#070A13] border-b border-slate-900 absolute top-full left-0 w-full z-50">
       <div class="px-4 py-4 space-y-3">
+        <!-- Mobile Search Box Input (Inline dropdown autocomplete) -->
+        <div class="relative search-container-mobile mb-3" ref="searchContainerMobile">
+          <div class="bg-[#182235] border border-[rgba(148,163,184,0.16)] rounded-xl px-3 py-2.5 flex items-center gap-2">
+            <MagnifyingGlassIcon class="w-4 h-4 text-slate-500 flex-shrink-0" />
+            <input 
+              v-model="searchQuery" 
+              @focus="isFocusedMobile = true"
+              type="text" 
+              placeholder="Search symbol..." 
+              class="bg-transparent border-0 outline-none text-xs text-white placeholder-slate-500 font-mono w-full p-0 focus:ring-0"
+            />
+            <span v-if="loading && searchQuery.trim() !== ''" class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-cyan-400 flex-shrink-0"></span>
+          </div>
+
+          <!-- Autocomplete dropdown mobile -->
+          <div v-if="isFocusedMobile" class="mt-1 bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-xl shadow-2xl max-h-[220px] overflow-y-auto custom-scrollbar divide-y divide-[rgba(148,163,184,0.12)]">
+            <!-- If search input is empty -->
+            <div v-if="searchQuery.trim() === ''" class="p-3 text-center text-xs text-slate-400 font-mono">
+              Type a token symbol (e.g. TKG, XLM) to search
+            </div>
+            <!-- If Loading -->
+            <div v-else-if="loading && assets.length === 0" class="p-3 text-center text-xs text-slate-400 font-mono">
+              Searching Horizon ledger...
+            </div>
+            <!-- If Error/No results -->
+            <div v-else-if="error" class="p-3 text-center text-xs text-rose-400 font-mono">
+              {{ error }}
+            </div>
+            <!-- Results -->
+            <div v-else-if="assets.length > 0">
+              <div v-for="asset in assets" :key="`${asset.asset_code}_${asset.asset_issuer}`"
+                  @click="() => { selectAsset(asset); close(); }"
+                  class="p-3.5 cursor-pointer hover:bg-[#182235]/70 transition duration-150 text-left">
+                  <div class="flex items-center gap-1.5 font-bold text-xs text-white">
+                      <span class="font-mono uppercase">{{ asset.asset_code }}</span>
+                      <img v-if="asset.is_verified" :src="verifiedImg" alt="Verified"
+                          class="flex-shrink-0 w-3.5 h-3.5" title="Verified Token" />
+                  </div>
+
+                  <div class="mt-1 text-[10px] font-mono break-all text-slate-400 flex flex-wrap gap-1 leading-normal">
+                      <span class="text-slate-500">Issuer:</span>
+                      <span class="text-slate-400 select-all">{{ shorten(asset.asset_issuer) }}</span>
+                  </div>
+
+                  <div class="mt-1.5 text-[9.5px] font-mono text-cyan-400 font-semibold flex items-center gap-1">
+                      <span>●</span> Holders: {{ formatNumber(asset.accounts.authorized) }}
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <router-link to="/stake" @click="close" class="block py-2.5 px-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-900 rounded-lg">Staking</router-link>
         <button @click="() => { triggerLaunchToken(); close(); }" class="block w-full text-left py-2.5 px-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-900 rounded-lg focus:outline-none">Launch Token</button>
         
@@ -96,22 +197,22 @@
   <Modal :open="signInModal" />
   <ConnectWalletModal v-model="ConnectWalletModals" />
   <BuyTkgModal v-model="buyTkgModal" @open-wallet="OpenWalletModal" />
-  <TokenSearchModal v-model="showSearchModal" />
 </template>
 
 <script setup>
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { Bars3Icon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import logo from '@/assets/token-glade-logo.png';
+import verifiedImg from '@/assets/verify.png';
 
-import { ref, onMounted, onUnmounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import { useRouter } from "vue-router";
+import axios from "axios";
 import Modal from '@/components/Modal.vue';
 import ConnectWalletModal from './ConnectWallet.vue';
 import Swal from "sweetalert2";
 import { getCookie, disconnectWalletSession } from "../utils/utils.js";
 import BuyTkgModal from "@/components/BuyTkgModal.vue"
-import TokenSearchModal from "./TokenSearchModal.vue"
 
 const router = useRouter();
 
@@ -126,18 +227,162 @@ const triggerLaunchToken = () => {
 const signInModal = ref(false);
 const ConnectWalletModals = ref(false);
 const buyTkgModal = ref(false);
-const showSearchModal = ref(false);
-const walletPk = ref('')
+const walletPk = ref('');
 const emit = defineEmits(['wallet-status']);
 
-const isConnected = computed(() => !!walletPk.value)
+const isConnected = computed(() => !!walletPk.value);
 
+// Auto-complete Search State
+const searchQuery = ref("");
+const isFocused = ref(false);
+const isFocusedMobile = ref(false);
+const assets = ref([]);
+const loading = ref(false);
+const error = ref("");
+let searchRequestId = 0;
+let debounceTimeout = null;
 
+const searchContainer = ref(null);
+const searchContainerMobile = ref(null);
+
+const handleClickOutside = (e) => {
+  if (searchContainer.value && !searchContainer.value.contains(e.target)) {
+    isFocused.value = false;
+  }
+  if (searchContainerMobile.value && !searchContainerMobile.value.contains(e.target)) {
+    isFocusedMobile.value = false;
+  }
+};
+
+function formatNumber(value) {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 0
+  }).format(value || 0);
+}
+
+function shorten(str) {
+  if (!str) return "-";
+  return str.slice(0, 5) + "..." + str.slice(-4);
+}
+
+async function enrichVerificationStatus(assetList) {
+  const issuers = assetList.map((asset) => asset.asset_issuer);
+  if (!issuers.length) return;
+
+  try {
+    const { data } = await axios.post("/api/token/check-verification", {
+      issuers,
+    });
+    for (const asset of assetList) {
+      asset.is_verified = data.verified?.[asset.asset_issuer] === true;
+    }
+  } catch {
+    for (const asset of assetList) {
+      asset.is_verified = false;
+    }
+  }
+}
+
+async function searchAssets() {
+  error.value = "";
+  const rawInput = searchQuery.value.trim();
+  if (!rawInput) {
+    assets.value = [];
+    return;
+  }
+
+  const requestId = ++searchRequestId;
+  loading.value = true;
+
+  try {
+    const queries = [rawInput];
+    if (rawInput !== rawInput.toUpperCase()) {
+      queries.push(rawInput.toUpperCase());
+    }
+
+    let allRecords = [];
+    for (const code of queries) {
+      const res = await fetch(
+        `https://horizon.stellar.org/assets?asset_code=${encodeURIComponent(code)}&limit=10`
+      );
+      const data = await res.json();
+      if (data._embedded?.records?.length) {
+        allRecords = [...allRecords, ...data._embedded.records];
+      }
+    }
+
+    if (requestId !== searchRequestId) return;
+
+    if (!allRecords.length) {
+      assets.value = [];
+      error.value = "No token found";
+      return;
+    }
+
+    const uniqueAssets = Object.values(
+      allRecords.reduce((acc, asset) => {
+        const key = `${asset.asset_code}_${asset.asset_issuer}`;
+        acc[key] = asset;
+        return acc
+      }, {})
+    );
+
+    const sortedAssets = uniqueAssets.sort((a, b) => {
+      if (b.num_liquidity_pools !== a.num_liquidity_pools) {
+        return b.num_liquidity_pools - a.num_liquidity_pools;
+      }
+      return b.accounts.authorized - a.accounts.authorized;
+    });
+
+    await enrichVerificationStatus(sortedAssets);
+
+    if (requestId !== searchRequestId) return;
+
+    assets.value = sortedAssets;
+    error.value = "";
+  } catch (e) {
+    if (requestId !== searchRequestId) return;
+    error.value = "Horizon connection error";
+    assets.value = [];
+  } finally {
+    if (requestId === searchRequestId) {
+      loading.value = false;
+    }
+  }
+}
+
+watch(searchQuery, (newValue) => {
+  clearTimeout(debounceTimeout);
+  if (!newValue.trim()) {
+    assets.value = [];
+    error.value = "";
+    return;
+  }
+  debounceTimeout = setTimeout(() => {
+    searchAssets();
+  }, 500);
+});
+
+function selectAsset(asset) {
+  router.push({
+    path: "/token-insight",
+    query: {
+      asset_code: asset.asset_code,
+      issuer: asset.asset_issuer
+    }
+  });
+  searchQuery.value = "";
+  assets.value = [];
+  isFocused.value = false;
+  isFocusedMobile.value = false;
+}
 
 const handleKeyDown = (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
     e.preventDefault();
-    showSearchModal.value = !showSearchModal.value;
+    isFocused.value = true;
+    const input = searchContainer.value?.querySelector('input');
+    if (input) input.focus();
   }
 };
 
@@ -155,6 +400,7 @@ const openBuyTkgModal = () => {
 onMounted(() => {
   window.addEventListener("tokenglade-open-buy-tkg", openBuyTkgModal);
   window.addEventListener("keydown", handleKeyDown);
+  window.addEventListener("click", handleClickOutside);
   refreshWalletPk();
 });
 
@@ -182,6 +428,7 @@ function shortMiddle(str, head = 4, tail = 4) {
 onUnmounted(() => {
   window.removeEventListener("tokenglade-open-buy-tkg", openBuyTkgModal);
   window.removeEventListener("keydown", handleKeyDown);
+  window.removeEventListener("click", handleClickOutside);
 });
 
 const OpenWalletModal = () => {
