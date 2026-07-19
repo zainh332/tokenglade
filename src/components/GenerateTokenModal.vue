@@ -7,16 +7,15 @@
         <div class="fixed inset-0 bg-black/50" />
       </TransitionChild>
 
-      <div class="fixed inset-0 z-50 overflow-y-auto">
-        <div class="flex min-h-full items-center justify-center p-4 sm:p-6">
-          <!-- Panel -->
-          <TransitionChild as="template" enter="ease-out duration-150"
-            enter-from="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-95"
-            enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-120"
-            leave-from="opacity-100 translate-y-0 sm:scale-100"
-            leave-to="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-95">
-            <DialogPanel
-              class="relative w-full max-w-lg mx-4 sm:mx-0 overflow-hidden rounded-2xl border border-[rgba(148,163,184,0.16)] bg-[#111827] shadow-2xl transform-gpu will-change-[transform,opacity]">
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        <!-- Panel -->
+        <TransitionChild as="template" enter="ease-out duration-150"
+          enter-from="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-95"
+          enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-120"
+          leave-from="opacity-100 translate-y-0 sm:scale-100"
+          leave-to="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-95">
+          <DialogPanel
+            class="relative w-full max-w-lg mx-4 sm:mx-0 flex flex-col max-h-[85vh] overflow-hidden rounded-2xl border border-[rgba(148,163,184,0.16)] bg-[#111827] shadow-2xl transform-gpu will-change-[transform,opacity]">
               
               <!-- Gradient top border -->
               <div class="h-1 bg-gradient-to-r from-purple-600 via-fuchsia-500 to-cyan-500"></div>
@@ -32,7 +31,7 @@
               </button>
 
               <!-- Header -->
-              <header class="px-6 pt-5 pb-4">
+              <header class="px-6 pt-5 pb-4 flex-shrink-0">
                 <div class="flex items-center gap-3">
                   <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#182235] border border-[rgba(148,163,184,0.16)]">
@@ -50,12 +49,12 @@
               </header>
 
               <!-- Subtle divider -->
-              <hr class="border-t border-[rgba(148,163,184,0.16)]" />
+              <hr class="border-t border-[rgba(148,163,184,0.16)] flex-shrink-0" />
 
               <!-- Body -->
-              <div class="px-6 pb-5">
+              <div class="px-6 pb-5 pt-4 overflow-y-auto flex-1 custom-scrollbar">
                 <!-- Connected Wallet row -->
-                <div class="mb-4 mt-4 flex items-center justify-between">
+                <div class="mb-4 flex items-center justify-between">
                   <div class="flex items-center gap-2">
                     <span
                       class="inline-flex items-center gap-2 rounded-xl bg-[#151D2D] px-3.5 py-1.5 text-xs font-mono font-bold text-slate-300 border border-[rgba(148,163,184,0.16)]"
@@ -218,9 +217,8 @@
             </DialogPanel>
           </TransitionChild>
         </div>
-      </div>
-    </Dialog>
-  </TransitionRoot>
+      </Dialog>
+    </TransitionRoot>
   <ConnectWalletModal :open="ConnectWalletModals" />
 </template>
 
@@ -545,3 +543,21 @@ hear('connected', (status, payload) => {
 });
 
 </script>
+
+<style scoped>
+/* Custom scoped scrollbar inside the modal panel */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #1f2937;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #374151;
+}
+</style>

@@ -380,11 +380,19 @@ html {
     scrollbar-gutter: stable;
 }
 
-/* Fix double scrollbar/gutter when modals are open */
-html[style*="overflow: hidden"] {
-    scrollbar-gutter: auto !important;
+html[style*="overflow: hidden"],
+html:has(dialog),
+html:has([role="dialog"]),
+html:has([data-headlessui-state*="open"]) {
+    overflow: hidden !important;
 }
 
 body {
     overflow-x: hidden;
+}
+
+body:has(dialog),
+body:has([role="dialog"]),
+body:has([data-headlessui-state*="open"]) {
+    overflow: hidden !important;
 }
