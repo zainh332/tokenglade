@@ -1,7 +1,7 @@
 <template>
   <div>
     <Header />
-    <div class="bg-gradient-to-b from-[#F8FAFC] to-[#F1F5F9] min-h-screen pt-[7rem] pb-16 font-sans text-slate-800 selection:bg-blue-100 selection:text-blue-900">
+    <div class="bg-gradient-to-b from-[#F8FAFC] to-[#F1F5F9] min-h-screen pt-6 pb-16 font-sans text-slate-800 selection:bg-blue-100 selection:text-blue-900">
       
       <!-- MAIN CONTAINER -->
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">

@@ -1,119 +1,77 @@
 <template>
-  <footer class="bg-[#0B1020] text-gray-400 border-t border-gray-900/60 relative overflow-hidden">
-    <!-- Minimal lighting decoration -->
-    <div class="absolute bottom-0 right-0 w-80 h-80 bg-purple-500/5 rounded-full blur-[140px] pointer-events-none">
-    </div>
-
-    <div class="max-w-6xl px-4 pt-12 pb-6 mx-auto sm:px-6 lg:px-8 relative z-10">
-
-      <!-- Top -->
-      <div class="flex flex-col gap-10 md:flex-row md:justify-between">
-
-        <!-- Left -->
-        <div class="max-w-sm mx-auto text-center md:mx-0 md:text-left">
-          <div class="flex items-center justify-center md:justify-start gap-3">
-            <img :src="footerLogo" alt="TokenGlade" class="w-14" />
-            <span class="text-xl font-black text-white tracking-tight">TokenGlade</span>
+  <footer class="bg-[#070A13] text-slate-400 border-t border-slate-900 py-12 relative overflow-hidden">
+    <div class="max-w-[1440px] px-4 mx-auto sm:px-6 lg:px-8 relative z-10">
+      
+      <!-- Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-slate-900">
+        <!-- Logo & Tagline -->
+        <div class="space-y-4 md:col-span-1 text-center md:text-left">
+          <div class="flex items-center justify-center md:justify-start gap-2.5">
+            <img :src="footerLogo" alt="TokenGlade Logo" class="w-8 h-8 object-contain" />
+            <span class="text-base font-black text-white tracking-tight uppercase">Token<span class="text-cyan-400">Glade</span></span>
           </div>
-
-          <p class="mt-4 text-sm leading-relaxed text-gray-400">
-            Simplifying token creation, analytics, staking, and multi-chain
-            blockchain tools for everyone.
+          <p class="text-xs text-slate-500 max-w-xs leading-relaxed mx-auto md:mx-0">
+            Real-time analytics, staking, and explorer utilities for the Stellar network.
           </p>
         </div>
 
-        <!-- Right -->
-        <div class="grid grid-cols-2 gap-10 sm:grid-cols-3">
-
-          <!-- Navigation -->
+        <!-- Links -->
+        <div class="grid grid-cols-3 md:col-span-3 gap-6 text-center md:text-left">
+          <!-- Terminal Explorer -->
           <div>
-            <h3 class="mb-4 text-sm font-semibold text-white">
-              Navigation
-            </h3>
-
-            <div class="flex flex-col gap-1.5 text-xs text-gray-400">
-              <router-link to="/" class="hover:text-white transition">Home</router-link>
-              <router-link to="/about-us" class="hover:text-white transition">About us</router-link>
-
-              <a href="/whitepaper.pdf" target="_blank" class="hover:text-white transition">
-                Whitepaper
-              </a>
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-3">Ecosystem</h4>
+            <div class="flex flex-col gap-2 text-xs text-slate-500">
+              <a href="/#explore" class="hover:text-white transition-colors">Markets</a>
+              <a href="/#pools" class="hover:text-white transition-colors">Pools</a>
+              <a href="/#wallet-explorer" class="hover:text-white transition-colors">Wallets</a>
             </div>
           </div>
-
+          
           <!-- Legal -->
           <div>
-            <h3 class="mb-4 text-sm font-semibold text-white">
-              Legal
-            </h3>
-
-            <div class="flex flex-col gap-1.5 text-xs text-gray-400">
-              <router-link to="/privacy-policy" class="hover:text-white transition">
-                Privacy Policy
-              </router-link>
-
-              <router-link to="/terms-service" class="hover:text-white transition">
-                Terms of Service
-              </router-link>
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-3">Legal</h4>
+            <div class="flex flex-col gap-2 text-xs text-slate-500">
+              <router-link to="/privacy-policy" class="hover:text-white transition-colors">Privacy Policy</router-link>
+              <router-link to="/terms-service" class="hover:text-white transition-colors">Terms of Service</router-link>
             </div>
           </div>
 
           <!-- Contact -->
           <div>
-            <h3 class="mb-4 text-sm font-semibold text-white">
-              Contact
-            </h3>
-
-            <button @click="contactModalOpen = true" class="text-xs text-gray-400 hover:text-white transition">
-              Contact Us
-            </button>
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-3">Support</h4>
+            <div class="flex flex-col gap-2 text-xs text-slate-500">
+              <button @click="contactModalOpen = true" class="hover:text-white transition-colors text-left w-full focus:outline-none">
+                Contact Us
+              </button>
+              <a href="/whitepaper.pdf" target="_blank" class="hover:text-white transition-colors">Whitepaper</a>
+            </div>
           </div>
-
         </div>
       </div>
 
       <!-- Bottom -->
-      <div class="mt-10 flex flex-col md:flex-row md:justify-between items-center gap-4">
-        <!-- Left Side: Social links -->
-        <div class="flex items-center justify-center gap-4">
-          <!-- Medium -->
-          <a href="https://medium.com/@tokenglade" target="_blank"
-            class="flex items-center justify-center w-10 h-10 transition border border-gray-800 rounded-full hover:bg-white/10 hover:border-white/20">
-
-            <svg xmlns="http://www.w3.org/2000/svg" width="21" height="16" viewBox="0 0 21 16" fill="none">
-              <g clip-path="url(#clip0_131_383)">
-                <path
-                  d="M0.317993 14.8083L2.71799 12.1083V2.7083L0.617993 0.408301V0.00830078H6.21799L10.718 9.5083L14.618 0.00830078H20.018V0.408301L18.218 2.0083V13.2083L20.018 14.8083V15.2083H12.218V14.8083L14.018 12.7083V4.3083L9.61799 15.2083H9.01799L3.81799 4.5083V12.0083L6.21799 14.8083V15.2083H0.317993V14.8083Z"
-                  fill="white" />
-              </g>
-              <defs>
-                <clipPath id="clip0_131_383">
-                  <rect width="19.7" height="15.2" fill="white" transform="translate(0.317993 0.00830078)" />
-                </clipPath>
-              </defs>
+      <div class="pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
+        <p class="text-slate-600">
+          © 2026 TokenGlade Terminal. All rights reserved.
+        </p>
+        
+        <!-- Socials -->
+        <div class="flex items-center gap-4">
+          <a href="https://x.com/TokenGlade" target="_blank" class="text-slate-500 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25H21.552L14.325 10.51L22.827 21.75H16.171L10.956 14.933L4.99 21.75H1.68L9.41 12.915L1.254 2.25H8.079L12.793 8.481L18.244 2.25ZM17.083 19.77H18.916L7.084 4.126H5.117L17.083 19.77Z" />
             </svg>
           </a>
-
-          <!-- X -->
-          <a href="https://x.com/TokenGlade" target="_blank"
-            class="flex items-center justify-center w-10 h-10 transition border border-gray-800 rounded-full hover:bg-white/10 hover:border-white/20">
-
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M18.244 2.25H21.552L14.325 10.51L22.827 21.75H16.171L10.956 14.933L4.99 21.75H1.68L9.41 12.915L1.254 2.25H8.079L12.793 8.481L18.244 2.25ZM17.083 19.77H18.916L7.084 4.126H5.117L17.083 19.77Z"
-                fill="white" />
+          <a href="https://medium.com/@tokenglade" target="_blank" class="text-slate-500 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zm5.72 0c0 3.42-1.33 6.2-3 6.2s-3-2.78-3-6.2 1.33-6.2 3-6.2 3 2.78 3 6.2zm4.74 0c0 3.14-.38 5.7-1 5.7s-.86-2.56-.86-5.7.38-5.7.86-5.7 1 2.56 1 5.7z" />
             </svg>
           </a>
         </div>
-
-        <!-- Right Side: Copyright -->
-        <p class="text-sm text-center text-gray-500 md:text-right">
-          © Copyright 2026 TokenGlade. All rights reserved.
-        </p>
       </div>
 
-      <ContactModal v-model="contactModalOpen" />
     </div>
+    <ContactModal v-model="contactModalOpen" />
   </footer>
 </template>
 
@@ -124,5 +82,3 @@ import footerLogo from "@/assets/token-glade-logo.png";
 
 const contactModalOpen = ref(false);
 </script>
-
-<style lang="scss" scoped></style>
