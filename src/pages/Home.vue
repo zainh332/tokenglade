@@ -149,10 +149,38 @@
                 </button>
               </div>
             </div>
-            <div v-if="loadingTrendingTokens" class="p-4 space-y-2">
-              <div v-for="i in 6" :key="i"
-                class="h-[34px] rounded-xl bg-slate-950/40 border border-slate-900 animate-pulse"></div>
-            </div>
+            <table v-if="loadingTrendingTokens">
+              <thead>
+                <tr>
+                  <th>Asset</th>
+                  <th>Last</th>
+                  <th>24h</th>
+                  <th>Vol</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="i in 6" :key="i">
+                  <td>
+                    <div class="sym animate-pulse">
+                      <div class="w-5 h-5 rounded-full bg-slate-950/60 border border-slate-900"></div>
+                      <span class="tk space-y-1">
+                        <div class="h-3 w-16 bg-slate-950/60 rounded border border-slate-900/40"></div>
+                        <div class="h-2.5 w-8 bg-slate-950/60 rounded border border-slate-900/40"></div>
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="h-3 w-12 bg-slate-950/60 rounded border border-slate-900/40 ml-auto animate-pulse"></div>
+                  </td>
+                  <td>
+                    <div class="h-3 w-10 bg-slate-950/60 rounded border border-slate-900/40 ml-auto animate-pulse"></div>
+                  </td>
+                  <td>
+                    <div class="h-3 w-14 bg-slate-950/60 rounded border border-slate-900/40 ml-auto animate-pulse"></div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
             <table v-else>
               <thead>
                 <tr>
