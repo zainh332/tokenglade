@@ -1,20 +1,4 @@
 <template>
-  <!-- TOP LIVE TICKER (signature scrolling tape - relative, scrolls off-screen) -->
-  <div class="tape overflow-hidden hidden md:flex" aria-hidden="true">
-    <div class="tape-track flex items-center">
-      <template v-for="n in 3" :key="n">
-        <span class="t"><b>XLM</b> $0.1254 <span class="up">+4.82% ▲</span></span>
-        <span class="t"><b>AQUA</b> $0.000412 <span class="down">-0.63% ▼</span></span>
-        <span class="t"><b>SHX</b> $0.003541 <span class="down">-0.65% ▼</span></span>
-        <span class="t"><b>yXLM</b> $0.1848 <span class="down">-0.44% ▼</span></span>
-        <span class="t"><b>LSP</b> $0.000192 <span class="up">+2.14% ▲</span></span>
-        <span class="t"><b>USDC</b> $1.0000 <span class="dim">0.00% ▬</span></span>
-        <span class="t"><b>BTCLN</b> $0.000624 <span class="up">+4.27% ▲</span></span>
-        <span class="t"><b>EURC</b> $1.0824 <span class="down">-0.12% ▼</span></span>
-      </template>
-    </div>
-  </div>
-
   <!-- FIXED/STICKY NAVIGATION HEADER (pins to top-0 when ticker scrolls away) -->
   <Disclosure as="nav"
     class="sticky top-0 z-[50] w-full border-b border-slate-900/60 bg-[#070A13]/90 backdrop-blur-md"
@@ -44,7 +28,7 @@
         <!-- Right: Actions -->
         <div class="hidden lg:flex items-center gap-4">
           <!-- Search Button -->
-          <button @click="showSearchModal = true" class="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-400 hover:text-white border border-slate-800 rounded-xl bg-slate-950/60 hover:bg-slate-900 transition focus:outline-none">
+          <button @click="showSearchModal = true" class="hsearch focus:outline-none">
             <MagnifyingGlassIcon class="w-3.5 h-3.5 text-slate-500" />
             <span>Search...</span>
           </button>
@@ -216,6 +200,40 @@ const OpenWalletModal = () => {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.hsearch {
+  --panel: #111620;
+  --line: #1D2531;
+  --faint: #586172;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 7px 11px;
+  min-width: 220px;
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  transition: all 0.2s ease;
+}
+
+.hsearch:hover {
+  border-color: #38bdf8;
+  color: #fff;
+}
+
+@media(max-width:820px){
+  nav.main,.hsearch{display:none}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .expo-stats{grid-template-columns:1fr 1fr}
+  .health{grid-template-columns:1fr}
+  .trust{margin-left:0}
 }
 
 /* SIGNATURE SCROLLING TICKER TAPE */

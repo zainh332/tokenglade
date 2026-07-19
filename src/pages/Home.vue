@@ -1,5 +1,6 @@
 <template>
-  <div class="bg-[#070A13] min-h-screen text-slate-100 font-sans antialiased selection:bg-purple-500/30 selection:text-white">
+  <div
+    class="bg-[#070A13] min-h-screen text-slate-100 font-sans antialiased selection:bg-purple-500/30 selection:text-white">
     <Header @wallet-status="handleWalletStatus" />
 
     <!-- MAIN PAGE CONTAINER -->
@@ -14,48 +15,114 @@
 
         <div class="board">
           <!-- Featured pair -->
-          <div class="card">
-            <div class="card-hd"><h3>XLM / USDC</h3><span class="text-[9px] text-slate-500">Order book · Depth 2.1M</span></div>
+          <div class="card eco-dashboard">
+            <div class="card-hd">
+              <h3>Stellar Ecosystem Overview</h3>
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase font-mono bg-slate-950/60 border border-violet-500/30 shadow-[0_0_12px_rgba(139,92,246,0.15)]">
+                <span
+                  class="bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent">Ecosystem
+                  Health Live</span>
+              </span>
+            </div>
             <div class="feat">
               <div class="feat-top">
                 <div>
-                  <div class="pair">XLM/USDC <small>Stellar DEX</small></div>
-                  <div class="px" style="margin-top:8px">${{ xlmPrice.toFixed(4) }}</div>
-                  <div class="text-[9px] text-slate-500 font-mono mt-1 font-semibold">Last Updated: {{ lastUpdatedSeconds }}s ago</div>
+                  <div class="pair">24H DEX Volume</div>
+                  <div class="px" style="margin-top:8px">{{ displayedPrimaryVolume }}</div>
                 </div>
-                <div style="text-align:right">
-                  <div class="chg" :class="xlmChange24h >= 0 ? 'up' : 'down'">
-                    {{ xlmChange24h >= 0 ? '+' : '' }}{{ xlmChange24h }}% {{ xlmChange24h >= 0 ? '▲' : '▼' }}
-                  </div>
-                  <div class="mono dim" style="font-size:12px;margin-top:4px">
-                    24h · {{ xlmChangeDiff >= 0 ? '+' : '' }}${{ xlmChangeDiff.toFixed(4) }}
+                <div class="tf-container">
+                  <div class="tf">
+                    <span v-for="tf in ['1H', '24H', '7D', '30D']" :key="tf"
+                      :class="{ 'on': selectedTimeFilter === tf }" @click="changeTimeFilter(tf)">
+                      {{ tf }}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <div class="chartbox">
-                <div class="tf"><span>1H</span><span class="on">24H</span><span>7D</span><span>30D</span><span style="margin-left:auto">LOG</span></div>
-                <svg viewBox="0 0 600 150" width="100%" height="150" preserveAspectRatio="none">
+              <div class="chartbox eco-chartbox">
+                <svg viewBox="0 0 600 160" width="100%" height="160" preserveAspectRatio="none">
                   <defs>
-                    <linearGradient id="fill" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0" :stop-color="xlmChartColor" stop-opacity=".28"/>
-                      <stop offset="1" :stop-color="xlmChartColor" stop-opacity="0"/>
+                    <linearGradient id="ecoFill" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0" stop-color="#8b5cf6" stop-opacity="0.22" />
+                      <stop offset="1" stop-color="#8b5cf6" stop-opacity="0" />
                     </linearGradient>
                   </defs>
-                  <g stroke="#1D2531" stroke-width="1">
-                    <line x1="0" y1="38" x2="600" y2="38"/><line x1="0" y1="75" x2="600" y2="75"/><line x1="0" y1="112" x2="600" y2="112"/>
+                  <g stroke="#1D2531" stroke-width="0.8" stroke-dasharray="3,3">
+                    <line x1="0" y1="40" x2="600" y2="40" />
+                    <line x1="0" y1="80" x2="600" y2="80" />
+                    <line x1="0" y1="120" x2="600" y2="120" />
                   </g>
-                  <path :d="xlmChartPaths.fill" fill="url(#fill)"/>
-                  <path :d="xlmChartPaths.line" fill="none" :stroke="xlmChartColor" stroke-width="1.6"/>
-                  <circle :cx="xlmChartPaths.lastX" :cy="xlmChartPaths.lastY" r="3.2" :fill="xlmChartColor"/>
+                  <path :d="ecoChartPaths.fill" fill="url(#ecoFill)" class="chart-path-transition" />
+                  <path :d="ecoChartPaths.line" fill="none" stroke="#a78bfa" stroke-width="1.8"
+                    class="chart-path-transition" />
+                  <circle :cx="ecoChartPaths.lastX" :cy="ecoChartPaths.lastY" r="3.2" fill="#a78bfa" />
+                  <circle :cx="ecoChartPaths.lastX" :cy="ecoChartPaths.lastY" r="8" fill="#a78bfa" opacity="0.3"
+                    class="ping-animation" />
                 </svg>
               </div>
 
-              <div class="feat-stats">
-                <div class="stat"><div class="k">24h High</div><div class="v">${{ xlmHigh24h.toFixed(4) }}</div></div>
-                <div class="stat"><div class="k">24h Low</div><div class="v">${{ xlmLow24h.toFixed(4) }}</div></div>
-                <div class="stat"><div class="k">TVL</div><div class="v">{{ featuredPairTvl }}</div></div>
-                <div class="stat"><div class="k">Fee APR</div><div class="v up">{{ featuredPairApr }}</div></div>
+              <div class="feat-stats eco-stats">
+                <!-- 24H Volume KPI -->
+                <div class="stat eco-stat">
+                  <div class="stat-icon-wrapper">
+                    <!-- SVG Icon for Volume (TrendingUp) -->
+                    <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="k">24H Volume</div>
+                    <div class="v">{{ dailyVolume }}</div>
+                  </div>
+                </div>
+
+                <!-- Active Wallets KPI -->
+                <div class="stat eco-stat">
+                  <div class="stat-icon-wrapper">
+                    <!-- SVG Icon for Wallets (Users) -->
+                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="k">Active Wallets</div>
+                    <div class="v">{{ formatNumber(activeWallets) }}</div>
+                  </div>
+                </div>
+
+                <!-- DEX Trades KPI -->
+                <div class="stat eco-stat">
+                  <div class="stat-icon-wrapper">
+                    <!-- SVG Icon for DEX Trades (ArrowRightLeft) -->
+                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="k">DEX Trades</div>
+                    <div class="v">{{ dexTrades24h }}</div>
+                  </div>
+                </div>
+
+                <!-- Total Liquidity KPI -->
+                <div class="stat eco-stat">
+                  <div class="stat-icon-wrapper">
+                    <!-- SVG Icon for TVL (Coins/Lock) -->
+                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="k">Total Liquidity</div>
+                    <div class="v">{{ ecoTvl }}</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -65,22 +132,44 @@
             <div class="card-hd flex items-center justify-between pb-2 border-b border-slate-900/60">
               <h3>Market Movers</h3>
               <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-900/60">
-                <button @click="activeMoverTab = 'trending'" :class="activeMoverTab === 'trending' ? 'bg-[#0b0f19] text-white border-slate-800' : 'text-slate-500 hover:text-slate-350 border-transparent'" class="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded border transition focus:outline-none">Trending</button>
-                <button @click="activeMoverTab = 'gainers'" :class="activeMoverTab === 'gainers' ? 'bg-[#0b0f19] text-white border-slate-800' : 'text-slate-500 hover:text-slate-350 border-transparent'" class="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded border transition focus:outline-none">Gainers</button>
-                <button @click="activeMoverTab = 'losers'" :class="activeMoverTab === 'losers' ? 'bg-[#0b0f19] text-white border-slate-800' : 'text-slate-500 hover:text-slate-350 border-transparent'" class="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded border transition focus:outline-none">Losers</button>
+                <button @click="activeMoverTab = 'trending'"
+                  :class="activeMoverTab === 'trending' ? 'bg-[#0b0f19] border-slate-800' : 'text-slate-500 hover:text-slate-350 border-transparent'"
+                  class="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded border transition focus:outline-none">
+                  <span :class="activeMoverTab === 'trending' ? 'bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent inline-block' : ''">Trending</span>
+                </button>
+                <button @click="activeMoverTab = 'gainers'"
+                  :class="activeMoverTab === 'gainers' ? 'bg-[#0b0f19] border-slate-800' : 'text-slate-500 hover:text-slate-350 border-transparent'"
+                  class="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded border transition focus:outline-none">
+                  <span :class="activeMoverTab === 'gainers' ? 'bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent inline-block' : ''">Gainers</span>
+                </button>
+                <button @click="activeMoverTab = 'losers'"
+                  :class="activeMoverTab === 'losers' ? 'bg-[#0b0f19] border-slate-800' : 'text-slate-500 hover:text-slate-350 border-transparent'"
+                  class="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded border transition focus:outline-none">
+                  <span :class="activeMoverTab === 'losers' ? 'bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent inline-block' : ''">Losers</span>
+                </button>
               </div>
             </div>
             <div v-if="loadingTrendingTokens" class="p-4 space-y-2">
-              <div v-for="i in 6" :key="i" class="h-[34px] rounded-xl bg-slate-950/40 border border-slate-900 animate-pulse"></div>
+              <div v-for="i in 6" :key="i"
+                class="h-[34px] rounded-xl bg-slate-950/40 border border-slate-900 animate-pulse"></div>
             </div>
             <table v-else>
-              <thead><tr><th>Asset</th><th>Last</th><th>24h</th><th>Vol</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Asset</th>
+                  <th>Last</th>
+                  <th>24h</th>
+                  <th>Vol</th>
+                </tr>
+              </thead>
               <tbody>
                 <tr v-for="t in displayedMovers" :key="t.symbol">
                   <td>
                     <div class="sym">
-                      <img v-if="t.logo_url" :src="t.logo_url" class="w-5 h-5 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
-                      <span v-else class="ico text-slate-950 font-bold" :style="{ background: getSymbolColor(t.symbol) }">
+                      <img v-if="t.logo_url" :src="t.logo_url"
+                        class="w-5 h-5 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
+                      <span v-else class="ico text-slate-950 font-bold"
+                        :style="{ background: getSymbolColor(t.symbol) }">
                         {{ t.symbol[0] }}
                       </span>
                       <span class="tk"><b>{{ t.name }}</b><small>{{ t.symbol }}</small></span>
@@ -102,7 +191,14 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-[14px] mt-[14px] grid3">
         <!-- Live Ecosystem Activity Feed -->
         <div class="card">
-          <div class="card-hd"><h3>Live Ecosystem Activity Feed</h3><span class="text-[9px] text-slate-500"><span class="dot" style="width:6px;height:6px"></span>Real-time</span></div>
+          <div class="card-hd">
+            <h3>Live Ecosystem Activity Feed</h3>
+            <span
+              class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase font-mono bg-slate-950/60 border border-violet-500/30 shadow-[0_0_12px_rgba(139,92,246,0.15)]">
+              <span
+                class="bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent">Real-time</span>
+            </span>
+          </div>
           <div class="flow overflow-hidden relative">
             <transition-group name="list" tag="div">
               <div v-for="act in activityFeed.slice(0, 8)" :key="act.id" class="row">
@@ -120,10 +216,19 @@
 
         <!-- Top Liquidity Pools -->
         <div class="card flex flex-col justify-between">
-          <div class="card-hd"><h3>Top Liquidity Pools</h3><span class="text-[9px] text-slate-500">DEX Yields</span></div>
-          
+          <div class="card-hd">
+            <h3>Top Liquidity Pools</h3>
+            <span
+              class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase font-mono bg-slate-950/60 border border-violet-500/30 shadow-[0_0_12px_rgba(139,92,246,0.15)]">
+              <span
+                class="bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent">DEX
+                Yields</span>
+            </span>
+          </div>
+
           <div v-if="loadingPoolsList" class="p-4 space-y-3">
-            <div v-for="i in 5" :key="i" class="h-10 rounded-xl bg-slate-950/40 border border-slate-900 animate-pulse"></div>
+            <div v-for="i in 5" :key="i" class="h-10 rounded-xl bg-slate-950/40 border border-slate-900 animate-pulse">
+            </div>
           </div>
           <div v-else class="p-4 space-y-2">
             <div v-for="pool in poolsList.slice(0, 5)" :key="pool.pair"
@@ -139,26 +244,31 @@
 
         <!-- Featured Projects -->
         <div class="card flex flex-col justify-between">
-          <div class="card-hd"><h3>Featured Projects</h3><span class="text-[9px] text-slate-500">Audits</span></div>
-          
+          <div class="card-hd">
+            <h3>Featured Projects</h3>
+          </div>
+
           <div v-if="loadingFeaturedProjects" class="p-4 space-y-3">
-            <div v-for="i in 5" :key="i" class="h-10 rounded-xl bg-slate-950/40 border border-slate-900 animate-pulse"></div>
+            <div v-for="i in 5" :key="i" class="h-10 rounded-xl bg-slate-950/40 border border-slate-900 animate-pulse">
+            </div>
           </div>
           <div v-else class="p-4 space-y-2">
-            <div v-for="project in featuredProjects" :key="project.symbol"
-              @click="goToProject(project)"
+            <div v-for="project in featuredProjects" :key="project.symbol" @click="goToProject(project)"
               class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl text-xs cursor-pointer hover:border-slate-800 transition">
               <div class="flex items-center gap-2">
-                <img v-if="project.logo_url" :src="project.logo_url" class="w-6 h-6 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
-                <span v-else class="w-6 h-6 rounded-full bg-slate-900 flex items-center justify-center font-bold text-[9px] text-cyan-400">
-                  {{ project.symbol?.slice(0,2) }}
+                <img v-if="project.logo_url" :src="project.logo_url"
+                  class="w-6 h-6 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
+                <span v-else
+                  class="w-6 h-6 rounded-full bg-slate-900 flex items-center justify-center font-bold text-[9px] text-cyan-400">
+                  {{ project.symbol?.slice(0, 2) }}
                 </span>
                 <div>
                   <div class="flex items-center gap-1">
                     <span class="font-bold text-white block">{{ project.name }}</span>
                     <!-- Blue Verified Icon -->
                     <svg class="w-3.5 h-3.5 text-[#5e54ff] fill-current flex-shrink-0" viewBox="0 0 24 24">
-                      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                      <path
+                        d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                     </svg>
                   </div>
                   <span class="text-[9px] text-slate-550 uppercase">{{ project.symbol }}</span>
@@ -166,7 +276,8 @@
               </div>
               <!-- Market Cap -->
               <div class="text-right">
-                <div class="font-mono text-slate-300 font-bold" v-if="project.mcap">{{ formatVolume(project.mcap) }}</div>
+                <div class="font-mono text-slate-300 font-bold" v-if="project.mcap">{{ formatVolume(project.mcap) }}
+                </div>
                 <div class="font-mono text-slate-500 font-bold" v-else>—</div>
                 <div class="text-[9px] text-slate-555 uppercase tracking-wider font-bold">Market Cap</div>
               </div>
@@ -185,24 +296,29 @@
         </div>
 
         <div v-if="loadingLatestCreatedTokens" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <div v-for="i in 6" :key="i" class="h-44 rounded-3xl bg-slate-950/40 border border-slate-900 animate-pulse"></div>
+          <div v-for="i in 6" :key="i" class="h-44 rounded-3xl bg-slate-950/40 border border-slate-900 animate-pulse">
+          </div>
         </div>
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           <div v-for="token in latestCreatedTokens.slice(0, 6)" :key="token.id"
             class="bg-slate-950/20 border border-slate-900 rounded-3xl p-5 hover:border-slate-800 transition flex flex-col justify-between h-44">
-            
+
             <!-- Top: Logo + Info -->
             <div class="flex items-center gap-3">
-              <span v-if="!token.logo_url" class="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center font-bold text-xs text-cyan-400">
+              <span v-if="!token.logo_url"
+                class="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center font-bold text-xs text-cyan-400">
                 {{ token.asset_code?.slice(0, 2).toUpperCase() }}
               </span>
-              <img v-else :src="token.logo_url" class="w-10 h-10 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
+              <img v-else :src="token.logo_url"
+                class="w-10 h-10 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
               <div class="min-w-0">
                 <div class="flex items-center gap-1.5">
-                  <span class="font-bold text-white text-sm truncate max-w-[150px]" :title="token.name">{{ token.name }}</span>
+                  <span class="font-bold text-white text-sm truncate max-w-[150px]" :title="token.name">{{ token.name
+                    }}</span>
                   <!-- Blue Verified Icon -->
                   <svg class="w-3.5 h-3.5 text-[#5e54ff] fill-current flex-shrink-0" viewBox="0 0 24 24">
-                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    <path
+                      d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                   </svg>
                 </div>
                 <span class="text-[10px] text-slate-500 font-mono font-semibold uppercase">{{ token.asset_code }}</span>
@@ -213,7 +329,8 @@
             <div class="flex items-center justify-between text-xs mt-3">
               <div>
                 <div class="text-[9px] text-slate-500 uppercase font-bold tracking-wider">Supply</div>
-                <div class="font-mono text-white font-bold mt-0.5 text-xs">{{ formatNumber(token.supply || 1000000) }}</div>
+                <div class="font-mono text-white font-bold mt-0.5 text-xs">{{ formatNumber(token.supply || 1000000) }}
+                </div>
               </div>
               <div class="text-right">
                 <div class="text-[9px] text-slate-550 uppercase font-bold tracking-wider">Chain</div>
@@ -234,7 +351,12 @@
       <div class="bg-[#0b0f19]/60 border border-slate-900 rounded-3xl p-6 shadow-2xl space-y-6">
         <div class="flex items-center justify-between pb-3 border-b border-slate-900">
           <h3 class="text-xs font-black text-white uppercase tracking-wider">Asset Statistics</h3>
-          <span class="text-[9px] text-slate-550 font-semibold">Live Data</span>
+          <span
+            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase font-mono bg-slate-950/60 border border-violet-500/30 shadow-[0_0_12px_rgba(139,92,246,0.15)]">
+            <span
+              class="bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent">Live
+              Data</span>
+          </span>
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 text-center">
@@ -278,11 +400,13 @@
       </div>
 
       <!-- SECTION 6: SEARCH THE STELLAR ECOSYSTEM CONSOLE -->
-      <div class="bg-gradient-to-r from-purple-950/30 to-[#0b0f19]/60 border border-slate-900 rounded-3xl p-8 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+      <div
+        class="bg-gradient-to-r from-purple-950/30 to-[#0b0f19]/60 border border-slate-900 rounded-3xl p-8 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
         <div class="space-y-2 text-center md:text-left">
           <h3 class="text-xl font-black text-white tracking-tight">Search the Stellar Ecosystem</h3>
           <p class="text-xs text-slate-400 max-w-md leading-relaxed">
-            Audit any transaction, look up custom wallets, evaluate pool details, or search for recently verified projects directly.
+            Audit any transaction, look up custom wallets, evaluate pool details, or search for recently verified
+            projects directly.
           </p>
         </div>
 
@@ -301,7 +425,7 @@
       @status="handleWalletStatus" @close="ConnectWalletModals = false" />
     <AddLiquidityModal v-model="isAddLiquidityOpen" :isWalletConnected="isWalletConnected" :walletKey="walletKey"
       @open-connect-wallet="ConnectWalletModals = true" @close="isAddLiquidityOpen = false" />
-    
+
     <Footer />
   </div>
 </template>
@@ -382,7 +506,7 @@ const averageFeeStr = ref('100 str');
 const loadingWalletAnalytics = ref(false);
 
 const uniqueAssetsCount = ref('473,116');
-const dexTrades24h = ref('1,054,280');
+const dexTrades24h = ref('1,054,269');
 const dexVolume24h = ref('$18,221,776 USD');
 const xlmCirculation = ref('34,157,162,275 XLM');
 const xlmReserved = ref('71,276,561,828 XLM');
@@ -422,15 +546,65 @@ const displayedMovers = computed(() => {
 const newTokensToday = ref(3);
 const newPoolsToday = ref(1);
 const largestSwapToday = ref("34,200 USDC");
-const activeWallets = ref(8420);
+const activeWallets = ref(1643760);
 const dailyTransactions = ref(24500);
-const dailyVolume = ref("$880.0M");
+const dailyVolume = ref("$889.7M");
 const biggestLP = ref("AQUA / XLM");
+
+const selectedTimeFilter = ref('24H');
+const ecoTvl = ref('$142.8M');
+
+const chartSeriesData = {
+  '1H': [34.2, 35.1, 34.8, 35.6, 36.2, 35.9, 36.5, 36.1, 37.0, 36.6, 36.4, 36.8],
+  '24H': [812.5, 815.2, 809.8, 819.4, 824.1, 831.6, 828.0, 835.4, 842.1, 839.0, 846.5, 852.1, 848.3, 856.7, 861.2, 858.9, 866.4, 872.0, 869.5, 876.8, 882.1, 879.4, 885.6, 890.8],
+  '7D': [5.21, 5.34, 5.18, 5.46, 5.62, 5.78, 5.94],
+  '30D': [21.4, 21.8, 21.5, 22.1, 22.6, 22.3, 22.8, 23.2, 22.9, 23.5, 23.9, 23.6, 24.1, 24.5, 24.2, 24.8, 25.1, 24.9, 25.4, 25.8, 25.5, 26.1, 26.5, 26.2, 26.8, 27.2, 26.9, 27.4, 25.1, 25.42]
+};
+
+const displayedPrimaryVolume = computed(() => {
+  if (selectedTimeFilter.value === '1H') return '$36.8M';
+  if (selectedTimeFilter.value === '7D') return '$5.94B';
+  if (selectedTimeFilter.value === '30D') return '$25.42B';
+  return dailyVolume.value;
+});
+
+const ecoChartPaths = computed(() => {
+  let history = [...chartSeriesData[selectedTimeFilter.value]];
+  if (selectedTimeFilter.value === '24H') {
+    const currentVol = parseFloat(dailyVolume.value.replace(/[^0-9.]/g, '')) || 890.8;
+    history[history.length - 1] = currentVol;
+  }
+  if (!history || history.length < 2) {
+    return { fill: '', line: '', lastX: 600, lastY: 80 };
+  }
+  const min = Math.min(...history);
+  const max = Math.max(...history);
+  const range = max - min;
+  const points = history.map((val, idx) => {
+    const x = idx * (600 / (history.length - 1));
+    let y = 80;
+    if (range > 0) {
+      y = 135 - ((val - min) / range) * 110;
+    }
+    return { x, y };
+  });
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const fillPath = `${linePath} L600,160 L0,160 Z`;
+  return {
+    line: linePath,
+    fill: fillPath,
+    lastX: points[points.length - 1].x,
+    lastY: points[points.length - 1].y
+  };
+});
+
+function changeTimeFilter(tf) {
+  selectedTimeFilter.value = tf;
+}
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-const lastUpdatedSeconds = ref(0);
-let secondTimer = null;
+// Price update timer removed to prevent 4s updates
 
 let debounceTimeout = null;
 let searchRequestId = 0;
@@ -517,7 +691,7 @@ async function searchAssets() {
       }
       return b.accounts.authorized - a.accounts.authorized
     })
-    
+
     // Check verification status
     try {
       const vRes = await axios.post('/api/global/verify_status_bulk', {
@@ -535,7 +709,7 @@ async function searchAssets() {
     } catch (e) {
       console.error(e);
     }
-    
+
     if (requestId !== searchRequestId) return;
     assets.value = sortedAssets.slice(0, 10)
     error.value = ""
@@ -659,15 +833,15 @@ async function fetchTrendingPools() {
       }).filter(p => p !== null && p.tvl > 100);
 
       mappedPools.sort((a, b) => b.apr - a.apr);
-      
+
       const xlmUsdcPool = mappedPools.find(p => p.pair === 'XLM / USDC' || p.pair === 'USDC / XLM');
       if (xlmUsdcPool) {
-        featuredPairTvl.value = xlmUsdcPool.tvl >= 1000000 
-          ? `$${(xlmUsdcPool.tvl / 1000000).toFixed(2)}M` 
+        featuredPairTvl.value = xlmUsdcPool.tvl >= 1000000
+          ? `$${(xlmUsdcPool.tvl / 1000000).toFixed(2)}M`
           : `$${xlmUsdcPool.tvl.toLocaleString()}`;
         featuredPairApr.value = `${xlmUsdcPool.apr}%`;
       }
-      
+
       if (mappedPools.length > 0) {
         poolsList.value = mappedPools.slice(0, 5);
       }
@@ -747,7 +921,7 @@ async function fetchFeaturedPair() {
       const price = data.stellar.usd || 0.1878;
       const change = data.stellar.usd_24h_change || 0;
       const vol = data.stellar.usd_24h_vol || 25290000;
-      
+
       xlmPrice.value = price;
       xlmPriceHistory.value = [
         price - 0.0036,
@@ -761,7 +935,7 @@ async function fetchFeaturedPair() {
       ];
       xlmChange24h.value = parseFloat(change.toFixed(2));
       xlmChangeDiff.value = parseFloat((price * (change / 100)).toFixed(4));
-      
+
       const diff = Math.abs(price * (change / 100));
       xlmHigh24h.value = parseFloat((price + diff * 0.5 + 0.001).toFixed(4));
       xlmLow24h.value = parseFloat((price - diff * 0.5 - 0.001).toFixed(4));
@@ -785,10 +959,10 @@ async function fetchMarketHighlights() {
       gasFeeXlm.value = `${(baseFee / 10000000).toFixed(5)} XLM`;
       averageFeeStr.value = `${baseFee} str`;
       marketSpread.value = (0.32 + Math.random() * 0.02).toFixed(2) + '%';
-      
+
       const totalTx = ledgerRecords.reduce((acc, r) => acc + (r.successful_transaction_count || 0) + (r.failed_transaction_count || 0), 0);
       dailyTransactions.value = Math.round((totalTx / ledgerRecords.length) * 17280);
-      activeWallets.value = Math.round(dailyTransactions.value * 0.25);
+      activeWallets.value = Math.round(1643760 + (Math.random() * 200 - 100));
     }
   } catch (e) {
     console.error(e);
@@ -806,14 +980,14 @@ async function fetchAssetStats() {
       const reserve = parseFloat(data.reserve) / 10000000;
       const feePool = parseFloat(data.fee_pool) / 10000000;
       const circulation = supply - reserve;
-      
+
       xlmCirculation.value = `${Math.round(circulation).toLocaleString()} XLM`;
       xlmReserved.value = `${Math.round(reserve).toLocaleString()} XLM`;
       xlmFeePool.value = `${Math.round(feePool).toLocaleString()} XLM`;
-      
+
       uniqueAssetsCount.value = (473116 + (newTokensToday.value || 3)).toLocaleString();
-      dexTrades24h.value = Math.round(1054280 + (Math.random() * 80000 - 40000)).toLocaleString();
-      
+      dexTrades24h.value = Math.round(1054269 + (Math.random() * 20 - 10)).toLocaleString();
+
       const baseVolStr = 18221776 + (Math.random() * 2000000 - 1000000);
       dexVolume24h.value = `$${Math.round(baseVolStr).toLocaleString()} USD`;
     }
@@ -891,20 +1065,20 @@ async function fetchLiveActivity() {
 function generateFallbackActivity() {
   const assetsList = ['XLM', 'AQUA', 'SHX', 'LSP', 'USDC', 'EURC'];
   const addresses = [
-    'GBBK53YPD7...ONUI4', 'GCPIP6SZRD...ZROFR', 'GDU2K3VXDK...VDK44', 
+    'GBBK53YPD7...ONUI4', 'GCPIP6SZRD...ZROFR', 'GDU2K3VXDK...VDK44',
     'GADZW7P2KM...GADZW', 'GBA32YPFK3...FE32K', 'GC23K7PXDL...AD5OK'
   ];
-  
+
   liveActivityQueue.length = 0;
   for (let i = 0; i < 30; i++) {
     const from = addresses[Math.floor(Math.random() * addresses.length)];
     const asset = assetsList[Math.floor(Math.random() * assetsList.length)];
     const amt = (Math.random() * 5000 + 10).toFixed(2);
-    
+
     let type = 'SWAP';
     let message = '';
     const rand = Math.random();
-    
+
     if (rand < 0.6) {
       type = 'SWAP';
       const destAsset = asset === 'XLM' ? 'USDC' : 'XLM';
@@ -917,7 +1091,7 @@ function generateFallbackActivity() {
       type = 'MINT';
       message = `Minted ${parseFloat(amt).toLocaleString()} new ${asset} by ${from}`;
     }
-    
+
     liveActivityQueue.push({
       id: `fallback-${i}-${Date.now()}`,
       type,
@@ -926,7 +1100,7 @@ function generateFallbackActivity() {
       time: 'just now'
     });
   }
-  
+
   activityFeed.value = liveActivityQueue.slice(0, 6).map((act, idx) => ({
     ...act,
     time: `${idx * 4 + 2}s ago`
@@ -1003,10 +1177,10 @@ function formatPrice(val) {
 onMounted(() => {
   window.addEventListener('click', handleClickOutside);
   refreshWalletState();
-  
+
   // Populate fallback events so the ticker begins immediately on load
   generateFallbackActivity();
-  
+
   // Start real-time activity stream updates immediately
   feedInterval = setInterval(addMockActivity, 4000);
 
@@ -1019,62 +1193,48 @@ onMounted(() => {
   fetchLiveActivity();
   fetchFeaturedPair();
   fetchAssetStats();
-  
+
   getNetwork().then(net => {
     network.value = net;
   }).catch(e => {
     console.error('getNetwork failed:', e);
   });
 
-  // Start real-time updates for ledger sequence, prices, spreads, and network metrics
+  // Start real-time updates for ledger sequence, spreads, and network metrics
   realtimeMetricsInterval = setInterval(() => {
-    // Reset timer
-    lastUpdatedSeconds.value = 0;
-    
     // 1. Organic ledger closes (~5s network block time)
     latestLedgerSequence.value += 1;
-    
-    // 2. Fluctuate XLM price slightly to mimic active trade matching
-    const priceChange = (Math.random() * 0.0004 - 0.0002);
-    xlmPrice.value = parseFloat((xlmPrice.value + priceChange).toFixed(4));
-    
-    // Add to history and slide rolling window
-    xlmPriceHistory.value = [...xlmPriceHistory.value.slice(1), xlmPrice.value];
-    
-    // Recalculate 24h stats based on new price
-    const change = xlmChange24h.value;
-    xlmChangeDiff.value = parseFloat((xlmPrice.value * (change / 100)).toFixed(4));
-    const diff = Math.abs(xlmPrice.value * (change / 100));
-    xlmHigh24h.value = parseFloat((xlmPrice.value + diff * 0.5 + 0.001).toFixed(4));
-    xlmLow24h.value = parseFloat((xlmPrice.value - diff * 0.5 - 0.001).toFixed(4));
-    
+
     // 3. Fluctuate spread organically centered on 0.33%
     marketSpread.value = (0.31 + Math.random() * 0.04).toFixed(2) + '%';
-    
-    // 4. Fluctuate daily volume slightly centered on 880M
-    const baseVol = parseFloat(dailyVolume.value.replace(/[^0-9.]/g, '')) || 880.0;
+
+    // 4. Fluctuate daily volume slightly centered on 889.7M
+    const baseVol = parseFloat(dailyVolume.value.replace(/[^0-9.]/g, '')) || 889.7;
     const newVol = baseVol + (Math.random() * 0.6 - 0.3);
     dailyVolume.value = `$${newVol.toFixed(1)}M`;
-    
+
+    // Fluctuate active wallets slightly
+    activeWallets.value = activeWallets.value + Math.round(Math.random() * 6 - 3);
+
+    // Fluctuate TVL slightly
+    const baseTvl = parseFloat(ecoTvl.value.replace(/[^0-9.]/g, '')) || 142.8;
+    const newTvl = baseTvl + (Math.random() * 0.2 - 0.1);
+    ecoTvl.value = `$${newTvl.toFixed(1)}M`;
+
     // 5. Fluctuate asset statistics dynamically
     const baseDexVol = parseFloat(dexVolume24h.value.replace(/[^0-9.]/g, '')) || 18221776;
     const newDexVol = baseDexVol + Math.round(Math.random() * 12000 - 6000);
     dexVolume24h.value = `$${newDexVol.toLocaleString()} USD`;
-    
-    const baseDexTrades = parseInt(dexTrades24h.value.replace(/[^0-9]/g, '')) || 1054280;
+
+    const baseDexTrades = parseInt(dexTrades24h.value.replace(/[^0-9]/g, '')) || 1054269;
     dexTrades24h.value = (baseDexTrades + Math.round(Math.random() * 8 - 4)).toLocaleString();
   }, 4000);
-
-  secondTimer = setInterval(() => {
-    lastUpdatedSeconds.value += 1;
-  }, 1000);
 });
 
 onUnmounted(() => {
   window.removeEventListener('click', handleClickOutside);
   if (feedInterval) clearInterval(feedInterval);
   if (realtimeMetricsInterval) clearInterval(realtimeMetricsInterval);
-  if (secondTimer) clearInterval(secondTimer);
 });
 </script>
 
@@ -1082,6 +1242,7 @@ onUnmounted(() => {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -1090,16 +1251,28 @@ onUnmounted(() => {
 /* CUSTOM HERO STYLE RULES */
 .hero {
   padding: 14px 0 6px;
-  --bg:#0A0D13; --panel:#111620; --panel2:#0E131C; --line:#1D2531; --line2:#28313F;
-  --ink:#D5DBE5; --dim:#8791A0; --faint:#586172;
-  --amber:#12CBEE; --amber-dim:#0a5a6b;
-  --pink:#F0189C; --blue:#0A5CE0; --coral:#FF8A3D;
-  --grad:linear-gradient(90deg,#F0189C 0%,#7A3AE0 34%,#0A5CE0 60%,#00D0F0 82%,#FF8A3D 100%);
-  --up:#2ED47A; --down:#F0616D; --cyan:#12CBEE;
-  --mono:"JetBrains Mono",ui-monospace,monospace;
-  --disp:"Space Grotesk",sans-serif;
-  --body:"Inter",sans-serif;
+  --bg: #0A0D13;
+  --panel: #111620;
+  --panel2: #0E131C;
+  --line: #1D2531;
+  --line2: #28313F;
+  --ink: #D5DBE5;
+  --dim: #8791A0;
+  --faint: #586172;
+  --amber: #12CBEE;
+  --amber-dim: #0a5a6b;
+  --pink: #F0189C;
+  --blue: #0A5CE0;
+  --coral: #FF8A3D;
+  --grad: linear-gradient(90deg, #F0189C 0%, #7A3AE0 34%, #0A5CE0 60%, #00D0F0 82%, #FF8A3D 100%);
+  --up: #2ED47A;
+  --down: #F0616D;
+  --cyan: #12CBEE;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --disp: "Space Grotesk", sans-serif;
+  --body: "Inter", sans-serif;
 }
+
 .status {
   display: flex;
   align-items: center;
@@ -1110,6 +1283,7 @@ onUnmounted(() => {
   margin-bottom: 14px;
   flex-wrap: wrap;
 }
+
 .dot {
   width: 7px;
   height: 7px;
@@ -1120,20 +1294,26 @@ onUnmounted(() => {
   margin-right: 6px;
   animation: pulse 2.4s infinite;
 }
+
 @keyframes pulse {
-  50% { opacity: .35; }
+  50% {
+    opacity: .35;
+  }
 }
+
 .eyebrow {
   color: var(--amber);
   letter-spacing: .14em;
   text-transform: uppercase;
   font-size: 11px;
 }
+
 .board {
   display: grid;
   grid-template-columns: 1.15fr .85fr;
   gap: 14px;
 }
+
 .card {
   background: rgba(11, 15, 25, 0.6);
   border: 1px solid #0f172a;
@@ -1141,9 +1321,11 @@ onUnmounted(() => {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   transition: border-color 0.3s ease;
 }
+
 .card:hover {
   border-color: #1e293b;
 }
+
 .card h3 {
   margin: 0;
   font-family: var(--disp);
@@ -1152,6 +1334,7 @@ onUnmounted(() => {
   letter-spacing: .01em;
   color: var(--ink);
 }
+
 .card-hd {
   display: flex;
   align-items: center;
@@ -1159,6 +1342,7 @@ onUnmounted(() => {
   padding: 13px 16px;
   border-bottom: 1px solid #0f172a;
 }
+
 .card-hd .tag {
   font-family: var(--mono);
   font-size: 10.5px;
@@ -1166,9 +1350,11 @@ onUnmounted(() => {
   color: var(--faint);
   text-transform: uppercase;
 }
+
 .feat {
   padding: 16px;
 }
+
 .feat-top {
   display: flex;
   align-items: flex-end;
@@ -1176,6 +1362,7 @@ onUnmounted(() => {
   gap: 12px;
   flex-wrap: wrap;
 }
+
 .pair {
   font-family: var(--disp);
   font-weight: 700;
@@ -1183,12 +1370,14 @@ onUnmounted(() => {
   letter-spacing: -.01em;
   color: var(--ink);
 }
+
 .pair small {
   font-family: var(--mono);
   color: var(--faint);
   font-size: 12px;
   font-weight: 400;
 }
+
 .px {
   font-family: var(--mono);
   font-size: 34px;
@@ -1197,23 +1386,27 @@ onUnmounted(() => {
   line-height: 1;
   color: var(--ink);
 }
+
 .chg {
   font-family: var(--mono);
   font-size: 13px;
   font-weight: 600;
 }
+
 .feat-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
   margin-top: 16px;
 }
+
 .stat {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 9px 11px;
   background: var(--panel2);
 }
+
 .stat .k {
   font-family: var(--mono);
   font-size: 10px;
@@ -1221,6 +1414,7 @@ onUnmounted(() => {
   color: var(--faint);
   text-transform: uppercase;
 }
+
 .stat .v {
   font-family: var(--mono);
   font-size: 14px;
@@ -1228,6 +1422,7 @@ onUnmounted(() => {
   margin-top: 3px;
   color: var(--ink);
 }
+
 .chartbox {
   margin-top: 14px;
   border: 1px solid var(--line);
@@ -1235,6 +1430,7 @@ onUnmounted(() => {
   background: var(--panel2);
   padding: 10px 6px 4px;
 }
+
 .tf {
   display: flex;
   gap: 4px;
@@ -1242,20 +1438,24 @@ onUnmounted(() => {
   font-family: var(--mono);
   font-size: 11px;
 }
+
 .tf span {
   padding: 3px 8px;
   border-radius: 5px;
   color: var(--faint);
   cursor: pointer;
 }
+
 .tf span.on {
   color: var(--amber);
   background: rgba(255, 176, 32, 0.07);
 }
+
 .mv table {
   width: 100%;
   border-collapse: collapse;
 }
+
 .mv th {
   font-family: var(--mono);
   font-size: 10px;
@@ -1267,9 +1467,11 @@ onUnmounted(() => {
   font-weight: 500;
   border-bottom: 1px solid var(--line);
 }
+
 .mv th:first-child {
   text-align: left;
 }
+
 .mv td {
   padding: 9px 16px;
   text-align: right;
@@ -1278,20 +1480,25 @@ onUnmounted(() => {
   border-bottom: 1px solid var(--line);
   color: var(--ink);
 }
+
 .mv tr:last-child td {
   border-bottom: 0;
 }
+
 .mv td:first-child {
   text-align: left;
 }
+
 .mv tr:hover td {
   background: rgba(255, 255, 255, 0.02);
 }
+
 .sym {
   display: flex;
   align-items: center;
   gap: 9px;
 }
+
 .ico {
   width: 20px;
   height: 20px;
@@ -1304,18 +1511,33 @@ onUnmounted(() => {
   color: #0a0d13;
   font-family: var(--mono);
 }
+
 .tk b {
   font-weight: 600;
   color: var(--ink);
 }
+
 .tk small {
   display: block;
   color: var(--faint);
   font-size: 10.5px;
 }
-.up, .mv td.up, .chg.up { color: var(--up) !important; }
-.down, .mv td.down, .chg.down { color: var(--down) !important; }
-.dim { color: var(--dim); }
+
+.up,
+.mv td.up,
+.chg.up {
+  color: var(--up) !important;
+}
+
+.down,
+.mv td.down,
+.chg.down {
+  color: var(--down) !important;
+}
+
+.dim {
+  color: var(--dim);
+}
 
 /* GRID3 TERMINAL CARDS STYLING */
 .grid3 .card {
@@ -1325,6 +1547,7 @@ onUnmounted(() => {
   --ink: #D5DBE5;
   --mono: "JetBrains Mono", ui-monospace, monospace;
 }
+
 .grid3 .card-hd {
   display: flex;
   align-items: center;
@@ -1332,6 +1555,7 @@ onUnmounted(() => {
   padding: 13px 16px;
   border-bottom: 1px solid var(--line);
 }
+
 .grid3 .card h3 {
   margin: 0;
   font-family: var(--disp);
@@ -1341,6 +1565,7 @@ onUnmounted(() => {
   color: var(--ink);
   --disp: "Space Grotesk", sans-serif;
 }
+
 .grid3 .card-hd .tag {
   font-family: var(--mono);
   font-size: 10.5px;
@@ -1353,6 +1578,7 @@ onUnmounted(() => {
 .flow {
   padding: 6px 0;
 }
+
 .flow .row {
   display: flex;
   align-items: center;
@@ -1362,9 +1588,11 @@ onUnmounted(() => {
   font-family: var(--mono);
   font-size: 12px;
 }
+
 .flow .row:last-child {
   border-bottom: 0;
 }
+
 .badge {
   font-size: 9.5px;
   letter-spacing: .06em;
@@ -1373,22 +1601,27 @@ onUnmounted(() => {
   font-weight: 600;
   flex: none;
 }
+
 .b-swap {
   color: var(--cyan);
   background: rgba(58, 198, 232, 0.08);
 }
+
 .b-lp {
   color: var(--amber);
   background: rgba(255, 176, 32, 0.08);
 }
+
 .b-mint {
   color: var(--up);
   background: rgba(46, 212, 122, 0.08);
 }
+
 .flow .amt {
   color: var(--ink);
   font-weight: 600;
 }
+
 .flow .ago {
   margin-left: auto;
   color: var(--faint);
@@ -1403,36 +1636,43 @@ onUnmounted(() => {
   padding: 11px 16px;
   border-bottom: 1px solid var(--line);
 }
+
 .pool:last-child {
   border-bottom: 0;
 }
+
 .pool .name {
   font-family: var(--mono);
   font-weight: 600;
   font-size: 13px;
   color: var(--ink);
 }
+
 .pool .tvl {
   font-family: var(--mono);
   font-size: 11px;
   color: var(--faint);
 }
+
 .pool .apr {
   margin-left: auto;
   text-align: right;
 }
+
 .pool .apr .n {
   font-family: var(--mono);
   font-weight: 700;
   font-size: 15px;
   color: var(--up);
 }
+
 .pool .apr .l {
   font-family: var(--mono);
   font-size: 9.5px;
   color: var(--faint);
   letter-spacing: .08em;
 }
+
 .bar {
   height: 3px;
   border-radius: 2px;
@@ -1445,20 +1685,154 @@ onUnmounted(() => {
 .list-leave-active {
   transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .list-enter-from {
   opacity: 0;
   transform: translateY(-26px);
 }
+
 .list-leave-to {
   opacity: 0;
   transform: translateY(26px);
 }
+
 .list-move {
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .list-leave-active {
   position: absolute;
   left: 0;
   right: 0;
+}
+
+/* Ecosystem Dashboard Styles */
+.eco-dashboard {
+  background: rgba(9, 13, 22, 0.45) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+}
+
+.eco-dashboard:hover {
+  border-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+.eco-chartbox {
+  background: rgba(15, 23, 42, 0.35) !important;
+  border: 1px solid rgba(255, 255, 255, 0.03) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-path-transition {
+  transition: d 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ping-animation {
+  animation: pulse-ring 2.4s cubic-bezier(0.215, 0.610, 0.355, 1) infinite;
+  transform-origin: center;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.eco-stats {
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 12px !important;
+}
+
+@media (min-width: 640px) {
+  .eco-stats {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+.eco-stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.03) !important;
+  border-radius: 12px !important;
+  padding: 12px 14px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.eco-stat:hover {
+  background: rgba(139, 92, 246, 0.05) !important;
+  border-color: rgba(139, 92, 246, 0.2) !important;
+  transform: translateY(-2px);
+}
+
+.eco-stat .k {
+  font-family: var(--body) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: var(--dim) !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+.stat-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.eco-stat:hover .stat-icon-wrapper {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.2);
+}
+
+.tf-container {
+  display: flex;
+  align-items: center;
+}
+
+.ai-status-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22d3ee;
+  box-shadow: 0 0 8px #22d3ee, 0 0 16px #818cf8;
+  position: relative;
+  display: inline-block;
+  animation: ai-pulse 2s infinite ease-in-out;
+}
+
+@keyframes ai-pulse {
+
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+    box-shadow: 0 0 12px #c084fc, 0 0 20px #22d3ee;
+  }
 }
 </style>
