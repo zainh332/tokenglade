@@ -2,10 +2,10 @@
     <TransitionRoot appear :show="modelValue" as="template">
         <Dialog as="div" class="relative z-[9999]" @close="$emit('update:modelValue', false)">
 
-            <!-- backdrop -->
+            <!-- backdrop overlay -->
             <TransitionChild enter="duration-200 ease-out" enter-from="opacity-0" enter-to="opacity-100"
                 leave="duration-150 ease-in" leave-from="opacity-100" leave-to="opacity-0">
-                <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+                <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" />
             </TransitionChild>
 
             <div class="fixed inset-0 flex items-center justify-center p-4">
@@ -14,50 +14,76 @@
                     enter-to="opacity-100 scale-100" leave="duration-150 ease-in" leave-from="opacity-100 scale-100"
                     leave-to="opacity-0 scale-95">
 
-                    <DialogPanel class="w-[520px] max-w-[90vw] bg-white rounded-2xl shadow-xl p-6">
+                    <DialogPanel class="w-[520px] max-w-[90vw] bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-[25px] overflow-hidden shadow-2xl">
 
-                        <DialogTitle class="mb-4 text-lg font-semibold">
-                            Search Stellar Token
-                        </DialogTitle>
-
-                        <p class="mb-4 text-sm text-slate-500">
-                            Enter the asset code of the token
-                        </p>
-
-                        <!-- asset code input -->
-                        <input v-model="assetCodeInput" @keyup.enter="searchAssets" type="text" placeholder="TKG"
-                            class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400" />
-
-                        <!-- dropdown -->
-                        <div v-if="assets.length" class="mt-4 border rounded-xl max-h-[250px] overflow-y-auto">
-                            <div v-for="asset in assets" :key="`${asset.asset_code}_${asset.asset_issuer}`"
-                                @click="selectAsset(asset)"
-                                class="p-4 border-b cursor-pointer last:border-b-0 hover:bg-slate-50">
-                                <div class="flex items-center gap-1.5 font-medium text-sm">
-                                    {{ asset.asset_code }}
-                                    <img v-if="asset.is_verified" :src="verified" alt="Verified"
-                                        class="flex-shrink-0 w-4 h-4" title="Verified Token" />
-                                </div>
-
-                                <div class="mt-1 text-xs break-all text-slate-500">
-                                    {{ asset.asset_issuer }}
-                                </div>
-
-                                <div class="mt-2 text-xs text-cyan-600">
-                                    Holders: {{ asset.accounts.authorized }}
-                                </div>
-                            </div>
+                        <!-- Header block -->
+                        <div class="bg-[#151D2D] border-b border-[rgba(148,163,184,0.16)] px-6 py-4 flex items-center justify-between">
+                            <DialogTitle class="text-sm font-extrabold text-white flex items-center gap-2 font-mono uppercase tracking-wider">
+                                🔍 Search Stellar Token
+                            </DialogTitle>
+                            <button @click="$emit('update:modelValue', false)" class="text-slate-400 hover:text-white transition focus:outline-none">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
                         </div>
 
-                        <p class="text-red-500 text-sm mt-2 min-h-[20px]">
-                            {{ error }}
-                        </p>
+                        <div class="p-6">
+                            <p class="mb-4 text-xs text-slate-400 font-medium">
+                                Look up active assets on the Stellar network by entering their asset code symbol.
+                            </p>
 
-                        <button :disabled="loading" @click="searchAssets" class="w-full mt-4 py-3 rounded-xl text-white font-medium
-                            bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))]
-                            hover:opacity-90 transition disabled:opacity-50">
-                            {{ loading ? "Checking..." : "Search Token" }}
-                        </button>
+                            <!-- Asset Input Field -->
+                            <div class="space-y-1.5">
+                                <label for="asset_code_search" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
+                                    Stellar Asset Code
+                                </label>
+                                <input 
+                                    v-model="assetCodeInput" 
+                                    @keyup.enter="searchAssets" 
+                                    type="text" 
+                                    id="asset_code_search"
+                                    placeholder="e.g. TKG, XLM, USDC"
+                                    class="w-full px-3.5 py-2.5 bg-[#182235] border border-[rgba(148,163,184,0.16)] text-white placeholder-slate-500 rounded-xl focus:outline-none focus:ring-1 focus:ring-cyan-500 transition font-mono text-sm" 
+                                />
+                            </div>
+
+                            <!-- Assets list dropdown -->
+                            <div v-if="assets.length" class="mt-4 bg-[#0E131C] border border-[rgba(148,163,184,0.16)] rounded-xl max-h-[220px] overflow-y-auto custom-scrollbar divide-y divide-[rgba(148,163,184,0.12)]">
+                                <div v-for="asset in assets" :key="`${asset.asset_code}_${asset.asset_issuer}`"
+                                    @click="selectAsset(asset)"
+                                    class="p-4 cursor-pointer hover:bg-[#182235]/65 transition duration-150">
+                                    <div class="flex items-center gap-1.5 font-bold text-sm text-white">
+                                        <span class="font-mono uppercase">{{ asset.asset_code }}</span>
+                                        <img v-if="asset.is_verified" :src="verified" alt="Verified"
+                                            class="flex-shrink-0 w-3.5 h-3.5" title="Verified Token" />
+                                    </div>
+
+                                    <div class="mt-1 text-[11px] font-mono break-all text-slate-400 flex flex-wrap gap-1">
+                                        <span class="text-slate-500">Issuer:</span>
+                                        <span class="text-slate-400 select-all">{{ asset.asset_issuer }}</span>
+                                    </div>
+
+                                    <div class="mt-2 text-[10.5px] font-mono text-cyan-400 font-semibold flex items-center gap-1">
+                                        <span>●</span> Active Holders: {{ formatNumber(asset.accounts.authorized) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Error indicator -->
+                            <p class="text-rose-400 font-mono text-xs mt-3 min-h-[16px] font-semibold">
+                                {{ error }}
+                            </p>
+
+                            <!-- Submit action -->
+                            <button 
+                                :disabled="loading" 
+                                @click="searchAssets" 
+                                class="w-full mt-2 py-3 rounded-xl text-white font-extrabold uppercase tracking-wider text-xs bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-95 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 focus:outline-none"
+                            >
+                                {{ loading ? "Checking Horizon Ledger..." : "Search Token" }}
+                            </button>
+                        </div>
 
                     </DialogPanel>
 
@@ -99,6 +125,12 @@ const assets = ref([])
 
 let debounceTimeout = null
 let searchRequestId = 0
+
+function formatNumber(value) {
+    return new Intl.NumberFormat("en-US", {
+        maximumFractionDigits: 0
+    }).format(value || 0);
+}
 
 async function enrichVerificationStatus(assetList) {
     const issuers = assetList.map((asset) => asset.asset_issuer)
@@ -162,7 +194,7 @@ async function searchAssets() {
 
         if (!allRecords.length) {
             assets.value = []
-            error.value = "No token found"
+            error.value = "No token detected on Stellar ledger"
             return
         }
 
@@ -196,7 +228,7 @@ async function searchAssets() {
             return
         }
 
-        error.value = "Failed to fetch assets"
+        error.value = "Failed to communicate with Horizon ledger"
         assets.value = []
     } finally {
         if (requestId === searchRequestId) {
@@ -233,3 +265,21 @@ function selectAsset(asset) {
     emit("update:modelValue", false)
 }
 </script>
+
+<style scoped>
+/* Scoped custom scrollbar for asset drop-down */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #090d16;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #28313f;
+    border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #3c495e;
+}
+</style>

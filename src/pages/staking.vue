@@ -1,7 +1,8 @@
 <template>
-    <div>
+    <div
+        class="bg-[#070A13] min-h-screen text-slate-100 font-sans antialiased selection:bg-purple-500/30 selection:text-white">
         <Header />
-        <div class="container-fluid mx-auto pt-[8rem] pb-[6rem] relative top-0 z-0 bg-[#0B1020] overflow-hidden">
+        <div class="container-fluid mx-auto pt-[8rem] pb-[6rem] relative top-0 z-0 bg-[#070A13] overflow-hidden">
             <!-- Blue Radial Glow Lighting treatment for Hero -->
             <div
                 class="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[150px] pointer-events-none animate-pulse-slow">
@@ -20,14 +21,19 @@
                         </span>
                     </h1>
                     <p class="text-[18px] sm:text-[20px] mt-4 text-gray-400 max-w-xl mx-auto lg:mx-0 px-4 sm:px-0">
-                        Put your tokens to work with TokenGlade's staking module. Earn competitive rewards while helping strengthen the ecosystem through secure, transparent, and fully on-chain staking. Rewards of up to <strong class="font-extrabold text-cyan-400">18% APY</strong> are available based on the staking program.
+                        Put your tokens to work with TokenGlade's staking module. Earn competitive rewards while helping
+                        strengthen the ecosystem through secure, transparent, and fully on-chain staking. Rewards of up
+                        to <strong class="font-extrabold text-cyan-400">18% APY</strong> are available based on the
+                        staking program.
                     </p>
                 </div>
 
                 <!-- Form -->
                 <div class="px-[4vw] sm:px-6">
-                    <div class="flex-shrink-0 w-full max-w-md lg:max-w-lg bg-white rounded-[25px] shadow-lg mx-auto">
-                        <div class="bg-[#3A3A3A] text-white text-center py-5 rounded-t-[25px]">
+                    <div
+                        class="flex-shrink-0 w-full max-w-md lg:max-w-lg bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-[25px] shadow-2xl mx-auto">
+                        <div
+                            class="bg-[#151D2D] border-b border-[rgba(148,163,184,0.16)] text-white text-center py-5 rounded-t-[25px]">
                             <h2 class="card-header">
                                 Stake with <span>TokenGlade</span>
                             </h2>
@@ -36,7 +42,8 @@
                         <form class="flex flex-col gap-4 p-6" @submit.prevent="onSubmit">
                             <!-- Current Balance (always visible) -->
                             <div>
-                                <label for="current_balance" class="block text-sm font-medium text-gray-700">
+                                <label for="current_balance"
+                                    class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
                                     Current balance
                                 </label>
 
@@ -44,46 +51,48 @@
                                 <div class="mt-1 relative">
                                     <input v-if="!loadingBalance" type="text" id="current_balance"
                                         name="current_balance" :value="tkgBalance"
-                                        class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3A3A3A]"
+                                        class="w-full px-3.5 py-2.5 bg-[#182235] border border-[rgba(148,163,184,0.16)] text-white placeholder-slate-650 rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition"
                                         placeholder="Current balance" readonly required />
-                                    <div v-else class="w-full h-10 rounded-md relative overflow-hidden bg-gray-200"
+                                    <div v-else class="w-full h-10 rounded-md relative overflow-hidden bg-slate-900"
                                         aria-busy="true">
                                         <div
-                                            class="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200">
+                                            class="absolute inset-0 animate-pulse bg-gradient-to-r from-[#182235] via-[#151D2D] to-[#182235]">
                                         </div>
                                     </div>
                                 </div>
-                                <p v-if="loadingBalance" class="mt-2 text-xs text-gray-500">Fetching your TKG balance…
+                                <p v-if="loadingBalance" class="mt-2 text-xs text-slate-500">Fetching your TKG balance…
                                 </p>
                             </div>
 
                             <!-- Range -->
                             <div class="relative w-full">
                                 <div class="flex items-center justify-between mb-1">
-                                    <label for="range_value" class="block text-sm font-medium text-gray-700">
+                                    <label for="range_value"
+                                        class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
 
                                     </label>
-                                    <span class="text-xs text-gray-500">
-                                        Min: <strong>1,500</strong> • Max: <strong>{{ formattedMaxStake }}</strong>
+                                    <span class="text-xs text-slate-500 font-mono">
+                                        Min: <strong class="text-white">1,500</strong> • Max: <strong
+                                            class="text-white">{{ formattedMaxStake }}</strong>
                                     </span>
                                 </div>
 
                                 <!-- Tooltip -->
-                                <div class="absolute -top-[0] transform -translate-x-1/2 text-xs bg-[#43CDFF] text-white px-2 py-1 rounded-[5px] transition-all duration-200"
+                                <div class="absolute -top-[0] transform -translate-x-1/2 text-xs bg-cyan-500 text-white px-2 py-1 rounded-[5px] transition-all duration-200"
                                     :style="{ left: `calc(${percentage}% - 1px)` }">
                                     {{ rangeValue }}%
                                 </div>
 
                                 <!-- Range Input (0 → 100) -->
                                 <input type="range" id="range_value" name="range_value" min="0" max="100"
-                                    v-model="rangeValue" class="w-full h-2 rounded-lg appearance-none cursor-pointer"
-                                    :style="{
+                                    v-model="rangeValue"
+                                    class="w-full h-2 rounded-lg appearance-none cursor-pointer bg-slate-800" :style="{
                                         background:
                                             'linear-gradient(90deg, rgba(220,25,224,1), rgba(67,205,255,1), rgba(0,254,254,1))'
                                     }" />
 
                                 <!-- Scale helper -->
-                                <div class="flex justify-between text-[11px] text-gray-500 mt-1">
+                                <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
                                     <span>0%</span>
                                     <span>100%</span>
                                 </div>
@@ -91,29 +100,29 @@
 
                             <!-- Selected stake amount -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">
+                                <label
+                                    class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
                                     Stake amount
                                 </label>
                                 <input type="text" :value="selectedTokensFormatted"
-                                    class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3A3A3A]"
+                                    class="mt-1 w-full px-3.5 py-2.5 bg-[#182235] border border-[rgba(148,163,184,0.16)] text-white rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition"
                                     readonly />
                             </div>
-
-                            <div class="mt-2 rounded-xl border bg-gray-50 p-3">
+                            <div class="mt-2 rounded-xl border border-[rgba(148,163,184,0.16)] bg-[#151D2D] p-3">
                                 <!-- Projected tier / APY -->
                                 <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                                    <div class="text-sm text-gray-600">
+                                    <div class="text-sm text-slate-300">
                                         Projected after stake:
                                         <strong>{{ fmtTKG(projectedTotal) }} TKG</strong>
                                     </div>
                                     <div class="text-sm">
                                         <span
-                                            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                                            :class="projected.tier === 4 ? 'bg-emerald-100 text-emerald-800'
-                                                : projected.tier === 3 ? 'bg-teal-100 text-teal-800'
-                                                    : projected.tier === 2 ? 'bg-blue-100 text-blue-800'
-                                                        : projected.tier === 1 ? 'bg-violet-100 text-violet-800'
-                                                            : 'bg-gray-100 text-gray-600'">
+                                            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold"
+                                            :class="projected.tier === 4 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                                : projected.tier === 3 ? 'bg-teal-500/10 text-teal-400 border border-teal-500/20'
+                                                    : projected.tier === 2 ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                                                        : projected.tier === 1 ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20'
+                                                            : 'bg-slate-800/40 text-slate-400 border border-[rgba(148,163,184,0.16)]'">
                                             Tier {{ projected.tier || '—' }} • {{ projected.apy.toFixed(2) }}% APY
                                         </span>
                                     </div>
@@ -121,28 +130,34 @@
 
                                 <!-- Reward chips -->
                                 <div class="grid grid-cols-3 gap-2 text-center">
-                                    <div class="rounded-lg bg-white border p-2">
-                                        <div class="text-[11px] text-gray-500">Est. Daily</div>
-                                        <div class="text-sm font-semibold">{{ fmtTKG(estDaily) }} TKG</div>
+                                    <div class="rounded-lg bg-[#182235] border border-[rgba(148,163,184,0.16)] p-2">
+                                        <div class="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Est.
+                                            Daily</div>
+                                        <div class="text-sm font-bold text-white font-mono mt-0.5">{{ fmtTKG(estDaily)
+                                            }}</div>
                                     </div>
-                                    <div class="rounded-lg bg-white border p-2">
-                                        <div class="text-[11px] text-gray-500">Est. Monthly</div>
-                                        <div class="text-sm font-semibold">{{ fmtTKG(estMonthly) }} TKG</div>
+                                    <div class="rounded-lg bg-[#182235] border border-[rgba(148,163,184,0.16)] p-2">
+                                        <div class="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Est.
+                                            Monthly</div>
+                                        <div class="text-sm font-bold text-white font-mono mt-0.5">{{ fmtTKG(estMonthly)
+                                            }}</div>
                                     </div>
-                                    <div class="rounded-lg bg-white border p-2">
-                                        <div class="text-[11px] text-gray-500">Est. Yearly</div>
-                                        <div class="text-sm font-semibold">{{ fmtTKG(estYearly) }} TKG</div>
+                                    <div class="rounded-lg bg-[#182235] border border-[rgba(148,163,184,0.16)] p-2">
+                                        <div class="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Est.
+                                            Yearly</div>
+                                        <div class="text-sm font-bold text-white font-mono mt-0.5">{{ fmtTKG(estYearly)
+                                            }}</div>
                                     </div>
                                 </div>
 
                                 <!-- Hint when below threshold -->
-                                <p v-if="projected.tier === 0" class="mt-2 text-xs text-amber-700">
+                                <p v-if="projected.tier === 0" class="mt-2 text-xs text-amber-400 font-mono">
                                     Stake at least <strong>1,500 TKG</strong> to start earning rewards.
                                 </p>
                             </div>
 
                             <button type="submit"
-                                class="w-full text-white py-2 rounded-[20px] hover:opacity-90 transition duration-300 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove"
+                                class="w-full text-white py-3 rounded-xl font-extrabold uppercase tracking-wider hover:opacity-95 hover:scale-[1.01] active:scale-[0.99] transition duration-300 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove"
                                 :disabled="stakeLoading || !hasMinBalance" :aria-busy="stakeLoading">
                                 <span v-if="stakeLoading">Staking…</span>
                                 <span v-else>Stake</span>
@@ -170,28 +185,28 @@
         <section class="container mx-auto mt-12">
             <div class="max-w-[80%] mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
 
-                <!-- ===== Live Stats (Light + Gradient Accents) ===== -->
-                <div
-                    class="rounded-2xl bg-white/80 backdrop-blur border border-slate-200 shadow-[0_12px_40px_rgba(2,6,23,0.06)]">
+                <!-- ===== Live Stats (Dark + Glassmorphic Treatment) ===== -->
+                <div class="rounded-2xl bg-[#111827] border border-[rgba(148,163,184,0.16)] shadow-2xl">
                     <!-- gradient hairline -->
-                    <div class="h-1.5 w-full rounded-t-2xl bg-gradient-to-r from-fuchsia-500 via-sky-400 to-cyan-400">
+                    <div
+                        class="h-1.5 w-full rounded-t-2xl bg-gradient-to-r from-purple-600 via-fuchsia-500 to-cyan-500">
                     </div>
 
                     <div class="p-6">
                         <div class="flex items-center justify-between">
-                            <h3 class="text-[18px] font-semibold text-slate-800">Live Staking Stats</h3>
-                            <span class="text-xs text-slate-500">Updated {{ lastUpdatedAgo }}</span>
+                            <h3 class="text-[18px] font-bold text-white tracking-tight">Live Staking Stats</h3>
+                            <span class="text-xs text-slate-400 font-mono">Updated {{ lastUpdatedAgo }}</span>
                         </div>
 
                         <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <!-- TILE -->
-                            <div
-                                class="rounded-2xl p-[1px] bg-gradient-to-r from-fuchsia-400/60 via-sky-400/60 to-cyan-400/60">
-                                <div class="rounded-2xl bg-white/95 p-4">
+                            <div class="rounded-2xl p-[1px] bg-[rgba(148,163,184,0.16)]">
+                                <div class="rounded-2xl bg-[#182235] p-4">
                                     <div class="flex items-center gap-3">
                                         <!-- icon -->
-                                        <span class="inline-flex h-9 w-9 items-center justify-center rounded-full
-                         bg-gradient-to-br from-fuchsia-500 to-sky-400 text-white">
+                                        <span
+                                            class="inline-flex h-9 w-9 items-center justify-center rounded-full
+                         bg-gradient-to-br from-fuchsia-500/20 to-sky-400/20 border border-fuchsia-500/30 text-fuchsia-400">
                                             <!-- coin -->
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor">
@@ -201,11 +216,10 @@
                                         </span>
 
                                         <div class="min-w-0">
-                                            <div class="text-[12px] uppercase tracking-wide text-slate-500">Total TKG
-                                                Staked
-                                            </div>
-                                            <div class="mt-0.5 font-semibold text-slate-900 text-xl sm:text-2xl"
-                                                style="font-variant-numeric: tabular-nums;">
+                                            <div
+                                                class="text-[10px] uppercase tracking-wider text-slate-400 font-mono font-bold">
+                                                Total TKG Staked</div>
+                                            <div class="mt-0.5 font-bold text-white text-xl sm:text-2xl font-mono">
                                                 <span v-if="totalStakedTKG === null">Loading...</span>
                                                 <span v-else>{{ totalStakedFormatted }}</span>
                                             </div>
@@ -215,12 +229,11 @@
                             </div>
 
                             <!-- TILE -->
-                            <div
-                                class="rounded-2xl p-[1px] bg-gradient-to-r from-fuchsia-400/60 via-sky-400/60 to-cyan-400/60">
-                                <div class="rounded-2xl bg-white/95 p-4">
+                            <div class="rounded-2xl p-[1px] bg-[rgba(148,163,184,0.16)]">
+                                <div class="rounded-2xl bg-[#182235] p-4">
                                     <div class="flex items-center gap-3">
                                         <span class="inline-flex h-9 w-9 items-center justify-center rounded-full
-                         bg-gradient-to-br from-sky-500 to-cyan-400 text-white">
+                         bg-gradient-to-br from-sky-500/20 to-cyan-400/20 border border-sky-500/30 text-cyan-400">
                                             <!-- users -->
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
                                                 fill="none" stroke="currentColor">
@@ -230,10 +243,10 @@
                                         </span>
 
                                         <div class="min-w-0">
-                                            <div class="text-[12px] uppercase tracking-wide text-slate-500">Active
-                                                Stakers</div>
-                                            <div class="mt-0.5 font-semibold text-slate-900 text-xl sm:text-2xl"
-                                                style="font-variant-numeric: tabular-nums;">
+                                            <div
+                                                class="text-[10px] uppercase tracking-wider text-slate-400 font-mono font-bold">
+                                                Active Stakers</div>
+                                            <div class="mt-0.5 font-bold text-white text-xl sm:text-2xl font-mono">
                                                 <span v-if="activeStakers === null">Loading...</span>
                                                 <span v-else>{{ activeStakersFormatted }}</span>
                                             </div>
@@ -243,12 +256,11 @@
                             </div>
 
                             <!-- Rewards Paid 24h TKG -->
-                            <div
-                                class="rounded-2xl p-[1px] bg-gradient-to-r from-fuchsia-400/60 via-sky-400/60 to-cyan-400/60">
-                                <div class="rounded-2xl bg-white/95 p-4">
+                            <div class="rounded-2xl p-[1px] bg-[rgba(148,163,184,0.16)]">
+                                <div class="rounded-2xl bg-[#182235] p-4">
                                     <div class="flex items-center gap-3">
                                         <span class="inline-flex h-9 w-9 items-center justify-center rounded-full
-                   bg-gradient-to-br from-cyan-500 to-fuchsia-500 text-white">
+                    bg-gradient-to-br from-cyan-500/20 to-fuchsia-500/20 border border-cyan-500/30 text-cyan-400">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
                                                 fill="none" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
@@ -257,14 +269,15 @@
                                         </span>
 
                                         <div class="min-w-0 w-full">
-                                            <div class="text-[12px] uppercase tracking-wide text-slate-500">
+                                            <div
+                                                class="text-[10px] uppercase tracking-wider text-slate-400 font-mono font-bold">
                                                 Rewards Paid (24h)
                                             </div>
 
                                             <!-- value row: number, unit never wraps -->
-                                            <div class="mt-0.5 flex items-baseline gap-1 sm:gap-1.5 text-slate-900">
-                                                <div class="mt-0.5 font-semibold text-slate-900 text-xl sm:text-2xl"
-                                                    style="font-variant-numeric: tabular-nums;">
+                                            <div
+                                                class="mt-0.5 flex items-baseline gap-1 sm:gap-1.5 text-white font-mono">
+                                                <div class="mt-0.5 font-bold text-white text-xl sm:text-2xl">
                                                     <span v-if="rewards24hFormatted === null">Loading...</span>
                                                     <span v-else>{{ rewards24hFormatted }}</span>
                                                 </div>
@@ -274,14 +287,13 @@
                                 </div>
                             </div>
 
-
                             <!-- Total Payouts -->
-                            <div
-                                class="rounded-2xl p-[1px] bg-gradient-to-r from-fuchsia-400/60 via-sky-400/60 to-cyan-400/60">
-                                <div class="rounded-2xl bg-white/95 p-4">
+                            <div class="rounded-2xl p-[1px] bg-[rgba(148,163,184,0.16)]">
+                                <div class="rounded-2xl bg-[#182235] p-4">
                                     <div class="flex items-center gap-3">
-                                        <span class="inline-flex h-9 w-9 items-center justify-center rounded-full
-                   bg-gradient-to-br from-fuchsia-500 to-cyan-500 text-white">
+                                        <span
+                                            class="inline-flex h-9 w-9 items-center justify-center rounded-full
+                    bg-gradient-to-br from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-500/30 text-fuchsia-400">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
@@ -290,12 +302,13 @@
                                         </span>
 
                                         <div class="min-w-0 w-full">
-                                            <div class="text-[12px] uppercase tracking-wide text-slate-500">Total
-                                                Payouts</div>
+                                            <div
+                                                class="text-[10px] uppercase tracking-wider text-slate-400 font-mono font-bold">
+                                                Total Payouts</div>
 
-                                            <div class="mt-0.5 flex items-baseline gap-1 sm:gap-1.5 text-slate-900">
-                                                <div class="mt-0.5 font-semibold text-slate-900 text-xl sm:text-2xl"
-                                                    style="font-variant-numeric: tabular-nums;">
+                                            <div
+                                                class="mt-0.5 flex items-baseline gap-1 sm:gap-1.5 text-white font-mono">
+                                                <div class="mt-0.5 font-bold text-white text-xl sm:text-2xl">
                                                     <span v-if="totalPayoutsFormatted === null">Loading...</span>
                                                     <span v-else>{{ totalPayoutsFormatted }}</span>
                                                 </div>
@@ -307,38 +320,38 @@
                             <!-- /Total Payouts -->
                         </div>
                     </div>
-                </div>
-
-                <!-- ===== APY Tiers (Light Table, Soft Borders) ===== -->
-                <div
-                    class="rounded-2xl bg-white/95 backdrop-blur border border-slate-200 shadow-[0_8px_30px_rgba(0,0,0,0.06)] overflow-hidden">
-                    <div class="h-1.5 w-full rounded-t-2xl bg-gradient-to-r from-fuchsia-500 via-sky-400 to-cyan-400">
+                </div> <!-- ===== APY Tiers (Dark Table, Glassmorphic Treatment) ===== -->
+                <div class="rounded-2xl bg-[#111827] border border-[rgba(148,163,184,0.16)] shadow-2xl overflow-hidden">
+                    <div
+                        class="h-1.5 w-full rounded-t-2xl bg-gradient-to-r from-purple-600 via-fuchsia-500 to-cyan-500">
                     </div>
 
                     <div class="px-6 py-5">
-                        <h3 class="text-[18px] font-semibold text-slate-800">APY Tiers</h3>
-                        <p class="text-sm text-slate-500 mt-1">
+                        <h3 class="text-[18px] font-bold text-white tracking-tight">APY Tiers</h3>
+                        <p class="text-xs text-slate-400 mt-1">
                             Rewards are calculated daily based on your tier.
                         </p>
                     </div>
 
                     <div class="px-6 pb-6">
-                        <div class="overflow-hidden rounded-xl border border-slate-200">
+                        <div class="overflow-hidden rounded-xl border border-[rgba(148,163,184,0.16)] bg-[#151D2D]">
                             <table class="min-w-full text-left">
-                                <thead class="bg-slate-50/70 text-slate-600">
-                                    <tr class="text-sm">
-                                        <th class="py-3 px-4 font-medium">Tier</th>
-                                        <th class="py-3 px-4 font-medium">Amount Staked (TKG)</th>
-                                        <th class="py-3 px-4 font-medium">APY</th>
+                                <thead
+                                    class="bg-[#182235] text-slate-400 border-b border-[rgba(148,163,184,0.16)] font-mono uppercase tracking-wider text-xs">
+                                    <tr>
+                                        <th class="py-3 px-4 font-bold">Tier</th>
+                                        <th class="py-3 px-4 font-bold">Amount Staked (TKG)</th>
+                                        <th class="py-3 px-4 font-bold">APY</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-slate-100 text-slate-800">
-                                    <tr v-for="tier in apyTiers" :key="tier.tier" class="bg-white hover:bg-slate-50/60">
-                                        <td class="py-3 px-4 font-semibold">Tier {{ tier.tier }}</td>
-                                        <td class="py-3 px-4">{{ tier.range }}</td>
+                                <tbody class="divide-y divide-[rgba(148,163,184,0.16)]/60 text-slate-300">
+                                    <tr v-for="tier in apyTiers" :key="tier.tier"
+                                        class="bg-transparent hover:bg-[#182235]/40 transition">
+                                        <td class="py-3 px-4 font-bold text-white">Tier {{ tier.tier }}</td>
+                                        <td class="py-3 px-4 font-mono">{{ tier.range }}</td>
                                         <td class="py-3 px-4">
                                             <span
-                                                class="inline-flex items-center rounded-full bg-gradient-to-r from-fuchsia-50 via-sky-50 to-cyan-50 px-2.5 py-0.5 text-sm font-medium text-slate-800 border border-slate-200">
+                                                class="inline-flex items-center rounded-full bg-gradient-to-r from-fuchsia-500/10 via-sky-500/10 to-cyan-500/10 px-2.5 py-0.5 text-sm font-bold text-cyan-400 border border-cyan-500/30 font-mono shadow-[0_0_8px_rgba(34,211,238,0.1)]">
                                                 {{ tier.apy }}%
                                             </span>
                                         </td>
@@ -348,7 +361,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </section>
 
@@ -356,73 +368,85 @@
         <!-- Your Staking History -->
         <section v-if="hasPositions" id="your-stakes" class="container mx-auto mt-16 mb-10">
             <div class="container mx-auto pt-20">
-                <h2 class="text-2xl font-semibold text-center mb-6">Your Staking History</h2>
+                <h2 class="text-2xl font-bold text-center text-white tracking-tight mb-6">Your Staking History</h2>
 
-                <div class="w-full max-w-[80%] mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                <div
+                    class="w-full max-w-[80%] mx-auto bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-2xl shadow-2xl overflow-hidden">
                     <table class="min-w-full border-collapse">
-                        <thead class="bg-gray-100">
+                        <thead
+                            class="bg-[#182235] text-slate-400 border-b border-[rgba(148,163,184,0.16)] font-mono uppercase tracking-wider text-xs">
                             <tr>
-                                <th class="py-3 px-4 text-right">Amount</th>
-                                <th class="py-3 px-4 text-center">APY</th>
-                                <th class="py-3 px-4 text-center">Status</th>
-                                <th class="py-3 px-4 text-center">Rewards</th>
-                                <th class="py-3 px-4 text-center">Next Reward</th>
-                                <th class="py-3 px-4 text-center">Transaction</th>
-                                <th class="py-3 px-4 text-center">Actions</th>
+                                <th class="py-3.5 px-4 text-right font-bold">Amount</th>
+                                <th class="py-3.5 px-4 text-center font-bold">APY</th>
+                                <th class="py-3.5 px-4 text-center font-bold">Status</th>
+                                <th class="py-3.5 px-4 text-center font-bold">Rewards</th>
+                                <th class="py-3.5 px-4 text-center font-bold">Next Reward</th>
+                                <th class="py-3.5 px-4 text-center font-bold">Transaction</th>
+                                <th class="py-3.5 px-4 text-center font-bold">Actions</th>
                             </tr>
                         </thead>
 
                         <tbody>
-                            <tr v-for="pos in positions" :key="pos.id" class="border-b">
+                            <tr v-for="pos in positions" :key="pos.id"
+                                class="border-b border-[rgba(148,163,184,0.16)]/60 bg-transparent hover:bg-[#182235]/30 transition text-slate-300">
 
-                                <td class="py-3 px-4 text-right">
+                                <td class="py-3 px-4 text-right font-mono text-white font-bold">
                                     {{ formatAmount(pos.amount) }} TKG
                                 </td>
 
-                                <td class="py-3 px-4 text-center">
+                                <td class="py-3 px-4 text-center font-mono font-semibold text-cyan-400">
                                     {{ Number(pos.apy).toFixed(2) }}%
                                 </td>
 
                                 <td class="py-3 px-4 text-center">
                                     <span
-                                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                                        :class="statusClass(pos.status_id)" :title="pos.status || '—'">
+                                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border"
+                                        :class="pos.status_id === 1 || pos.status_id === 2 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                            : pos.status_id === 3 ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                                : 'bg-slate-800/40 text-slate-400 border-[rgba(148,163,184,0.16)]'"
+                                        :title="pos.status || '—'">
                                         {{ pos.status || '—' }}
                                     </span>
                                 </td>
 
                                 <td class="py-3 px-4 text-center">
                                     <div class="text-sm">
-                                        <div class="font-medium">{{ formatAmount(pos.total_reward || 0) }} TKG</div>
-                                        <div class="text-gray-500 text-xs">{{ pos.rewards_count || 0 }} payout(s)</div>
+                                        <div class="font-mono font-bold text-white">{{ formatAmount(pos.total_reward ||
+                                            0) }}
+                                            TKG</div>
+                                        <div class="text-slate-400 text-xs mt-0.5">{{ pos.rewards_count || 0 }}
+                                            payout(s)</div>
                                     </div>
                                 </td>
 
                                 <td class="py-3 px-4 text-center">
                                     <div v-if="Number(pos.apy) > 0 && !isEnded(pos)" class="text-sm">
-                                        <div class="font-medium">{{ formatAmount(dailyReward(pos)) }} TKG</div>
-                                        <div class="text-gray-500 text-xs">{{ etaString(nextRewardAt(pos)) }}</div>
+                                        <div class="font-mono font-bold text-white">{{ formatAmount(dailyReward(pos)) }}
+                                            TKG
+                                        </div>
+                                        <div class="text-slate-400 text-xs mt-0.5">{{ etaString(nextRewardAt(pos)) }}
+                                        </div>
                                     </div>
-                                    <span v-else>—</span>
+                                    <span v-else class="text-slate-500 font-mono">—</span>
                                 </td>
 
                                 <td class="py-3 px-4 text-center">
                                     <a v-if="pos.transaction" :href="txUrl(pos.transaction)" target="_blank"
                                         rel="noopener"
-                                        class="inline-block px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 font-mono text-xs hover:bg-gray-200 transition"
+                                        class="inline-block px-2.5 py-1 rounded-full bg-[#182235] text-cyan-400 border border-[rgba(148,163,184,0.16)] font-mono text-xs hover:text-white hover:bg-[#151D2D] transition"
                                         :title="pos.transaction">
                                         {{ shortMiddle(pos.transaction, 6, 6) }}
                                     </a>
-                                    <span v-else>—</span>
+                                    <span v-else class="text-slate-500 font-mono">—</span>
                                 </td>
 
                                 <td class="py-3 px-4 text-center">
                                     <button
-                                        class="inline-flex items-center rounded-xl px-3 py-1.5 text-sm font-medium text-white bg-rose-500 hover:bg-rose-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                                        class="inline-flex items-center rounded-xl px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-white bg-rose-600/90 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed transition"
                                         :disabled="!canUnstake(pos) || !!unstaking[pos.id]"
                                         :title="canUnstake(pos) ? 'Unstake' : ('Unlocks on ' + formatDate(pos.unlock_at))"
                                         @click="unstake(pos)">
-                                        <svg v-if="unstaking[pos.id]" class="animate-spin h-4 w-4 mr-2"
+                                        <svg v-if="unstaking[pos.id]" class="animate-spin h-3.5 w-3.5 mr-2"
                                             viewBox="0 0 24 24" fill="none">
                                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                                 stroke-width="4" />
@@ -439,17 +463,17 @@
             </div>
         </section>
 
-
         <div class="table-wrapper">
             <div class="relative">
 
                 <div
-                    class="max-w-6xl px-4 pt-8 pb-8 mx-auto mt-8 bg-white sm:px-6 sm:mt-16 lg:px-8 rounded-3xl sm:drop-shadow">
+                    class="max-w-6xl px-4 pt-8 pb-8 mx-auto mt-8 bg-[#111827] border border-[rgba(148,163,184,0.16)] sm:px-6 sm:mt-16 lg:px-8 rounded-3xl shadow-2xl">
                     <div class="sm:flex sm:items-center">
                         <div class="sm:flex-auto">
-                            <div class="w-32 h-1 px-8 mx-auto rounded-full bg-gradient"></div>
-                            <h1
-                                class="mt-4 font-semibold leading-relaxed text-center text-black text-t24 sm:leading-lh65">
+                            <div
+                                class="w-32 h-1 mx-auto rounded-full bg-gradient-to-r from-purple-600 via-fuchsia-500 to-cyan-500">
+                            </div>
+                            <h1 class="mt-4 font-bold leading-relaxed text-center text-white text-2xl tracking-tight">
                                 Latest Staking Reward Transactions
                             </h1>
                         </div>
@@ -459,46 +483,49 @@
                         <div class="-mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
                             <div class="inline-block min-w-full py-2 align-middle">
                                 <div class="table-container">
-                                    <table class="min-w-full ">
+                                    <table class="min-w-full">
                                         <thead>
-                                            <tr class="bg-white divide-gray-200 sm:divide-x">
+                                            <tr
+                                                class="bg-transparent border-b border-[rgba(148,163,184,0.16)] sm:divide-x sm:divide-[rgba(148,163,184,0.16)]">
                                                 <th scope="col"
-                                                    class="pb-3.5 pl-4 text-left pr-4 text-[20px] font-semibold text-gray-900 sm:pl-6 lg:pl-20 ">
+                                                    class="pb-3.5 text-center text-[18px] sm:text-[20px] font-semibold text-white">
                                                     Wallet Address</th>
                                                 <th scope="col"
-                                                    class="pb-3.5 pl-4 text-left pr-4 text-[20px] font-semibold text-gray-900 sm:pl-6 lg:pl-20 ">
+                                                    class="pb-3.5 text-center text-[18px] sm:text-[20px] font-semibold text-white">
                                                     Reward</th>
                                                 <th scope="col"
-                                                    class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900">
+                                                    class="pb-3.5 text-center text-[18px] sm:text-[20px] font-semibold text-white">
                                                     Transactions</th>
                                                 <th scope="col"
-                                                    class="pl-4 sm:pl-6 lg:pl-20 pb-3.5 pr-4 text-left text-[20px] font-semibold text-gray-900">
+                                                    class="pb-3.5 text-center text-[18px] sm:text-[20px] font-semibold text-white">
                                                     Date</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr v-if="pageRows.length === 0">
-                                                <td colspan="4" class="py-6 text-center text-gray-500">Loading rewards
+                                                <td colspan="4"
+                                                    class="py-6 text-center text-slate-500 font-mono text-sm">
+                                                    Loading rewards
                                                 </td>
                                             </tr>
 
                                             <tr v-for="(row, index) in pageRows" :key="index"
-                                                class="bg-white border-b border-[#EBEBEB]">
-                                                <td class="py-4 px-4 text-dark text-center">
+                                                class="bg-transparent border-b border-[rgba(148,163,184,0.16)]/60 hover:bg-[#182235]/30 transition text-slate-300">
+                                                <td class="py-4 px-4 text-center text-sm font-medium text-slate-200">
                                                     <span :title="row.wallet_address">{{ shortMiddle(row.wallet_address,
                                                         6, 6)
-                                                        }}</span>
+                                                    }}</span>
                                                 </td>
-                                                <td class="py-4 px-4">
+                                                <td class="py-4 px-4 text-center">
                                                     <span
-                                                        class="inline-block w-full px-4 py-1 text-center text-sm font-medium text-dark bg-[#DBFEF0] rounded-full">
+                                                        class="inline-flex items-center justify-center px-5 py-1.5 text-sm font-bold text-emerald-400 bg-[#DBFEF0]/10 border border-emerald-500/20 rounded-full font-mono">
                                                         {{ row.reward }}
                                                     </span>
                                                 </td>
-                                                <td class="py-4 px-4 text-dark text-center">
+                                                <td class="py-4 px-4 text-center">
                                                     <a v-if="row.transaction" :href="txUrl(row.transaction)"
                                                         target="_blank" rel="noopener noreferrer"
-                                                        class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300/60 transition"
+                                                        class="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[rgba(148,163,184,0.16)] bg-[#182235] text-cyan-400 hover:bg-[#151D2D] hover:text-white transition focus:outline-none"
                                                         :title="`View transaction ${row.transaction} on the explorer`"
                                                         aria-label="View on Explorer">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
@@ -511,9 +538,10 @@
                                                         <span class="text-sm font-medium">View on Explorer</span>
                                                         <span class="sr-only"> Tx: {{ row.transaction }}</span>
                                                     </a>
-                                                    <span v-else>—</span>
+                                                    <span v-else class="text-slate-500 font-mono">—</span>
                                                 </td>
-                                                <td class="py-4 px-4 text-dark text-center">{{ fmtDate(row.at) }}</td>
+                                                <td class="py-4 px-4 text-center text-sm font-medium text-slate-300">{{
+                                                    fmtDate(row.at) }}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -526,48 +554,53 @@
         </div>
 
         <section class="container mx-auto mt-16 pb-10">
-            <div class="max-w-6xl px-4 pt-12 pb-8 mx-auto bg-white sm:px-6 lg:px-8 rounded-3xl sm:drop-shadow text-center">
-                <h2 class="text-3xl font-bold mb-2">How Staking Works</h2>
-                <p class="text-sm text-gray-600 mb-10">Earn rewards every 24 hours by staking $TKG</p>
+            <div
+                class="max-w-6xl px-4 pt-12 pb-8 mx-auto bg-[#111827] border border-[rgba(148,163,184,0.16)] sm:px-6 lg:px-8 rounded-3xl shadow-2xl text-center">
+                <h2 class="text-3xl font-bold text-white tracking-tight mb-2">How Staking Works</h2>
+                <p class="text-sm text-slate-400 mb-10">Earn rewards every 24 hours by staking $TKG</p>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-10 max-w-6xl mx-auto pb-6">
                     <div class="flex flex-col items-center">
-                        <div class="bg-green-100 p-4 rounded-full mb-4 animate-pulseSoft">
-                            <img :src="Wallet" alt="Connect Wallet" class="w-12 h-12" />
+                        <div
+                            class="bg-[#182235] border border-[rgba(148,163,184,0.16)] p-4 rounded-full mb-4 animate-pulseSoft">
+                            <img :src="Wallet" alt="Connect Wallet" class="w-12 h-12 rounded-full" />
                         </div>
-                        <h3 class="text-xl font-semibold mb-2">Connect Wallet</h3>
-                        <p class="text-dark text-sm">
-                            Connect your Stellar wallet to TokenGlade<br />
+                        <h3 class="text-lg font-bold text-white tracking-tight mb-2">Connect Wallet</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Connect your Stellar wallet to TokenGlade
                         </p>
                     </div>
 
                     <div class="flex flex-col items-center">
-                        <div class="bg-blue-100 p-4 rounded-full mb-4 animate-pulseSoft">
-                            <img :src="Coin" alt="Start Staking" class="w-12 h-12" />
+                        <div
+                            class="bg-[#182235] border border-[rgba(148,163,184,0.16)] p-4 rounded-full mb-4 animate-pulseSoft">
+                            <img :src="Coin" alt="Start Staking" class="w-12 h-12 rounded-full" />
                         </div>
-                        <h3 class="text-xl font-semibold mb-2">Start Staking</h3>
-                        <p class="text-dark text-sm">
-                            Choose the amount of <strong>TKG</strong> to stake and confirm<br />
+                        <h3 class="text-lg font-bold text-white tracking-tight mb-2">Start Staking</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Choose the amount of <strong class="text-white">TKG</strong> to stake and confirm
                         </p>
                     </div>
 
                     <div class="flex flex-col items-center">
-                        <div class="bg-yellow-100 p-4 rounded-full mb-4 animate-pulseSoft">
-                            <img :src="reward" alt="Rewards" class="w-12 h-12" />
+                        <div
+                            class="bg-[#182235] border border-[rgba(148,163,184,0.16)] p-4 rounded-full mb-4 animate-pulseSoft">
+                            <img :src="reward" alt="Rewards" class="w-12 h-12 rounded-full" />
                         </div>
-                        <h3 class="text-xl font-semibold mb-2">Earn Rewards (24h)</h3>
-                        <p class="text-dark text-sm">
-                            Rewards will be distributed every <strong>24 hours</strong>
+                        <h3 class="text-lg font-bold text-white tracking-tight mb-2">Earn Rewards (24h)</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Rewards will be distributed every <strong class="text-white">24 hours</strong>
                         </p>
                     </div>
 
                     <div class="flex flex-col items-center">
-                        <div class="bg-rose-100 p-4 rounded-full mb-4 animate-pulseSoft">
-                            <img :src="stop" alt="Unstake Anytime" class="w-12 h-12" />
+                        <div
+                            class="bg-[#182235] border border-[rgba(148,163,184,0.16)] p-4 rounded-full mb-4 animate-pulseSoft">
+                            <img :src="stop" alt="Unstake Anytime" class="w-12 h-12 rounded-full" />
                         </div>
-                        <h3 class="text-xl font-semibold mb-2">Unstake Anytime</h3>
-                        <p class="text-dark text-sm">
-                            Stop staking whenever you like<br />
+                        <h3 class="text-lg font-bold text-white tracking-tight mb-2">Unstake Anytime</h3>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            Stop staking whenever you like
                         </p>
                     </div>
                 </div>
@@ -576,18 +609,19 @@
 
 
         <section class="container mx-auto mt-16 pb-10">
-            <div class="max-w-6xl px-4 pt-8 pb-8 mx-auto bg-white sm:px-6 lg:px-8 rounded-3xl sm:drop-shadow">
-                <div class="px-6 py-5 border-b border-gray-100">
-                    <h3 class="text-xl font-semibold">Frequently Asked Questions</h3>
+            <div
+                class="max-w-6xl px-4 pt-8 pb-8 mx-auto bg-[#111827] border border-[rgba(148,163,184,0.16)] sm:px-6 lg:px-8 rounded-3xl shadow-2xl">
+                <div class="px-6 py-5 border-b border-[rgba(148,163,184,0.16)]">
+                    <h3 class="text-xl font-bold text-white tracking-tight">Frequently Asked Questions</h3>
                 </div>
 
-                <div class="divide-y">
+                <div class="divide-y divide-[rgba(148,163,184,0.16)]/60">
                     <details v-for="(q, idx) in faq" :key="idx" class="group" :open="openIndex === idx"
                         @toggle="(e) => openIndex = e.target.open ? idx : null">
                         <summary
-                            class="flex items-center justify-between cursor-pointer px-6 py-4 text-dark select-none list-none">
+                            class="flex items-center justify-between cursor-pointer px-6 py-4 text-slate-200 hover:text-white transition select-none list-none">
                             <span class="font-medium">{{ q.q }}</span>
-                            <span class="ml-4 h-4 w-4 text-sky-500 transition-transform duration-300"
+                            <span class="ml-4 h-4 w-4 text-cyan-400 transition-transform duration-300"
                                 :class="{ 'rotate-180': openIndex === idx }">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor" stroke-width="2" class="h-full w-full">
@@ -596,7 +630,7 @@
                             </span>
                         </summary>
 
-                        <div class="px-6 pb-5 text-gray-700 leading-relaxed">
+                        <div class="px-6 pb-5 text-slate-400 text-sm leading-relaxed">
                             <p v-html="q.a"></p>
                         </div>
                     </details>
@@ -690,7 +724,7 @@ const network = ref('public')
 const isTestnet = computed(() => network.value === 'testnet')
 
 const explorerBase = computed(() =>
-  `https://stellar.expert/explorer/${isTestnet.value ? 'testnet' : 'public'}`
+    `https://stellar.expert/explorer/${isTestnet.value ? 'testnet' : 'public'}`
 )
 
 const txUrl = (tx) => `${explorerBase.value}/tx/${encodeURIComponent(tx)}`
@@ -864,15 +898,15 @@ async function onSubmit() {
 }
 
 async function lobstrSignTransaction(xdr) {
-  if (typeof lobstrSignTx === 'function') {
-    return await lobstrSignTx(xdr);
-  }
-  if (typeof window !== 'undefined' &&
-      window.lobstrSignerExtensionApi &&
-      typeof window.lobstrSignerExtensionApi.signTransaction === 'function') {
-    return await window.lobstrSignerExtensionApi.signTransaction(xdr);
-  }
-  throw new Error('LOBSTR signer API not available');
+    if (typeof lobstrSignTx === 'function') {
+        return await lobstrSignTx(xdr);
+    }
+    if (typeof window !== 'undefined' &&
+        window.lobstrSignerExtensionApi &&
+        typeof window.lobstrSignerExtensionApi.signTransaction === 'function') {
+        return await window.lobstrSignerExtensionApi.signTransaction(xdr);
+    }
+    throw new Error('LOBSTR signer API not available');
 }
 
 async function signXdr(xdr, staking_id, testnet) {
@@ -1232,10 +1266,18 @@ async function refreshStats() {
 
 <style scoped>
 .animate-pulse-slow {
-  animation: pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    animation: pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: .4; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: .4;
+    }
 }
 </style>
