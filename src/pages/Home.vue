@@ -720,37 +720,50 @@ async function searchAssets() {
     }
     const uniqueAssets = Object.values(
       allRecords.reduce((acc, asset) => {
-        const key = `${asset.asset_code}_${asset.asset_issuer}`
-        acc[key] = asset
-        return acc
+        const key = `${asset.asset_code.toUpperCase()}_${asset.asset_issuer}`;
+        const existing = acc[key];
+        if (!existing || (asset.accounts?.authorized || 0) > (existing.accounts?.authorized || 0)) {
+          acc[key] = asset;
+        }
+        return acc;
       }, {})
     )
-    const sortedAssets = uniqueAssets.sort((a, b) => {
-      if (b.num_liquidity_pools !== a.num_liquidity_pools) {
-        return b.num_liquidity_pools - a.num_liquidity_pools
-      }
-      return b.accounts.authorized - a.accounts.authorized
-    })
-
-    // Check verification status
+    // 1. Fetch verification status first so we can sort by it
     try {
-      const vRes = await axios.post('/api/global/verify_status_bulk', {
-        assets: sortedAssets.map(a => ({ code: a.asset_code, issuer: a.asset_issuer }))
-      }, {
-        headers: { 'X-CSRF-TOKEN': csrfToken }
-      });
-      if (vRes.data?.status === 'success' && vRes.data.verified) {
-        const vMap = vRes.data.verified;
-        sortedAssets.forEach(a => {
-          const key = `${a.asset_code}_${a.asset_issuer}`;
-          a.is_verified = !!vMap[key];
+      const issuers = uniqueAssets.map(a => a.asset_issuer);
+      if (issuers.length > 0) {
+        const vRes = await axios.post('/api/token/check-verification', {
+          issuers,
+        }, {
+          headers: { 'X-CSRF-TOKEN': csrfToken }
         });
+        if (vRes.data?.verified) {
+          const vMap = vRes.data.verified;
+          uniqueAssets.forEach(a => {
+            a.is_verified = vMap[a.asset_issuer] === true;
+          });
+        }
       }
     } catch (e) {
-      console.error(e);
+      console.error("Verification check failed:", e);
     }
 
     if (requestId !== searchRequestId) return;
+
+    // 2. Sort by verified status first, then number of liquidity pools, then active holders
+    const sortedAssets = uniqueAssets.sort((a, b) => {
+      // Sort by verification status first (verified tokens top)
+      if (a.is_verified !== b.is_verified) {
+        return (b.is_verified ? 1 : 0) - (a.is_verified ? 1 : 0);
+      }
+      // Sort by number of liquidity pools second
+      if (b.num_liquidity_pools !== a.num_liquidity_pools) {
+        return b.num_liquidity_pools - a.num_liquidity_pools;
+      }
+      // Sort by authorized account holders third
+      return b.accounts.authorized - a.accounts.authorized;
+    });
+
     assets.value = sortedAssets.slice(0, 10)
     error.value = ""
   } catch (e) {

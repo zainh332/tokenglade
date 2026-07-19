@@ -303,7 +303,7 @@ async function searchAssets() {
     let allRecords = [];
     for (const code of queries) {
       const res = await fetch(
-        `https://horizon.stellar.org/assets?asset_code=${encodeURIComponent(code)}&limit=10`
+        `https://horizon.stellar.org/assets?asset_code=${encodeURIComponent(code)}&limit=200`
       );
       const data = await res.json();
       if (data._embedded?.records?.length) {
@@ -321,22 +321,33 @@ async function searchAssets() {
 
     const uniqueAssets = Object.values(
       allRecords.reduce((acc, asset) => {
-        const key = `${asset.asset_code}_${asset.asset_issuer}`;
-        acc[key] = asset;
-        return acc
+        const key = `${asset.asset_code.toUpperCase()}_${asset.asset_issuer}`;
+        const existing = acc[key];
+        if (!existing || (asset.accounts?.authorized || 0) > (existing.accounts?.authorized || 0)) {
+          acc[key] = asset;
+        }
+        return acc;
       }, {})
     );
 
+    // 1. Enrich verification status first so we can sort by it
+    await enrichVerificationStatus(uniqueAssets);
+
+    if (requestId !== searchRequestId) return;
+
+    // 2. Sort by verified status first, then number of liquidity pools, then active holders
     const sortedAssets = uniqueAssets.sort((a, b) => {
+      // Sort by verification status first (verified tokens top)
+      if (a.is_verified !== b.is_verified) {
+        return (b.is_verified ? 1 : 0) - (a.is_verified ? 1 : 0);
+      }
+      // Sort by number of liquidity pools second
       if (b.num_liquidity_pools !== a.num_liquidity_pools) {
         return b.num_liquidity_pools - a.num_liquidity_pools;
       }
+      // Sort by authorized account holders third
       return b.accounts.authorized - a.accounts.authorized;
     });
-
-    await enrichVerificationStatus(sortedAssets);
-
-    if (requestId !== searchRequestId) return;
 
     assets.value = sortedAssets;
     error.value = "";
