@@ -71,9 +71,9 @@
                                                     </select>
                                                 </div>
 
-                                                <div class="mt-6">
+                                                 <div class="mt-6">
                                                     <button id="connectWalletButton" @click="handleConnect"
-                                                        type="button" class="w-full text-white py-3 rounded-xl font-extrabold uppercase tracking-wider hover:opacity-95 hover:scale-[1.01] active:scale-[0.99] transition duration-300 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove" :disabled="isLoading">
+                                                        type="button" class="w-full text-white text-sm font-bold tracking-wide py-3 rounded-xl hover:opacity-95 hover:scale-[1.01] active:scale-[0.99] transition duration-300 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove shadow-lg" :disabled="isLoading">
                                                         {{
                                                             isLoading
                                                                 ? "Connecting..."

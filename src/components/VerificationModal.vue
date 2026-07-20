@@ -101,15 +101,15 @@
                                     </div>
                                 </div>
 
-                                <!-- ACTION BUTTON -->
+                                 <!-- ACTION BUTTON -->
                                 <div class="mt-6">
                                     <button v-if="!connected" @click="$emit('connect-wallet')"
-                                        class="w-full text-white py-3.5 rounded-xl font-extrabold uppercase tracking-wider hover:opacity-95 hover:scale-[1.01] active:scale-[0.99] transition duration-300 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove shadow-lg">
+                                        class="w-full text-white text-sm font-bold tracking-wide py-3.5 rounded-xl hover:opacity-95 hover:scale-[1.01] active:scale-[0.99] transition duration-300 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove shadow-lg">
                                         Connect Wallet
                                     </button>
 
                                     <button v-else @click="$emit('pay')" :disabled="loading"
-                                        class="w-full text-white py-3.5 rounded-xl font-extrabold uppercase tracking-wider hover:opacity-95 hover:scale-[1.01] active:scale-[0.99] transition duration-300 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove shadow-lg disabled:cursor-not-allowed disabled:opacity-50">
+                                        class="w-full text-white text-sm font-bold tracking-wide py-3.5 rounded-xl hover:opacity-95 hover:scale-[1.01] active:scale-[0.99] transition duration-300 bg-[linear-gradient(90deg,rgba(220,25,224,1),rgba(67,205,255,1),rgba(0,254,254,1))] bg-[length:200%_200%] animate-gradientMove shadow-lg disabled:cursor-not-allowed disabled:opacity-50">
                                         <span v-if="loading">
                                             Processing Payment...
                                         </span>
