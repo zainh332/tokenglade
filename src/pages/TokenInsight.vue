@@ -7,54 +7,80 @@
 
         <!-- SKELETON LOADER (Visible when loading is true) -->
         <div v-if="loading" class="space-y-8 animate-pulse mt-4">
-          <!-- Hero Section Skeleton -->
-          <div class="relative overflow-hidden rounded-[25px] p-6 sm:p-8 border border-[#1D2531] bg-[#111620]">
-            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-              <div class="flex items-center gap-4 w-full sm:w-auto">
-                <div class="w-16 h-16 rounded-2xl bg-[#1D2531]/60 flex-shrink-0"></div>
-                <div class="space-y-2 flex-1">
-                  <div class="h-8 bg-[#1D2531]/60 rounded-lg w-48 sm:w-64"></div>
-                  <div class="h-4 bg-[#1D2531]/40 rounded-lg w-32 sm:w-40"></div>
+          <!-- BREADCRUMB SKELETON -->
+          <div class="h-4 w-48 bg-[#1D2531]/60 rounded"></div>
+
+          <!-- ASSET HEADER CARD SKELETON -->
+          <section class="card asset">
+            <div class="ahead">
+              <!-- Icon Skeleton -->
+              <div class="token-ico flex-none">
+                <div class="w-full h-full bg-[#1D2531]/60 rounded-xl"></div>
+              </div>
+              
+              <!-- Name and Issuer Skeleton -->
+              <div class="name-col space-y-2 flex-1">
+                <div class="flex items-center gap-3">
+                  <div class="h-7 w-40 bg-[#1D2531]/80 rounded-lg"></div>
+                  <div class="h-5 w-12 bg-[#1D2531]/60 rounded-md"></div>
+                  <div class="h-5 w-16 bg-[#1D2531]/60 rounded-md"></div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="h-4 w-44 bg-[#1D2531]/60 rounded"></div>
+                  <div class="h-5 w-20 bg-[#1D2531]/40 rounded-md"></div>
                 </div>
               </div>
-              <div class="flex items-center gap-4 w-full lg:w-auto">
-                <div class="h-16 bg-[#0E131C] rounded-2xl w-full lg:w-48 border border-[#1D2531]"></div>
-              </div>
-            </div>
-            <div class="grid grid-cols-2 lg:grid-cols-6 gap-6 mt-8 pt-8 border-t border-[#1D2531]">
-              <div v-for="i in 6" :key="i" class="space-y-2">
-                <div class="h-3 bg-[#1D2531]/40 rounded w-16"></div>
-                <div class="h-6 bg-[#1D2531]/60 rounded w-24"></div>
-                <div class="h-3 bg-[#1D2531]/40 rounded w-10"></div>
-              </div>
-            </div>
-          </div>
 
-          <!-- Dashboard Grid Skeleton -->
+              <!-- Trust Box Skeleton -->
+              <div class="trust">
+                <div class="space-y-1.5 text-right">
+                  <div class="h-3 w-16 bg-[#1D2531]/60 rounded ml-auto"></div>
+                  <div class="h-4 w-20 bg-[#1D2531]/80 rounded ml-auto"></div>
+                  <div class="h-2.5 w-24 bg-[#1D2531]/40 rounded ml-auto"></div>
+                </div>
+                <div class="w-14 h-14 rounded-full border-4 border-[#1D2531]/60 flex-none"></div>
+              </div>
+            </div>
+
+            <!-- STAT ROW (PRIMARY ROW SKELETON) -->
+            <div class="stats">
+              <div v-for="i in 6" :key="i" class="st space-y-2">
+                <div class="h-3 w-14 bg-[#1D2531]/60 rounded"></div>
+                <div class="h-5 w-20 bg-[#1D2531]/80 rounded"></div>
+                <div class="h-3 w-12 bg-[#1D2531]/40 rounded"></div>
+              </div>
+            </div>
+
+            <!-- SECONDARY STRIP SKELETON -->
+            <div class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] flex flex-wrap items-center justify-between gap-3">
+              <div v-for="i in 4" :key="i" class="h-3.5 w-32 bg-[#1D2531]/60 rounded"></div>
+            </div>
+
+            <!-- ACTIONS SKELETON -->
+            <div class="acts">
+              <div class="h-9 w-32 bg-[#1D2531]/80 rounded-lg"></div>
+              <div class="h-9 w-40 bg-[#1D2531]/80 rounded-lg"></div>
+              <div class="h-9 w-10 bg-[#1D2531]/60 rounded-lg"></div>
+              <div class="h-9 w-10 bg-[#1D2531]/60 rounded-lg"></div>
+            </div>
+          </section>
+
+          <!-- DASHBOARD GRID SKELETON -->
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Left: Chart & Stats -->
             <div class="lg:col-span-2 space-y-8">
-              <div class="bg-[#111620] border border-[#1D2531] rounded-[25px] p-6 space-y-4">
+              <div class="card p-6 space-y-4">
                 <div class="flex justify-between items-center">
-                  <div class="h-5 bg-[#1D2531]/60 rounded w-28"></div>
+                  <div class="h-5 bg-[#1D2531]/60 rounded w-36"></div>
                   <div class="h-8 bg-[#1D2531]/60 rounded-xl w-48"></div>
                 </div>
-                <div class="h-64 bg-[#0E131C] rounded-2xl border border-[#1D2531]"></div>
-              </div>
-              <div class="bg-[#111620] border border-[#1D2531] rounded-[25px] p-6 space-y-6">
-                <div class="h-6 bg-[#1D2531]/60 rounded w-44"></div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div v-for="i in 6" :key="i" class="space-y-2">
-                    <div class="h-3.5 bg-[#1D2531]/60 rounded w-24"></div>
-                    <div class="h-2 bg-[#1D2531]/40 rounded-full w-full"></div>
-                  </div>
-                </div>
+                <div class="h-[320px] bg-[#0E131C] rounded-2xl border border-[#1D2531]"></div>
               </div>
             </div>
             <!-- Right: Security / AI Risk -->
             <div class="space-y-8">
-              <div class="bg-[#0E131C] border border-[#1D2531] rounded-[25px] p-6 h-36"></div>
-              <div class="bg-[#111620] border border-[#1D2531] rounded-[25px] p-6 space-y-6">
+              <div class="card p-6 h-36 bg-[#0E131C] border border-[#1D2531] rounded-2xl"></div>
+              <div class="card p-6 space-y-6">
                 <div class="h-5 bg-[#1D2531]/60 rounded w-40"></div>
                 <div class="space-y-4">
                   <div v-for="i in 4" :key="i" class="h-12 bg-[#0E131C] rounded-2xl border border-[#1D2531]"></div>
