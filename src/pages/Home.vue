@@ -243,7 +243,7 @@
         </div>
 
         <!-- Top Liquidity Pools -->
-        <div class="card flex flex-col justify-between">
+        <div class="card flex flex-col">
           <div class="card-hd">
             <h3>Top Liquidity Pools</h3>
             <span
@@ -254,8 +254,14 @@
             </span>
           </div>
 
-          <div v-if="loadingPoolsList" class="p-4 space-y-3">
-            <div v-for="i in 5" :key="i" class="h-10 rounded-xl bg-slate-950/40 border border-slate-900 animate-pulse">
+          <div v-if="loadingPoolsList" class="p-4 space-y-2">
+            <div v-for="i in 5" :key="i"
+              class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl animate-pulse">
+              <div class="space-y-1">
+                <div class="h-3 w-20 bg-slate-900 rounded border border-slate-800/60"></div>
+                <div class="h-2 w-14 bg-slate-900/80 rounded border border-slate-800/40"></div>
+              </div>
+              <div class="h-3.5 w-16 bg-slate-900 rounded border border-slate-800/60"></div>
             </div>
           </div>
           <div v-else class="p-4 space-y-2">
@@ -263,7 +269,7 @@
               class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl text-xs">
               <div>
                 <span class="font-bold text-white block">{{ pool.pair }}</span>
-                <span class="text-[9px] text-slate-550">TVL: ${{ pool.tvl.toLocaleString() }}</span>
+                <span class="text-[9px] text-slate-555">TVL: ${{ pool.tvl.toLocaleString() }}</span>
               </div>
               <span class="font-mono font-bold text-green-500">{{ pool.apr }}% APR</span>
             </div>
@@ -271,13 +277,25 @@
         </div>
 
         <!-- Featured Projects -->
-        <div class="card flex flex-col justify-between">
+        <div class="card flex flex-col">
           <div class="card-hd">
             <h3>Featured Projects</h3>
           </div>
 
-          <div v-if="loadingFeaturedProjects" class="p-4 space-y-3">
-            <div v-for="i in 5" :key="i" class="h-10 rounded-xl bg-slate-950/40 border border-slate-900 animate-pulse">
+          <div v-if="loadingFeaturedProjects" class="p-4 space-y-2">
+            <div v-for="i in 5" :key="i"
+              class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl animate-pulse">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-full bg-slate-900 border border-slate-800/80 flex-shrink-0"></div>
+                <div class="space-y-1">
+                  <div class="h-3 w-20 bg-slate-900 rounded border border-slate-800/60"></div>
+                  <div class="h-2 w-10 bg-slate-900/80 rounded border border-slate-800/40"></div>
+                </div>
+              </div>
+              <div class="space-y-1 flex flex-col items-end">
+                <div class="h-3 w-14 bg-slate-900 rounded border border-slate-800/60"></div>
+                <div class="h-2 w-12 bg-slate-900/80 rounded border border-slate-800/40"></div>
+              </div>
             </div>
           </div>
           <div v-else class="p-4 space-y-2">
