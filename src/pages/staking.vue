@@ -2,7 +2,7 @@
     <div
         class="bg-[#070A13] min-h-screen text-slate-100 font-sans antialiased selection:bg-purple-500/30 selection:text-white">
         <Header />
-        <div class="container-fluid mx-auto pt-8 sm:pt-24 pb-12 sm:pb-24 relative top-0 z-0 bg-[#070A13] overflow-hidden">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-24 pb-12 sm:pb-24 relative top-0 z-0 bg-[#070A13] overflow-hidden">
             <!-- Blue Radial Glow Lighting treatment for Hero -->
             <div
                 class="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[150px] pointer-events-none animate-pulse-slow">
@@ -182,8 +182,8 @@
             </div>
         </div>
 
-        <section class="container mx-auto mt-12">
-            <div class="max-w-[80%] mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+        <section class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+            <div class="w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
 
                 <!-- ===== Live Stats (Dark + Glassmorphic Treatment) ===== -->
                 <div class="rounded-2xl bg-[#111827] border border-[rgba(148,163,184,0.16)] shadow-2xl">
@@ -467,7 +467,7 @@
             <div class="relative">
 
                 <div
-                    class="max-w-6xl px-4 pt-8 pb-8 mx-auto mt-8 bg-[#111827] border border-[rgba(148,163,184,0.16)] sm:px-6 sm:mt-16 lg:px-8 rounded-3xl shadow-2xl">
+                    class="max-w-[1440px] px-4 pt-8 pb-8 mx-auto mt-8 bg-[#111827] border border-[rgba(148,163,184,0.16)] sm:px-6 sm:mt-16 lg:px-8 rounded-3xl shadow-2xl">
                     <div class="sm:flex sm:items-center">
                         <div class="sm:flex-auto">
                             <div
@@ -559,7 +559,7 @@
                 <h2 class="text-3xl font-bold text-white tracking-tight mb-2">How Staking Works</h2>
                 <p class="text-sm text-slate-400 mb-10">Earn rewards every 24 hours by staking $TKG</p>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-10 max-w-6xl mx-auto pb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pb-6">
                     <div class="flex flex-col items-center">
                         <div
                             class="bg-[#182235] border border-[rgba(148,163,184,0.16)] p-4 rounded-full mb-4 animate-pulseSoft">
@@ -608,9 +608,9 @@
         </section>
 
 
-        <section class="container mx-auto mt-16 pb-10">
+        <section class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mt-16 pb-10">
             <div
-                class="max-w-6xl px-4 pt-8 pb-8 mx-auto bg-[#111827] border border-[rgba(148,163,184,0.16)] sm:px-6 lg:px-8 rounded-3xl shadow-2xl">
+                class="w-full px-4 pt-8 pb-8 mx-auto bg-[#111827] border border-[rgba(148,163,184,0.16)] sm:px-6 lg:px-8 rounded-3xl shadow-2xl">
                 <div class="px-6 py-5 border-b border-[rgba(148,163,184,0.16)]">
                     <h3 class="text-xl font-bold text-white tracking-tight">Frequently Asked Questions</h3>
                 </div>

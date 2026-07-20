@@ -1663,9 +1663,23 @@ watch(chartContainer, (el) => {
 .faint { color: var(--faint); }
 
 .wrap {
-  max-width: 1320px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 0 20px 2.6rem;
+  padding: 0 16px 2.6rem;
+}
+
+@media (min-width: 640px) {
+  .wrap {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .wrap {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
 }
 
 .crumb {
