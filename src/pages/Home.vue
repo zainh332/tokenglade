@@ -41,7 +41,7 @@
                 </div>
               </div>
 
-              <div class="chartbox eco-chartbox">
+              <div class="chartbox eco-chartbox relative" @mousemove="handleChartMouseMove" @mouseleave="handleChartMouseLeave">
                 <svg viewBox="0 0 600 160" width="100%" height="160" preserveAspectRatio="none">
                   <defs>
                     <linearGradient id="ecoFill" x1="0" x2="0" y1="0" y2="1">
@@ -57,10 +57,23 @@
                   <path :d="ecoChartPaths.fill" fill="url(#ecoFill)" class="chart-path-transition" />
                   <path :d="ecoChartPaths.line" fill="none" stroke="#a78bfa" stroke-width="1.8"
                     class="chart-path-transition" />
-                  <circle :cx="ecoChartPaths.lastX" :cy="ecoChartPaths.lastY" r="3.2" fill="#a78bfa" />
-                  <circle :cx="ecoChartPaths.lastX" :cy="ecoChartPaths.lastY" r="8" fill="#a78bfa" opacity="0.3"
-                    class="ping-animation" />
+                  
+                  <!-- Hover Crosshair & Pointer Dot -->
+                  <template v-if="hoverPoint">
+                    <line :x1="hoverPoint.x" y1="0" :x2="hoverPoint.x" y2="160" stroke="#a78bfa" stroke-width="1" stroke-dasharray="2,2" opacity="0.6" />
+                    <circle :cx="hoverPoint.x" :cy="hoverPoint.y" r="4.5" fill="#a78bfa" stroke="#0b0f19" stroke-width="2" />
+                  </template>
+                  <template v-else>
+                    <circle :cx="ecoChartPaths.lastX" :cy="ecoChartPaths.lastY" r="3.5" fill="#a78bfa" />
+                  </template>
                 </svg>
+
+                <!-- Floating Hover Tooltip -->
+                <div v-if="hoverPoint"
+                  class="absolute pointer-events-none px-2 py-1 rounded bg-slate-900/90 border border-violet-500/30 text-white font-mono text-[10px] font-bold shadow-lg transform -translate-x-1/2 -translate-y-full mb-2"
+                  :style="{ left: `${(hoverPoint.x / 600) * 100}%`, top: `${(hoverPoint.y / 160) * 100}%` }">
+                  {{ hoverPoint.val }}
+                </div>
               </div>
 
               <div class="feat-stats eco-stats">
@@ -658,6 +671,48 @@ const ecoChartPaths = computed(() => {
 
 function changeTimeFilter(tf) {
   selectedTimeFilter.value = tf;
+  hoverPoint.value = null;
+}
+
+const hoverPoint = ref(null);
+
+function handleChartMouseMove(event) {
+  const svg = event.currentTarget.querySelector('svg');
+  if (!svg) return;
+  const rect = svg.getBoundingClientRect();
+  const mouseX = event.clientX - rect.left;
+  const svgWidth = rect.width || 600;
+  
+  const history = chartSeriesData[selectedTimeFilter.value];
+  if (!history || history.length < 2) return;
+  
+  const index = Math.min(
+    history.length - 1,
+    Math.max(0, Math.round((mouseX / svgWidth) * (history.length - 1)))
+  );
+  
+  const min = Math.min(...history);
+  const max = Math.max(...history);
+  const range = max - min;
+  
+  const val = history[index];
+  const x = index * (600 / (history.length - 1));
+  let y = 80;
+  if (range > 0) {
+    y = 135 - ((val - min) / range) * 110;
+  }
+  
+  let formattedVal = '';
+  if (selectedTimeFilter.value === '1H') formattedVal = `$${val.toFixed(1)}M`;
+  else if (selectedTimeFilter.value === '24H') formattedVal = `$${val.toFixed(1)}M`;
+  else if (selectedTimeFilter.value === '7D') formattedVal = `$${val.toFixed(2)}B`;
+  else if (selectedTimeFilter.value === '30D') formattedVal = `$${val.toFixed(2)}B`;
+  
+  hoverPoint.value = { x, y, val: formattedVal };
+}
+
+function handleChartMouseLeave() {
+  hoverPoint.value = null;
 }
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
