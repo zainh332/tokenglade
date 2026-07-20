@@ -31,8 +31,8 @@
                 v-model="searchQuery" 
                 @focus="isFocused = true"
                 type="text" 
-                placeholder="Search symbol..." 
-                class="bg-transparent border-0 outline-none text-xs text-white placeholder-slate-500 font-mono w-[180px] p-0 focus:ring-0"
+                placeholder="Search token name or symbol..." 
+                class="bg-transparent border-0 outline-none text-xs text-white placeholder-slate-500 font-mono w-[190px] p-0 focus:ring-0"
               />
               <span v-if="loading && searchQuery.trim() !== ''" class="animate-spin rounded-full h-3 w-3 border-b-2 border-cyan-400 flex-shrink-0"></span>
             </div>
@@ -42,7 +42,7 @@
               <div v-if="isFocused" class="absolute right-0 mt-2 w-[340px] bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-xl shadow-2xl z-[99] max-h-[300px] overflow-y-auto custom-scrollbar divide-y divide-[rgba(148,163,184,0.12)]">
                 <!-- If search input is empty -->
                 <div v-if="searchQuery.trim() === ''" class="p-4 text-center text-xs text-slate-400 font-mono">
-                  Type a token symbol (e.g. TKG, XLM) to search
+                  Type a token name or symbol (e.g. TKG, XLM) to search
                 </div>
                 <!-- If Loading -->
                 <div v-else-if="loading && assets.length === 0" class="p-4 text-center text-xs text-slate-400 font-mono">
@@ -132,7 +132,7 @@
               v-model="searchQuery" 
               @focus="isFocusedMobile = true"
               type="text" 
-              placeholder="Search symbol..." 
+              placeholder="Search token name or symbol..." 
               class="bg-transparent border-0 outline-none text-xs text-white placeholder-slate-500 font-mono w-full p-0 focus:ring-0"
             />
             <span v-if="loading && searchQuery.trim() !== ''" class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-cyan-400 flex-shrink-0"></span>
@@ -142,7 +142,7 @@
           <div v-if="isFocusedMobile" class="mt-1 bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-xl shadow-2xl max-h-[220px] overflow-y-auto custom-scrollbar divide-y divide-[rgba(148,163,184,0.12)]">
             <!-- If search input is empty -->
             <div v-if="searchQuery.trim() === ''" class="p-3 text-center text-xs text-slate-400 font-mono">
-              Type a token symbol (e.g. TKG, XLM) to search
+              Type a token name or symbol (e.g. TKG, XLM) to search
             </div>
             <!-- If Loading -->
             <div v-else-if="loading && assets.length === 0" class="p-3 text-center text-xs text-slate-400 font-mono">
