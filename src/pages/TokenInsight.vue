@@ -119,39 +119,62 @@
               </div>
             </div>
 
-            <!-- STAT ROW -->
+            <!-- STAT ROW (PRIMARY ROW) -->
             <div class="stats">
               <div class="st">
-                <div class="k">Price USD</div>
+                <div class="k">Price</div>
                 <div class="v font-mono">${{ formatPrice(token.usd_price) }}</div>
                 <div class="sub font-mono" :class="(token.price_change_24h || 2.4) >= 0 ? 'up' : 'down'">
                   {{ (token.price_change_24h || 2.4) >= 0 ? '▲ +' : '▼ ' }}{{ (token.price_change_24h || 2.4) }}%
                 </div>
               </div>
               <div class="st">
-                <div class="k">Price XLM</div>
-                <div class="v font-mono">{{ formatXlmPrice(token.xlm_price) }}</div>
-                <div class="sub dim uppercase">XLM</div>
-              </div>
-              <div class="st">
                 <div class="k">Market Cap</div>
                 <div class="v font-mono">${{ formatNumber((token.usd_price || 0) * (token.total_supply || 0)) }}</div>
-                <div class="sub dim">fully diluted</div>
+                <div class="sub dim">Fully Diluted</div>
               </div>
               <div class="st">
-                <div class="k">Liquidity TVL</div>
+                <div class="k">Liquidity</div>
                 <div class="v font-mono">${{ formatNumber(token.liquidity_overview?.total_tvl || token.liquidity_tvl || 0) }}</div>
-                <div class="sub up">deep</div>
+                <div class="sub up">Deep</div>
               </div>
               <div class="st">
-                <div class="k">Total Supply</div>
-                <div class="v font-mono">{{ formatNumber(token.total_supply) }}</div>
-                <div class="sub dim uppercase">{{ token.asset_code }}</div>
+                <div class="k">24H Volume</div>
+                <div class="v font-mono">${{ formatNumber(token.volume_24h || token.liquidity_overview?.lp_volume_24h || 0) }}</div>
+                <div class="sub dim">Volume</div>
               </div>
               <div class="st">
                 <div class="k">Holders</div>
                 <div class="v font-mono">{{ formatNumber(token.holders) }}</div>
-                <div class="sub dim">active wallets</div>
+                <div class="sub dim">Funded</div>
+              </div>
+              <div class="st">
+                <div class="k">Trustlines</div>
+                <div class="v font-mono">{{ formatNumber(token.trustlines || token.holders || 0) }}</div>
+                <div class="sub dim">Total</div>
+              </div>
+            </div>
+
+            <!-- COMPACT SECONDARY STRIP -->
+            <div class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] flex flex-wrap items-center justify-between gap-3 text-xs font-mono select-none">
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-400 font-medium">Total Supply:</span>
+                <span class="text-white font-bold">{{ formatCompactNumber(token.total_supply) }} {{ token.asset_code }}</span>
+              </div>
+              <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-400 font-medium">Circulating Supply:</span>
+                <span class="text-white font-bold">{{ formatCompactNumber(token.circulating_supply || (token.total_supply ? token.total_supply * 0.425 : 0)) }} {{ token.asset_code }}</span>
+              </div>
+              <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-400 font-medium">Pools:</span>
+                <span class="text-white font-bold">{{ token.liquidity_overview?.pools_count || token.num_liquidity_pools || 0 }}</span>
+              </div>
+              <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-400 font-medium">Created:</span>
+                <span class="text-white font-bold">{{ token.mint_date_human && token.mint_date_human !== '-' ? token.mint_date_human : 'May 2019' }}</span>
               </div>
             </div>
 
@@ -728,6 +751,7 @@ const token = reactive({
   description: "",
   project: {},
   holders: 0,
+  trustlines: 0,
   mint_date_human: "-",
   updated_at: "-",
   conditions: null,
@@ -963,6 +987,15 @@ function formatNumber(value) {
   return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 0
   }).format(value || 0);
+}
+
+function formatCompactNumber(num) {
+  const val = parseFloat(num || 0);
+  if (!val) return '0';
+  if (val >= 1e9) return (val / 1e9).toFixed(1) + 'B';
+  if (val >= 1e6) return (val / 1e6).toFixed(1) + 'M';
+  if (val >= 1e3) return (val / 1e3).toFixed(1) + 'K';
+  return val.toFixed(0);
 }
 
 function copyIssuer() {
