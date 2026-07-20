@@ -200,6 +200,7 @@
   <Modal :open="signInModal" />
   <ConnectWalletModal v-model="ConnectWalletModals" />
   <BuyTkgModal v-model="buyTkgModal" @open-wallet="OpenWalletModal" />
+  <GenerateTokenModal :open="isTokenModalOpen" @close="isTokenModalOpen = false" />
 </template>
 
 <script setup>
@@ -209,22 +210,26 @@ import logo from '@/assets/token-glade-logo.png';
 import verifiedImg from '@/assets/verify.png';
 
 import { ref, onMounted, onUnmounted, computed, watch } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import axios from "axios";
 import Modal from '@/components/Modal.vue';
 import ConnectWalletModal from './ConnectWallet.vue';
 import Swal from "sweetalert2";
 import { getCookie, disconnectWalletSession } from "../utils/utils.js";
-import BuyTkgModal from "@/components/BuyTkgModal.vue"
+import BuyTkgModal from "@/components/BuyTkgModal.vue";
+import GenerateTokenModal from '@/components/GenerateTokenModal.vue';
 
 const router = useRouter();
+const route = useRoute();
+
+const isTokenModalOpen = ref(false);
 
 const triggerLaunchToken = () => {
-  if (router.currentRoute.value.path !== '/') {
-    router.push({ path: '/', query: { launch: 'true' } });
-  } else {
-    window.dispatchEvent(new CustomEvent("tokenglade-open-launch-token"));
-  }
+  isTokenModalOpen.value = true;
+};
+
+const handleOpenLaunchToken = () => {
+  isTokenModalOpen.value = true;
 };
 
 const signInModal = ref(false);
@@ -414,9 +419,13 @@ const openBuyTkgModal = () => {
 
 onMounted(() => {
   window.addEventListener("tokenglade-open-buy-tkg", openBuyTkgModal);
+  window.addEventListener("tokenglade-open-launch-token", handleOpenLaunchToken);
   window.addEventListener("keydown", handleKeyDown);
   window.addEventListener("click", handleClickOutside);
   refreshWalletPk();
+  if (route.query && route.query.launch === 'true') {
+    isTokenModalOpen.value = true;
+  }
 });
 
 async function handleDisconnectWallet() {
@@ -442,6 +451,7 @@ function shortMiddle(str, head = 4, tail = 4) {
 
 onUnmounted(() => {
   window.removeEventListener("tokenglade-open-buy-tkg", openBuyTkgModal);
+  window.removeEventListener("tokenglade-open-launch-token", handleOpenLaunchToken);
   window.removeEventListener("keydown", handleKeyDown);
   window.removeEventListener("click", handleClickOutside);
 });
