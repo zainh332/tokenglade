@@ -94,7 +94,7 @@
                 </div>
                 
                 <div class="issuer">
-                  <span>Issuer: <a :href="`https://stellar.expert/explorer/public/account/${token.issuer}`" target="_blank" rel="noopener noreferrer" class="mono">{{ shorten(token.issuer) }}</a></span>
+                  <span>Issuer: <a :href="stellarExpertAssetUrl" target="_blank" rel="noopener noreferrer" class="mono">{{ shorten(token.issuer) }}</a></span>
                   <button @click="copyIssuer" class="btn dark select-none" style="padding:2px 8px;font-size:10.5px">
                     {{ copied ? 'Copied!' : 'Copy Address' }}
                   </button>
@@ -1013,6 +1013,14 @@ const aiRiskSummary = computed(() => {
     level: riskLevel,
     text: analysis
   };
+});
+
+const stellarExpertAssetUrl = computed(() => {
+  if (!token.issuer || !token.asset_code) return '#';
+  if (token.asset_code === 'XLM') {
+    return 'https://stellar.expert/explorer/public/asset/XLM';
+  }
+  return `https://stellar.expert/explorer/public/asset/${token.asset_code}-${token.issuer}-1`;
 });
 
 function shorten(str) {
