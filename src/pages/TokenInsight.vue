@@ -140,7 +140,7 @@
               </div>
               <div class="st">
                 <div class="k">Liquidity TVL</div>
-                <div class="v font-mono">${{ formatNumber(token.liquidity_pools_amount || 124500) }}</div>
+                <div class="v font-mono">${{ formatNumber(token.liquidity_overview?.total_tvl || token.liquidity_tvl || 0) }}</div>
                 <div class="sub up">deep</div>
               </div>
               <div class="st">
@@ -887,7 +887,7 @@ const biggestIndividualHolder = computed(() => {
 const aiRiskSummary = computed(() => {
   const code = token.asset_code || 'this token';
   const score = token.rating?.average || 7.5;
-  const tvl = token.liquidity_pools_amount || 0;
+  const tvl = token.liquidity_overview?.total_tvl || token.liquidity_tvl || 0;
   const totalTrades = token.activity?.total_trades || 0;
 
   // 1. Centralization check
