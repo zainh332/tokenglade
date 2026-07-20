@@ -3,7 +3,7 @@
     <Header />
     
     <!-- MAIN CONTAINER -->
-    <div class="wrap space-y-8">
+    <div class="wrap space-y-8 pb-16">
 
         <!-- SKELETON LOADER (Visible when loading is true) -->
         <div v-if="loading" class="space-y-8 animate-pulse mt-4">
@@ -281,7 +281,7 @@
             </div>
 
             <!-- LEFT COLUMN: HOLDERS -->
-            <div style="display:flex;flex-direction:column;gap:14px" v-if="activeTab === 'holders'">
+            <div style="grid-column: 1 / -1; display:flex;flex-direction:column;gap:14px;margin-bottom:2px" v-if="activeTab === 'holders'">
               <section class="card asset" style="margin-top:0">
                 <div v-if="holdersLoading" class="flex flex-col items-center justify-center py-20">
                   <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
@@ -479,7 +479,7 @@
             </div>
 
             <!-- LEFT COLUMN: LIQUIDITY -->
-            <div style="display:flex;flex-direction:column;gap:14px" v-if="activeTab === 'liquidity'">
+            <div style="grid-column: 1 / -1; display:flex;flex-direction:column;gap:14px;margin-bottom:2px" v-if="activeTab === 'liquidity'">
               <section class="card asset" style="margin-top:0">
                 <div v-if="liquidityLoading" class="flex flex-col items-center justify-center py-20">
                   <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
@@ -497,7 +497,7 @@
                 </div>
 
                 <!-- Metrics Grid -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 font-mono">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 font-mono">
                   <div class="bg-[#111620] p-4 rounded-xl border border-[#1D2531]">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Total TVL</span>
                     <span class="text-lg font-black text-white mt-1 block">
@@ -649,7 +649,7 @@
     <!-- Connect Wallet Modals -->
     <ConnectWalletModal v-model="ConnectWalletModals" :connected="isWalletConnected" :walletKey="walletKey" />
     <VerificationModal :open="verificationModal" :connected="isWalletConnected" :loading="verificationLoading" :payment-assets="verificationPaymentAssets" :selected-asset="selectedVerificationAsset" @select-asset="selectedVerificationAsset = $event" @close="verificationModal = false" @connect-wallet="ConnectWalletModals = true" @pay="contactVerification" />
-    <Footer />
+    <Footer class="mt-8" />
   </div>
 </template>
 
