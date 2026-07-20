@@ -646,7 +646,7 @@
 <script setup lang="ts">
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { checkTkgBalance, getCookie, updateLoader, apiHeaders, shortMiddle, statusClass, getNetwork } from "../utils/utils.js";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -733,24 +733,33 @@ const txUrl = (tx) => `${explorerBase.value}/tx/${encodeURIComponent(tx)}`
 // Initialize
 // ---------------------
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-onMounted(async () => {
+
+async function loadUserData() {
+    loadingBalance.value = true;
     try {
-        const pk = publicKey;
+        const pk = getCookie("public_key") || localStorage.getItem("public_key") || "";
         if (pk) {
             let bal = Number(await checkTkgBalance(pk)) || 0;
             if (bal === 0) {
-                await sleep(800);
+                await sleep(500);
                 bal = Number(await checkTkgBalance(pk)) || 0;
             }
             tkgBalance.value = bal;
+            await fetchPositions();
+        } else {
+            tkgBalance.value = 0;
+            positions.value = [];
         }
     } catch {
         tkgBalance.value = 0;
     } finally {
         loadingBalance.value = false;
     }
+}
 
-    await fetchPositions();
+onMounted(async () => {
+    window.addEventListener("tokenglade-wallet-changed", loadUserData);
+    await loadUserData();
     await fetchrewards();
     await refreshStats();
 
@@ -760,6 +769,10 @@ onMounted(async () => {
         console.error('getNetwork failed:', e)
         network.value = 'public'
     }
+});
+
+onUnmounted(() => {
+    window.removeEventListener("tokenglade-wallet-changed", loadUserData);
 });
 
 watch(paginatedData, () => {

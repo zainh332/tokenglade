@@ -417,9 +417,15 @@ const openBuyTkgModal = () => {
   buyTkgModal.value = true;
 };
 
+const handleWalletChanged = (event) => {
+  refreshWalletPk();
+  emit('wallet-status', { connected: isConnected.value });
+};
+
 onMounted(() => {
   window.addEventListener("tokenglade-open-buy-tkg", openBuyTkgModal);
   window.addEventListener("tokenglade-open-launch-token", handleOpenLaunchToken);
+  window.addEventListener("tokenglade-wallet-changed", handleWalletChanged);
   window.addEventListener("keydown", handleKeyDown);
   window.addEventListener("click", handleClickOutside);
   refreshWalletPk();
@@ -433,7 +439,9 @@ async function handleDisconnectWallet() {
     await disconnectWalletSession();
     walletPk.value = '';
     emit('wallet-status', { connected: false });
-    window.location.reload();
+    window.dispatchEvent(new CustomEvent("tokenglade-wallet-changed", {
+      detail: { connected: false, publicKey: "" }
+    }));
   } catch (error) {
     console.error("Error disconnecting wallet:", error);
     Swal.fire({
@@ -452,6 +460,7 @@ function shortMiddle(str, head = 4, tail = 4) {
 onUnmounted(() => {
   window.removeEventListener("tokenglade-open-buy-tkg", openBuyTkgModal);
   window.removeEventListener("tokenglade-open-launch-token", handleOpenLaunchToken);
+  window.removeEventListener("tokenglade-wallet-changed", handleWalletChanged);
   window.removeEventListener("keydown", handleKeyDown);
   window.removeEventListener("click", handleClickOutside);
 });

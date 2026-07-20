@@ -3,7 +3,7 @@
     <Header />
     
     <!-- MAIN CONTAINER -->
-    <div class="wrap space-y-8 pb-16">
+    <div class="wrap space-y-8 pb-24 sm:pb-32">
 
         <!-- SKELETON LOADER (Visible when loading is true) -->
         <div v-if="loading" class="space-y-8 animate-pulse mt-4">
@@ -1302,7 +1302,7 @@ async function contactVerification() {
     })
     verificationLoading.value = false
     verificationModal.value = false
-    window.location.reload();
+    fetchAssetDetails();
   } catch (e) {
     verificationLoading.value = false
     console.error(e)
@@ -1665,7 +1665,7 @@ watch(chartContainer, (el) => {
 .wrap {
   max-width: 1320px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 20px 2.6rem;
 }
 
 .crumb {

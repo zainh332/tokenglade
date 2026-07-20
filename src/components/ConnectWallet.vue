@@ -498,19 +498,17 @@ async function handleConnect() {
             return;
         }
 
-        // Update local state so UI reacts immediately (even if we reload)
+        // Update local state so UI reacts immediately
         UserData.value.walletKey = result.publicKey;
         setConnected(result.publicKey);
 
-        // Ensure any modal is closed before reload
+        // Ensure any modal is closed
         if (Swal.isVisible()) Swal.close();
+        closeModal();
 
-        // Give the browser a tick to flush storage/cookies
-        setTimeout(() => {
-            // Use replace() to avoid storing the pre-login page in history
-            window.location.replace(window.location.href);
-            // fallback (some browsers): window.location.reload();
-        }, 150);
+        window.dispatchEvent(new CustomEvent("tokenglade-wallet-changed", {
+            detail: { connected: true, publicKey: result.publicKey }
+        }));
     } catch (e) {
         console.error('[handleConnect] error:', e);
         Swal.fire({ icon: 'error', title: 'Wallet Error', text: e?.message || 'Failed to connect wallet.' });
@@ -526,7 +524,9 @@ async function disconnectWallet() {
         closeModal();
         if (typeof speak === "function") speak("connected", false);
         setDisconnected();
-        window.location.reload();
+        window.dispatchEvent(new CustomEvent("tokenglade-wallet-changed", {
+            detail: { connected: false, publicKey: "" }
+        }));
     } catch (error) {
         console.error("Error disconnecting wallet:", error);
         Swal.fire({
