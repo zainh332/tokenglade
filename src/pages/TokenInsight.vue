@@ -216,10 +216,25 @@
 
             <!-- Actions -->
             <div class="acts">
-              <a :href="scopulyTradeUrl" target="_blank" rel="noopener noreferrer" class="btn brand font-bold uppercase select-none inline-flex items-center gap-1">⇄ Trade asset</a>
-              <button class="btn dark font-bold uppercase select-none">🔒 Establish trustline</button>
-              <a v-if="token.website" :href="token.website" target="_blank" class="btn font-bold uppercase transition select-none">🌐 Website</a>
-              <a v-if="token.twitter" :href="token.twitter" target="_blank" class="btn font-bold uppercase transition select-none">𝕏 Twitter</a>
+              <a :href="scopulyTradeUrl" target="_blank" rel="noopener noreferrer" class="btn brand select-none inline-flex items-center gap-1.5">
+                <ArrowRightLeft class="w-4 h-4" /> Trade Asset
+              </a>
+              <button class="btn dark select-none inline-flex items-center gap-1.5">
+                <Lock class="w-4 h-4 text-cyan-400" /> Establish Trustline
+              </button>
+              <a v-if="token.website" :href="token.website" target="_blank" title="Website" aria-label="Website" class="btn icon-btn select-none hover:text-white transition">
+                <Globe class="w-4 h-4 text-slate-300" />
+              </a>
+              <a v-if="token.twitter" :href="token.twitter" target="_blank" title="X (Twitter)" aria-label="X (Twitter)" class="btn icon-btn select-none hover:text-white transition">
+                <svg class="w-3.5 h-3.5 fill-current text-slate-300" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+              </a>
+              <a v-if="token.telegram" :href="token.telegram" target="_blank" title="Telegram" aria-label="Telegram" class="btn icon-btn select-none hover:text-white transition">
+                <svg class="w-4 h-4 fill-current text-slate-300" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.67-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.37-.49 1.02-.75 3.99-1.73 6.66-2.87 8.01-3.43 3.81-1.58 4.6-1.86 5.12-1.87.11 0 .37.03.54.17.14.12.18.28.2.45-.02.07-.02.16-.04.25z"/>
+                </svg>
+              </a>
             </div>
           </section>
 
@@ -1856,32 +1871,50 @@ watch(chartContainer, (el) => {
   flex-wrap: wrap;
 }
 
-.btn {
-  font-family: var(--mono);
-  font-size: 12.5px;
+.acts .btn {
+  font-family: var(--disp);
+  font-size: 13px;
   font-weight: 600;
+  letter-spacing: 0.015em;
   border: 1px solid var(--line2);
   background: var(--panel);
   color: var(--ink);
-  padding: 8px 13px;
-  border-radius: 7px;
+  padding: 9px 16px;
+  border-radius: 9px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
-.btn:hover {
+.acts .btn:hover {
   border-color: var(--amber);
+  transform: translateY(-1px);
 }
-.btn.brand {
+.acts .btn.brand {
   background: var(--amber);
   color: #08131a;
   border-color: transparent;
   font-weight: 700;
+  box-shadow: 0 0 16px rgba(18, 203, 238, 0.25);
 }
-.btn.brand:hover {
+.acts .btn.brand:hover {
   filter: brightness(1.08);
+  box-shadow: 0 0 20px rgba(18, 203, 238, 0.35);
 }
-.btn.dark {
-  background: #0b0f16;
+.acts .btn.dark {
+  background: #0E131C;
+  border-color: rgba(148, 163, 184, 0.16);
+}
+.acts .btn.dark:hover {
+  background: #131A26;
+  border-color: var(--amber);
+}
+.acts .btn.icon-btn {
+  padding: 0;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tabs {
