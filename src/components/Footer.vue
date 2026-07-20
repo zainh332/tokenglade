@@ -1,5 +1,5 @@
 <template>
-  <footer class="bg-[#070A13] text-slate-400 border-t border-slate-900 py-12 relative overflow-hidden">
+  <footer class="bg-[#070A13] text-slate-400 border-t border-slate-900 py-5 relative overflow-hidden">
     <div class="max-w-[1440px] px-4 mx-auto sm:px-6 lg:px-8 relative z-10">
       
       <!-- Grid -->
