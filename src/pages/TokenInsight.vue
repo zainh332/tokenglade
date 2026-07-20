@@ -1794,8 +1794,11 @@ watch(chartContainer, (el) => {
 .trust .lbl {
   text-align: right;
 }
+.k {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
 .trust .lbl .k {
-  font-family: var(--mono);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 10px;
   letter-spacing: .1em;
   color: var(--faint);
@@ -1844,7 +1847,7 @@ watch(chartContainer, (el) => {
   padding: 13px 15px;
 }
 .st .k {
-  font-family: var(--mono);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 10px;
   letter-spacing: .07em;
   text-transform: uppercase;
@@ -2081,7 +2084,7 @@ watch(chartContainer, (el) => {
   padding: 10px 14px;
 }
 .ai .mini .k {
-  font-family: var(--mono);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 9.5px;
   letter-spacing: .06em;
   color: var(--faint);
