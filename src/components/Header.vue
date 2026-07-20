@@ -6,7 +6,7 @@
 
     <!-- MAIN NAVIGATION -->
     <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between h-16 items-center">
+      <div class="flex justify-between h-[58px] items-center">
         
         <!-- Left: Logo & Links -->
         <div class="flex items-center gap-8">
