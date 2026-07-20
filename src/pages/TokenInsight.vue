@@ -689,6 +689,7 @@
 import { reactive, onMounted, watch, ref, computed, nextTick } from "vue"
 import { useRoute } from "vue-router"
 import axios from "axios"
+import { createChart, CrosshairMode, CandlestickSeries, LineSeries, AreaSeries, HistogramSeries } from "lightweight-charts"
 import verified from "@/assets/verify.png";
 import { getCookie, signXdrWithWallet } from "../utils/utils.js";
 import Swal from 'sweetalert2';
@@ -1075,15 +1076,22 @@ async function fetchToken() {
   } finally {
     loading.value = false
     nextTick(() => {
-      initChart()
-      fetchChartData()
+      setTimeout(async () => {
+        await initChart()
+        await fetchChartData()
+      }, 50)
     })
   }
 }
 
 function switchTab(tab) {
   activeTab.value = tab
-  if (tab === 'holders' && (!token.top_holders || token.top_holders.length === 0) && !holdersLoading.value) {
+  if (tab === 'overview') {
+    nextTick(() => {
+      initChart()
+      fetchChartData()
+    })
+  } else if (tab === 'holders' && (!token.top_holders || token.top_holders.length === 0) && !holdersLoading.value) {
     fetchHolders()
   } else if (tab === 'liquidity' && (!token.liquidity_overview || !token.liquidity_overview.pools || token.liquidity_overview.pools.length === 0) && !liquidityLoading.value) {
     fetchLiquidity()
@@ -1260,10 +1268,6 @@ onMounted(async () => {
   walletKey.value = getCookie('public_key') || ''
   isWalletConnected.value = !!walletKey.value
   await fetchVerificationAssets()
-  if (token.asset_code) {
-    await initChart()
-    await fetchChartData()
-  }
 })
 
 watch(
@@ -1279,31 +1283,25 @@ watch(
   { immediate: true }
 )
 
-function loadLightweightCharts() {
-  return new Promise((resolve, reject) => {
-    if (window.LightweightCharts) {
-      resolve(window.LightweightCharts);
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js';
-    script.type = 'text/javascript';
-    script.onload = () => resolve(window.LightweightCharts);
-    script.onerror = (err) => reject(err);
-    document.head.appendChild(script);
-  });
-}
-
 async function initChart() {
+  await nextTick();
+  if (!chartContainer.value) return;
+
+  if (chartInstance) {
+    try {
+      chartInstance.remove();
+    } catch (e) {
+      console.error("Error removing chart instance:", e);
+    }
+    chartInstance = null;
+  }
+
+  chartContainer.value.innerHTML = '';
+  const containerWidth = chartContainer.value.clientWidth || 800;
+
   try {
-    const LightweightCharts = await loadLightweightCharts();
-    if (!chartContainer.value) return;
-    if (chartInstance) return;
-
-    chartContainer.value.innerHTML = '';
-
-    chartInstance = LightweightCharts.createChart(chartContainer.value, {
-      width: chartContainer.value.clientWidth,
+    chartInstance = createChart(chartContainer.value, {
+      width: containerWidth,
       height: 320,
       layout: {
         background: { type: 'solid', color: '#111620' },
@@ -1314,7 +1312,7 @@ async function initChart() {
         horzLines: { color: '#1D2531' },
       },
       crosshair: {
-        mode: LightweightCharts.CrosshairMode.Normal,
+        mode: CrosshairMode.Normal,
       },
       rightPriceScale: {
         borderColor: '#1D2531',
@@ -1366,6 +1364,9 @@ function handleResize() {
 
 async function fetchChartData() {
   if (!token.issuer || !token.asset_code) return;
+  if (!chartInstance) {
+    await initChart();
+  }
   try {
     const apiTimeframe = selectedTimeframe.value.toLowerCase();
     const res = await axios.get('/api/token/chart', {
@@ -1385,27 +1386,41 @@ async function fetchChartData() {
 function renderChartData() {
   if (!chartInstance) return;
   
-  if (candleSeries) { chartInstance.removeSeries(candleSeries); candleSeries = null; }
-  if (lineSeries) { chartInstance.removeSeries(lineSeries); lineSeries = null; }
-  if (areaSeries) { chartInstance.removeSeries(areaSeries); areaSeries = null; }
-  if (volumeSeries) { chartInstance.removeSeries(volumeSeries); volumeSeries = null; }
+  if (candleSeries) { try { chartInstance.removeSeries(candleSeries); } catch (e) {} candleSeries = null; }
+  if (lineSeries) { try { chartInstance.removeSeries(lineSeries); } catch (e) {} lineSeries = null; }
+  if (areaSeries) { try { chartInstance.removeSeries(areaSeries); } catch (e) {} areaSeries = null; }
+  if (volumeSeries) { try { chartInstance.removeSeries(volumeSeries); } catch (e) {} volumeSeries = null; }
 
-  const formattedData = chartData.value.map(d => ({
-    time: d.time,
-    open: d.open,
-    high: d.high,
-    low: d.low,
-    close: d.close
-  }));
+  if (!chartData.value || !chartData.value.length) return;
 
-  const formattedVolume = chartData.value.map(d => ({
+  const cleanMap = new Map();
+  chartData.value.forEach(d => {
+    if (d && d.time) {
+      const timeVal = typeof d.time === 'number' ? d.time : parseInt(d.time, 10);
+      if (!isNaN(timeVal) && timeVal > 0) {
+        cleanMap.set(timeVal, {
+          time: timeVal,
+          open: Number(d.open || 0),
+          high: Number(d.high || 0),
+          low: Number(d.low || 0),
+          close: Number(d.close || 0),
+          volume: Number(d.volume || 0)
+        });
+      }
+    }
+  });
+
+  const formattedData = Array.from(cleanMap.values()).sort((a, b) => a.time - b.time);
+  if (formattedData.length === 0) return;
+
+  const formattedVolume = formattedData.map(d => ({
     time: d.time,
     value: d.volume,
     color: d.close >= d.open ? '#2ED47A44' : '#F0616D44'
   }));
 
   if (selectedChartType.value === 'candlestick') {
-    candleSeries = chartInstance.addCandlestickSeries({
+    candleSeries = chartInstance.addSeries(CandlestickSeries, {
       upColor: '#2ED47A',
       downColor: '#F0616D',
       borderVisible: false,
@@ -1419,7 +1434,7 @@ function renderChartData() {
     });
     candleSeries.setData(formattedData);
   } else if (selectedChartType.value === 'line') {
-    lineSeries = chartInstance.addLineSeries({
+    lineSeries = chartInstance.addSeries(LineSeries, {
       color: '#12CBEE',
       lineWidth: 2,
       priceFormat: {
@@ -1430,7 +1445,7 @@ function renderChartData() {
     });
     lineSeries.setData(formattedData.map(d => ({ time: d.time, value: d.close })));
   } else if (selectedChartType.value === 'area') {
-    areaSeries = chartInstance.addAreaSeries({
+    areaSeries = chartInstance.addSeries(AreaSeries, {
       topColor: 'rgba(18, 203, 238, 0.2)',
       bottomColor: 'rgba(18, 203, 238, 0)',
       lineColor: '#12CBEE',
@@ -1444,7 +1459,7 @@ function renderChartData() {
     areaSeries.setData(formattedData.map(d => ({ time: d.time, value: d.close })));
   }
 
-  volumeSeries = chartInstance.addHistogramSeries({
+  volumeSeries = chartInstance.addSeries(HistogramSeries, {
     priceFormat: {
       type: 'volume',
     },
@@ -1504,6 +1519,15 @@ watch(selectedTimeframe, () => {
 watch(selectedChartType, () => {
   renderChartData();
 });
+
+watch(chartContainer, (el) => {
+  if (el) {
+    nextTick(() => {
+      initChart();
+      fetchChartData();
+    });
+  }
+}, { immediate: true });
 </script>
 
 <style scoped>
