@@ -1041,6 +1041,37 @@ class TokenController extends Controller
             }
         }
 
+        $uncachedIssuers = [];
+        foreach ($issuers as $issuer) {
+            if (empty($names[$issuer]) && !Cache::has("se_issuer_meta_{$issuer}")) {
+                $uncachedIssuers[] = $issuer;
+            } else if (!empty(Cache::get("se_issuer_meta_{$issuer}")['name'])) {
+                $names[$issuer] = Cache::get("se_issuer_meta_{$issuer}")['name'];
+            }
+        }
+
+        if (!empty($uncachedIssuers)) {
+            try {
+                $poolIssuers = array_slice($uncachedIssuers, 0, 10);
+                $responses = Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($poolIssuers) {
+                    $calls = [];
+                    foreach ($poolIssuers as $issuer) {
+                        $calls[$issuer] = $pool->timeout(2)->get("https://api.stellar.expert/explorer/public/directory/{$issuer}");
+                    }
+                    return $calls;
+                });
+
+                foreach ($poolIssuers as $issuer) {
+                    $res = $responses[$issuer] ?? null;
+                    $data = ($res && $res->successful()) ? $res->json() : null;
+                    Cache::put("se_issuer_meta_{$issuer}", $data, 86400);
+                    if (!empty($data['name'])) {
+                        $names[$issuer] = $data['name'];
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+
         return response()->json([
             'verified' => $verified,
             'names' => $names,
@@ -1102,6 +1133,141 @@ class TokenController extends Controller
                 ];
             }
         }
+
+        // 3. Query Stellar Expert Asset Search API for popular matching tokens
+        try {
+            $seRecords = Cache::remember("se_search_assets_{$q}", 300, function () use ($q) {
+                try {
+                    $res = Http::timeout(3)->get("https://api.stellar.expert/explorer/public/asset?search=" . urlencode($q) . "&limit=20");
+                    return $res->successful() ? ($res->json()['_embedded']['records'] ?? []) : [];
+                } catch (\Throwable $e) {
+                    return [];
+                }
+            });
+
+            foreach ($seRecords as $rec) {
+                $parts = explode('-', $rec['asset'] ?? '');
+                $code = strtoupper($rec['tomlInfo']['code'] ?? ($parts[0] ?? ''));
+                $issuer = $rec['tomlInfo']['issuer'] ?? ($parts[1] ?? '');
+                if (empty($code) || empty($issuer)) continue;
+
+                $key = $code . '_' . $issuer;
+                $name = $rec['tomlInfo']['name'] ?? ($rec['tomlInfo']['orgName'] ?? null);
+                $trustlines = $rec['trustlines'][0] ?? 0;
+
+                if (isset($results[$key])) {
+                    if (empty($results[$key]['name']) && !empty($name)) {
+                        $results[$key]['name'] = $name;
+                    }
+                    if (($results[$key]['accounts']['authorized'] ?? 0) < $trustlines) {
+                        $results[$key]['accounts'] = ['authorized' => $trustlines];
+                    }
+                } else {
+                    $results[$key] = [
+                        'asset_code' => $code,
+                        'asset_issuer' => $issuer,
+                        'name' => $name,
+                        'is_verified' => false,
+                        'accounts' => ['authorized' => $trustlines],
+                        'num_liquidity_pools' => $rec['trades'] ?? 0,
+                    ];
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        // 4. Query Horizon assets for additional coverage
+        try {
+            $records = Cache::remember("horizon_assets_{$q}", 300, function () use ($q) {
+                try {
+                    $horizonRes = Http::timeout(3)->get("https://horizon.stellar.org/assets?asset_code=" . urlencode(strtoupper($q)) . "&limit=15");
+                    return $horizonRes->successful() ? ($horizonRes->json()['_embedded']['records'] ?? []) : [];
+                } catch (\Throwable $e) {
+                    return [];
+                }
+            });
+
+            if (!empty($records)) {
+                // Identify uncached assets
+                $uncachedKeys = [];
+                foreach ($records as $rec) {
+                    $code = strtoupper($rec['asset_code']);
+                    $issuer = $rec['asset_issuer'];
+                    $cacheKey = "se_asset_{$code}_{$issuer}";
+                    if (!Cache::has($cacheKey)) {
+                        $uncachedKeys[$cacheKey] = ['code' => $code, 'issuer' => $issuer];
+                    }
+                }
+
+                // Fetch uncached in parallel using Http::pool
+                if (!empty($uncachedKeys)) {
+                    $responses = Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($uncachedKeys) {
+                        $calls = [];
+                        foreach (array_slice($uncachedKeys, 0, 10) as $cacheKey => $item) {
+                            $calls[$cacheKey] = $pool->timeout(2)->get("https://api.stellar.expert/explorer/public/asset/{$item['code']}-{$item['issuer']}");
+                        }
+                        return $calls;
+                    });
+
+                    foreach ($uncachedKeys as $cacheKey => $item) {
+                        $res = $responses[$cacheKey] ?? null;
+                        $data = ($res && $res->successful()) ? $res->json() : null;
+                        Cache::put($cacheKey, $data, 86400);
+                    }
+                }
+
+                foreach ($records as $rec) {
+                    $code = strtoupper($rec['asset_code']);
+                    $issuer = $rec['asset_issuer'];
+                    $cacheKey = "se_asset_{$code}_{$issuer}";
+                    if (!Cache::has($cacheKey)) {
+                        $uncachedKeys[$cacheKey] = ['code' => $code, 'issuer' => $issuer];
+                    }
+                }
+
+                // Fetch uncached in parallel using Http::pool
+                if (!empty($uncachedKeys)) {
+                    $responses = Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($uncachedKeys) {
+                        $calls = [];
+                        foreach (array_slice($uncachedKeys, 0, 10) as $cacheKey => $item) {
+                            $calls[$cacheKey] = $pool->timeout(2)->get("https://api.stellar.expert/explorer/public/asset/{$item['code']}-{$item['issuer']}");
+                        }
+                        return $calls;
+                    });
+
+                    foreach ($uncachedKeys as $cacheKey => $item) {
+                        $res = $responses[$cacheKey] ?? null;
+                        $data = ($res && $res->successful()) ? $res->json() : null;
+                        Cache::put($cacheKey, $data, 86400);
+                    }
+                }
+
+                foreach ($records as $rec) {
+                    $code = strtoupper($rec['asset_code']);
+                    $issuer = $rec['asset_issuer'];
+                    $key = $code . '_' . $issuer;
+
+                    $seData = Cache::get("se_asset_{$code}_{$issuer}");
+                    $name = $seData['toml_info']['name'] ?? ($seData['toml_info']['orgName'] ?? null);
+
+                    if (isset($results[$key])) {
+                        if (empty($results[$key]['name']) && !empty($name)) {
+                            $results[$key]['name'] = $name;
+                        }
+                        $results[$key]['accounts'] = $rec['accounts'] ?? ['authorized' => 0];
+                        $results[$key]['num_liquidity_pools'] = $rec['num_liquidity_pools'] ?? 0;
+                    } else {
+                        $results[$key] = [
+                            'asset_code' => $code,
+                            'asset_issuer' => $issuer,
+                            'name' => $name,
+                            'is_verified' => false,
+                            'accounts' => $rec['accounts'] ?? ['authorized' => 0],
+                            'num_liquidity_pools' => $rec['num_liquidity_pools'] ?? 0,
+                        ];
+                    }
+                }
+            }
+        } catch (\Throwable $e) {}
 
         return response()->json(['tokens' => array_values($results)]);
     }

@@ -331,114 +331,33 @@ async function searchAssets() {
   loading.value = true;
 
   try {
-    const queries = [rawInput];
-    if (rawInput !== rawInput.toUpperCase()) {
-      queries.push(rawInput.toUpperCase());
-    }
-
-    let allRecords = [];
-
-    // 1. Query Horizon by asset code
-    for (const code of queries) {
-      try {
-        const res = await fetch(
-          `https://horizon.stellar.org/assets?asset_code=${encodeURIComponent(code)}&limit=200`
-        );
-        const data = await res.json();
-        if (data._embedded?.records?.length) {
-          allRecords = [...allRecords, ...data._embedded.records];
-        }
-      } catch {}
-    }
-
-    // 2. Query backend database by token name or symbol
-    try {
-      const { data } = await axios.get(`/api/token/search?q=${encodeURIComponent(rawInput)}`);
-      if (data?.tokens?.length) {
-        for (const tokenItem of data.tokens) {
-          allRecords.push({
-            asset_code: tokenItem.asset_code,
-            asset_issuer: tokenItem.asset_issuer,
-            name: tokenItem.name,
-            is_verified: true,
-            accounts: tokenItem.accounts || { authorized: 0 }
-          });
-        }
-      }
-    } catch {}
+    const { data } = await axios.get(`/api/token/search?q=${encodeURIComponent(rawInput)}`);
 
     if (requestId !== searchRequestId) return;
 
-    if (!allRecords.length) {
+    if (!data?.tokens?.length) {
       assets.value = [];
       error.value = "No token found";
       return;
     }
 
-    const uniqueAssets = Object.values(
-      allRecords.reduce((acc, asset) => {
-        const key = `${asset.asset_code.toUpperCase()}_${asset.asset_issuer}`;
-        const existing = acc[key];
-        if (!existing) {
-          acc[key] = asset;
-        } else {
-          // Merge properties
-          acc[key] = {
-            ...existing,
-            ...asset,
-            name: asset.name || existing.name,
-            is_verified: asset.is_verified || existing.is_verified,
-            accounts: (asset.accounts?.authorized || 0) >= (existing.accounts?.authorized || 0) ? asset.accounts : existing.accounts
-          };
-        }
-        return acc;
-      }, {})
-    );
-
-    // 3. Fetch missing holder stats from Horizon for database search matches
-    for (const asset of uniqueAssets) {
-      if (!asset.accounts || asset.accounts.authorized === 0) {
-        try {
-          const res = await fetch(
-            `https://horizon.stellar.org/assets?asset_code=${asset.asset_code}&asset_issuer=${asset.asset_issuer}`
-          );
-          const hData = await res.json();
-          if (hData._embedded?.records?.length) {
-            asset.accounts = hData._embedded.records[0].accounts;
-            asset.num_liquidity_pools = hData._embedded.records[0].num_liquidity_pools;
-            if (hData._embedded.records[0].domain) {
-              asset.domain = hData._embedded.records[0].domain;
-            }
-          }
-        } catch {}
-      }
-    }
-
-    // 4. Enrich verification status and missing asset metadata
-    await enrichVerificationStatus(uniqueAssets);
-    await fetchMissingAssetNames(uniqueAssets);
-
-    if (requestId !== searchRequestId) return;
-
-    // 2. Sort by verified status first, then number of liquidity pools, then active holders
-    const sortedAssets = uniqueAssets.sort((a, b) => {
-      // Sort by verification status first (verified tokens top)
+    // Sort by verified status first, then by number of active holders for unverified tokens
+    const sortedAssets = data.tokens.sort((a, b) => {
+      // 1. Verified tokens top
       if (a.is_verified !== b.is_verified) {
         return (b.is_verified ? 1 : 0) - (a.is_verified ? 1 : 0);
       }
-      // Sort by number of liquidity pools second
-      if (b.num_liquidity_pools !== a.num_liquidity_pools) {
-        return b.num_liquidity_pools - a.num_liquidity_pools;
-      }
-      // Sort by authorized account holders third
-      return b.accounts.authorized - a.accounts.authorized;
+      // 2. Sort according to active holders (descending)
+      const holdersA = a.accounts?.authorized || 0;
+      const holdersB = b.accounts?.authorized || 0;
+      return holdersB - holdersA;
     });
 
     assets.value = sortedAssets;
     error.value = "";
   } catch (e) {
     if (requestId !== searchRequestId) return;
-    error.value = "Horizon connection error";
+    error.value = "Search connection error";
     assets.value = [];
   } finally {
     if (requestId === searchRequestId) {
@@ -456,7 +375,7 @@ watch(searchQuery, (newValue) => {
   }
   debounceTimeout = setTimeout(() => {
     searchAssets();
-  }, 500);
+  }, 200);
 });
 
 function selectAsset(asset) {
