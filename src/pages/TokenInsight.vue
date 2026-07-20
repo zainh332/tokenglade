@@ -681,7 +681,7 @@
     <!-- Connect Wallet Modals -->
     <ConnectWalletModal v-model="ConnectWalletModals" :connected="isWalletConnected" :walletKey="walletKey" />
     <VerificationModal :open="verificationModal" :connected="isWalletConnected" :loading="verificationLoading" :payment-assets="verificationPaymentAssets" :selected-asset="selectedVerificationAsset" @select-asset="selectedVerificationAsset = $event" @close="verificationModal = false" @connect-wallet="ConnectWalletModals = true" @pay="contactVerification" />
-    <Footer class="mt-8" />
+    <Footer />
   </div>
 </template>
 
@@ -1535,7 +1535,7 @@ watch(selectedChartType, () => {
   line-height: 1.45;
   min-height: 100vh;
   padding-top: 0px;
-  padding-bottom: 50px;
+  padding-bottom: 0px;
   background-image: radial-gradient(900px 460px at 84% -12%, rgba(18, 203, 238, .09), transparent 62%), radial-gradient(760px 420px at 6% -8%, rgba(240, 24, 156, .07), transparent 60%);
 }
 
