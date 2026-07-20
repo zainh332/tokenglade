@@ -1981,4 +1981,48 @@ onUnmounted(() => {
     box-shadow: 0 0 12px #c084fc, 0 0 20px #22d3ee;
   }
 }
+
+/* RESPONSIVE MOBILE MEDIA QUERIES */
+@media (max-width: 1024px) {
+  .board {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding: 10px 0 4px !important;
+  }
+  .status {
+    font-size: 10.5px !important;
+    gap: 8px !important;
+  }
+  .feat {
+    padding: 12px !important;
+  }
+  .pair {
+    font-size: 18px !important;
+  }
+  .px {
+    font-size: 26px !important;
+  }
+  .eco-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .eco-stat {
+    padding: 10px !important;
+    gap: 8px !important;
+  }
+  .mv th, .mv td {
+    padding: 8px 10px !important;
+    font-size: 11px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .eco-stats {
+    grid-template-columns: 1fr !important;
+  }
+}
 </style>

@@ -2316,11 +2316,31 @@ table.trades tr:hover td {
   .grid {
     grid-template-columns: 1fr;
   }
+  .stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
-@media (max-width: 820px) {
+@media (max-width: 768px) {
+  .wrap {
+    padding: 0 12px !important;
+  }
+  .asset {
+    padding: 14px !important;
+  }
+  .ahead {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  .token-ico {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  .name-row h1 {
+    font-size: 20px !important;
+  }
   .stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
   }
   .expo-stats {
     grid-template-columns: 1fr 1fr;
@@ -2329,7 +2349,22 @@ table.trades tr:hover td {
     grid-template-columns: 1fr;
   }
   .trust {
-    margin-left: 0;
+    margin-left: 0 !important;
+    width: 100% !important;
+    justify-content: space-between !important;
+    padding: 10px 12px !important;
+  }
+  .st {
+    padding: 10px 12px !important;
+  }
+  .st .v {
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .stats {
+    grid-template-columns: 1fr !important;
   }
 }
 </style>

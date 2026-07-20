@@ -2,7 +2,7 @@
     <div
         class="bg-[#070A13] min-h-screen text-slate-100 font-sans antialiased selection:bg-purple-500/30 selection:text-white">
         <Header />
-        <div class="container-fluid mx-auto pt-[8rem] pb-[6rem] relative top-0 z-0 bg-[#070A13] overflow-hidden">
+        <div class="container-fluid mx-auto pt-8 sm:pt-24 pb-12 sm:pb-24 relative top-0 z-0 bg-[#070A13] overflow-hidden">
             <!-- Blue Radial Glow Lighting treatment for Hero -->
             <div
                 class="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[150px] pointer-events-none animate-pulse-slow">
