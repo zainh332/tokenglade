@@ -1548,14 +1548,17 @@ function renderChartData() {
     priceFormat: {
       type: 'volume',
     },
-    priceScaleId: '',
+    priceScaleId: 'volume',
+    lastValueVisible: false,
+    priceLineVisible: false,
   });
   
-  volumeSeries.priceScale().applyOptions({
+  chartInstance.priceScale('volume').applyOptions({
     scaleMargins: {
       top: 0.8,
       bottom: 0,
     },
+    visible: false,
   });
 
   volumeSeries.setData(formattedVolume);
