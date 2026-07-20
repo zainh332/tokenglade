@@ -157,7 +157,7 @@
 
             <!-- Actions -->
             <div class="acts">
-              <button class="btn brand font-bold uppercase select-none">⇄ Trade asset</button>
+              <a :href="scopulyTradeUrl" target="_blank" rel="noopener noreferrer" class="btn brand font-bold uppercase select-none inline-flex items-center gap-1">⇄ Trade asset</a>
               <button class="btn dark font-bold uppercase select-none">🔒 Establish trustline</button>
               <a v-if="token.website" :href="token.website" target="_blank" class="btn font-bold uppercase transition select-none">🌐 Website</a>
               <a v-if="token.twitter" :href="token.twitter" target="_blank" class="btn font-bold uppercase transition select-none">𝕏 Twitter</a>
@@ -289,17 +289,20 @@
                 </div>
                 <template v-else>
                 <div class="flex justify-between items-center flex-wrap gap-4 mb-6">
-                  <h2 class="text-xl font-bold text-white tracking-tight">Holder Distribution</h2>
-                  <div class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-[#0E131C] px-3 py-1.5 rounded-xl border border-[#1D2531]">
+                  <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Holder Distribution</h2>
+                    <p class="text-xs text-slate-400 mt-1 font-medium">On-chain wallet analysis and supply concentration metrics</p>
+                  </div>
+                  <div class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-[#0E131C] px-3 py-1.5 rounded-xl border border-[#1D2531] font-mono">
                     Total Holders: {{ formatNumber(token.holders || 1240) }}
                   </div>
                 </div>
 
-                <!-- Donut Chart + Info Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center pt-2">
-                  <!-- Left: Donut Chart -->
-                  <div class="flex flex-col sm:flex-row items-center gap-6 justify-center bg-[#0E131C] p-6 rounded-2xl border border-[#1D2531]">
-                    <div class="relative w-36 h-36 flex items-center justify-center">
+                <!-- Middle Grid: Donut Chart Card (Left 50%) + 4 Vertically Stacked Cards Container (Right 50%) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch mb-6">
+                  <!-- Left Half (50% Width): Donut Chart Card -->
+                  <div class="flex flex-col items-center gap-6 justify-center bg-[#0E131C] p-6 rounded-2xl border border-[#1D2531] h-full">
+                    <div class="relative w-40 h-40 flex items-center justify-center flex-shrink-0">
                       <svg class="w-full h-full" viewBox="0 0 100 100">
                         <circle cx="50" cy="50" r="40" stroke="#1d2531" stroke-width="12" fill="transparent" />
                         <circle 
@@ -316,74 +319,80 @@
                         />
                       </svg>
                       <div class="absolute flex flex-col items-center justify-center text-center">
-                        <span class="text-xl font-black text-white">{{ top10Percentage }}%</span>
+                        <span class="text-2xl font-black text-white">{{ top10Percentage }}%</span>
                         <span class="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider mt-0.5">Top 10</span>
                       </div>
                     </div>
 
-                    <div class="space-y-3 text-xs font-mono">
-                      <div class="flex items-center gap-2 font-semibold">
-                        <span class="w-3 h-3 rounded-full bg-[#12CBEE]"></span>
-                        <span class="text-slate-400">Top 10 Wallets:</span>
+                    <div class="space-y-3 text-xs font-mono w-full max-w-sm">
+                      <div class="flex items-center justify-between gap-2 font-semibold bg-[#111620] p-3 rounded-xl border border-[#1D2531]">
+                        <div class="flex items-center gap-2">
+                          <span class="w-3 h-3 rounded-full bg-[#12CBEE]"></span>
+                          <span class="text-slate-400">Top 10 Wallets:</span>
+                        </div>
                         <span class="text-white font-bold">{{ top10Percentage }}%</span>
                       </div>
-                      <div class="flex items-center gap-2 font-semibold">
-                        <span class="w-3 h-3 rounded-full bg-[#1d2531]"></span>
-                        <span class="text-slate-400">Others:</span>
+                      <div class="flex items-center justify-between gap-2 font-semibold bg-[#111620] p-3 rounded-xl border border-[#1D2531]">
+                        <div class="flex items-center gap-2">
+                          <span class="w-3 h-3 rounded-full bg-[#1d2531]"></span>
+                          <span class="text-slate-400">Others:</span>
+                        </div>
                         <span class="text-white font-bold">{{ (100 - parseFloat(top10Percentage)).toFixed(2) }}%</span>
                       </div>
                     </div>
                   </div>
 
-                  <!-- Right: Stats Summary & Warnings -->
-                  <div class="space-y-4">
-                    <!-- Whale Warning block -->
-                    <div v-if="parseFloat(top10Percentage) > 50" class="flex gap-3 bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 text-xs text-rose-400">
-                      <span class="text-lg">⚠️</span>
-                      <div>
-                        <span class="font-extrabold uppercase tracking-wider block text-[10px] text-rose-500">Whale Concentration Warning</span>
-                        <span class="mt-0.5 block font-medium">The top 10 wallets own <strong class="font-black text-white">{{ top10Percentage }}%</strong> of the supply. This asset has high concentration risk.</span>
-                      </div>
-                    </div>
-                    <div v-else class="flex gap-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-xs text-emerald-400">
-                      <span class="text-lg">✓</span>
-                      <div>
-                        <span class="font-extrabold uppercase tracking-wider block text-[10px] text-emerald-500">Healthy Distribution</span>
-                        <span class="mt-0.5 block font-medium">The top 10 wallets own <strong class="font-black text-white">{{ top10Percentage }}%</strong> of supply, representing healthy distribution.</span>
-                      </div>
-                    </div>
-
-                    <!-- Stats panel -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div class="bg-[#111620] p-4 rounded-xl border border-[#1D2531]">
-                        <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block font-mono">Average per Holder</span>
-                        <span class="text-base font-black text-white mt-1 block font-mono">
-                          {{ formatNumber(averageTokensPerHolder) }} {{ token.asset_code }}
-                        </span>
-                      </div>
-
-                      <div class="bg-[#111620] p-4 rounded-xl border border-[#1D2531]">
-                        <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block font-mono">New Holders (24h / 7d)</span>
-                        <span class="text-base font-black text-white mt-1 block font-mono">
-                          +{{ holderGrowth.growth24h }} <span class="text-slate-500 font-medium text-xs">/</span> +{{ holderGrowth.growth7d }}
-                        </span>
-                      </div>
-
-                      <div v-if="biggestIndividualHolder" class="bg-[#111620] p-4 rounded-xl border border-[#1D2531] sm:col-span-2 space-y-1">
-                        <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block font-mono">Largest Non-Treasury Holder</span>
-                        <div class="flex items-center justify-between text-xs pt-1">
-                          <a 
-                            :href="`https://stellar.expert/explorer/public/account/${biggestIndividualHolder.address}`"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="font-mono text-cyan-400 hover:text-cyan-300 font-bold"
-                          >
-                            {{ shorten(biggestIndividualHolder.address) }}
-                          </a>
-                          <span class="font-black text-white font-mono">
-                            {{ formatNumber(biggestIndividualHolder.balance) }} {{ token.asset_code }} ({{ biggestIndividualHolder.percent }}%)
-                          </span>
+                  <!-- Right Half (50% Width): 4 Cards Stacked Vertically -->
+                  <div class="flex flex-col gap-4">
+                    <!-- 1. Healthy Distribution / Whale Concentration Warning -->
+                    <div class="bg-[#0E131C] p-5 rounded-2xl border border-[#1D2531]">
+                      <div v-if="parseFloat(top10Percentage) > 50" class="flex gap-3 bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 text-xs text-rose-400">
+                        <span class="text-xl flex-shrink-0">⚠️</span>
+                        <div>
+                          <span class="font-extrabold uppercase tracking-wider block text-[11px] text-rose-500 font-mono">Whale Concentration Warning</span>
+                          <span class="mt-1 block font-medium leading-relaxed">The top 10 wallets hold <strong class="font-black text-white">{{ top10Percentage }}%</strong> of supply. This asset has elevated whale concentration risk.</span>
                         </div>
+                      </div>
+                      <div v-else class="flex gap-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-xs text-emerald-400">
+                        <span class="text-xl flex-shrink-0">✓</span>
+                        <div>
+                          <span class="font-extrabold uppercase tracking-wider block text-[11px] text-emerald-500 font-mono">Healthy Distribution</span>
+                          <span class="mt-1 block font-medium leading-relaxed">The top 10 wallets hold <strong class="font-black text-white">{{ top10Percentage }}%</strong> of supply, representing healthy decentralization across active holders.</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 2. Average per Holder -->
+                    <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Average per Holder</span>
+                      <span class="text-base font-black text-white mt-1 block">
+                        {{ formatNumber(averageTokensPerHolder) }} {{ token.asset_code }}
+                      </span>
+                    </div>
+
+                    <!-- 3. New Holders -->
+                    <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">New Holders (24h / 7d)</span>
+                      <span class="text-base font-black text-white mt-1 block">
+                        +{{ holderGrowth.growth24h }} <span class="text-slate-500 font-medium text-xs">/</span> +{{ holderGrowth.growth7d }}
+                      </span>
+                    </div>
+
+                    <!-- 4. Largest Non-Treasury Holder -->
+                    <div v-if="biggestIndividualHolder" class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest Non-Treasury Holder</span>
+                      <div class="flex items-center justify-between text-xs mt-1.5">
+                        <a 
+                          :href="`https://stellar.expert/explorer/public/account/${biggestIndividualHolder.address}`"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="font-mono text-cyan-400 hover:text-cyan-300 font-bold"
+                        >
+                          {{ shorten(biggestIndividualHolder.address) }}
+                        </a>
+                        <span class="font-black text-white font-mono">
+                          {{ formatNumber(biggestIndividualHolder.balance) }} {{ token.asset_code }} ({{ biggestIndividualHolder.percent }}%)
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -762,6 +771,15 @@ const isVerificationPending = computed(
   () => token.is_verification_pending === true
 )
 const isVerified = computed(() => token.is_verified === true)
+
+const scopulyTradeUrl = computed(() => {
+  if (token.asset_code && token.issuer) {
+    return `https://scopuly.com/trade/${token.asset_code}-XLM/${token.issuer}/native`;
+  } else if (token.asset_code) {
+    return `https://scopuly.com/trade/${token.asset_code}-XLM/native`;
+  }
+  return 'https://scopuly.com/trade';
+});
 
 const buySellVolume = computed(() => {
   const txs = token.transactions || [];
