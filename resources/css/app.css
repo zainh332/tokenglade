@@ -396,3 +396,93 @@ body:has([role="dialog"]),
 body:has([data-headlessui-state*="open"]) {
     overflow: hidden !important;
 }
+
+/* SWEETALERT2 DARK THEME OVERRIDES MATCHING TOKENGLADE DESIGN SYSTEM */
+.swal2-container {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  background-color: rgba(2, 6, 23, 0.8) !important;
+}
+
+.swal2-popup {
+  background: #111827 !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 25px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  color: #ffffff !important;
+  padding: 1.75rem !important;
+}
+
+.swal2-title {
+  color: #ffffff !important;
+  font-family: "Space Grotesk", sans-serif !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.swal2-html-container {
+  color: #94a3b8 !important;
+  font-family: "JetBrains Mono", ui-monospace, monospace !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+}
+
+.swal2-confirm {
+  background: linear-gradient(90deg, rgba(220, 25, 224, 1), rgba(67, 205, 255, 1), rgba(0, 254, 254, 1)) !important;
+  background-size: 200% 200% !important;
+  animation: gradientMove 3s ease infinite !important;
+  border-radius: 12px !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 0.875rem !important;
+  letter-spacing: 0.025em !important;
+  padding: 10px 24px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+}
+
+.swal2-cancel {
+  background: #182235 !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 12px !important;
+  color: #cbd5e1 !important;
+  font-family: "Space Grotesk", sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  padding: 10px 20px !important;
+}
+
+.swal2-cancel:hover {
+  background: #1f2c44 !important;
+  color: #ffffff !important;
+}
+
+.swal2-icon.swal2-error {
+  border-color: #ef4444 !important;
+  color: #ef4444 !important;
+}
+
+.swal2-icon.swal2-error [class^='swal2-x-mark-line'] {
+  background-color: #ef4444 !important;
+}
+
+.swal2-icon.swal2-success {
+  border-color: #2ed47a !important;
+  color: #2ed47a !important;
+}
+
+.swal2-icon.swal2-success [class^='swal2-success-line'] {
+  background-color: #2ed47a !important;
+}
+
+.swal2-icon.swal2-warning {
+  border-color: #f59e0b !important;
+  color: #f59e0b !important;
+}
+
+.swal2-icon.swal2-info {
+  border-color: #12cbee !important;
+  color: #12cbee !important;
+}
