@@ -29,9 +29,9 @@
                 </div>
 
                 <!-- Form -->
-                <div class="px-[4vw] sm:px-6">
+                <div class="w-full max-w-md lg:max-w-lg flex-shrink-0 px-4 sm:px-0">
                     <div
-                        class="flex-shrink-0 w-full max-w-md lg:max-w-lg bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-[25px] shadow-2xl mx-auto">
+                        class="w-full bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-[25px] shadow-2xl overflow-hidden">
                         <div
                             class="bg-[#151D2D] border-b border-[rgba(148,163,184,0.16)] text-white text-center py-5 rounded-t-[25px]">
                             <h2 class="card-header">
@@ -86,7 +86,7 @@
                                 <!-- Range Input (0 → 100) -->
                                 <input type="range" id="range_value" name="range_value" min="0" max="100"
                                     v-model="rangeValue"
-                                    class="w-full h-2 rounded-lg appearance-none cursor-pointer bg-slate-800" :style="{
+                                    class="w-full h-2 rounded-lg appearance-none cursor-pointer bg-slate-800 touch-pan-x" :style="{
                                         background:
                                             'linear-gradient(90deg, rgba(220,25,224,1), rgba(67,205,255,1), rgba(0,254,254,1))'
                                     }" />
