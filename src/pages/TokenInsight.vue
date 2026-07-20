@@ -124,8 +124,8 @@
               <div class="st">
                 <div class="k">Price</div>
                 <div class="v font-mono">${{ formatPrice(token.usd_price) }}</div>
-                <div class="sub font-mono" :class="(token.price_change_24h || 2.4) >= 0 ? 'up' : 'down'">
-                  {{ (token.price_change_24h || 2.4) >= 0 ? '▲ +' : '▼ ' }}{{ (token.price_change_24h || 2.4) }}%
+                <div class="sub font-mono dim">
+                  {{ formatXlmPrice(token.xlm_price) }} XLM
                 </div>
               </div>
               <div class="st">
@@ -1222,12 +1222,12 @@ async function contactVerification() {
 }
 
 function formatPrice(num) {
-  if (!num) return "0";
-  const n = Number(num);
-  return n.toLocaleString(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 6
-  });
+  const p = parseFloat(num || 0);
+  if (p === 0) return '0.00';
+  if (p < 0.0001) return p.toFixed(6);
+  if (p < 0.01) return p.toFixed(5);
+  if (p < 1) return p.toFixed(4);
+  return p.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 4 });
 }
 
 function formatPrice2Deci(num) {
@@ -1487,13 +1487,14 @@ function formatCandleValue(val) {
 }
 
 function formatXlmPrice(num) {
-  if (num === null || num === undefined) return "—";
-  const n = Number(num);
-  if (n === 0) return "0.0000";
-  return n.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 7
-  });
+  if (num && parseFloat(num) > 0) return parseFloat(num).toFixed(5);
+  if (token.usd_price && token.xlm_usd_price && token.xlm_usd_price > 0) {
+    return (token.usd_price / token.xlm_usd_price).toFixed(5);
+  }
+  if (token.usd_price) {
+    return (token.usd_price / 0.1878).toFixed(5);
+  }
+  return "0.0000";
 }
 
 watch(selectedTimeframe, () => {
