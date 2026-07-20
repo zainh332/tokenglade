@@ -123,34 +123,57 @@
             <div class="stats">
               <div class="st">
                 <div class="k">Price</div>
-                <div class="v font-mono">${{ formatPrice(token.usd_price) }}</div>
+                <div class="v font-mono">
+                  <template v-if="token.usd_price">${{ formatPrice(token.usd_price) }}</template>
+                  <template v-else><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                </div>
                 <div class="sub font-mono dim">
-                  {{ formatXlmPrice(token.xlm_price) }} XLM
+                  <template v-if="token.usd_price">{{ formatXlmPrice(token.xlm_price) }} XLM</template>
+                  <template v-else><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 </div>
               </div>
               <div class="st">
                 <div class="k">Market Cap</div>
-                <div class="v font-mono">${{ formatNumber((token.usd_price || 0) * (token.total_supply || 0)) }}</div>
+                <div class="v font-mono">
+                  <template v-if="token.usd_price && token.total_supply">${{ formatNumber((token.usd_price || 0) * (token.total_supply || 0)) }}</template>
+                  <template v-else><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                </div>
                 <div class="sub dim">Fully Diluted</div>
               </div>
               <div class="st">
                 <div class="k">Liquidity</div>
-                <div class="v font-mono">${{ formatNumber(token.liquidity_overview?.total_tvl || token.liquidity_tvl || 0) }}</div>
+                <div class="v font-mono">
+                  <template v-if="token.liquidity_overview?.total_tvl || token.liquidity_tvl">${{ formatNumber(token.liquidity_overview?.total_tvl || token.liquidity_tvl) }}</template>
+                  <template v-else-if="liquidityLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                  <template v-else>$0</template>
+                </div>
                 <div class="sub up">Deep</div>
               </div>
               <div class="st">
                 <div class="k">24H Volume</div>
-                <div class="v font-mono">${{ formatNumber(token.volume_24h || token.liquidity_overview?.lp_volume_24h || 0) }}</div>
+                <div class="v font-mono">
+                  <template v-if="token.volume_24h || token.liquidity_overview?.lp_volume_24h">${{ formatNumber(token.volume_24h || token.liquidity_overview?.lp_volume_24h) }}</template>
+                  <template v-else-if="liquidityLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                  <template v-else>$0</template>
+                </div>
                 <div class="sub dim">Volume</div>
               </div>
               <div class="st">
                 <div class="k">Holders</div>
-                <div class="v font-mono">{{ formatNumber(token.holders) }}</div>
+                <div class="v font-mono">
+                  <template v-if="token.holders">{{ formatNumber(token.holders) }}</template>
+                  <template v-else-if="holdersLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                  <template v-else>—</template>
+                </div>
                 <div class="sub dim">Funded</div>
               </div>
               <div class="st">
                 <div class="k">Trustlines</div>
-                <div class="v font-mono">{{ formatNumber(token.trustlines || token.holders || 0) }}</div>
+                <div class="v font-mono">
+                  <template v-if="token.trustlines || token.holders">{{ formatNumber(token.trustlines || token.holders) }}</template>
+                  <template v-else-if="holdersLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                  <template v-else>—</template>
+                </div>
                 <div class="sub dim">Total</div>
               </div>
             </div>
@@ -159,22 +182,35 @@
             <div class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] flex flex-wrap items-center justify-between gap-3 text-xs font-mono select-none">
               <div class="flex items-center gap-1.5">
                 <span class="text-slate-400 font-medium">Total Supply:</span>
-                <span class="text-white font-bold">{{ formatCompactNumber(token.total_supply) }} {{ token.asset_code }}</span>
+                <span class="text-white font-bold">
+                  <template v-if="token.total_supply">{{ formatCompactNumber(token.total_supply) }} {{ token.asset_code }}</template>
+                  <template v-else><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                </span>
               </div>
               <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
               <div class="flex items-center gap-1.5">
                 <span class="text-slate-400 font-medium">Circulating Supply:</span>
-                <span class="text-white font-bold">{{ formatCompactNumber(token.circulating_supply || (token.total_supply ? token.total_supply * 0.425 : 0)) }} {{ token.asset_code }}</span>
+                <span class="text-white font-bold">
+                  <template v-if="token.total_supply">{{ formatCompactNumber(token.circulating_supply || (token.total_supply * 0.425)) }} {{ token.asset_code }}</template>
+                  <template v-else><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                </span>
               </div>
               <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
               <div class="flex items-center gap-1.5">
                 <span class="text-slate-400 font-medium">Pools:</span>
-                <span class="text-white font-bold">{{ token.liquidity_overview?.pools_count || token.num_liquidity_pools || 0 }}</span>
+                <span class="text-white font-bold">
+                  <template v-if="liquidityLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                  <template v-else>{{ token.liquidity_overview?.pools_count || token.num_liquidity_pools || 0 }}</template>
+                </span>
               </div>
               <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
               <div class="flex items-center gap-1.5">
                 <span class="text-slate-400 font-medium">Created:</span>
-                <span class="text-white font-bold">{{ token.mint_date_human && token.mint_date_human !== '-' ? token.mint_date_human : 'May 2019' }}</span>
+                <span class="text-white font-bold">
+                  <template v-if="token.mint_date_human && token.mint_date_human !== '-'">{{ token.mint_date_human }}</template>
+                  <template v-else-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                  <template v-else>May 2019</template>
+                </span>
               </div>
             </div>
 
