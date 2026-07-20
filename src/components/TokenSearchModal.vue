@@ -54,7 +54,10 @@
                                     @click="selectAsset(asset)"
                                     class="p-4 cursor-pointer hover:bg-[#182235]/65 transition duration-150">
                                     <div class="flex items-center gap-1.5 font-bold text-sm text-white">
-                                        <span class="font-mono uppercase">{{ asset.asset_code }}</span>
+                                        <span v-if="getAssetName(asset)" class="font-sans font-semibold text-white">
+                                            {{ getAssetName(asset) }} <span class="text-slate-400 font-mono font-normal text-xs">· {{ asset.asset_code }}</span>
+                                        </span>
+                                        <span v-else class="font-mono uppercase text-white">{{ asset.asset_code }}</span>
                                         <img v-if="asset.is_verified" :src="verified" alt="Verified"
                                             class="flex-shrink-0 w-3.5 h-3.5" title="Verified Token" />
                                     </div>
@@ -146,12 +149,45 @@ async function enrichVerificationStatus(assetList) {
 
         for (const asset of assetList) {
             asset.is_verified = data.verified?.[asset.asset_issuer] === true
+            if (data.names?.[asset.asset_issuer]) {
+                asset.name = data.names[asset.asset_issuer]
+            }
         }
     } catch {
         for (const asset of assetList) {
             asset.is_verified = false
         }
     }
+}
+
+function getAssetName(asset) {
+    if (asset.name) return asset.name
+    if (asset.asset_name) return asset.asset_name
+    if (asset.toml_info?.name) return asset.toml_info.name
+    if (asset.toml_info?.orgName) return asset.toml_info.orgName
+    if (asset.org_name) return asset.org_name
+    return null
+}
+
+async function fetchMissingAssetNames(assetList) {
+    const missing = assetList.filter((a) => !a.name)
+    if (!missing.length) return
+
+    await Promise.all(
+        missing.slice(0, 15).map(async (asset) => {
+            try {
+                const res = await fetch(
+                    `https://api.stellar.expert/explorer/public/asset/${asset.asset_code}-${asset.asset_issuer}`
+                )
+                const data = await res.json()
+                if (data.toml_info?.name) {
+                    asset.name = data.toml_info.name
+                } else if (data.toml_info?.orgName) {
+                    asset.name = data.toml_info.orgName
+                }
+            } catch {}
+        })
+    )
 }
 
 async function searchAssets() {
@@ -176,17 +212,34 @@ async function searchAssets() {
 
         let allRecords = []
 
+        // 1. Query Horizon by asset code
         for (const code of queries) {
-            const res = await fetch(
-                `https://horizon.stellar.org/assets?asset_code=${encodeURIComponent(code)}&limit=200`
-            )
-
-            const data = await res.json()
-
-            if (data._embedded?.records?.length) {
-                allRecords = [...allRecords, ...data._embedded.records]
-            }
+            try {
+                const res = await fetch(
+                    `https://horizon.stellar.org/assets?asset_code=${encodeURIComponent(code)}&limit=200`
+                )
+                const data = await res.json()
+                if (data._embedded?.records?.length) {
+                    allRecords = [...allRecords, ...data._embedded.records]
+                }
+            } catch {}
         }
+
+        // 2. Query backend database by token name or symbol
+        try {
+            const { data } = await axios.get(`/api/token/search?q=${encodeURIComponent(rawInput)}`)
+            if (data?.tokens?.length) {
+                for (const tokenItem of data.tokens) {
+                    allRecords.push({
+                        asset_code: tokenItem.asset_code,
+                        asset_issuer: tokenItem.asset_issuer,
+                        name: tokenItem.name,
+                        is_verified: true,
+                        accounts: tokenItem.accounts || { authorized: 0 }
+                    })
+                }
+            }
+        } catch {}
 
         if (requestId !== searchRequestId) {
             return
@@ -202,15 +255,43 @@ async function searchAssets() {
             allRecords.reduce((acc, asset) => {
                 const key = `${asset.asset_code.toUpperCase()}_${asset.asset_issuer}`
                 const existing = acc[key]
-                if (!existing || (asset.accounts?.authorized || 0) > (existing.accounts?.authorized || 0)) {
+                if (!existing) {
                     acc[key] = asset
+                } else {
+                    acc[key] = {
+                        ...existing,
+                        ...asset,
+                        name: asset.name || existing.name,
+                        is_verified: asset.is_verified || existing.is_verified,
+                        accounts: (asset.accounts?.authorized || 0) >= (existing.accounts?.authorized || 0) ? asset.accounts : existing.accounts
+                    }
                 }
                 return acc
             }, {})
         )
 
-        // 1. Enrich verification status first so we can sort by it
+        // 3. Fetch missing holder stats from Horizon for database search matches
+        for (const asset of uniqueAssets) {
+            if (!asset.accounts || asset.accounts.authorized === 0) {
+                try {
+                    const res = await fetch(
+                        `https://horizon.stellar.org/assets?asset_code=${asset.asset_code}&asset_issuer=${asset.asset_issuer}`
+                    )
+                    const hData = await res.json()
+                    if (hData._embedded?.records?.length) {
+                        asset.accounts = hData._embedded.records[0].accounts
+                        asset.num_liquidity_pools = hData._embedded.records[0].num_liquidity_pools
+                        if (hData._embedded.records[0].domain) {
+                            asset.domain = hData._embedded.records[0].domain
+                        }
+                    }
+                } catch {}
+            }
+        }
+
+        // 4. Enrich verification status and missing asset metadata
         await enrichVerificationStatus(uniqueAssets)
+        await fetchMissingAssetNames(uniqueAssets)
 
         if (requestId !== searchRequestId) {
             return

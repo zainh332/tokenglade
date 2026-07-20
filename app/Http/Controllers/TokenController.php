@@ -1011,9 +1011,13 @@ class TokenController extends Controller
             ->pluck('stellar_token_id')
             ->flip();
 
+        $names = [];
         foreach ($stellarTokens as $stellarToken) {
             if ($verifiedStellarTokenIds->has($stellarToken->id)) {
                 $verified[$stellarToken->issuer_public_key] = true;
+                if (!empty($stellarToken->created_token_name)) {
+                    $names[$stellarToken->issuer_public_key] = $stellarToken->created_token_name;
+                }
             }
         }
 
@@ -1021,10 +1025,13 @@ class TokenController extends Controller
         VerifiedProject::whereIn('identifier', $issuers)
             ->where('blockchain_id', 1)
             ->orderByDesc('id')
-            ->get(['identifier', 'status'])
-            ->each(function ($project) use (&$latestProjects) {
+            ->get(['identifier', 'name', 'status'])
+            ->each(function ($project) use (&$latestProjects, &$names) {
                 if (! array_key_exists($project->identifier, $latestProjects)) {
                     $latestProjects[$project->identifier] = $project->status;
+                    if (!empty($project->name)) {
+                        $names[$project->identifier] = $project->name;
+                    }
                 }
             });
 
@@ -1034,7 +1041,69 @@ class TokenController extends Controller
             }
         }
 
-        return response()->json(['verified' => $verified]);
+        return response()->json([
+            'verified' => $verified,
+            'names' => $names,
+        ]);
+    }
+
+    public function search(Request $request)
+    {
+        $q = trim($request->input('q', ''));
+        if (empty($q)) {
+            return response()->json(['tokens' => []]);
+        }
+
+        $results = [];
+
+        // 1. Search in VerifiedProject table by name, asset_code, or identifier
+        $verifiedProjects = VerifiedProject::where('status', 1)
+            ->where(function ($query) use ($q) {
+                $query->where('name', 'LIKE', "%{$q}%")
+                    ->orWhere('asset_code', 'LIKE', "%{$q}%")
+                    ->orWhere('identifier', 'LIKE', "%{$q}%");
+            })
+            ->limit(20)
+            ->get();
+
+        foreach ($verifiedProjects as $project) {
+            $code = strtoupper($project->asset_code);
+            if (empty($code)) continue;
+            $key = $code . '_' . $project->identifier;
+            if (!isset($results[$key])) {
+                $results[$key] = [
+                    'asset_code' => $code,
+                    'asset_issuer' => $project->identifier,
+                    'name' => $project->name,
+                    'is_verified' => true,
+                ];
+            }
+        }
+
+        // 2. Search in StellarToken table by name or asset_code
+        $stellarTokens = StellarToken::where(function ($query) use ($q) {
+                $query->where('name', 'LIKE', "%{$q}%")
+                    ->orWhere('asset_code', 'LIKE', "%{$q}%")
+                    ->orWhere('issuer_public_key', 'LIKE', "%{$q}%");
+            })
+            ->limit(20)
+            ->get();
+
+        foreach ($stellarTokens as $st) {
+            $code = strtoupper($st->asset_code);
+            if (empty($code)) continue;
+            $key = $code . '_' . $st->issuer_public_key;
+            if (!isset($results[$key])) {
+                $results[$key] = [
+                    'asset_code' => $code,
+                    'asset_issuer' => $st->issuer_public_key,
+                    'name' => $st->name,
+                    'is_verified' => true,
+                ];
+            }
+        }
+
+        return response()->json(['tokens' => array_values($results)]);
     }
 
     public function show(Request $request, StellarTokenService $service)
