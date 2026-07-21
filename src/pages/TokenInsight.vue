@@ -256,7 +256,7 @@
             </div>
 
             <!-- COMPACT SECONDARY STRIP -->
-            <div class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-3 text-xs font-mono select-none">
+            <div class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] grid grid-cols-[1fr_auto] sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-x-4 gap-y-3 text-xs font-mono select-none">
               <!-- 1. Total Supply -->
               <div class="flex items-center gap-1.5">
                 <span class="text-slate-400 font-medium">Total Supply:</span>
@@ -267,15 +267,13 @@
               </div>
               <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
 
-              <!-- 2. Pools -->
-              <div class="flex items-center gap-1.5">
-                <span class="text-slate-400 font-medium">Pools:</span>
-                <span class="text-white font-bold flex items-center gap-1">
-                  <template v-if="liquidityLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                  <template v-else>{{ token.liquidity_overview?.pools_count || token.num_liquidity_pools || 0 }}</template>
-                  <span v-if="!liquidityLoading && !historicalStatsLoading && historicalStats?.pools_change" class="text-[10px] font-mono font-semibold" :class="historicalStats.pools_change >= 0 ? 'text-emerald-400' : 'text-rose-400'">
-                    ({{ historicalStats.pools_change >= 0 ? '+' : '' }}{{ historicalStats.pools_change }})
-                  </span>
+              <!-- 2. Created -->
+              <div class="flex items-center gap-1.5 justify-end sm:justify-start w-full sm:w-auto">
+                <span class="text-slate-400 font-medium">Created:</span>
+                <span class="text-white font-bold">
+                  <template v-if="token.mint_date_human && token.mint_date_human !== '-'">{{ token.mint_date_human }}</template>
+                  <template v-else-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                  <template v-else>May 2019</template>
                 </span>
               </div>
               <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
@@ -293,13 +291,15 @@
               </div>
               <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
 
-              <!-- 4. Created -->
-              <div class="flex items-center gap-1.5">
-                <span class="text-slate-400 font-medium">Created:</span>
-                <span class="text-white font-bold">
-                  <template v-if="token.mint_date_human && token.mint_date_human !== '-'">{{ token.mint_date_human }}</template>
-                  <template v-else-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                  <template v-else>May 2019</template>
+              <!-- 4. Pools -->
+              <div class="flex items-center gap-1.5 justify-end sm:justify-start w-full sm:w-auto">
+                <span class="text-slate-400 font-medium">Pools:</span>
+                <span class="text-white font-bold flex items-center gap-1">
+                  <template v-if="liquidityLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                  <template v-else>{{ token.liquidity_overview?.pools_count || token.num_liquidity_pools || 0 }}</template>
+                  <span v-if="!liquidityLoading && !historicalStatsLoading && historicalStats?.pools_change" class="text-[10px] font-mono font-semibold" :class="historicalStats.pools_change >= 0 ? 'text-emerald-400' : 'text-rose-400'">
+                    ({{ historicalStats.pools_change >= 0 ? '+' : '' }}{{ historicalStats.pools_change }})
+                  </span>
                 </span>
               </div>
             </div>
