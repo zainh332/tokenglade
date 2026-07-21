@@ -71,6 +71,7 @@ Route::prefix('token')->group(function () {
     Route::get('liquidity', 'TokenController@liquidity')->name('token.liquidity');
     Route::post('vote', 'TokenController@stellarTokenVote')->name('token.vote');
     Route::get('chart', 'TokenController@getChartData')->name('token.chart');
+    Route::get('historical-stats', 'TokenController@getHistoricalStats')->name('token.historicalStats');
     Route::get(
         'verification-payment-assets',
         'TokenController@verificationPaymentAssets'

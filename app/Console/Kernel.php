@@ -9,6 +9,7 @@ class Kernel extends ConsoleKernel
 {
     protected $commands = [
         Commands\DistributeStakingRewards::class,
+        Commands\TakeTokenSnapshots::class,
     ];
 
     /**
@@ -17,6 +18,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('staking:reward')->hourly();
+        $schedule->command('tokens:snapshot')->hourly();
 
         // LP rewards (controlled execution)
         $schedule->command('lp:distribute-rewards')

@@ -1893,4 +1893,81 @@ class TokenController extends Controller
 
         return $formatted;
     }
+
+    public function getHistoricalStats(Request $request)
+    {
+        $code = strtoupper($request->query('code', ''));
+        $issuer = $request->query('issuer', '');
+        $timeframe = strtolower($request->query('timeframe', '24h')); // '24h' or '7d'
+
+        if (empty($code) || empty($issuer)) {
+            return response()->json(['status' => 'error', 'message' => 'Asset code and issuer are required.'], 400);
+        }
+
+        $hours = ($timeframe === '7d') ? (24 * 7) : 24;
+
+        $stats = Cache::remember("token_stats_{$timeframe}_{$code}_{$issuer}", 300, function () use ($code, $issuer, $hours, $timeframe) {
+            $latest = \App\Models\TokenStatSnapshot::where('asset_code', $code)
+                ->where('asset_issuer', $issuer)
+                ->latest()
+                ->first();
+
+            $past = \App\Models\TokenStatSnapshot::where('asset_code', $code)
+                ->where('asset_issuer', $issuer)
+                ->where('created_at', '<=', now()->subHours($hours))
+                ->latest()
+                ->first();
+
+            if (!$past) {
+                $past = \App\Models\TokenStatSnapshot::where('asset_code', $code)
+                    ->where('asset_issuer', $issuer)
+                    ->where('id', '!=', $latest->id ?? 0)
+                    ->oldest()
+                    ->first();
+            }
+
+            if (!$latest || !$past) {
+                return [
+                    'timeframe' => $timeframe,
+                    'holders_change' => 0,
+                    'trustlines_change' => 0,
+                    'pools_change' => 0,
+                    'liquidity_change_pct' => 0,
+                    'price_change_pct' => 0,
+                    'market_cap_change_pct' => 0,
+                    'circulating_supply_change_pct' => 0,
+                ];
+            }
+
+            return [
+                'timeframe' => $timeframe,
+                'current_holders' => $latest->holders,
+                'past_holders' => $past->holders,
+                'holders_change' => $latest->holders - $past->holders,
+                'current_trustlines' => $latest->trustlines,
+                'past_trustlines' => $past->trustlines,
+                'trustlines_change' => $latest->trustlines - $past->trustlines,
+                'current_pools' => $latest->pools_count,
+                'past_pools' => $past->pools_count,
+                'pools_change' => $latest->pools_count - $past->pools_count,
+                'liquidity_change_pct' => $past->liquidity_usd > 0
+                    ? round((($latest->liquidity_usd - $past->liquidity_usd) / $past->liquidity_usd) * 100, 2)
+                    : 0,
+                'price_change_pct' => $past->price_usd > 0
+                    ? round((($latest->price_usd - $past->price_usd) / $past->price_usd) * 100, 2)
+                    : 0,
+                'market_cap_change_pct' => $past->market_cap_usd > 0
+                    ? round((($latest->market_cap_usd - $past->market_cap_usd) / $past->market_cap_usd) * 100, 2)
+                    : 0,
+                'circulating_supply_change_pct' => $past->circulating_supply > 0
+                    ? round((($latest->circulating_supply - $past->circulating_supply) / $past->circulating_supply) * 100, 2)
+                    : 0,
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $stats
+        ]);
+    }
 }
