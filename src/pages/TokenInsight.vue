@@ -302,8 +302,10 @@
               <a :href="scopulyTradeUrl" target="_blank" rel="noopener noreferrer" class="btn brand select-none inline-flex items-center gap-1.5">
                 <ArrowRightLeft class="w-4 h-4" /> Trade Asset
               </a>
-              <button class="btn dark select-none inline-flex items-center gap-1.5">
-                <Lock class="w-4 h-4 text-cyan-400" /> Establish Trustline
+              <button @click="handleEstablishTrustline" :disabled="establishingTrustline" class="btn dark select-none inline-flex items-center gap-1.5 hover:border-cyan-500/50 transition">
+                <Lock class="w-4 h-4 text-cyan-400" />
+                <span v-if="establishingTrustline" class="animate-pulse">Establishing...</span>
+                <span v-else>Establish Trustline</span>
               </button>
               <a v-if="token.website" :href="token.website" target="_blank" title="Website" aria-label="Website" class="btn icon-btn select-none hover:text-white transition">
                 <Globe class="w-4 h-4 text-slate-300" />
@@ -825,7 +827,7 @@ import { useRoute } from "vue-router"
 import axios from "axios"
 import { createChart, CrosshairMode, CandlestickSeries, LineSeries, AreaSeries, HistogramSeries } from "lightweight-charts"
 import verified from "@/assets/verify.png";
-import { getCookie, signXdrWithWallet } from "../utils/utils.js";
+import { getCookie, signXdrWithWallet, updateLoader } from "../utils/utils.js";
 import Swal from 'sweetalert2';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
 import VerificationModal from '@/components/VerificationModal.vue'
@@ -863,6 +865,87 @@ const activeTab = ref('overview')
 const showAllTrades = ref(false)
 const holdersLoading = ref(true)
 const liquidityLoading = ref(true)
+const establishingTrustline = ref(false)
+
+const handleEstablishTrustline = async () => {
+  const pk = getCookie('public_key') || localStorage.getItem('public_key') || localStorage.getItem('wallet_key') || ''
+  
+  if (!pk) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Wallet Connection Required',
+      text: 'Please connect your Stellar wallet to establish a trustline for ' + (token.asset_code || 'this token') + '.',
+      confirmButtonText: 'Connect Wallet',
+      showCancelButton: true,
+      confirmButtonColor: '#06b6d4'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        ConnectWalletModals.value = true
+      }
+    })
+    return
+  }
+
+  const code = token.asset_code || route.params.code
+  const issuer = token.issuer || route.params.issuer
+
+  if (!code || !issuer) {
+    Swal.fire('Error', 'Invalid token or issuer information.', 'error')
+    return
+  }
+
+  establishingTrustline.value = true
+  try {
+    updateLoader('Preparing Trustline', `Creating trustline transaction XDR for ${code}...`)
+
+    const resXdr = await axios.post('/api/token/establish-trustline-xdr', {
+      asset_code: code,
+      asset_issuer: issuer,
+      user_wallet_key: pk
+    })
+
+    if (resXdr.data?.status !== 'success' || !resXdr.data?.unsigned_xdr) {
+      Swal.close()
+      Swal.fire('Error', resXdr.data?.message || 'Failed to generate trustline transaction.', 'error')
+      return
+    }
+
+    const unsignedXdr = resXdr.data.unsigned_xdr
+    const walletType = localStorage.getItem('wallet_type') || 'freighter'
+
+    updateLoader('Sign in Wallet', `Please approve the trustline transaction for ${code} in your wallet...`)
+    const signedXdr = await signXdrWithWallet(walletType, unsignedXdr, false)
+
+    updateLoader('Submitting', `Submitting trustline transaction for ${code} to Stellar...`)
+    const resSubmit = await axios.post('/api/token/submit-trustline-xdr', {
+      signedXdr: signedXdr
+    })
+
+    Swal.close()
+
+    if (resSubmit.data?.status === 'success') {
+      Swal.fire({
+        icon: 'success',
+        title: 'Trustline Established!',
+        text: `Successfully established trustline for ${code}.`,
+        confirmButtonColor: '#06b6d4'
+      })
+      fetchToken()
+    } else {
+      Swal.fire('Submission Failed', resSubmit.data?.message || 'Failed to submit trustline transaction.', 'error')
+    }
+  } catch (err) {
+    console.error('Establish trustline error:', err)
+    Swal.close()
+    Swal.fire({
+      icon: 'error',
+      title: 'Trustline Failed',
+      text: err.response?.data?.message || err.message || 'An error occurred while establishing trustline.'
+    })
+  } finally {
+    establishingTrustline.value = false
+  }
+}
 const copied = ref(false)
 const issuerInput = ref("")
 const route = useRoute()

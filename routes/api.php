@@ -78,6 +78,8 @@ Route::prefix('token')->group(function () {
     )->name('token.verificationPaymentAssets');
     Route::post('verification', 'TokenController@startVerification')->name('token.verification');
     Route::post('submit_verification_xdr', 'TokenController@submitVerificationXdr')->name('token.submitVerificationXdr');
+    Route::post('establish-trustline-xdr', 'TokenController@createTrustlineXdr')->name('token.createTrustlineXdr');
+    Route::post('submit-trustline-xdr', 'TokenController@submitTrustlineXdr')->name('token.submitTrustlineXdr');
 });
 
 

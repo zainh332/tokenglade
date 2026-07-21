@@ -1970,4 +1970,72 @@ class TokenController extends Controller
             'data' => $stats
         ]);
     }
+
+    public function createTrustlineXdr(Request $request)
+    {
+        $code = strtoupper($request->input('asset_code', ''));
+        $issuer = $request->input('asset_issuer', '');
+        $userWalletKey = $request->input('user_wallet_key', '');
+
+        if (empty($code) || empty($issuer) || empty($userWalletKey)) {
+            return response()->json(['status' => 'error', 'message' => 'Asset code, issuer, and user wallet key are required.'], 400);
+        }
+
+        try {
+            $userAccount = $this->sdk->requestAccount($userWalletKey);
+
+            $asset = (strlen($code) <= 4)
+                ? new AssetTypeCreditAlphaNum4($code, $issuer)
+                : new AssetTypeCreditAlphanum12($code, $issuer);
+
+            $trustlineOperation = (new ChangeTrustOperationBuilder($asset))->build();
+
+            $trustlineTransaction = (new TransactionBuilder($userAccount, $this->network))
+                ->addMemo(new Memo(Memo::MEMO_TYPE_TEXT, 'Establish Trustline'))
+                ->addOperation($trustlineOperation)
+                ->build();
+
+            return response()->json([
+                'status' => 'success',
+                'unsigned_xdr' => $trustlineTransaction->toEnvelopeXdrBase64(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to build trustline transaction: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function submitTrustlineXdr(Request $request)
+    {
+        $signedXdr = $request->input('signedXdr', '');
+
+        if (empty($signedXdr)) {
+            return response()->json(['status' => 'error', 'message' => 'Signed XDR is required.'], 400);
+        }
+
+        try {
+            $transaction = Transaction::fromEnvelopeBase64($signedXdr);
+            $response = $this->sdk->submitTransaction($transaction);
+
+            if ($response->isSuccessful()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Trustline established successfully!',
+                    'hash' => $response->getHash(),
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Transaction submission failed on Stellar network.',
+                ], 400);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Submission error: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }
