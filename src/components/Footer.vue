@@ -3,7 +3,7 @@
     <div class="max-w-[1440px] px-4 mx-auto sm:px-6 lg:px-8 relative z-10">
       
       <!-- Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-slate-900">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-slate-900">
         <!-- Logo & Tagline -->
         <div class="space-y-4 md:col-span-1 text-center md:text-left">
           <div class="flex items-center justify-center md:justify-start gap-2.5">
@@ -16,7 +16,9 @@
         </div>
 
         <!-- Links -->
-        <div class="grid grid-cols-2 md:col-span-2 gap-6 text-center md:text-left">
+        <div class="grid grid-cols-3 md:col-span-3 gap-6 text-center md:text-left">
+          <!-- Spacer column to preserve spacing after Ecosystem removal -->
+          <div></div>
           
           <!-- Legal -->
           <div>
