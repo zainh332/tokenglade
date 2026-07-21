@@ -365,12 +365,23 @@
               </div>
 
               <!-- Health scorecard -->
-              <div class="card">
+              <div class="card" style="overflow: visible; position: relative; z-index: 30;">
                 <div class="card-hd"><h3>Token Health Metrics</h3><span class="tag">Composite {{ token.rating?.average?.toFixed(1) || '7.5' }} / 10</span></div>
-                <div class="health">
-                  <div v-for="(val, metric) in ratingBars" :key="metric" class="hm" :class="{ weak: val < 6 }">
-                    <div class="top"><span class="dim capitalize">{{ metric }}</span><b>{{ val }}/10</b></div>
-                    <div class="track"><i :style="{ width: (val * 10) + '%' }"></i></div>
+                <div class="health" style="overflow: visible;">
+                  <div v-for="item in ratingBars" :key="item.key" class="hm" :class="{ weak: item.val < 6 }">
+                    <div class="top">
+                      <span class="dim capitalize flex items-center gap-1.5">
+                        {{ item.label }}
+                        <span class="group/tooltip relative inline-flex items-center cursor-pointer">
+                          <Info class="w-3.5 h-3.5 text-slate-500 group-hover/tooltip:text-cyan-400 transition-colors" />
+                          <span class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/tooltip:block w-max max-w-[200px] px-2.5 py-1.5 bg-[#0e131c] border border-[#28313f] rounded-lg text-[10.5px] font-mono text-slate-200 shadow-2xl z-[999] text-center leading-snug whitespace-normal">
+                            {{ item.sub }}
+                          </span>
+                        </span>
+                      </span>
+                      <b>{{ item.val }}/10</b>
+                    </div>
+                    <div class="track"><i :style="{ width: (item.val * 10) + '%' }"></i></div>
                   </div>
                 </div>
               </div>
@@ -862,7 +873,8 @@ import {
   Activity,
   ArrowUpRight,
   ArrowDownRight,
-  Lock
+  Lock,
+  Info
 } from "lucide-vue-next";
 
 const loading = ref(true)
@@ -1176,24 +1188,22 @@ const healthLabel = computed(() => {
 })
 
 const ratingBars = computed(() => {
-  if (!token.rating) {
-    return {
-      Age: 8.5,
-      Activity: 7.2,
-      Trustlines: 6.8,
-      Liquidity: 7.5,
-      Volume: 6.9,
-      Interop: 8.0,
-    }
+  const r = token.rating || {
+    age: 8.5,
+    activity: 7.2,
+    trustlines: 6.8,
+    liquidity: 7.5,
+    volume7d: 6.9,
+    interop: 8.0,
   }
-  return {
-    Age: token.rating.age || 0,
-    Activity: token.rating.activity || 0,
-    Trustlines: token.rating.trustlines || 0,
-    Liquidity: token.rating.liquidity || 0,
-    Volume: token.rating.volume7d || 0,
-    Interop: token.rating.interop || 0,
-  }
+  return [
+    { key: 'Age', label: 'Age', val: r.age || 0, sub: 'Asset age & creation longevity on Stellar network' },
+    { key: 'Activity', label: 'Activity', val: r.activity || 0, sub: 'On-chain transaction & transfer frequency rate' },
+    { key: 'Trustlines', label: 'Trustlines', val: r.trustlines || 0, sub: 'Number of active wallet trustlines authorized' },
+    { key: 'Liquidity', label: 'Liquidity', val: r.liquidity || 0, sub: 'Total depth & capital backing in DEX liquidity pools' },
+    { key: 'Volume', label: 'Volume', val: r.volume7d || 0, sub: '7-day decentralized exchange trading volume' },
+    { key: 'Interop', label: 'Interop', val: r.interop || 0, sub: 'TOML metadata profile & home domain verification' },
+  ]
 })
 
 const getHolderPercentage = (balance) => {
