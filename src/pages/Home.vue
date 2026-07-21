@@ -2023,10 +2023,4 @@ onUnmounted(() => {
     font-size: 11px !important;
   }
 }
-
-@media (max-width: 480px) {
-  .eco-stats {
-    grid-template-columns: 1fr !important;
-  }
-}
 </style>
