@@ -2677,5 +2677,12 @@ table.trades tr:hover td {
   .st .v {
     font-size: 14px !important;
   }
+  table.trades {
+    min-width: 500px;
+  }
+  table.trades th, table.trades td {
+    padding: 8px 10px !important;
+    font-size: 11.5px !important;
+  }
 }
 </style>

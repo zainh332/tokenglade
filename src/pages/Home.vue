@@ -409,7 +409,7 @@
       <!-- SECTION 5: ECOSYSTEM NETWORK STATISTICS -->
       <div class="bg-[#0b0f19]/60 border border-slate-900 rounded-3xl p-6 shadow-2xl space-y-6">
         <div class="flex items-center justify-between pb-3 border-b border-slate-900">
-          <h3 class="text-xs font-black text-white uppercase tracking-wider">Asset Statistics</h3>
+          <h3 class="text-xs font-black text-white uppercase tracking-wider">Stellar Statistics</h3>
           <span
             class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase font-mono bg-slate-950/60 border border-violet-500/30 shadow-[0_0_12px_rgba(139,92,246,0.15)]">
             <span
@@ -1135,7 +1135,7 @@ async function fetchAssetStats() {
       dexVolume24h.value = `$${Math.round(baseVolStr).toLocaleString()} USD`;
     }
   } catch (error) {
-    console.error("Error fetching XLM asset statistics:", error);
+    console.error("Error fetching XLM Stellar Statistics:", error);
   }
 }
 
@@ -1370,7 +1370,7 @@ onMounted(() => {
     const newTvl = baseTvl + (Math.random() * 0.2 - 0.1);
     ecoTvl.value = `$${newTvl.toFixed(1)}M`;
 
-    // 5. Fluctuate asset statistics dynamically
+    // 5. Fluctuate Stellar Statistics dynamically
     const baseDexVol = parseFloat(dexVolume24h.value.replace(/[^0-9.]/g, '')) || 18221776;
     const newDexVol = baseDexVol + Math.round(Math.random() * 12000 - 6000);
     dexVolume24h.value = `$${newDexVol.toLocaleString()} USD`;
