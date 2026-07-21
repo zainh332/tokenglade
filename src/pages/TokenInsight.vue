@@ -331,7 +331,7 @@
           </nav>
 
           <!-- MAIN GRID -->
-          <div class="grid">
+          <div class="main-grid">
             
             <!-- LEFT COLUMN: OVERVIEW -->
             <div style="display:flex;flex-direction:column;gap:14px" v-if="activeTab === 'overview'">
@@ -2266,7 +2266,7 @@ watch(chartContainer, (el) => {
   color: var(--ink);
 }
 
-.grid {
+.main-grid {
   display: grid;
   grid-template-columns: 1fr 360px;
   gap: 14px;
@@ -2614,7 +2614,7 @@ table.trades tr:hover td {
 }
 
 @media (max-width: 1040px) {
-  .grid {
+  .main-grid {
     grid-template-columns: 1fr;
   }
   .stats {
