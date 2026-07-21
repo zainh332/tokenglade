@@ -256,7 +256,8 @@
             </div>
 
             <!-- COMPACT SECONDARY STRIP -->
-            <div class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] flex flex-wrap items-center justify-between gap-3 text-xs font-mono select-none">
+            <div class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-3 text-xs font-mono select-none">
+              <!-- 1. Total Supply -->
               <div class="flex items-center gap-1.5">
                 <span class="text-slate-400 font-medium">Total Supply:</span>
                 <span class="text-white font-bold">
@@ -265,17 +266,8 @@
                 </span>
               </div>
               <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
-              <div class="flex items-center gap-1.5">
-                <span class="text-slate-400 font-medium">Circulating Supply:</span>
-                <span class="text-white font-bold flex items-center gap-1">
-                  <template v-if="token.total_supply">{{ formatCompactNumber(token.circulating_supply || (token.total_supply * 0.425)) }} {{ token.asset_code }}</template>
-                  <template v-else><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                  <span v-if="!historicalStatsLoading && historicalStats?.circulating_supply_change_pct" class="text-[10px] font-mono font-semibold" :class="historicalStats.circulating_supply_change_pct >= 0 ? 'text-emerald-400' : 'text-rose-400'">
-                    ({{ historicalStats.circulating_supply_change_pct >= 0 ? '+' : '' }}{{ historicalStats.circulating_supply_change_pct }}%)
-                  </span>
-                </span>
-              </div>
-              <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
+
+              <!-- 2. Pools -->
               <div class="flex items-center gap-1.5">
                 <span class="text-slate-400 font-medium">Pools:</span>
                 <span class="text-white font-bold flex items-center gap-1">
@@ -287,6 +279,21 @@
                 </span>
               </div>
               <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
+
+              <!-- 3. Circulating Supply -->
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-400 font-medium">Circulating Supply:</span>
+                <span class="text-white font-bold flex items-center gap-1">
+                  <template v-if="token.total_supply">{{ formatCompactNumber(token.circulating_supply || (token.total_supply * 0.425)) }} {{ token.asset_code }}</template>
+                  <template v-else><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                  <span v-if="!historicalStatsLoading && historicalStats?.circulating_supply_change_pct" class="text-[10px] font-mono font-semibold" :class="historicalStats.circulating_supply_change_pct >= 0 ? 'text-emerald-400' : 'text-rose-400'">
+                    ({{ historicalStats.circulating_supply_change_pct >= 0 ? '+' : '' }}{{ historicalStats.circulating_supply_change_pct }}%)
+                  </span>
+                </span>
+              </div>
+              <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
+
+              <!-- 4. Created -->
               <div class="flex items-center gap-1.5">
                 <span class="text-slate-400 font-medium">Created:</span>
                 <span class="text-white font-bold">
@@ -299,27 +306,31 @@
 
             <!-- Actions -->
             <div class="acts">
-              <a :href="scopulyTradeUrl" target="_blank" rel="noopener noreferrer" class="btn brand select-none inline-flex items-center gap-1.5">
-                <ArrowRightLeft class="w-4 h-4" /> Trade Asset
-              </a>
-              <button @click="handleEstablishTrustline" :disabled="establishingTrustline" class="btn dark select-none inline-flex items-center gap-1.5 hover:border-cyan-500/50 transition">
-                <Lock class="w-4 h-4 text-cyan-400" />
-                <span v-if="establishingTrustline" class="animate-pulse">Establishing...</span>
-                <span v-else>Establish Trustline</span>
-              </button>
-              <a v-if="token.website" :href="token.website" target="_blank" title="Website" aria-label="Website" class="btn icon-btn select-none hover:text-white transition">
-                <Globe class="w-4 h-4 text-slate-300" />
-              </a>
-              <a v-if="token.twitter" :href="token.twitter" target="_blank" title="X (Twitter)" aria-label="X (Twitter)" class="btn icon-btn select-none hover:text-white transition">
-                <svg class="w-3.5 h-3.5 fill-current text-slate-300" viewBox="0 0 24 24">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                </svg>
-              </a>
-              <a v-if="token.telegram" :href="token.telegram" target="_blank" title="Telegram" aria-label="Telegram" class="btn icon-btn select-none hover:text-white transition">
-                <svg class="w-4 h-4 fill-current text-slate-300" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.67-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.37-.49 1.02-.75 3.99-1.73 6.66-2.87 8.01-3.43 3.81-1.58 4.6-1.86 5.12-1.87.11 0 .37.03.54.17.14.12.18.28.2.45-.02.07-.02.16-.04.25z"/>
-                </svg>
-              </a>
+              <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 w-full sm:w-auto">
+                <a :href="scopulyTradeUrl" target="_blank" rel="noopener noreferrer" class="btn brand select-none inline-flex items-center gap-1.5">
+                  <ArrowRightLeft class="w-4 h-4" /> Trade Asset
+                </a>
+                <button @click="handleEstablishTrustline" :disabled="establishingTrustline" class="btn dark select-none inline-flex items-center gap-1.5 hover:border-cyan-500/50 transition">
+                  <Lock class="w-4 h-4 text-cyan-400" />
+                  <span v-if="establishingTrustline" class="animate-pulse">Establishing...</span>
+                  <span v-else>Establish Trustline</span>
+                </button>
+              </div>
+              <div class="flex items-center gap-2.5 w-full sm:w-auto mt-2 sm:mt-0 justify-center sm:justify-start">
+                <a v-if="token.website" :href="token.website" target="_blank" title="Website" aria-label="Website" class="btn icon-btn select-none hover:text-white transition">
+                  <Globe class="w-4 h-4 text-slate-300" />
+                </a>
+                <a v-if="token.twitter" :href="token.twitter" target="_blank" title="X (Twitter)" aria-label="X (Twitter)" class="btn icon-btn select-none hover:text-white transition">
+                  <svg class="w-3.5 h-3.5 fill-current text-slate-300" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                </a>
+                <a v-if="token.telegram" :href="token.telegram" target="_blank" title="Telegram" aria-label="Telegram" class="btn icon-btn select-none hover:text-white transition">
+                  <svg class="w-4 h-4 fill-current text-slate-300" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.67-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.37-.49 1.02-.75 3.99-1.73 6.66-2.87 8.01-3.43 3.81-1.58 4.6-1.86 5.12-1.87.11 0 .37.03.54.17.14.12.18.28.2.45-.02.07-.02.16-.04.25z"/>
+                  </svg>
+                </a>
+              </div>
             </div>
           </section>
 
@@ -338,7 +349,7 @@
               <!-- Chart -->
               <div class="card">
                 <div class="card-hd">
-                  <h3>{{ token.asset_code }}/XLM <span class="tag" style="margin-left:8px">{{ selectedChartType }} · {{ selectedTimeframe }}</span></h3>
+                  <h3>{{ token.asset_code }}/XLM <span class="tag hidden sm:inline-block" style="margin-left:8px">{{ selectedChartType }} · {{ selectedTimeframe }}</span></h3>
                   <div class="chart-tools select-none">
                     <div class="seg">
                       <span v-for="type in ['candlestick', 'line', 'area']" :key="type" :class="{ on: selectedChartType === type }" @click="selectedChartType = type" class="capitalize">{{ type }}</span>
@@ -2652,20 +2663,19 @@ table.trades tr:hover td {
   .trust {
     margin-left: 0 !important;
     width: 100% !important;
+    display: flex !important;
+    flex-direction: row !important;
     justify-content: space-between !important;
     padding: 10px 12px !important;
+  }
+  .trust .lbl {
+    text-align: left !important;
   }
   .st {
     padding: 10px 12px !important;
   }
   .st .v {
     font-size: 14px !important;
-  }
-}
-
-@media (max-width: 420px) {
-  .stats {
-    grid-template-columns: 1fr !important;
   }
 }
 </style>
