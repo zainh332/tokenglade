@@ -33,7 +33,7 @@
           <div>
             <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-3">Support</h4>
             <div class="flex flex-col gap-2 text-xs text-slate-500">
-              <button @click="contactModalOpen = true" class="hover:text-white transition-colors text-left w-full focus:outline-none">
+              <button @click="contactModalOpen = true" class="hover:text-white transition-colors text-center md:text-left w-full focus:outline-none">
                 Contact Us
               </button>
               <a href="/whitepaper.pdf" target="_blank" class="hover:text-white transition-colors">Whitepaper</a>
