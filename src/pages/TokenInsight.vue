@@ -1675,6 +1675,8 @@ async function initChart() {
         borderColor: '#1D2531',
         timeVisible: true,
         secondsVisible: false,
+        fixLeftEdge: true,
+        fixRightEdge: true,
       },
     });
 
