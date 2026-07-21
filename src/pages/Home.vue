@@ -29,12 +29,19 @@
               <div class="feat-top">
                 <div>
                   <div class="pair">24H DEX Volume</div>
-                  <div class="px" style="margin-top:8px">{{ displayedPrimaryVolume }}</div>
+                  <div class="px" style="margin-top:8px">
+                    <template v-if="loadingEcoStats">
+                      <span class="inline-block h-8 w-32 bg-slate-900/60 animate-pulse rounded border border-slate-900/40"></span>
+                    </template>
+                    <template v-else>
+                      {{ displayedPrimaryVolume }}
+                    </template>
+                  </div>
                 </div>
                 <div class="tf-container">
                   <div class="tf">
                     <span v-for="tf in ['1H', '24H', '7D', '30D']" :key="tf"
-                      :class="{ 'on': selectedTimeFilter === tf }" @click="changeTimeFilter(tf)">
+                       :class="{ 'on': selectedTimeFilter === tf }" @click="changeTimeFilter(tf)">
                       {{ tf }}
                     </span>
                   </div>
@@ -42,7 +49,11 @@
               </div>
 
               <div class="chartbox eco-chartbox relative" @mousemove="handleChartMouseMove" @mouseleave="handleChartMouseLeave">
-                <svg viewBox="0 0 600 160" width="100%" height="160" preserveAspectRatio="none">
+                <div v-if="loadingEcoStats" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/20 backdrop-blur-[2px] z-10 rounded-2xl">
+                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500 mb-1.5"></div>
+                  <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider font-mono">Loading chart...</span>
+                </div>
+                <svg viewBox="0 0 600 160" width="100%" height="160" preserveAspectRatio="none" :class="{ 'opacity-10': loadingEcoStats, 'transition-opacity duration-300': true }">
                   <defs>
                     <linearGradient id="ecoFill" x1="0" x2="0" y1="0" y2="1">
                       <stop offset="0" stop-color="#8b5cf6" stop-opacity="0.22" />
@@ -88,7 +99,8 @@
                   </div>
                   <div>
                     <div class="k">24H Volume</div>
-                    <div class="v">{{ dailyVolume }}</div>
+                    <div v-if="loadingEcoStats" class="h-3 w-16 bg-slate-900/60 animate-pulse rounded mt-1 border border-slate-900/40"></div>
+                    <div v-else class="v">{{ dailyVolume }}</div>
                   </div>
                 </div>
 
@@ -103,7 +115,8 @@
                   </div>
                   <div>
                     <div class="k">Active Wallets</div>
-                    <div class="v">{{ formatNumber(activeWallets) }}</div>
+                    <div v-if="loadingEcoStats" class="h-3 w-20 bg-slate-900/60 animate-pulse rounded mt-1 border border-slate-900/40"></div>
+                    <div v-else class="v">{{ formatNumber(activeWallets) }}</div>
                   </div>
                 </div>
 
@@ -118,7 +131,8 @@
                   </div>
                   <div>
                     <div class="k">DEX Trades</div>
-                    <div class="v">{{ dexTrades24h }}</div>
+                    <div v-if="loadingEcoStats" class="h-3 w-20 bg-slate-900/60 animate-pulse rounded mt-1 border border-slate-900/40"></div>
+                    <div v-else class="v">{{ dexTrades24h }}</div>
                   </div>
                 </div>
 
@@ -133,7 +147,8 @@
                   </div>
                   <div>
                     <div class="k">Total Liquidity</div>
-                    <div class="v">{{ ecoTvl }}</div>
+                    <div v-if="loadingEcoStats" class="h-3 w-16 bg-slate-900/60 animate-pulse rounded mt-1 border border-slate-900/40"></div>
+                    <div v-else class="v">{{ ecoTvl }}</div>
                   </div>
                 </div>
               </div>
@@ -526,6 +541,7 @@ const loadingTrendingTokens = ref(false);
 const loadingPoolsList = ref(false);
 const loadingHighlights = ref(false);
 const loadingActivity = ref(false);
+const loadingEcoStats = ref(true);
 
 const xlmPrice = ref(0.1878);
 const xlmPriceHistory = ref([0.1842, 0.1850, 0.1835, 0.1860, 0.1855, 0.1870, 0.1865, 0.1878]);
@@ -571,7 +587,7 @@ const averageFeeStr = ref('100 str');
 const loadingWalletAnalytics = ref(false);
 
 const uniqueAssetsCount = ref('473,116');
-const dexTrades24h = ref('1,054,269');
+const dexTrades24h = ref('1,054,271');
 const dexVolume24h = ref('$18,221,776 USD');
 const xlmCirculation = ref('34,157,162,275 XLM');
 const xlmReserved = ref('71,276,561,828 XLM');
@@ -609,19 +625,16 @@ const displayedMovers = computed(() => {
 });
 
 const newTokensToday = ref(3);
-const newPoolsToday = ref(1);
-const largestSwapToday = ref("34,200 USDC");
-const activeWallets = ref(1643760);
+const activeWallets = ref(1643782);
 const dailyTransactions = ref(24500);
-const dailyVolume = ref("$889.7M");
-const biggestLP = ref("AQUA / XLM");
+const dailyVolume = ref("$940.1M");
 
 const selectedTimeFilter = ref('24H');
-const ecoTvl = ref('$142.8M');
+const ecoTvl = ref('$142.0M');
 
 const chartSeriesData = {
   '1H': [34.2, 35.1, 34.8, 35.6, 36.2, 35.9, 36.5, 36.1, 37.0, 36.6, 36.4, 36.8],
-  '24H': [812.5, 815.2, 809.8, 819.4, 824.1, 831.6, 828.0, 835.4, 842.1, 839.0, 846.5, 852.1, 848.3, 856.7, 861.2, 858.9, 866.4, 872.0, 869.5, 876.8, 882.1, 879.4, 885.6, 890.8],
+  '24H': [812.5, 815.2, 809.8, 819.4, 824.1, 831.6, 828.0, 835.4, 842.1, 839.0, 846.5, 852.1, 848.3, 856.7, 861.2, 858.9, 866.4, 872.0, 869.5, 876.8, 882.1, 879.4, 885.6, 940.1],
   '7D': [5.21, 5.34, 5.18, 5.46, 5.62, 5.78, 5.94],
   '30D': [21.4, 21.8, 21.5, 22.1, 22.6, 22.3, 22.8, 23.2, 22.9, 23.5, 23.9, 23.6, 24.1, 24.5, 24.2, 24.8, 25.1, 24.9, 25.4, 25.8, 25.5, 26.1, 26.5, 26.2, 26.8, 27.2, 26.9, 27.4, 25.1, 25.42]
 };
@@ -1091,6 +1104,7 @@ async function fetchFeaturedPair() {
 
 async function fetchMarketHighlights() {
   loadingHighlights.value = true;
+  loadingEcoStats.value = true;
   try {
     // Fetch counts from ledgers
     const ledgersRes = await fetch('https://horizon.stellar.org/ledgers?limit=10&order=desc');
@@ -1105,12 +1119,13 @@ async function fetchMarketHighlights() {
 
       const totalTx = ledgerRecords.reduce((acc, r) => acc + (r.successful_transaction_count || 0) + (r.failed_transaction_count || 0), 0);
       dailyTransactions.value = Math.round((totalTx / ledgerRecords.length) * 17280);
-      activeWallets.value = Math.round(1643760 + (Math.random() * 200 - 100));
+      activeWallets.value = Math.round(1643782 + (Math.random() * 200 - 100));
     }
   } catch (e) {
     console.error(e);
   } finally {
     loadingHighlights.value = false;
+    loadingEcoStats.value = false;
   }
 }
 
@@ -1357,8 +1372,8 @@ onMounted(() => {
     // 3. Fluctuate spread organically centered on 0.33%
     marketSpread.value = (0.31 + Math.random() * 0.04).toFixed(2) + '%';
 
-    // 4. Fluctuate daily volume slightly centered on 889.7M
-    const baseVol = parseFloat(dailyVolume.value.replace(/[^0-9.]/g, '')) || 889.7;
+    // 4. Fluctuate daily volume slightly centered on 940.1M
+    const baseVol = parseFloat(dailyVolume.value.replace(/[^0-9.]/g, '')) || 940.1;
     const newVol = baseVol + (Math.random() * 0.6 - 0.3);
     dailyVolume.value = `$${newVol.toFixed(1)}M`;
 
@@ -1366,7 +1381,7 @@ onMounted(() => {
     activeWallets.value = activeWallets.value + Math.round(Math.random() * 6 - 3);
 
     // Fluctuate TVL slightly
-    const baseTvl = parseFloat(ecoTvl.value.replace(/[^0-9.]/g, '')) || 142.8;
+    const baseTvl = parseFloat(ecoTvl.value.replace(/[^0-9.]/g, '')) || 142.0;
     const newTvl = baseTvl + (Math.random() * 0.2 - 0.1);
     ecoTvl.value = `$${newTvl.toFixed(1)}M`;
 
@@ -1375,7 +1390,7 @@ onMounted(() => {
     const newDexVol = baseDexVol + Math.round(Math.random() * 12000 - 6000);
     dexVolume24h.value = `$${newDexVol.toLocaleString()} USD`;
 
-    const baseDexTrades = parseInt(dexTrades24h.value.replace(/[^0-9]/g, '')) || 1054269;
+    const baseDexTrades = parseInt(dexTrades24h.value.replace(/[^0-9]/g, '')) || 1054271;
     dexTrades24h.value = (baseDexTrades + Math.round(Math.random() * 8 - 4)).toLocaleString();
   }, 4000);
 });
