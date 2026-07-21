@@ -12,8 +12,8 @@
         <meta name="google-site-verification" content="efg2XUb3x3NC7DsUUkEtjtQ2k5ewYAMGt-rkqAjlQDM" />
         <script src="https://unpkg.com/@albedo-link/intent"></script>
     </head>
-    <body class="antialiased overflow-x-hidden" style="background-color:#F6F8FC;">
-       <div id="app" style="height:100vh;">
+    <body class="antialiased overflow-x-hidden bg-[#070A13] min-h-screen">
+       <div id="app" class="min-h-screen">
         <beta-ribbon></beta-ribbon>
        </div>
        <script>
