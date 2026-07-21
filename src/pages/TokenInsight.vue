@@ -362,17 +362,6 @@
                 <div class="relative w-full h-[340px] bg-transparent">
                   <div ref="chartContainer" class="w-full h-full"></div>
                 </div>
-
-                <!-- Depth bar -->
-                <div class="depth font-mono">
-                  <div class="depth-top"><span class="up">Buy {{ buySellVolume.buyPercent }}%</span><span class="down">Sell {{ buySellVolume.sellPercent }}%</span></div>
-                  <div class="depth-bar"><i :style="{ width: `${buySellVolume.buyPercent}%`, background: 'var(--up)' }"></i><i :style="{ width: `${buySellVolume.sellPercent}%`, background: 'var(--down)' }"></i></div>
-                  <div class="depth-sub">
-                    <span>{{ formatNumber(buySellVolume.buyVol) }} {{ token.asset_code }} bought</span>
-                    <span>Based on {{ buySellVolume.totalTrades }} recent trades</span>
-                    <span>{{ formatNumber(buySellVolume.sellVol) }} {{ token.asset_code }} sold</span>
-                  </div>
-                </div>
               </div>
 
               <!-- Health scorecard -->
@@ -392,22 +381,37 @@
                 <div class="expo-stats">
                   <div class="st">
                     <div class="k">Buy / Sell Ratio</div>
-                    <div class="v up font-mono">{{ (buySellVolume.buyVol / Math.max(1, buySellVolume.sellVol)).toFixed(2) }}×</div>
-                    <div class="ratio-bar"><i :style="{ width: `${buySellVolume.buyPercent}%`, background: 'var(--up)' }"></i><i :style="{ width: `${buySellVolume.sellPercent}%`, background: 'var(--down)' }"></i></div>
+                    <div class="v up font-mono">
+                      <template v-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                      <template v-else>{{ buySellRatioText }}</template>
+                    </div>
+                    <div class="sub dim font-mono">recent fills</div>
                   </div>
                   <div class="st">
                     <div class="k">Avg Trade Size</div>
-                    <div class="v font-mono">$450</div>
+                    <div class="v font-mono">
+                      <template v-if="avgTradeSizeUsd !== null">${{ formatPrice2Deci(avgTradeSizeUsd) }}</template>
+                      <template v-else-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                      <template v-else>—</template>
+                    </div>
                     <div class="sub dim font-mono">per fill</div>
                   </div>
                   <div class="st">
                     <div class="k">Trades count</div>
-                    <div class="v font-mono">{{ formatNumber(token.activity?.total_trades) }}</div>
+                    <div class="v font-mono">
+                      <template v-if="token.activity?.total_trades !== undefined">{{ formatNumber(token.activity?.total_trades) }}</template>
+                      <template v-else-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                      <template v-else>0</template>
+                    </div>
                     <div class="sub dim font-mono">executions</div>
                   </div>
                   <div class="st">
                     <div class="k">Payments Vol</div>
-                    <div class="v font-mono">{{ formatNumber(token.activity?.payments_volume) }}</div>
+                    <div class="v font-mono">
+                      <template v-if="token.activity?.payments_volume !== undefined">{{ formatNumber(token.activity?.payments_volume) }}</template>
+                      <template v-else-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                      <template v-else>0</template>
+                    </div>
                     <div class="sub dim font-mono">lifetime</div>
                   </div>
                 </div>
@@ -1088,6 +1092,28 @@ const buySellVolume = computed(() => {
     buyPercent: Math.round((buyVol / total) * 100),
     sellPercent: Math.round((sellVol / total) * 100)
   };
+});
+
+const buySellRatioText = computed(() => {
+  const { buyVol, sellVol, buyPercent } = buySellVolume.value;
+  if (buyVol === 0 && sellVol === 0) return '50% Buy';
+  if (buyPercent >= 50) {
+    return `${buyPercent}% Buy`;
+  } else {
+    return `${100 - buyPercent}% Sell`;
+  }
+});
+
+const avgTradeSizeUsd = computed(() => {
+  const txs = token.transactions || [];
+  if (!txs.length) return null;
+  let totalUsd = 0;
+  const xlmUsd = token.usd_price && token.xlm_price ? (token.usd_price / token.xlm_price) : 0.12;
+  txs.forEach(tx => {
+    const xlmValue = Number(tx.value) || (Number(tx.amount) * Number(tx.price));
+    totalUsd += (xlmValue * xlmUsd);
+  });
+  return totalUsd / txs.length;
 });
 
 const healthLabel = computed(() => {
