@@ -437,9 +437,9 @@
               </div>
 
               <!-- About -->
-              <div class="card about">
+              <div class="card about" style="grid-column: 1 / -1; width: 100%;">
                 <h3>About {{ token.project?.org_name || token.name }}</h3>
-                <p>{{ token.description || "No project documentation available for this asset. Make sure the issuer publishes structured TOML meta profiles." }}</p>
+                <p style="max-width: none; width: 100%;">{{ token.description || "No project documentation available for this asset. Make sure the issuer publishes structured TOML meta profiles." }}</p>
               </div>
             </div>
 
@@ -2583,6 +2583,8 @@ table.trades tr:hover td {
 .about {
   margin-top: 14px;
   padding: 18px 20px;
+  grid-column: 1 / -1;
+  width: 100%;
 }
 .about h3 {
   font-family: var(--disp);
@@ -2594,7 +2596,8 @@ table.trades tr:hover td {
 .about p {
   margin: 0;
   color: var(--dim);
-  max-width: 70ch;
+  width: 100%;
+  max-width: none;
   line-height: 1.6;
 }
 
