@@ -16,9 +16,9 @@
         </div>
 
         <!-- Links -->
-        <div class="grid grid-cols-3 md:col-span-3 gap-6 text-center md:text-left">
-          <!-- Spacer column to preserve spacing after Ecosystem removal -->
-          <div></div>
+        <div class="grid grid-cols-2 md:grid-cols-3 md:col-span-3 gap-6 text-center md:text-left">
+          <!-- Spacer column to preserve spacing after Ecosystem removal on desktop, hidden on mobile -->
+          <div class="hidden md:block"></div>
           
           <!-- Legal -->
           <div>
