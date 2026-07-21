@@ -438,6 +438,7 @@ async function handleDisconnectWallet() {
   try {
     await disconnectWalletSession();
     walletPk.value = '';
+    if (typeof speak === 'function') speak('connected', false);
     emit('wallet-status', { connected: false });
     window.dispatchEvent(new CustomEvent("tokenglade-wallet-changed", {
       detail: { connected: false, publicKey: "" }

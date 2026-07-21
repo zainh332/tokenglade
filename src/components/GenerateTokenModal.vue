@@ -223,7 +223,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits, onMounted, computed } from 'vue'
+import { ref, defineProps, defineEmits, onMounted, onUnmounted, watch, computed } from 'vue'
 import { Dialog, DialogPanel, TransitionChild, TransitionRoot, DialogTitle } from '@headlessui/vue'
 import { Form, Field, ErrorMessage } from 'vee-validate';
 import Logo from '@/assets/token-glade-logo.png'
@@ -234,19 +234,25 @@ import axios from 'axios';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
 
 const isWalletConnected = ref(false);
+const walletKey = ref('');
 const ConnectWalletModals = ref(false);
 const logoPreview = ref('');
-const { open } = defineProps({ open: Boolean, distributorWallet: String, network: { type: String, default: 'public' } })
-
-// const network = computed(() =>
-//   (props.network || 'public').toLowerCase() === 'testnet' ? 'testnet' : 'public'
-// )
-
-// const isTestnet = computed(() => network.value === 'testnet')
+const props = defineProps({ open: Boolean, distributorWallet: String, network: { type: String, default: 'public' } })
 
 const network = ref('public')
-// const isTestnet = computed(() => network.value === 'testnet')
 const isTestnet = 'public'
+
+const syncWalletState = () => {
+  const pk = getCookie('public_key') || localStorage.getItem('public_key') || localStorage.getItem('wallet_key') || '';
+  walletKey.value = pk || '';
+  isWalletConnected.value = !!pk;
+};
+
+watch(() => props.open, (isOpen) => {
+  if (isOpen) {
+    syncWalletState();
+  }
+});
 
 const shortWallet = computed(() =>
   walletKey.value
@@ -474,32 +480,20 @@ const submitForm = async (values) => {
   }
 };
 
-onMounted(() => {
-  const pk = getCookie('public_key') || localStorage.getItem('public_key') || '';
-  walletKey.value = pk || '';
-  isWalletConnected.value = !!pk;
-});
-
 //Helper
 const maxValue = 922337203685; // The maximum allowed value
 const maxValueExceeded = ref(false); // Tracks if the value exceeds the max
 
 // Function to allow only numeric input and enforce the maximum value
 const onlyNumberInput = (event) => {
-  // Replace non-numeric characters
   let input = event.target.value.replace(/\D/g, '');
-
-  // Convert the input into an integer and check if it exceeds the max value
   const value = parseInt(input, 10);
-
   if (value > maxValue) {
     maxValueExceeded.value = true;
-    input = maxValue.toString(); // Set input to the maximum allowed value
+    input = maxValue.toString();
   } else {
     maxValueExceeded.value = false;
   }
-
-  // Update the input field and the reactive form data
   event.target.value = input;
   form.total_supply = input;
 };
@@ -525,7 +519,24 @@ function onLogoChange(e, handleChange) {
   handleChange(file);
 }
 
-const walletKey = ref('');
+const handleWalletChanged = (event) => {
+  if (event?.detail?.connected && event?.detail?.publicKey) {
+    walletKey.value = event.detail.publicKey;
+    isWalletConnected.value = true;
+  } else {
+    syncWalletState();
+  }
+};
+
+onMounted(() => {
+  syncWalletState();
+  window.addEventListener('tokenglade-wallet-changed', handleWalletChanged);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('tokenglade-wallet-changed', handleWalletChanged);
+});
+
 //create listener to listen for connected changes
 hear('connected', (status, payload) => {
   if (status) {
