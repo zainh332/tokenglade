@@ -468,12 +468,6 @@
             projects directly.
           </p>
         </div>
-
-        <button @click="showSearchModal = true"
-          class="flex items-center gap-2.5 px-6 py-3.5 text-xs text-slate-400 hover:text-white border border-slate-800 rounded-2xl bg-slate-950 hover:bg-slate-900 transition focus:outline-none w-full md:w-auto justify-center md:justify-start">
-          <MagnifyingGlassIcon class="w-4 h-4 text-slate-500" />
-          <span>Launch Ecosystem Query Terminal</span>
-        </button>
       </div>
 
     </div>
