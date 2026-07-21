@@ -80,6 +80,7 @@ Route::prefix('token')->group(function () {
     Route::post('submit_verification_xdr', 'TokenController@submitVerificationXdr')->name('token.submitVerificationXdr');
     Route::post('establish-trustline-xdr', 'TokenController@createTrustlineXdr')->name('token.createTrustlineXdr');
     Route::post('submit-trustline-xdr', 'TokenController@submitTrustlineXdr')->name('token.submitTrustlineXdr');
+    Route::get('download-toml', 'TokenController@downloadToml')->name('token.downloadToml');
 });
 
 

@@ -449,7 +449,12 @@
 
               <!-- About -->
               <div class="card about" style="grid-column: 1 / -1; width: 100%;">
-                <h3>About {{ token.project?.org_name || token.name }}</h3>
+                <div class="flex items-center justify-between flex-wrap gap-3 mb-2">
+                  <h3 style="margin: 0;">About {{ token.project?.org_name || token.name }}</h3>
+                  <a v-if="token.asset_code && token.issuer" :href="`/api/token/download-toml?code=${token.asset_code}&issuer=${token.issuer}`" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#182235] hover:bg-[#1f2d47] border border-[rgba(148,163,184,0.16)] rounded-xl text-xs font-mono font-bold text-cyan-400 hover:text-cyan-300 transition">
+                    Download stellar.toml
+                  </a>
+                </div>
                 <p style="max-width: none; width: 100%;">{{ token.description || "No project documentation available for this asset. Make sure the issuer publishes structured TOML meta profiles." }}</p>
               </div>
             </div>

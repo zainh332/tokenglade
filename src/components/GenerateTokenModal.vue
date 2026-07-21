@@ -17,6 +17,7 @@
           <DialogPanel
             class="relative w-full max-w-lg mx-4 sm:mx-0 flex flex-col max-h-[85vh] overflow-hidden rounded-2xl border border-[rgba(148,163,184,0.16)] bg-[#111827] shadow-2xl transform-gpu will-change-[transform,opacity]">
               
+            <template v-if="!showSuccessModal">
               <!-- Gradient top border -->
               <div class="h-1 bg-gradient-to-r from-purple-600 via-fuchsia-500 to-cyan-500"></div>
 
@@ -214,7 +215,127 @@
                   </div>
                 </Form>
               </div>
-            </DialogPanel>
+            </template>
+
+            <!-- SUCCESS VIEW -->
+            <template v-else>
+              <!-- Gradient top border -->
+              <div class="h-1 bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-600"></div>
+
+              <!-- Close button -->
+              <button @click="closeSuccessView"
+                class="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#151D2D] text-slate-400 border border-[rgba(148,163,184,0.16)] hover:text-white hover:bg-[#182235] transition focus:outline-none"
+                aria-label="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <!-- Header -->
+              <header class="px-6 pt-5 pb-4 flex-shrink-0">
+                <div class="min-w-0">
+                  <DialogTitle class="text-base font-bold text-white tracking-tight">
+                    Token Created Successfully!
+                  </DialogTitle>
+                  <p class="mt-0.5 text-xs text-slate-400 font-mono">
+                    {{ successData.assetCode }} is now deployed on Stellar
+                  </p>
+                </div>
+              </header>
+
+              <hr class="border-t border-[rgba(148,163,184,0.16)] flex-shrink-0" />
+
+              <!-- Body -->
+              <div class="px-6 py-5 overflow-y-auto flex-1 custom-scrollbar space-y-4">
+                <!-- Keys Box -->
+                <div class="rounded-xl bg-[#151D2D] p-4 border border-[rgba(148,163,184,0.16)] space-y-3">
+                  <div>
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">Issuer Public Key</label>
+                    <div class="mt-1 flex items-center justify-between gap-2 bg-[#0E131C] px-3 py-2 rounded-lg border border-slate-800">
+                      <span class="text-xs font-mono text-cyan-300 break-all select-all">{{ successData.issuerPublicKey }}</span>
+                      <button type="button" @click="copyText(successData.issuerPublicKey)" class="px-2 py-1 text-[10px] font-mono font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition flex-shrink-0">Copy</button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">Issuer Secret Key</label>
+                    <div class="mt-1 flex items-center justify-between gap-2 bg-[#0E131C] px-3 py-2 rounded-lg border border-slate-800">
+                      <span class="text-xs font-mono text-amber-300 break-all select-all">{{ successData.issuerSecretKey }}</span>
+                      <button type="button" @click="copyText(successData.issuerSecretKey)" class="px-2 py-1 text-[10px] font-mono font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition flex-shrink-0">Copy</button>
+                    </div>
+                  </div>
+
+                  <p class="text-[11px] text-amber-400/90 font-mono flex items-center gap-1.5 pt-1 leading-snug">
+                    ⚠ <span>Save your secret key securely before closing. It cannot be recovered later!</span>
+                  </p>
+                </div>
+
+                <!-- Download TOML Section -->
+                <div class="rounded-xl bg-gradient-to-b from-[#182235] to-[#151D2D] p-4 border border-[rgba(148,163,184,0.16)] space-y-3">
+                  <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                      <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+                        Download Website TOML File
+                      </h4>
+                      <p class="text-[11px] text-slate-400 mt-0.5">
+                        Host <code class="text-cyan-400 bg-slate-900 px-1 py-0.5 rounded font-mono">stellar.toml</code> on your website server.
+                      </p>
+                    </div>
+
+                    <button type="button" @click="downloadStellarToml" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold rounded-xl shadow-lg transition transform active:scale-95">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      Download stellar.toml
+                    </button>
+                  </div>
+
+                  <!-- Server Upload Guide Accordion -->
+                  <div class="mt-3 pt-3 border-t border-[rgba(148,163,184,0.12)]">
+                    <button type="button" @click="showTomlGuide = !showTomlGuide" class="w-full flex items-center justify-between text-xs font-mono font-bold text-cyan-400 hover:text-cyan-300">
+                      <span>How to upload stellar.toml to your server?</span>
+                      <span>{{ showTomlGuide ? '▲' : '▼' }}</span>
+                    </button>
+
+                    <div v-if="showTomlGuide" class="mt-3 space-y-2 text-[11px] text-slate-300 font-mono leading-relaxed bg-[#0E131C] p-3 rounded-xl border border-slate-800">
+                      <div class="flex items-start gap-2">
+                        <span class="flex-shrink-0 font-bold text-cyan-400">1.</span>
+                        <p>Click <b>Download stellar.toml</b> above to get your customized <code class="text-amber-300">stellar.toml</code> file.</p>
+                      </div>
+
+                      <div class="flex items-start gap-2">
+                        <span class="flex-shrink-0 font-bold text-cyan-400">2.</span>
+                        <p>Open your website server file manager or FTP client (cPanel, Nginx, Apache, Laravel, React, etc.).</p>
+                      </div>
+
+                      <div class="flex items-start gap-2">
+                        <span class="flex-shrink-0 font-bold text-cyan-400">3.</span>
+                        <p>Inside your website public root directory (e.g. <code class="text-cyan-300">public_html/</code> or <code class="text-cyan-300">public/</code>), create a folder named <code class="text-emerald-400 font-bold">.well-known</code>.</p>
+                      </div>
+
+                      <div class="flex items-start gap-2">
+                        <span class="flex-shrink-0 font-bold text-cyan-400">4.</span>
+                        <p>Upload <code class="text-amber-300">stellar.toml</code> inside that folder. URL path must be:<br>
+                        <code class="text-cyan-300 bg-slate-900 px-1.5 py-0.5 rounded block mt-1 break-all">https://{{ getDomain(successData.websiteUrl) }}/.well-known/stellar.toml</code></p>
+                      </div>
+
+                      <div class="flex items-start gap-2 pt-1 border-t border-slate-800 text-[10.5px] text-slate-400">
+                        <span class="flex-shrink-0 font-bold text-amber-400">CORS:</span>
+                        <p>Ensure web server sends <code class="text-slate-300">Access-Control-Allow-Origin: *</code> header so LOBSTR, Scopuly, & StellarExpert verify your domain.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Footer -->
+              <footer class="px-6 py-3.5 bg-[#151D2D] border-t border-[rgba(148,163,184,0.16)] flex justify-end">
+                <button type="button" @click="closeSuccessView" class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-500 text-white text-xs font-extrabold uppercase tracking-wider rounded-xl shadow-lg hover:opacity-95 transition">
+                  Done & Close
+                </button>
+              </footer>
+            </template>
+          </DialogPanel>
           </TransitionChild>
         </div>
       </Dialog>
@@ -351,10 +472,83 @@ const schema = Yup.object({
 });
 
 
+const showSuccessModal = ref(false);
+const showTomlGuide = ref(true);
+const successData = ref({
+  assetCode: '',
+  issuerPublicKey: '',
+  issuerSecretKey: '',
+  name: '',
+  desc: '',
+  websiteUrl: '',
+  logo: '',
+  totalSupply: ''
+});
+
+const getDomain = (url) => {
+  if (!url) return 'yourdomain.com';
+  try {
+    const parsed = new URL(url.startsWith('http') ? url : `https://${url}`);
+    return parsed.hostname;
+  } catch (_) {
+    return url.replace(/^https?:\/\//, '').split('/')[0] || 'yourdomain.com';
+  }
+};
+
+const copyText = (text) => {
+  if (!text) return;
+  navigator.clipboard.writeText(text);
+  Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: 'success',
+    title: 'Copied to clipboard!',
+    showConfirmButton: false,
+    timer: 1500
+  });
+};
+
+const downloadStellarToml = () => {
+  const d = successData.value;
+  const domain = getDomain(d.websiteUrl);
+  const tomlContent = `# Stellar.toml configuration file for ${d.name || d.assetCode} (${d.assetCode})
+# Host this file at: https://${domain}/.well-known/stellar.toml
+
+VERSION="2.0.0"
+
+[[CURRENCIES]]
+code="${d.assetCode}"
+issuer="${d.issuerPublicKey}"
+display_decimals=7
+name="${d.name || d.assetCode}"
+desc="${d.desc || ''}"
+image="${d.logo || ''}"
+fixed_number="${d.totalSupply || ''}"
+status="live"
+website="${d.websiteUrl || ''}"
+`;
+
+  const blob = new Blob([tomlContent], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'stellar.toml';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+const closeSuccessView = () => {
+  showSuccessModal.value = false;
+  closeModal();
+};
+
 // Close modal and reset fields
 const closeModal = () => {
   form.value = { ...defaultForm };
   logoPreview.value = '';
+  showSuccessModal.value = false;
   emit('close');
 };
 
@@ -442,36 +636,20 @@ const submitForm = async (values) => {
     }
     updateLoader("Finalizing", "Saving token details…");
     Swal.close();
-    closeModal();
 
-    setTimeout(() => {
-      Swal.fire({
-        icon: 'success',
-        title: 'Token Created!',
-        html: `
-              <p>Your token <b>${submitResponse2.data.assetCode}</b> has been created successfully.</p>
-              <p style="margin-top: 10px;"><b>Issuer Public Key:</b><br>${submitResponse2.data.issuerPublicKey}</p>
-              <p style="margin-top: 10px;"><b>Issuer Secret Key:</b><br>${submitResponse2.data.issuerSecretKey}</p>
-              <p style="color: red; font-weight: bold; margin-top: 20px;">
-                ⚠ Please copy and save these keys before closing this pop up!
-              </p>
-            `,
-        confirmButtonText: 'I’ve saved the keys',
-        allowOutsideClick: false
-      }).then(() => {
-        values.name = "";
-        values.desc = "";
-        values.website_url = "";
-        values.logo = "";
-        values.asset_code = "";
-        values.total_supply = "";
-      });
-    }, 200);
-
-    // Hide loading indicator
-    Swal.close();
+    successData.value = {
+      assetCode: submitResponse2.data.assetCode || values.asset_code,
+      issuerPublicKey: submitResponse2.data.issuerPublicKey || '',
+      issuerSecretKey: submitResponse2.data.issuerSecretKey || '',
+      name: submitResponse2.data.name || values.name || '',
+      desc: submitResponse2.data.desc || values.desc || '',
+      websiteUrl: submitResponse2.data.websiteUrl || values.website_url || '',
+      logo: submitResponse2.data.logo || '',
+      totalSupply: submitResponse2.data.totalSupply || values.total_supply || '',
+    };
+    showSuccessModal.value = true;
   } catch (error) {
-    // Handle any errors that occur during submission
+    Swal.close();
     Swal.fire({
       icon: 'error',
       title: 'Error!',

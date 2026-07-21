@@ -340,10 +340,21 @@ class TokenController extends Controller
 
                     Token::where('stellar_token_id', $token_created->id)->update(['token_verify' => 1]);
 
+                    $hasCustomWebsite = !empty($token_created->website_url);
+
+                    // Determine home_domain to set on Stellar network
+                    $domainToSet = 'tokenglade.com';
+                    if ($hasCustomWebsite) {
+                        $parsedHost = parse_url($token_created->website_url, PHP_URL_HOST);
+                        if (!empty($parsedHost)) {
+                            $domainToSet = preg_replace('/^www\./', '', strtolower($parsedHost));
+                        }
+                    }
+
                     $homeDomainTx = $this->setIssuerHomeDomain(
                         $token_created->issuer_public_key,
                         $token_created->issuer_secret_key,
-                        'tokenglade.com'
+                        $domainToSet
                     );
 
                     if (!$homeDomainTx['ok']) {
@@ -353,35 +364,66 @@ class TokenController extends Controller
                         ]);
                     }
 
-                    $directory = public_path('.well-known');
-                    if (!is_dir($directory)) {
-                        mkdir($directory, 0755, true);
+                    // Save a dedicated standalone stellar.toml file copy in storage/app/public/tomls for backup & instant downloads
+                    try {
+                        $storageDir = storage_path('app/public/tomls');
+                        if (!is_dir($storageDir)) {
+                            mkdir($storageDir, 0755, true);
+                        }
+                        $websiteStr = !empty($token_created->website_url) ? $token_created->website_url : '';
+                        $domainStr = !empty($websiteStr) ? (parse_url($websiteStr, PHP_URL_HOST) ?? 'yourdomain.com') : 'yourdomain.com';
+                        $domainStr = preg_replace('/^www\./', '', strtolower($domainStr));
+
+                        $standaloneToml = <<<EOT
+# Stellar.toml metadata for {$token_created->asset_code}
+# Host this file at: https://{$domainStr}/.well-known/stellar.toml
+
+VERSION="2.0.0"
+
+[[CURRENCIES]]
+code="{$token_created->asset_code}"
+issuer="{$token_created->issuer_public_key}"
+display_decimals={$token_created->display_decimals}
+name="{$this->tomlSafe($token_created->name)}"
+desc="{$this->tomlSafe($token_created->desc)}"
+image="{$token_created->logo}"
+fixed_number="{$token_created->total_supply}"
+status="live"
+website="{$websiteStr}"
+
+EOT;
+                        file_put_contents($storageDir . '/' . strtoupper($token_created->asset_code) . '_' . $token_created->issuer_public_key . '.toml', $standaloneToml);
+                    } catch (\Throwable $t) {
+                        Log::warning('Failed to write standalone toml file copy', ['error' => $t->getMessage()]);
                     }
 
-                    $tomlPath = $directory . '/stellar.toml';
+                    // Only append to TokenGlade's local stellar.toml if user does NOT have their own website
+                    if (!$hasCustomWebsite) {
+                        $directory = public_path('.well-known');
+                        if (!is_dir($directory)) {
+                            mkdir($directory, 0755, true);
+                        }
 
-                    $websiteLink = !empty($token_created->website_url)
-                        ? 'website="' . $this->tomlSafe($token_created->website_url) . '"'
-                        : '';
+                        $tomlPath = $directory . '/stellar.toml';
 
-                    $tomlContent = <<<EOT
-                    [[CURRENCIES]]
-                    code="{$token_created->asset_code}"
-                    issuer="{$token_created->issuer_public_key}"
-                    display_decimals={$token_created->display_decimals}
-                    name="{$this->tomlSafe($token_created->name)}",
-                    desc="{$this->tomlSafe($token_created->desc)}"
-                    image="{$token_created->logo}"
-                    fixed_number="{$token_created->total_supply}"
-                    status="live"
-                    {$websiteLink}
+                        $tomlContent = <<<EOT
+                        [[CURRENCIES]]
+                        code="{$token_created->asset_code}"
+                        issuer="{$token_created->issuer_public_key}"
+                        display_decimals={$token_created->display_decimals}
+                        name="{$this->tomlSafe($token_created->name)}"
+                        desc="{$this->tomlSafe($token_created->desc)}"
+                        image="{$token_created->logo}"
+                        fixed_number="{$token_created->total_supply}"
+                        status="live"
 
-                    EOT;
+                        EOT;
 
-                    if (file_exists($tomlPath)) {
-                        file_put_contents($tomlPath, "\n" . $tomlContent, FILE_APPEND);
-                    } else {
-                        file_put_contents($tomlPath, $tomlContent);
+                        if (file_exists($tomlPath)) {
+                            file_put_contents($tomlPath, "\n" . $tomlContent, FILE_APPEND);
+                        } else {
+                            file_put_contents($tomlPath, $tomlContent);
+                        }
                     }
 
                     try {
@@ -417,7 +459,12 @@ class TokenController extends Controller
                         'status' => 'success',
                         'assetCode' => $assetCode,
                         'issuerPublicKey' => $token_created->issuer_public_key,
-                        'issuerSecretKey' => $token_created->issuer_secret_key
+                        'issuerSecretKey' => $token_created->issuer_secret_key,
+                        'name' => $token_created->name,
+                        'desc' => $token_created->desc,
+                        'websiteUrl' => $token_created->website_url,
+                        'logo' => $token_created->logo,
+                        'totalSupply' => $token_created->total_supply,
                     ], 200);
                 } else {
                     return response()->json([
@@ -1266,6 +1313,72 @@ class TokenController extends Controller
         }
 
         return response()->json(['tokens' => array_values($results)]);
+    }
+
+    public function downloadToml(Request $request)
+    {
+        $code = strtoupper(trim($request->input('code', '')));
+        $issuer = trim($request->input('issuer', ''));
+
+        if (empty($code) && empty($issuer)) {
+            return response()->json(['error' => 'Missing code or issuer parameter.'], 400);
+        }
+
+        // 1. Check if physical stored TOML file exists in server storage directory
+        $storedFilePath = storage_path("app/public/tomls/{$code}_{$issuer}.toml");
+        if (file_exists($storedFilePath)) {
+            return response()->download($storedFilePath, 'stellar.toml', [
+                'Content-Type' => 'text/plain; charset=utf-8',
+            ]);
+        }
+
+        // 2. Fetch token metadata from DB table to construct the TOML dynamically
+        $query = StellarToken::query();
+        if (!empty($issuer)) {
+            $query->where('issuer_public_key', $issuer);
+        }
+        if (!empty($code)) {
+            $query->where('asset_code', $code);
+        }
+        $token = $query->latest()->first();
+
+        if (!$token) {
+            return response()->json(['error' => 'Token metadata not found.'], 404);
+        }
+
+        $website = !empty($token->website_url) ? $token->website_url : '';
+        $domain = !empty($website)
+            ? (parse_url($website, PHP_URL_HOST) ?? 'yourdomain.com')
+            : 'yourdomain.com';
+        $domain = preg_replace('/^www\./', '', strtolower($domain));
+
+        $nameStr = $this->tomlSafe($token->name ?? $token->asset_code);
+        $descStr = $this->tomlSafe($token->desc ?? '');
+        $websiteStr = $this->tomlSafe($website);
+
+        $tomlContent = <<<EOT
+# Stellar.toml metadata for {$token->asset_code}
+# Host this file at: https://{$domain}/.well-known/stellar.toml
+
+VERSION="2.0.0"
+
+[[CURRENCIES]]
+code="{$token->asset_code}"
+issuer="{$token->issuer_public_key}"
+display_decimals=7
+name="{$nameStr}"
+desc="{$descStr}"
+image="{$token->logo}"
+fixed_number="{$token->total_supply}"
+status="live"
+website="{$websiteStr}"
+
+EOT;
+
+        return response($tomlContent, 200, [
+            'Content-Type' => 'text/plain; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="stellar.toml"',
+        ]);
     }
 
     public function show(Request $request, StellarTokenService $service)
