@@ -673,8 +673,8 @@
             </div>
 
             <!-- LEFT COLUMN: LIQUIDITY -->
-            <div style="grid-column: 1 / -1; display:flex;flex-direction:column;gap:14px;margin-bottom:2px" v-if="activeTab === 'liquidity'">
-              <section class="card asset" style="margin-top:0">
+            <div style="grid-column: 1 / -1; display:flex;flex-direction:column;gap:14px;margin-bottom:2px;min-width:0;width:100%" v-if="activeTab === 'liquidity'">
+              <section class="card asset w-full max-w-full min-w-0" style="margin-top:0">
                 <div v-if="liquidityLoading" class="flex flex-col items-center justify-center py-20">
                   <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
                   <span class="text-xs text-slate-400 font-bold mt-3">Loading on-chain AMM liquidity stats...</span>
@@ -691,24 +691,24 @@
                 </div>
 
                 <!-- Metrics Grid -->
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 font-mono">
-                  <div class="bg-[#111620] p-4 rounded-xl border border-[#1D2531]">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6 font-mono">
+                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Total TVL</span>
-                    <span class="text-lg font-black text-white mt-1 block">
+                    <span class="text-sm sm:text-lg font-black text-white mt-1 block">
                       ${{ formatNumber(token.liquidity_overview?.total_tvl) }}
                     </span>
                   </div>
 
-                  <div class="bg-[#111620] p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Active Pools</span>
-                    <span class="text-lg font-black text-white mt-1 block">
+                    <span class="text-sm sm:text-lg font-black text-white mt-1 block">
                       {{ token.liquidity_overview?.pools_count || 0 }}
                     </span>
                   </div>
 
-                  <div class="bg-[#111620] p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest Pool</span>
-                    <span class="text-lg font-black text-white mt-1 block truncate font-sans text-sm py-1" :title="token.liquidity_overview?.largest_pool_name">
+                    <span class="text-xs sm:text-sm font-black text-white mt-1 block truncate font-sans py-1" :title="token.liquidity_overview?.largest_pool_name">
                       {{ token.liquidity_overview?.largest_pool_name || '-' }}
                     </span>
                     <span class="text-[10px] text-slate-500 font-bold block mt-0.5">
@@ -716,23 +716,23 @@
                     </span>
                   </div>
 
-                  <div class="bg-[#111620] p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">24h LP Volume</span>
-                    <span class="text-lg font-black text-white mt-1 block">
+                    <span class="text-sm sm:text-lg font-black text-white mt-1 block">
                       ${{ formatNumber(token.liquidity_overview?.lp_volume_24h) }}
                     </span>
                   </div>
 
-                  <div class="bg-[#111620] p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Average APR</span>
-                    <span class="text-lg font-black text-emerald-400 mt-1 block">
+                    <span class="text-sm sm:text-lg font-black text-emerald-400 mt-1 block">
                       {{ token.liquidity_overview?.avg_apr ? token.liquidity_overview.avg_apr.toFixed(2) : '0.00' }}%
                     </span>
                   </div>
 
-                  <div class="bg-[#111620] p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Depth (±2%)</span>
-                    <span class="text-lg font-black text-white mt-1 block">
+                    <span class="text-sm sm:text-lg font-black text-white mt-1 block">
                       ${{ formatNumber(token.liquidity_overview?.depth_2pct) }}
                     </span>
                   </div>
@@ -753,16 +753,18 @@
                       </thead>
                       <tbody v-if="token.liquidity_overview?.pools && token.liquidity_overview.pools.length" class="font-mono">
                         <tr v-for="(pool, index) in token.liquidity_overview.pools" :key="index" class="hover:bg-white/2 transition">
-                          <td style="text-align:left" class="font-bold text-white flex items-center gap-2">
-                            <span class="w-6 h-6 rounded-full bg-[#0E131C] text-cyan-400 text-[10px] flex items-center justify-center font-black border border-[#1D2531]">AMM</span>
-                            <a 
-                              :href="`https://stellar.expert/explorer/public/liquidity-pool/${pool.id}`" 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              class="text-[#12CBEE] hover:underline transition font-semibold"
-                            >
-                              {{ pool.name }}
-                            </a>
+                          <td style="text-align:left" class="font-bold text-white">
+                            <div class="flex items-center gap-2">
+                              <span class="w-6 h-6 flex-none rounded-full bg-[#0E131C] text-cyan-400 text-[10px] flex items-center justify-center font-black border border-[#1D2531]">AMM</span>
+                              <a 
+                                :href="`https://stellar.expert/explorer/public/liquidity-pool/${pool.id}`" 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                class="text-[#12CBEE] hover:underline transition font-semibold truncate block max-w-[120px] xs:max-w-[160px] sm:max-w-none"
+                              >
+                                {{ pool.name }}
+                              </a>
+                            </div>
                           </td>
                           <td class="font-bold text-white">
                             ${{ formatNumber(pool.tvl) }}
