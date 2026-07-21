@@ -1087,187 +1087,183 @@ class TokenController extends Controller
 
         $results = [];
 
-        // 1. Search in VerifiedProject table by name, asset_code, or identifier
-        $verifiedProjects = VerifiedProject::where('status', 1)
-            ->where(function ($query) use ($q) {
-                $query->where('name', 'LIKE', "%{$q}%")
-                    ->orWhere('asset_code', 'LIKE', "%{$q}%")
-                    ->orWhere('identifier', 'LIKE', "%{$q}%");
-            })
-            ->limit(20)
-            ->get();
-
-        foreach ($verifiedProjects as $project) {
-            $code = strtoupper($project->asset_code);
-            if (empty($code)) continue;
-            $key = $code . '_' . $project->identifier;
-            if (!isset($results[$key])) {
-                $results[$key] = [
-                    'asset_code' => $code,
-                    'asset_issuer' => $project->identifier,
-                    'name' => $project->name,
-                    'is_verified' => true,
-                ];
-            }
-        }
-
-        // 2. Search in StellarToken table by name or asset_code
-        $stellarTokens = StellarToken::where(function ($query) use ($q) {
-                $query->where('name', 'LIKE', "%{$q}%")
-                    ->orWhere('asset_code', 'LIKE', "%{$q}%")
-                    ->orWhere('issuer_public_key', 'LIKE', "%{$q}%");
-            })
-            ->limit(20)
-            ->get();
-
-        foreach ($stellarTokens as $st) {
-            $code = strtoupper($st->asset_code);
-            if (empty($code)) continue;
-            $key = $code . '_' . $st->issuer_public_key;
-            if (!isset($results[$key])) {
-                $results[$key] = [
-                    'asset_code' => $code,
-                    'asset_issuer' => $st->issuer_public_key,
-                    'name' => $st->name,
-                    'is_verified' => true,
-                ];
-            }
-        }
-
-        // 3. Query Stellar Expert Asset Search API for popular matching tokens
         try {
-            $seRecords = Cache::remember("se_search_assets_{$q}", 300, function () use ($q) {
-                try {
-                    $res = Http::timeout(3)->get("https://api.stellar.expert/explorer/public/asset?search=" . urlencode($q) . "&limit=20");
-                    return $res->successful() ? ($res->json()['_embedded']['records'] ?? []) : [];
-                } catch (\Throwable $e) {
-                    return [];
-                }
-            });
+            // 1. Search in VerifiedProject table by name, asset_code, or identifier
+            try {
+                $verifiedProjects = VerifiedProject::where('status', 1)
+                    ->where(function ($query) use ($q) {
+                        $query->where('name', 'LIKE', "%{$q}%")
+                            ->orWhere('asset_code', 'LIKE', "%{$q}%")
+                            ->orWhere('identifier', 'LIKE', "%{$q}%");
+                    })
+                    ->limit(20)
+                    ->get();
 
-            foreach ($seRecords as $rec) {
-                $parts = explode('-', $rec['asset'] ?? '');
-                $code = strtoupper($rec['tomlInfo']['code'] ?? ($parts[0] ?? ''));
-                $issuer = $rec['tomlInfo']['issuer'] ?? ($parts[1] ?? '');
-                if (empty($code) || empty($issuer)) continue;
-
-                $key = $code . '_' . $issuer;
-                $name = $rec['tomlInfo']['name'] ?? ($rec['tomlInfo']['orgName'] ?? null);
-                $trustlines = $rec['trustlines'][0] ?? 0;
-
-                if (isset($results[$key])) {
-                    if (empty($results[$key]['name']) && !empty($name)) {
-                        $results[$key]['name'] = $name;
+                foreach ($verifiedProjects as $project) {
+                    $code = strtoupper($project->asset_code);
+                    if (empty($code)) continue;
+                    $key = $code . '_' . $project->identifier;
+                    if (!isset($results[$key])) {
+                        $results[$key] = [
+                            'asset_code' => $code,
+                            'asset_issuer' => $project->identifier,
+                            'name' => $project->name,
+                            'is_verified' => true,
+                        ];
                     }
-                    if (($results[$key]['accounts']['authorized'] ?? 0) < $trustlines) {
-                        $results[$key]['accounts'] = ['authorized' => $trustlines];
-                    }
-                } else {
-                    $results[$key] = [
-                        'asset_code' => $code,
-                        'asset_issuer' => $issuer,
-                        'name' => $name,
-                        'is_verified' => false,
-                        'accounts' => ['authorized' => $trustlines],
-                        'num_liquidity_pools' => $rec['trades'] ?? 0,
-                    ];
                 }
+            } catch (\Throwable $e) {
+                Log::warning('Search VerifiedProject error: ' . $e->getMessage());
             }
-        } catch (\Throwable $e) {}
 
-        // 4. Query Horizon assets for additional coverage
-        try {
-            $records = Cache::remember("horizon_assets_{$q}", 300, function () use ($q) {
-                try {
-                    $horizonRes = Http::timeout(3)->get("https://horizon.stellar.org/assets?asset_code=" . urlencode(strtoupper($q)) . "&limit=15");
-                    return $horizonRes->successful() ? ($horizonRes->json()['_embedded']['records'] ?? []) : [];
-                } catch (\Throwable $e) {
-                    return [];
-                }
-            });
+            // 2. Search in StellarToken table by name or asset_code
+            try {
+                $stellarTokens = StellarToken::where(function ($query) use ($q) {
+                        $query->where('name', 'LIKE', "%{$q}%")
+                            ->orWhere('asset_code', 'LIKE', "%{$q}%")
+                            ->orWhere('issuer_public_key', 'LIKE', "%{$q}%");
+                    })
+                    ->limit(20)
+                    ->get();
 
-            if (!empty($records)) {
-                // Identify uncached assets
-                $uncachedKeys = [];
-                foreach ($records as $rec) {
-                    $code = strtoupper($rec['asset_code']);
-                    $issuer = $rec['asset_issuer'];
-                    $cacheKey = "se_asset_{$code}_{$issuer}";
-                    if (!Cache::has($cacheKey)) {
-                        $uncachedKeys[$cacheKey] = ['code' => $code, 'issuer' => $issuer];
+                foreach ($stellarTokens as $st) {
+                    $code = strtoupper($st->asset_code);
+                    if (empty($code)) continue;
+                    $key = $code . '_' . $st->issuer_public_key;
+                    if (!isset($results[$key])) {
+                        $results[$key] = [
+                            'asset_code' => $code,
+                            'asset_issuer' => $st->issuer_public_key,
+                            'name' => $st->name,
+                            'is_verified' => true,
+                        ];
                     }
                 }
+            } catch (\Throwable $e) {
+                Log::warning('Search StellarToken error: ' . $e->getMessage());
+            }
 
-                // Fetch uncached in parallel using Http::pool
-                if (!empty($uncachedKeys)) {
-                    $responses = Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($uncachedKeys) {
-                        $calls = [];
-                        foreach (array_slice($uncachedKeys, 0, 10) as $cacheKey => $item) {
-                            $calls[$cacheKey] = $pool->timeout(2)->get("https://api.stellar.expert/explorer/public/asset/{$item['code']}-{$item['issuer']}");
-                        }
-                        return $calls;
-                    });
-
-                    foreach ($uncachedKeys as $cacheKey => $item) {
-                        $res = $responses[$cacheKey] ?? null;
-                        $data = ($res && $res->successful()) ? $res->json() : null;
-                        Cache::put($cacheKey, $data, 86400);
+            // 3. Query Stellar Expert Asset Search API for popular matching tokens
+            try {
+                $seRecords = Cache::remember("se_search_assets_{$q}", 300, function () use ($q) {
+                    try {
+                        $res = Http::withoutVerifying()->timeout(4)->get("https://api.stellar.expert/explorer/public/asset?search=" . urlencode($q) . "&limit=20");
+                        return $res->successful() ? ($res->json()['_embedded']['records'] ?? []) : [];
+                    } catch (\Throwable $e) {
+                        return [];
                     }
-                }
+                });
 
-                foreach ($records as $rec) {
-                    $code = strtoupper($rec['asset_code']);
-                    $issuer = $rec['asset_issuer'];
-                    $cacheKey = "se_asset_{$code}_{$issuer}";
-                    if (!Cache::has($cacheKey)) {
-                        $uncachedKeys[$cacheKey] = ['code' => $code, 'issuer' => $issuer];
-                    }
-                }
+                foreach ($seRecords as $rec) {
+                    $parts = explode('-', $rec['asset'] ?? '');
+                    $code = strtoupper($rec['tomlInfo']['code'] ?? ($parts[0] ?? ''));
+                    $issuer = $rec['tomlInfo']['issuer'] ?? ($parts[1] ?? '');
+                    if (empty($code) || empty($issuer)) continue;
 
-                // Fetch uncached in parallel using Http::pool
-                if (!empty($uncachedKeys)) {
-                    $responses = Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($uncachedKeys) {
-                        $calls = [];
-                        foreach (array_slice($uncachedKeys, 0, 10) as $cacheKey => $item) {
-                            $calls[$cacheKey] = $pool->timeout(2)->get("https://api.stellar.expert/explorer/public/asset/{$item['code']}-{$item['issuer']}");
-                        }
-                        return $calls;
-                    });
-
-                    foreach ($uncachedKeys as $cacheKey => $item) {
-                        $res = $responses[$cacheKey] ?? null;
-                        $data = ($res && $res->successful()) ? $res->json() : null;
-                        Cache::put($cacheKey, $data, 86400);
-                    }
-                }
-
-                foreach ($records as $rec) {
-                    $code = strtoupper($rec['asset_code']);
-                    $issuer = $rec['asset_issuer'];
                     $key = $code . '_' . $issuer;
-
-                    $seData = Cache::get("se_asset_{$code}_{$issuer}");
-                    $name = $seData['toml_info']['name'] ?? ($seData['toml_info']['orgName'] ?? null);
+                    $name = $rec['tomlInfo']['name'] ?? ($rec['tomlInfo']['orgName'] ?? null);
+                    $trustlines = $rec['trustlines'][0] ?? 0;
 
                     if (isset($results[$key])) {
                         if (empty($results[$key]['name']) && !empty($name)) {
                             $results[$key]['name'] = $name;
                         }
-                        $results[$key]['accounts'] = $rec['accounts'] ?? ['authorized' => 0];
-                        $results[$key]['num_liquidity_pools'] = $rec['num_liquidity_pools'] ?? 0;
+                        if (($results[$key]['accounts']['authorized'] ?? 0) < $trustlines) {
+                            $results[$key]['accounts'] = ['authorized' => $trustlines];
+                        }
                     } else {
                         $results[$key] = [
                             'asset_code' => $code,
                             'asset_issuer' => $issuer,
                             'name' => $name,
                             'is_verified' => false,
-                            'accounts' => $rec['accounts'] ?? ['authorized' => 0],
-                            'num_liquidity_pools' => $rec['num_liquidity_pools'] ?? 0,
+                            'accounts' => ['authorized' => $trustlines],
+                            'num_liquidity_pools' => $rec['trades'] ?? 0,
                         ];
                     }
                 }
+            } catch (\Throwable $e) {
+                Log::warning('Search StellarExpert error: ' . $e->getMessage());
             }
-        } catch (\Throwable $e) {}
+
+            // 4. Query Horizon assets for additional coverage
+            try {
+                $records = Cache::remember("horizon_assets_{$q}", 300, function () use ($q) {
+                    try {
+                        $horizonRes = Http::withoutVerifying()->timeout(4)->get("https://horizon.stellar.org/assets?asset_code=" . urlencode(strtoupper($q)) . "&limit=15");
+                        return $horizonRes->successful() ? ($horizonRes->json()['_embedded']['records'] ?? []) : [];
+                    } catch (\Throwable $e) {
+                        return [];
+                    }
+                });
+
+                if (!empty($records)) {
+                    // Identify uncached assets
+                    $uncachedKeys = [];
+                    foreach ($records as $rec) {
+                        $code = strtoupper($rec['asset_code'] ?? '');
+                        $issuer = $rec['asset_issuer'] ?? '';
+                        if (empty($code) || empty($issuer)) continue;
+                        $cacheKey = "se_asset_{$code}_{$issuer}";
+                        if (!Cache::has($cacheKey)) {
+                            $uncachedKeys[$cacheKey] = ['code' => $code, 'issuer' => $issuer];
+                        }
+                    }
+
+                    // Fetch uncached in parallel using Http::pool
+                    if (!empty($uncachedKeys)) {
+                        try {
+                            $responses = Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($uncachedKeys) {
+                                $calls = [];
+                                foreach (array_slice($uncachedKeys, 0, 10) as $cacheKey => $item) {
+                                    $calls[$cacheKey] = $pool->withoutVerifying()->timeout(3)->get("https://api.stellar.expert/explorer/public/asset/{$item['code']}-{$item['issuer']}");
+                                }
+                                return $calls;
+                            });
+
+                            foreach ($uncachedKeys as $cacheKey => $item) {
+                                $res = $responses[$cacheKey] ?? null;
+                                $data = ($res && $res->successful()) ? $res->json() : null;
+                                Cache::put($cacheKey, $data, 86400);
+                            }
+                        } catch (\Throwable $e) {
+                            Log::warning('Search Http::pool error: ' . $e->getMessage());
+                        }
+                    }
+
+                    foreach ($records as $rec) {
+                        $code = strtoupper($rec['asset_code'] ?? '');
+                        $issuer = $rec['asset_issuer'] ?? '';
+                        if (empty($code) || empty($issuer)) continue;
+                        $key = $code . '_' . $issuer;
+
+                        $seData = Cache::get("se_asset_{$code}_{$issuer}");
+                        $name = $seData['toml_info']['name'] ?? ($seData['toml_info']['orgName'] ?? null);
+
+                        if (isset($results[$key])) {
+                            if (empty($results[$key]['name']) && !empty($name)) {
+                                $results[$key]['name'] = $name;
+                            }
+                            $results[$key]['accounts'] = $rec['accounts'] ?? ['authorized' => 0];
+                            $results[$key]['num_liquidity_pools'] = $rec['num_liquidity_pools'] ?? 0;
+                        } else {
+                            $results[$key] = [
+                                'asset_code' => $code,
+                                'asset_issuer' => $issuer,
+                                'name' => $name,
+                                'is_verified' => false,
+                                'accounts' => $rec['accounts'] ?? ['authorized' => 0],
+                                'num_liquidity_pools' => $rec['num_liquidity_pools'] ?? 0,
+                            ];
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Search Horizon error: ' . $e->getMessage());
+            }
+        } catch (\Throwable $e) {
+            Log::error('Search method exception: ' . $e->getMessage());
+        }
 
         return response()->json(['tokens' => array_values($results)]);
     }
