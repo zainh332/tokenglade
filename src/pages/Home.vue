@@ -680,27 +680,37 @@ function handleChartMouseMove(event) {
   const svg = event.currentTarget.querySelector('svg');
   if (!svg) return;
   const rect = svg.getBoundingClientRect();
-  const mouseX = event.clientX - rect.left;
+  const mouseX = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
   const svgWidth = rect.width || 600;
   
-  const history = chartSeriesData[selectedTimeFilter.value];
+  let history = [...chartSeriesData[selectedTimeFilter.value]];
+  if (selectedTimeFilter.value === '24H') {
+    const currentVol = parseFloat(dailyVolume.value.replace(/[^0-9.]/g, '')) || 890.8;
+    history[history.length - 1] = currentVol;
+  }
   if (!history || history.length < 2) return;
-  
-  const index = Math.min(
-    history.length - 1,
-    Math.max(0, Math.round((mouseX / svgWidth) * (history.length - 1)))
-  );
   
   const min = Math.min(...history);
   const max = Math.max(...history);
   const range = max - min;
   
-  const val = history[index];
-  const x = index * (600 / (history.length - 1));
-  let y = 80;
+  const xSvg = (mouseX / svgWidth) * 600;
+  const step = 600 / (history.length - 1);
+  const i = Math.min(history.length - 2, Math.floor(xSvg / step));
+  const t = Math.max(0, Math.min(1, (xSvg - (i * step)) / step));
+  
+  const val_i = history[i];
+  const val_i1 = history[i + 1];
+  const val = val_i + t * (val_i1 - val_i);
+  
+  let y_i = 80;
+  let y_i1 = 80;
   if (range > 0) {
-    y = 135 - ((val - min) / range) * 110;
+    y_i = 135 - ((val_i - min) / range) * 110;
+    y_i1 = 135 - ((val_i1 - min) / range) * 110;
   }
+  const y = y_i + t * (y_i1 - y_i);
+  const x = xSvg;
   
   let formattedVal = '';
   if (selectedTimeFilter.value === '1H') formattedVal = `$${val.toFixed(1)}M`;
