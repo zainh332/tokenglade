@@ -268,7 +268,7 @@
               <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
 
               <!-- 2. Created -->
-              <div class="flex items-center gap-1.5 justify-end sm:justify-start w-full sm:w-auto">
+              <div class="flex items-center gap-1.5">
                 <span class="text-slate-400 font-medium">Created:</span>
                 <span class="text-white font-bold">
                   <template v-if="token.mint_date_human && token.mint_date_human !== '-'">{{ token.mint_date_human }}</template>
@@ -292,7 +292,7 @@
               <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
 
               <!-- 4. Pools -->
-              <div class="flex items-center gap-1.5 justify-end sm:justify-start w-full sm:w-auto">
+              <div class="flex items-center gap-1.5">
                 <span class="text-slate-400 font-medium">Pools:</span>
                 <span class="text-white font-bold flex items-center gap-1">
                   <template v-if="liquidityLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
