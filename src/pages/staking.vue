@@ -366,12 +366,12 @@
 
 
         <!-- Your Staking History -->
-        <section v-if="hasPositions" id="your-stakes" class="container mx-auto mt-16 mb-10">
-            <div class="container mx-auto pt-20">
+        <section v-if="hasPositions" id="your-stakes" class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mt-16 pb-10">
+            <div class="pt-10">
                 <h2 class="text-2xl font-bold text-center text-white tracking-tight mb-6">Your Staking History</h2>
 
                 <div
-                    class="w-full max-w-[80%] mx-auto bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-2xl shadow-2xl overflow-hidden">
+                    class="w-full bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-2xl shadow-2xl overflow-hidden">
                     <table class="min-w-full border-collapse">
                         <thead
                             class="bg-[#182235] text-slate-400 border-b border-[rgba(148,163,184,0.16)] font-mono uppercase tracking-wider text-xs">
@@ -463,11 +463,9 @@
             </div>
         </section>
 
-        <div class="table-wrapper">
-            <div class="relative">
-
-                <div
-                    class="max-w-[1440px] px-4 pt-8 pb-8 mx-auto mt-8 bg-[#111827] border border-[rgba(148,163,184,0.16)] sm:px-6 sm:mt-16 lg:px-8 rounded-3xl shadow-2xl">
+        <section class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-16">
+            <div
+                class="w-full bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-3xl shadow-2xl overflow-hidden px-4 sm:px-8 py-8">
                     <div class="sm:flex sm:items-center">
                         <div class="sm:flex-auto">
                             <div
@@ -549,17 +547,16 @@
                             </div>
                         </div>
                     </div>
-                </div>
             </div>
-        </div>
+        </section>
 
-        <section class="container mx-auto mt-16 pb-10">
+        <section class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mt-16 pb-10">
             <div
-                class="max-w-6xl px-4 pt-12 pb-8 mx-auto bg-[#111827] border border-[rgba(148,163,184,0.16)] sm:px-6 lg:px-8 rounded-3xl shadow-2xl text-center">
+                class="w-full px-4 pt-12 pb-8 mx-auto bg-[#111827] border border-[rgba(148,163,184,0.16)] sm:px-6 lg:px-8 rounded-3xl shadow-2xl text-center">
                 <h2 class="text-3xl font-bold text-white tracking-tight mb-2">How Staking Works</h2>
                 <p class="text-sm text-slate-400 mb-10">Earn rewards every 24 hours by staking $TKG</p>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-10 pb-6">
                     <div class="flex flex-col items-center">
                         <div
                             class="bg-[#182235] border border-[rgba(148,163,184,0.16)] p-4 rounded-full mb-4 animate-pulseSoft">
