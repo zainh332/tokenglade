@@ -1,16 +1,16 @@
 {
-  "_hearing-2a11677a.js": {
-    "file": "assets/hearing-2a11677a.js"
+  "_hearing-75214282.js": {
+    "file": "assets/hearing-75214282.js"
   },
   "resources/css/app.css": {
-    "file": "assets/app-777d580e.css",
+    "file": "assets/app-c2a72704.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
   "src/admin-main.js": {
-    "file": "assets/admin-main-b3a83f0a.js",
+    "file": "assets/admin-main-44001e39.js",
     "imports": [
-      "_hearing-2a11677a.js"
+      "_hearing-75214282.js"
     ],
     "isEntry": true,
     "src": "src/admin-main.js"
@@ -31,10 +31,6 @@
     "file": "assets/developer_building-94ba674e.png",
     "src": "src/assets/developer_building.png"
   },
-  "src/assets/header-logo.png": {
-    "file": "assets/header-logo-3bd5c412.png",
-    "src": "src/assets/header-logo.png"
-  },
   "src/assets/hero_ecosystem.png": {
     "file": "assets/hero_ecosystem-70981645.png",
     "src": "src/assets/hero_ecosystem.png"
@@ -42,10 +38,6 @@
   "src/assets/lights.png": {
     "file": "assets/lights-c425c569.png",
     "src": "src/assets/lights.png"
-  },
-  "src/assets/phone.png": {
-    "file": "assets/phone-d7e790d1.png",
-    "src": "src/assets/phone.png"
   },
   "src/assets/reward.png": {
     "file": "assets/reward-9c1d8a04.png",
@@ -84,17 +76,14 @@
     "src": "src/assets/wallet.jpg"
   },
   "src/main.css": {
-    "file": "assets/main-6be84aa3.css",
+    "file": "assets/main-5a6be43e.css",
     "src": "src/main.css"
   },
   "src/main.js": {
     "assets": [
-      "assets/header-logo-3bd5c412.png",
       "assets/token-glade-logo-fc9beecd.png",
-      "assets/Xl-logo-5799095d.png",
-      "assets/wallet-d06d1cc0.jpg",
-      "assets/coin-1814fc02.png",
       "assets/verify-94cc8b50.png",
+      "assets/Xl-logo-5799095d.png",
       "assets/hero_ecosystem-70981645.png",
       "assets/developer_building-94ba674e.png",
       "assets/blockchain_complexity-ad6a4fae.png",
@@ -102,15 +91,17 @@
       "assets/started_simplicity-3b85d23f.png",
       "assets/started_transparency-92c0ac22.png",
       "assets/started_accessibility-2837883a.png",
+      "assets/coin-1814fc02.png",
       "assets/reward-9c1d8a04.png",
+      "assets/wallet-d06d1cc0.jpg",
       "assets/stop-abbef106.png"
     ],
     "css": [
-      "assets/main-6be84aa3.css"
+      "assets/main-5a6be43e.css"
     ],
-    "file": "assets/main-95cb7877.js",
+    "file": "assets/main-2d7087c0.js",
     "imports": [
-      "_hearing-2a11677a.js"
+      "_hearing-75214282.js"
     ],
     "isEntry": true,
     "src": "src/main.js"
