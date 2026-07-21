@@ -826,7 +826,7 @@
 </template>
 
 <script setup>
-import { reactive, onMounted, watch, ref, computed, nextTick } from "vue"
+import { reactive, onMounted, onUnmounted, watch, ref, computed, nextTick } from "vue"
 import { useRoute } from "vue-router"
 import axios from "axios"
 import { createChart, CrosshairMode, CandlestickSeries, LineSeries, AreaSeries, HistogramSeries } from "lightweight-charts"
@@ -843,6 +843,7 @@ let candleSeries = null;
 let volumeSeries = null;
 let lineSeries = null;
 let areaSeries = null;
+let liveTradesTimer = null;
 
 import {
   Users,
@@ -869,6 +870,51 @@ const activeTab = ref('overview')
 const showAllTrades = ref(false)
 const holdersLoading = ref(true)
 const liquidityLoading = ref(true)
+
+const refreshLiveTrades = async () => {
+  if (!issuerInput.value) return;
+  try {
+    const res = await axios.get("/api/token/show", {
+      params: {
+        issuer: issuerInput.value
+      }
+    });
+    if (res.data) {
+      if (res.data.transactions && Array.isArray(res.data.transactions)) {
+        token.transactions = res.data.transactions;
+      }
+      if (res.data.activity) {
+        if (!token.activity) token.activity = {};
+        Object.assign(token.activity, res.data.activity);
+      }
+      if (res.data.usd_price) {
+        token.usd_price = res.data.usd_price;
+      }
+      if (res.data.xlm_price) {
+        token.xlm_price = res.data.xlm_price;
+      }
+      if (res.data.volume_24h) {
+        token.volume_24h = res.data.volume_24h;
+      }
+    }
+  } catch (err) {
+    // Silent catch for live trades stream
+  }
+};
+
+const startLiveTradesPolling = () => {
+  stopLiveTradesPolling();
+  liveTradesTimer = setInterval(() => {
+    refreshLiveTrades();
+  }, 4000);
+};
+
+const stopLiveTradesPolling = () => {
+  if (liveTradesTimer) {
+    clearInterval(liveTradesTimer);
+    liveTradesTimer = null;
+  }
+};
 const establishingTrustline = ref(false)
 
 const handleEstablishTrustline = async () => {
@@ -1018,6 +1064,12 @@ const token = reactive({
   total_supply: 10000000,
   top_holders: [],
   project_holders: [],
+  activity: {
+    total_trades: 0,
+    traded_volume: 0,
+    payments: 0,
+    payments_volume: 0
+  },
   liquidity_overview: {
     total_tvl: 0,
     pools_count: 0,
@@ -1564,6 +1616,11 @@ onMounted(async () => {
   walletKey.value = getCookie('public_key') || ''
   isWalletConnected.value = !!walletKey.value
   await fetchVerificationAssets()
+  startLiveTradesPolling()
+})
+
+onUnmounted(() => {
+  stopLiveTradesPolling()
 })
 
 watch(
@@ -1572,6 +1629,7 @@ watch(
     if (query.issuer) {
       issuerInput.value = query.issuer
       fetchToken()
+      startLiveTradesPolling()
     } else {
       loading.value = false
     }
