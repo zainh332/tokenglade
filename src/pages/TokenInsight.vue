@@ -631,11 +631,7 @@
                 </div>
               </div>
 
-              <!-- About -->
-              <div class="card about" style="grid-column: 1 / -1; width: 100%;">
-                <h3>About {{ token.project?.org_name || token.name }}</h3>
-                <p style="max-width: none; width: 100%;">{{ token.description || "No project documentation available for this asset. Make sure the issuer publishes structured TOML meta profiles." }}</p>
-              </div>
+
             </div>
 
             <!-- LEFT COLUMN: HOLDERS -->
