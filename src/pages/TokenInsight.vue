@@ -927,17 +927,14 @@
                       <tbody v-if="token.liquidity_overview?.pools && token.liquidity_overview.pools.length" class="font-mono">
                         <tr v-for="(pool, index) in token.liquidity_overview.pools" :key="index" class="hover:bg-white/2 transition">
                           <td style="text-align:left" class="font-bold text-white">
-                            <div class="flex items-center gap-2">
-                              <span class="w-6 h-6 flex-none rounded-full bg-[#0E131C] text-cyan-400 text-[10px] flex items-center justify-center font-black border border-[#1D2531]">AMM</span>
-                              <a 
-                                :href="`https://stellar.expert/explorer/public/liquidity-pool/${pool.id}`" 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                class="text-[#12CBEE] hover:underline transition font-semibold truncate block max-w-[120px] xs:max-w-[160px] sm:max-w-none"
-                              >
-                                {{ pool.name }}
-                              </a>
-                            </div>
+                            <a 
+                              :href="`https://stellar.expert/explorer/public/liquidity-pool/${pool.id}`" 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              class="text-[#12CBEE] hover:underline transition font-semibold truncate block max-w-[120px] xs:max-w-[160px] sm:max-w-none"
+                            >
+                              {{ pool.name }}
+                            </a>
                           </td>
                           <td class="font-bold text-white">
                             ${{ formatNumber(pool.tvl) }}
