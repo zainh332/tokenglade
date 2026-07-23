@@ -655,8 +655,8 @@
                 <!-- Middle Grid: Donut Chart Card (Left 50%) + 4 Vertically Stacked Cards Container (Right 50%) -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch mb-6">
                   <!-- Left Half (50% Width): Donut Chart Card -->
-                  <div class="flex flex-col items-center gap-6 justify-center bg-[#0E131C] p-6 rounded-2xl border border-[#1D2531] h-full">
-                    <div class="relative w-40 h-40 flex items-center justify-center flex-shrink-0">
+                  <div class="flex flex-row md:flex-col items-center gap-4 sm:gap-6 justify-center bg-[#0E131C] p-4 sm:p-6 rounded-2xl border border-[#1D2531] h-full">
+                    <div class="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 flex items-center justify-center flex-shrink-0">
                       <svg class="w-full h-full" viewBox="0 0 100 100">
                         <circle cx="50" cy="50" r="40" stroke="#1d2531" stroke-width="12" fill="transparent" />
                         <circle 
@@ -673,22 +673,22 @@
                         />
                       </svg>
                       <div class="absolute flex flex-col items-center justify-center text-center">
-                        <span class="text-2xl font-black text-white">{{ top10Percentage }}%</span>
-                        <span class="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider mt-0.5">Top 10</span>
+                        <span class="text-lg sm:text-xl md:text-2xl font-black text-white">{{ top10Percentage }}%</span>
+                        <span class="text-[7px] sm:text-[8px] md:text-[9px] text-slate-400 font-extrabold uppercase tracking-wider mt-0.5">Top 10</span>
                       </div>
                     </div>
 
-                    <div class="space-y-3 text-xs font-mono w-full max-w-sm">
-                      <div class="flex items-center justify-between gap-2 font-semibold bg-[#111620] p-3 rounded-xl border border-[#1D2531]">
-                        <div class="flex items-center gap-2">
-                          <span class="w-3 h-3 rounded-full bg-[#12CBEE]"></span>
+                    <div class="space-y-2 sm:space-y-3 text-[10px] sm:text-xs font-mono w-full flex-1">
+                      <div class="flex items-center justify-between gap-1.5 font-semibold bg-[#111620] p-2 sm:p-3 rounded-xl border border-[#1D2531]">
+                        <div class="flex items-center gap-1.5">
+                          <span class="w-2.5 h-2.5 rounded-full bg-[#12CBEE] flex-none"></span>
                           <span class="text-slate-400">Top 10 Wallets:</span>
                         </div>
                         <span class="text-white font-bold">{{ top10Percentage }}%</span>
                       </div>
-                      <div class="flex items-center justify-between gap-2 font-semibold bg-[#111620] p-3 rounded-xl border border-[#1D2531]">
-                        <div class="flex items-center gap-2">
-                          <span class="w-3 h-3 rounded-full bg-[#1d2531]"></span>
+                      <div class="flex items-center justify-between gap-1.5 font-semibold bg-[#111620] p-2 sm:p-3 rounded-xl border border-[#1D2531]">
+                        <div class="flex items-center gap-1.5">
+                          <span class="w-2.5 h-2.5 rounded-full bg-[#1d2531] flex-none"></span>
                           <span class="text-slate-400">Others:</span>
                         </div>
                         <span class="text-white font-bold">{{ (100 - parseFloat(top10Percentage)).toFixed(2) }}%</span>
@@ -716,20 +716,23 @@
                       </div>
                     </div>
 
-                    <!-- 2. Average per Holder -->
-                    <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
-                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Average per Holder</span>
-                      <span class="text-base font-black text-white mt-1 block">
-                        {{ formatNumber(averageTokensPerHolder) }} {{ token.asset_code }}
-                      </span>
-                    </div>
+                    <!-- 2 & 3: Side-by-Side Stats Cards -->
+                    <div class="grid grid-cols-2 gap-4">
+                      <!-- 2. Average per Holder -->
+                      <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                        <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block leading-snug">Average per Holder</span>
+                        <span class="text-sm sm:text-base font-black text-white mt-1 block truncate">
+                          {{ formatNumber(averageTokensPerHolder) }} {{ token.asset_code }}
+                        </span>
+                      </div>
 
-                    <!-- 3. New Holders -->
-                    <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
-                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">New Holders (24h / 7d)</span>
-                      <span class="text-base font-black text-white mt-1 block">
-                        +{{ holderGrowth.growth24h }} <span class="text-slate-500 font-medium text-xs">/</span> +{{ holderGrowth.growth7d }}
-                      </span>
+                      <!-- 3. New Holders -->
+                      <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                        <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block leading-snug">New Holders (24h/7d)</span>
+                        <span class="text-sm sm:text-base font-black text-white mt-1 block">
+                          +{{ holderGrowth.growth24h }} <span class="text-slate-500 font-medium text-xs">/</span> +{{ holderGrowth.growth7d }}
+                        </span>
+                      </div>
                     </div>
 
                     <!-- 4. Largest Non-Treasury Holder -->
