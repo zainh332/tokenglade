@@ -489,7 +489,15 @@
 
               <!-- Market Exposure Stats -->
               <div class="card expo">
-                <div class="card-hd"><h3>Market Exposure</h3></div>
+                <div class="card-hd" style="align-items: flex-start; flex-direction: column; gap: 4px;">
+                  <div class="flex justify-between items-center w-full">
+                    <h3>Market Exposure</h3>
+                    <span class="tag">On-Chain Activity</span>
+                  </div>
+                  <p class="text-[10px] text-slate-400 font-medium normal-case leading-relaxed" style="margin: 2px 0 0 0;">
+                    Live ratio and trade size are based on the last 30 DEX fills.
+                  </p>
+                </div>
                 <div class="expo-stats">
                   <div class="st">
                     <div class="k">Buy / Sell Ratio</div>
@@ -1073,19 +1081,31 @@
                 <div class="card-hd"><h3>Security Parameters</h3><span class="tag">On-chain</span></div>
                 <div class="sec">
                   <div class="row">
-                    <span class="nm"><span class="shield">🛡</span>Immutable code</span>
+                    <span class="nm">
+                      <span class="shield">🛡</span>Immutable code
+                      <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5" title="YES means the issuer account is locked and cannot mint more tokens (0% inflation risk).">i</span>
+                    </span>
                     <span class="sval" :class="token.issuer_locked ? 'yes' : 'none'">{{ token.issuer_locked ? 'YES' : 'NO' }}</span>
                   </div>
                   <div class="row">
-                    <span class="nm"><span class="shield">🛡</span>Clawback disabled</span>
+                    <span class="nm">
+                      <span class="shield">🛡</span>Clawback disabled
+                      <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5" title="YES means clawbacks are disabled; the issuer cannot seize or recall tokens from user accounts.">i</span>
+                    </span>
                     <span class="sval" :class="!token.auth_clawback_enabled ? 'yes' : 'none'">{{ !token.auth_clawback_enabled ? 'YES' : 'NO' }}</span>
                   </div>
                   <div class="row">
-                    <span class="nm"><span class="shield">🛡</span>Revocation disabled</span>
+                    <span class="nm">
+                      <span class="shield">🛡</span>Revocation disabled
+                      <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5" title="YES means authorization revocation is disabled; the issuer cannot freeze your account's trustline.">i</span>
+                    </span>
                     <span class="sval" :class="!token.auth_revocable ? 'yes' : 'none'">{{ !token.auth_revocable ? 'YES' : 'NO' }}</span>
                   </div>
                   <div class="row">
-                    <span class="nm"><span class="shield">🛡</span>Authorization required</span>
+                    <span class="nm">
+                      <span class="shield">🛡</span>Authorization required
+                      <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5" title="NONE means anyone can hold, trade, or transfer this token freely without manual approval.">i</span>
+                    </span>
                     <span class="sval" :class="token.auth_required ? 'none' : 'yes'" style="font-size:10px">{{ token.auth_required ? 'REQUIRED' : 'NONE' }}</span>
                   </div>
                 </div>
