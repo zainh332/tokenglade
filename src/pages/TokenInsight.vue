@@ -13,21 +13,24 @@
           <!-- ASSET HEADER CARD SKELETON -->
           <section class="card asset">
             <div class="ahead">
-              <!-- Icon Skeleton -->
-              <div class="token-ico flex-none">
-                <div class="w-full h-full bg-[#1D2531]/60 rounded-xl"></div>
-              </div>
-              
-              <!-- Name and Issuer Skeleton -->
-              <div class="name-col space-y-2 flex-1">
-                <div class="flex items-center gap-3">
-                  <div class="h-7 w-40 bg-[#1D2531]/80 rounded-lg"></div>
-                  <div class="h-5 w-12 bg-[#1D2531]/60 rounded-md"></div>
-                  <div class="h-5 w-16 bg-[#1D2531]/60 rounded-md"></div>
+              <!-- Logo & Name Skeleton Container (Flex Row for Mobile side-by-side) -->
+              <div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                <!-- Icon Skeleton -->
+                <div class="token-ico flex-none">
+                  <div class="w-full h-full bg-[#1D2531]/60 rounded-xl"></div>
                 </div>
-                <div class="flex items-center gap-2">
-                  <div class="h-4 w-44 bg-[#1D2531]/60 rounded"></div>
-                  <div class="h-5 w-20 bg-[#1D2531]/40 rounded-md"></div>
+                
+                <!-- Name and Issuer Skeleton -->
+                <div class="name-col space-y-2 flex-1 min-w-0">
+                  <div class="flex items-center gap-3 flex-wrap">
+                    <div class="h-7 w-40 bg-[#1D2531]/80 rounded-lg"></div>
+                    <div class="h-5 w-12 bg-[#1D2531]/60 rounded-md"></div>
+                    <div class="h-5 w-16 bg-[#1D2531]/60 rounded-md"></div>
+                  </div>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <div class="h-4 w-44 bg-[#1D2531]/60 rounded"></div>
+                    <div class="h-5 w-20 bg-[#1D2531]/40 rounded-md"></div>
+                  </div>
                 </div>
               </div>
 
@@ -169,27 +172,30 @@
           <!-- ASSET HEADER CARD -->
           <section class="card asset">
             <div class="ahead">
-              <!-- Icon -->
-              <div class="token-ico select-none">
-                <img v-if="token.image" :src="token.image" class="w-full h-full object-cover rounded-xl" />
-                <span v-else>{{ getTokenInitials(token.asset_code) }}</span>
-              </div>
-              
-              <!-- Name and Issuer info -->
-              <div class="name-col">
-                <div class="name-row">
-                  <h1>{{ token.project?.org_name || token.name || 'Token Detail' }}</h1>
-                  <span class="chip sym uppercase">{{ token.asset_code }}</span>
-                  <span v-if="isVerified" class="chip verified">✓ Verified</span>
-                  <span v-else-if="isVerificationPending" class="chip" style="color:var(--pink);border-color:rgba(240,24,156,0.25)">Pending</span>
-                  <span v-else @click="verificationModal = true" class="chip select-none cursor-pointer hover:bg-white/5 transition">Unverified</span>
+              <!-- Logo & Name Container (Flex Row for Mobile side-by-side) -->
+              <div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                <!-- Icon -->
+                <div class="token-ico select-none flex-shrink-0">
+                  <img v-if="token.image" :src="token.image" class="w-full h-full object-cover rounded-xl" />
+                  <span v-else>{{ getTokenInitials(token.asset_code) }}</span>
                 </div>
                 
-                <div class="issuer">
-                  <span>Issuer: <a :href="stellarExpertAssetUrl" target="_blank" rel="noopener noreferrer" class="mono">{{ shorten(token.issuer) }}</a></span>
-                  <button @click="copyIssuer" class="btn dark select-none" style="padding:2px 8px;font-size:10.5px">
-                    {{ copied ? 'Copied!' : 'Copy Address' }}
-                  </button>
+                <!-- Name and Issuer info -->
+                <div class="name-col min-w-0">
+                  <div class="name-row">
+                    <h1 class="truncate">{{ token.project?.org_name || token.name || 'Token Detail' }}</h1>
+                    <span class="chip sym uppercase">{{ token.asset_code }}</span>
+                    <span v-if="isVerified" class="chip verified">✓ Verified</span>
+                    <span v-else-if="isVerificationPending" class="chip" style="color:var(--pink);border-color:rgba(240,24,156,0.25)">Pending</span>
+                    <span v-else @click="verificationModal = true" class="chip select-none cursor-pointer hover:bg-white/5 transition">Unverified</span>
+                  </div>
+                  
+                  <div class="issuer">
+                    <span>Issuer: <a :href="stellarExpertAssetUrl" target="_blank" rel="noopener noreferrer" class="mono">{{ shorten(token.issuer) }}</a></span>
+                    <button @click="copyIssuer" class="btn dark select-none" style="padding:2px 8px;font-size:10.5px">
+                      {{ copied ? 'Copied!' : 'Copy Address' }}
+                    </button>
+                  </div>
                 </div>
               </div>
 
