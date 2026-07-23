@@ -940,11 +940,87 @@ class StellarTokenService
         });
     }
 
+    private function getStellarTermTicker(): array
+    {
+        return Cache::remember('stellarterm_ticker_data', 300, function () {
+            try {
+                $response = Http::timeout(5)->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0'
+                ])->get('https://api.stellarterm.com/v1/ticker.json');
+                if ($response->ok()) {
+                    return $response->json() ?? [];
+                }
+            } catch (\Throwable $e) {
+                Log::error('StellarTerm ticker fetch failed', ['msg' => $e->getMessage()]);
+            }
+            return [];
+        });
+    }
+
     public function getAssetVolume24h(string $code, string $issuer, float $xlmUsdPrice, float $usdPrice): array
     {
         $assetType = $this->getAssetType($code);
-        $totalVolumeXlm = 0.0;
         
+        // 1. Try StellarTerm ticker first (aggregates all trading pairs for major tokens)
+        $ticker = $this->getStellarTermTicker();
+        $assets = $ticker['assets'] ?? [];
+        foreach ($assets as $asset) {
+            if (($asset['code'] ?? null) === $code && ($asset['issuer'] ?? null) === $issuer) {
+                $totalVolumeUsd = (float) ($asset['volume24h_USD'] ?? 0.0);
+                if ($totalVolumeUsd > 0.0) {
+                    $lpVolume24h = 0.0;
+                    $poolVolumes = [];
+                    try {
+                        $response = Http::timeout(5)->get($this->horizon . '/trades', [
+                            'base_asset_type'   => $assetType,
+                            'base_asset_code'   => $code,
+                            'base_asset_issuer' => $issuer,
+                            'counter_asset_type' => 'native',
+                            'order'             => 'desc',
+                            'limit'             => 200,
+                        ]);
+                        if ($response->ok()) {
+                            $records = $response->json('_embedded.records') ?? [];
+                            $now = time();
+                            foreach ($records as $trade) {
+                                $closeTime = strtotime($trade['ledger_close_time'] ?? '');
+                                if ($now - $closeTime > 86400) {
+                                    continue;
+                                }
+                                if ($trade['trade_type'] === 'liquidity_pool') {
+                                    $isBase = (($trade['base_asset_code'] ?? null) === $code && ($trade['base_asset_issuer'] ?? null) === $issuer);
+                                    if (($trade['counter_asset_type'] ?? null) === 'native') {
+                                        $xlmAmount = (float) $trade['counter_amount'];
+                                        $tradeValUsd = $xlmAmount * $xlmUsdPrice;
+                                    } elseif (($trade['base_asset_type'] ?? null) === 'native') {
+                                        $xlmAmount = (float) $trade['base_amount'];
+                                        $tradeValUsd = $xlmAmount * $xlmUsdPrice;
+                                    } else {
+                                        $tokenAmount = $isBase ? (float) $trade['base_amount'] : (float) $trade['counter_amount'];
+                                        $tradeValUsd = $tokenAmount * $usdPrice;
+                                    }
+                                    $lpVolume24h += $tradeValUsd;
+                                    $poolId = $trade['counter_liquidity_pool_id'] ?? $trade['base_liquidity_pool_id'] ?? null;
+                                    if ($poolId) {
+                                        $poolVolumes[$poolId] = ($poolVolumes[$poolId] ?? 0.0) + $tradeValUsd;
+                                    }
+                                }
+                            }
+                        }
+                    } catch (\Throwable $e) {}
+
+                    return [
+                        'lp_volume_24h' => $lpVolume24h,
+                        'dex_volume_24h' => max(0.0, $totalVolumeUsd - $lpVolume24h),
+                        'total_volume_24h' => $totalVolumeUsd,
+                        'pool_volumes' => $poolVolumes,
+                    ];
+                }
+            }
+        }
+
+        // 2. Fallback to Horizon trade aggregations (e.g. for custom/local assets)
+        $totalVolumeXlm = 0.0;
         try {
             $nowMs = time() * 1000;
             $startMs = $nowMs - 24 * 3600 * 1000;
