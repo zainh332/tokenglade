@@ -2976,4 +2976,24 @@ table.trades tr:hover td {
     font-size: 14px !important;
   }
 }
+
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: rgba(17, 22, 32, 0.5);
+  border-radius: 4px;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgba(40, 52, 73, 0.8);
+  border-radius: 4px;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 73, 102, 1);
+}
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(40, 52, 73, 0.8) rgba(17, 22, 32, 0.5);
+}
 </style>
