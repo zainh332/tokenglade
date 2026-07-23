@@ -1026,20 +1026,20 @@
 
                 <!-- Key Metrics Grid -->
                 <div class="p-4 space-y-2 border-b border-slate-800/60">
-                  <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block font-mono">◈ Key Metrics</span>
+                  <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block font-mono">Key Metrics</span>
                   <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse py-1">Loading metrics...</div>
-                  <div v-else class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-                    <div class="flex justify-between items-center">
+                  <div v-else class="grid grid-cols-3 gap-2 text-xs">
+                    <div class="flex flex-col gap-0.5">
                       <span class="text-slate-400">Whales:</span>
                       <span class="font-mono text-white" :class="parseFloat(top10Percentage) > 50 ? 'text-rose-400' : 'text-emerald-400'">
                         {{ parseFloat(top10Percentage) > 50 ? 'High' : 'Low' }} ({{ top10Percentage }}%)
                       </span>
                     </div>
-                    <div class="flex justify-between items-center">
+                    <div class="flex flex-col gap-0.5">
                       <span class="text-slate-400">Slippage ($10k):</span>
                       <span class="font-mono text-white">{{ calculatedSlippage }}</span>
                     </div>
-                    <div class="flex justify-between items-center col-span-2">
+                    <div class="flex flex-col gap-0.5">
                       <span class="text-slate-400">Contract Lock:</span>
                       <span class="font-mono" :class="token.issuer_locked ? 'text-emerald-400' : 'text-amber'">
                         {{ token.issuer_locked ? 'Secured (Locked)' : 'Unlocked Issuer' }}
