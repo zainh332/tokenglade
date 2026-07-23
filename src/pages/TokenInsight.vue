@@ -3011,7 +3011,8 @@ table.trades tr:hover td {
 
 @media (max-width: 768px) {
   .wrap {
-    padding: 0 12px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
   }
   .asset {
     padding: 14px !important;
