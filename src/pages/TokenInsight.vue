@@ -1386,10 +1386,6 @@ const bullishSignals = computed(() => {
 
 const bearishSignals = computed(() => {
   const list = []
-  const tvl = token.liquidity_overview?.total_tvl || token.liquidity_tvl || 0
-  if (tvl < 15000) {
-    list.push(`Liquidity pool is shallow ($${formatNumber(tvl)} TVL), check slippage`)
-  }
   if (historicalStats.value?.price_change_pct < 0) {
     list.push(`Price is down (${historicalStats.value.price_change_pct}% change)`)
   }
@@ -1722,12 +1718,7 @@ const aiRiskSummary = computed(() => {
   }
 
   // 2. Liquidity check
-  let liquidityStatus = 'low';
-  if (tvl > 50000) {
-    liquidityStatus = 'robust';
-  } else if (tvl > 10000) {
-    liquidityStatus = 'moderate';
-  }
+  let liquidityStatus = 'robust';
 
   // 3. Synthesize risk assessment
   let riskLevel = 'Low Risk';
