@@ -415,31 +415,9 @@
                 </div>
               </div>
 
-              <!-- Health scorecard -->
-              <div class="card" style="overflow: visible; position: relative; z-index: 30;">
-                <div class="card-hd"><h3>Token Health Metrics</h3><span class="tag">Composite {{ token.rating?.average?.toFixed(1) || '7.5' }} / 10</span></div>
-                <div class="health" style="overflow: visible;">
-                  <div v-for="item in ratingBars" :key="item.key" class="hm" :class="{ weak: item.val < 6 }">
-                    <div class="top">
-                      <span class="dim capitalize flex items-center gap-1.5">
-                        {{ item.label }}
-                        <span class="group/tooltip relative inline-flex items-center cursor-pointer">
-                          <Info class="w-3.5 h-3.5 text-slate-500 group-hover/tooltip:text-cyan-400 transition-colors" />
-                          <span class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/tooltip:block w-max max-w-[200px] px-2.5 py-1.5 bg-[#0e131c] border border-[#28313f] rounded-lg text-[10.5px] font-mono text-slate-200 shadow-2xl z-[999] text-center leading-snug whitespace-normal">
-                            {{ item.sub }}
-                          </span>
-                        </span>
-                      </span>
-                      <b>{{ item.val }}/10</b>
-                    </div>
-                    <div class="track"><i :style="{ width: (item.val * 10) + '%' }"></i></div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Market Exposure & Trades -->
+              <!-- Market Exposure Stats -->
               <div class="card expo">
-                <div class="card-hd"><h3>Market Exposure & Live Trades</h3><span class="tag"><span class="dot"></span>Streaming</span></div>
+                <div class="card-hd"><h3>Market Exposure</h3></div>
                 <div class="expo-stats">
                   <div class="st">
                     <div class="k">Buy / Sell Ratio</div>
@@ -477,24 +455,111 @@
                     <div class="sub dim font-mono">lifetime</div>
                   </div>
                 </div>
+              </div>
+
+              <!-- Order Book (Buy/Sell) -->
+              <div class="card">
+                <div class="card-hd">
+                  <h3>Order Book</h3>
+                  <span class="tag">DEX Depth</span>
+                </div>
                 
-                <table class="trades select-all">
-                  <thead><tr><th>Side</th><th>Amount</th><th>Price</th><th>Value</th><th>Time</th></tr></thead>
-                  <tbody v-if="token.transactions && token.transactions.length">
-                    <tr v-for="(tx, i) in (token.transactions || []).slice(0, showAllTrades ? 30 : 5)" :key="i">
-                      <td><span class="side" :class="tx.side === 'buy' ? 'buy' : 'sell'">{{ tx.side.toUpperCase() }}</span></td>
-                      <td>{{ formatPrice2Deci(tx.amount) }} {{ token.asset_code }}</td>
-                      <td>{{ formatPrice(tx.price) }}</td>
-                      <td class="dim">{{ formatPrice2Deci(tx.value) }} XLM</td>
-                      <td class="dim">{{ tx.time }}</td>
-                    </tr>
-                  </tbody>
-                  <tbody v-else>
-                    <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--faint)">No live trade logs detected</td></tr>
-                  </tbody>
-                </table>
-                <div v-if="(token.transactions || []).length > 5" @click="showAllTrades = !showAllTrades" class="viewall select-none">
-                  {{ showAllTrades ? 'Show compact list ↑' : 'View all trades (' + (token.transactions || []).length + ') ↓' }}
+                <div style="padding: 20px;">
+                  <div v-if="orderBook.loading" class="flex flex-col items-center justify-center py-12">
+                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-cyan-500"></div>
+                    <span class="text-xs text-slate-400 font-bold mt-2">Loading DEX order book...</span>
+                  </div>
+                  
+                  <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Bids (Buy Orders) -->
+                    <div>
+                      <div class="flex justify-between items-center mb-2 px-1">
+                        <span class="text-xs font-bold text-emerald-400 font-mono">BIDS (BUY)</span>
+                        <span class="text-[10px] text-slate-500 font-mono">Spread: {{ spreadPercent }}%</span>
+                      </div>
+                      <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
+                        <table class="trades select-all">
+                          <thead>
+                            <tr>
+                              <th style="text-align: left; padding: 6px 12px;">Depth ({{ token.asset_code }})</th>
+                              <th style="text-align: right; padding: 6px 12px;">Total (XLM)</th>
+                              <th style="text-align: right; padding: 6px 12px;">Size ({{ token.asset_code }})</th>
+                              <th style="text-align: right; padding: 6px 12px; color: var(--up);">Price (XLM)</th>
+                            </tr>
+                          </thead>
+                          <tbody v-if="orderBook.bids.length">
+                            <tr v-for="(bid, index) in orderBook.bids" :key="'bid-'+index">
+                              <td style="text-align: left; padding: 7px 12px;" class="dim">{{ formatNumber(getBidDepth(index)) }}</td>
+                              <td style="text-align: right; padding: 7px 12px;" class="dim">{{ formatPrice2Deci(bid.amount * bid.price) }}</td>
+                              <td style="text-align: right; padding: 7px 12px;">{{ formatNumber(bid.amount) }}</td>
+                              <td style="text-align: right; padding: 7px 12px;" class="up font-bold">{{ parseFloat(bid.price).toFixed(6) }}</td>
+                            </tr>
+                          </tbody>
+                          <tbody v-else>
+                            <tr>
+                              <td colspan="4" class="py-6 text-center text-xs font-medium" style="color:var(--faint)">No buy bids detected</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <!-- Asks (Sell Orders) -->
+                    <div>
+                      <div class="flex justify-between items-center mb-2 px-1">
+                        <span class="text-xs font-bold text-rose-400 font-mono">ASKS (SELL)</span>
+                        <span class="text-[10px] text-slate-500 font-mono">Depth: {{ orderBook.asks.length }} orders</span>
+                      </div>
+                      <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
+                        <table class="trades select-all">
+                          <thead>
+                            <tr>
+                              <th style="text-align: left; padding: 6px 12px; color: var(--down);">Price (XLM)</th>
+                              <th style="text-align: right; padding: 6px 12px;">Size ({{ token.asset_code }})</th>
+                              <th style="text-align: right; padding: 6px 12px;">Total (XLM)</th>
+                              <th style="text-align: right; padding: 6px 12px;">Depth ({{ token.asset_code }})</th>
+                            </tr>
+                          </thead>
+                          <tbody v-if="orderBook.asks.length">
+                            <tr v-for="(ask, index) in orderBook.asks" :key="'ask-'+index">
+                              <td style="text-align: left; padding: 7px 12px;" class="down font-bold">{{ parseFloat(ask.price).toFixed(6) }}</td>
+                              <td style="text-align: right; padding: 7px 12px;">{{ formatNumber(ask.amount) }}</td>
+                              <td style="text-align: right; padding: 7px 12px;" class="dim">{{ formatPrice2Deci(ask.amount * ask.price) }}</td>
+                              <td style="text-align: right; padding: 7px 12px;" class="dim">{{ formatNumber(getAskDepth(index)) }}</td>
+                            </tr>
+                          </tbody>
+                          <tbody v-else>
+                            <tr>
+                              <td colspan="4" class="py-6 text-center text-xs font-medium" style="color:var(--faint)">No sell asks detected</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent Trades -->
+              <div class="card expo">
+                <div class="card-hd"><h3>Recent Trades</h3><span class="tag"><span class="dot"></span>Streaming</span></div>
+                
+                <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
+                  <table class="trades select-all">
+                    <thead><tr><th>Side</th><th>Amount</th><th>Price</th><th>Value</th><th>Time</th></tr></thead>
+                    <tbody v-if="token.transactions && token.transactions.length">
+                      <tr v-for="(tx, i) in (token.transactions || []).slice(0, 30)" :key="i">
+                        <td><span class="side" :class="tx.side === 'buy' ? 'buy' : 'sell'">{{ tx.side.toUpperCase() }}</span></td>
+                        <td>{{ formatPrice2Deci(tx.amount) }} {{ token.asset_code }}</td>
+                        <td>{{ formatPrice(tx.price) }}</td>
+                        <td class="dim">{{ formatPrice2Deci(tx.value) }} XLM</td>
+                        <td class="dim">{{ tx.time }}</td>
+                      </tr>
+                    </tbody>
+                    <tbody v-else>
+                      <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--faint)">No live trade logs detected</td></tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
@@ -833,15 +898,77 @@
 
             <!-- RIGHT COLUMN: SIDEBAR WIDGETS -->
             <aside class="rail" v-if="activeTab === 'overview'">
-              <!-- AI Risk Summary -->
-              <div class="card ai animate-pulseWrapper">
-                <div class="card-hd"><h3>AI Risk Summary</h3><span class="tag">Model V2</span></div>
-                <p>{{ aiRiskSummary.text }}</p>
-                <div class="mini">
-                  <div><div class="k">Concentration</div><div class="v font-mono" :class="parseFloat(top10Percentage) > 50 ? 'down' : 'up'">{{ parseFloat(top10Percentage) > 50 ? 'High' : 'Low' }} · {{ top10Percentage }}%</div></div>
-                  <div><div class="k">Rug flags</div><div class="v up font-mono">None</div></div>
-                  <div><div class="k">Slippage @$10k</div><div class="v font-mono">0.4%</div></div>
-                  <div><div class="k">Sell pressure</div><div class="v down font-mono">Elevated</div></div>
+              <!-- Market Insight -->
+              <div class="card ai select-text">
+                <div class="card-hd"><h3>Market Insight</h3><span class="tag">AI Engine</span></div>
+                
+                <!-- Score Bar -->
+                <div class="px-4 pt-4 pb-2">
+                  <div class="flex justify-between items-center mb-1.5">
+                    <span class="text-xs font-mono text-slate-400">Composite Score</span>
+                    <span class="text-sm font-bold font-mono text-white">{{ token.rating?.average?.toFixed(1) || '7.5' }} / 10</span>
+                  </div>
+                  <div class="track h-2 bg-[#1a212c] rounded-full overflow-hidden">
+                    <i class="block h-full rounded-full transition-all duration-500" 
+                       :class="token.rating?.average >= 8 ? 'bg-[#2ED47A]' : (token.rating?.average >= 5 ? 'bg-[#FF8A3D]' : 'bg-[#F0616D]')"
+                       :style="{ width: ((token.rating?.average || 7.5) * 10) + '%' }"></i>
+                  </div>
+                </div>
+
+                <!-- Signals Grid -->
+                <div class="grid grid-cols-1 divide-y divide-slate-800/60 border-t border-b border-slate-800/60 bg-[#0E131C]">
+                  <!-- Bullish Signals -->
+                  <div class="p-4 space-y-2">
+                    <span class="text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider block font-mono">▲ Bullish Signals</span>
+                    <ul class="text-xs space-y-1 text-slate-300">
+                      <li v-for="sig in bullishSignals" :key="sig" class="flex items-start gap-1.5 leading-relaxed">
+                        <span class="text-emerald-400 font-bold">✓</span>
+                        <span>{{ sig }}</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Bearish Signals -->
+                  <div class="p-4 space-y-2">
+                    <span class="text-[10px] font-extrabold text-rose-400 uppercase tracking-wider block font-mono">▼ Bearish Signals</span>
+                    <ul class="text-xs space-y-1 text-slate-300">
+                      <li v-for="sig in bearishSignals" :key="sig" class="flex items-start gap-1.5 leading-relaxed">
+                        <span class="text-rose-400 font-bold">⚠</span>
+                        <span>{{ sig }}</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- Key Metrics Grid -->
+                <div class="p-4 space-y-2 border-b border-slate-800/60">
+                  <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block font-mono">◈ Key Metrics</span>
+                  <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                    <div class="flex justify-between items-center">
+                      <span class="text-slate-400">Whales:</span>
+                      <span class="font-mono text-white" :class="parseFloat(top10Percentage) > 50 ? 'text-rose-400' : 'text-emerald-400'">
+                        {{ parseFloat(top10Percentage) > 50 ? 'High' : 'Low' }} ({{ top10Percentage }}%)
+                      </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-slate-400">Slippage ($10k):</span>
+                      <span class="font-mono text-white">{{ calculatedSlippage }}</span>
+                    </div>
+                    <div class="flex justify-between items-center col-span-2">
+                      <span class="text-slate-400">Contract Lock:</span>
+                      <span class="font-mono" :class="token.issuer_locked ? 'text-emerald-400' : 'text-amber'">
+                        {{ token.issuer_locked ? 'Secured (Locked)' : 'Unlocked Issuer' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Conclusion -->
+                <div class="p-4 space-y-2">
+                  <span class="text-[10px] font-extrabold text-cyan-400 uppercase tracking-wider block font-mono">✍ AI Conclusion</span>
+                  <p class="text-xs text-slate-300 leading-relaxed m-0 p-0" style="padding: 0 !important; color: var(--dim) !important;">
+                    {{ aiRiskSummary.text }}
+                  </p>
                 </div>
               </div>
 
@@ -1082,6 +1209,76 @@ const xlmPriceInUsd = computed(() => {
   return 0.1878; // standard fallback rate
 })
 
+const orderBook = reactive({
+  bids: [],
+  asks: [],
+  loading: true
+})
+
+const spreadPercent = computed(() => {
+  if (orderBook.bids?.length && orderBook.asks?.length) {
+    const highestBid = parseFloat(orderBook.bids[0].price)
+    const lowestAsk = parseFloat(orderBook.asks[0].price)
+    if (highestBid > 0) {
+      return (((lowestAsk - highestBid) / highestBid) * 100).toFixed(2)
+    }
+  }
+  return '0.00'
+})
+
+const bullishSignals = computed(() => {
+  const list = []
+  if (historicalStats.value?.price_change_pct > 0) {
+    list.push(`Price momentum is positive (+${historicalStats.value.price_change_pct}% recently)`)
+  }
+  if (historicalStats.value?.trustlines_change > 0) {
+    list.push(`Added +${historicalStats.value.trustlines_change} trustlines in current track`)
+  }
+  if (buySellVolume.value.buyPercent > 50) {
+    list.push(`Buy pressure dominant (${buySellVolume.value.buyPercent}% buy volume)`)
+  }
+  if (token.issuer_locked) {
+    list.push(`Issuer key is permanently locked (no mint risk)`)
+  }
+  if (list.length === 0) {
+    list.push('Holder sentiment is stable')
+  }
+  return list
+})
+
+const bearishSignals = computed(() => {
+  const list = []
+  const tvl = token.liquidity_overview?.total_tvl || token.liquidity_tvl || 0
+  if (tvl < 15000) {
+    list.push(`Liquidity pool is shallow ($${formatNumber(tvl)} TVL), check slippage`)
+  }
+  if (historicalStats.value?.price_change_pct < 0) {
+    list.push(`Price is down (${historicalStats.value.price_change_pct}% change)`)
+  }
+  if (parseFloat(top10Percentage.value) > 50) {
+    list.push(`Elevated whale concentration (top 10 hold ${top10Percentage.value}%)`)
+  }
+  if (buySellVolume.value.buyPercent < 45) {
+    list.push(`Sell pressure dominant (${100 - buySellVolume.value.buyPercent}% sell volume)`)
+  }
+  if (!token.issuer_locked) {
+    list.push(`Issuer key unlocked (potential mint inflation risk)`)
+  }
+  if (list.length === 0) {
+    list.push('No critical bearish indicators flagged')
+  }
+  return list
+})
+
+const calculatedSlippage = computed(() => {
+  const tvl = token.liquidity_overview?.total_tvl || token.liquidity_tvl || 0
+  if (tvl >= 100000) return '0.1%'
+  if (tvl >= 50000) return '0.3%'
+  if (tvl >= 15000) return '0.9%'
+  if (tvl >= 5000) return '3.2%'
+  return '9.5%'
+})
+
 
 const fetchHistoricalStats = async () => {
   const code = token.asset_code || route.params.code
@@ -1107,6 +1304,55 @@ const fetchHistoricalStats = async () => {
   } finally {
     historicalStatsLoading.value = false
   }
+}
+
+const fetchOrderBook = async () => {
+  const code = token.asset_code || route.params.code
+  const issuer = token.issuer || route.params.issuer
+  if (!code || !issuer) {
+    orderBook.loading = false
+    return
+  }
+  orderBook.loading = true
+  try {
+    const envRes = await axios.get('/api/env')
+    const isTestnet = envRes.data?.stellar_env !== 'public'
+    const horizonUrl = isTestnet ? 'https://horizon-testnet.stellar.org' : 'https://horizon.stellar.org'
+    
+    const sellingType = code.length <= 4 ? 'credit_alphanum4' : 'credit_alphanum12'
+    const res = await axios.get(`${horizonUrl}/order_book`, {
+      params: {
+        selling_asset_type: sellingType,
+        selling_asset_code: code,
+        selling_asset_issuer: issuer,
+        buying_asset_type: 'native',
+        limit: 50
+      }
+    })
+    
+    orderBook.bids = res.data?.bids || []
+    orderBook.asks = res.data?.asks || []
+  } catch (err) {
+    console.error('Error fetching order book:', err)
+  } finally {
+    orderBook.loading = false
+  }
+}
+
+const getBidDepth = (index) => {
+  let sum = 0
+  for (let i = 0; i <= index; i++) {
+    sum += parseFloat(orderBook.bids[i]?.amount || 0)
+  }
+  return sum
+}
+
+const getAskDepth = (index) => {
+  let sum = 0
+  for (let i = 0; i <= index; i++) {
+    sum += parseFloat(orderBook.asks[i]?.amount || 0)
+  }
+  return sum
 }
 
 const changeStatsTimeframe = (tf) => {
@@ -1484,6 +1730,7 @@ async function fetchToken() {
     fetchHolders()
     fetchLiquidity()
     fetchHistoricalStats()
+    fetchOrderBook()
   } catch (error) {
     console.error("Error fetching token data:", error)
   } finally {
@@ -1503,6 +1750,7 @@ function switchTab(tab) {
     nextTick(() => {
       initChart()
       fetchChartData()
+      fetchOrderBook()
     })
   } else if (tab === 'holders' && (!token.top_holders || token.top_holders.length === 0) && !holdersLoading.value) {
     fetchHolders()
