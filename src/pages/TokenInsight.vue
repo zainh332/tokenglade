@@ -554,7 +554,8 @@
                             </tr>
                           </thead>
                           <tbody v-if="orderBook.bids.length">
-                            <tr v-for="(bid, index) in orderBook.bids" :key="'bid-'+index">
+                            <tr v-for="(bid, index) in orderBook.bids" :key="'bid-'+index"
+                                :style="{ background: 'linear-gradient(to left, rgba(46, 212, 122, 0.09) 0%, rgba(46, 212, 122, 0.09) ' + ((getBidDepth(index) / totalBidDepth) * 100) + '%, transparent ' + ((getBidDepth(index) / totalBidDepth) * 100) + '%)' }">
                               <td style="text-align: left; padding: 7px 12px;" class="dim">{{ formatNumber(getBidDepth(index)) }}</td>
                               <td style="text-align: right; padding: 7px 12px;" class="dim">{{ formatPrice2Deci(bid.amount * bid.price) }}</td>
                               <td style="text-align: right; padding: 7px 12px;">{{ formatNumber(bid.amount) }}</td>
@@ -587,7 +588,8 @@
                             </tr>
                           </thead>
                           <tbody v-if="orderBook.asks.length">
-                            <tr v-for="(ask, index) in orderBook.asks" :key="'ask-'+index">
+                            <tr v-for="(ask, index) in orderBook.asks" :key="'ask-'+index"
+                                :style="{ background: 'linear-gradient(to right, rgba(240, 97, 109, 0.09) 0%, rgba(240, 97, 109, 0.09) ' + ((getAskDepth(index) / totalAskDepth) * 100) + '%, transparent ' + ((getAskDepth(index) / totalAskDepth) * 100) + '%)' }">
                               <td style="text-align: left; padding: 7px 12px;" class="down font-bold">{{ parseFloat(ask.price).toFixed(6) }}</td>
                               <td style="text-align: right; padding: 7px 12px;">{{ formatNumber(ask.amount) }}</td>
                               <td style="text-align: right; padding: 7px 12px;" class="dim">{{ formatPrice2Deci(ask.amount * ask.price) }}</td>
@@ -1424,6 +1426,16 @@ const getAskDepth = (index) => {
   }
   return sum
 }
+
+const totalBidDepth = computed(() => {
+  if (!orderBook.bids?.length) return 1
+  return getBidDepth(orderBook.bids.length - 1) || 1
+})
+
+const totalAskDepth = computed(() => {
+  if (!orderBook.asks?.length) return 1
+  return getAskDepth(orderBook.asks.length - 1) || 1
+})
 
 const changeStatsTimeframe = (tf) => {
   if (selectedStatsTimeframe.value === tf) return
