@@ -1464,7 +1464,7 @@ const fetchOrderBook = async () => {
         selling_asset_code: code,
         selling_asset_issuer: issuer,
         buying_asset_type: 'native',
-        limit: 50
+        limit: 200
       }
     })
     
