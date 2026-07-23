@@ -123,6 +123,9 @@ class StellarTokenService
         $holders = $response?->json('trustlines.funded');
         $xlmUsdPrice = $this->getXlmUsdPrice();
         $usd_price = $price_xlm !== null ? ($price_xlm * $xlmUsdPrice) : 0.0;
+        
+        $volumes = $this->getAssetVolume24h($code, $issuer, $xlmUsdPrice, $usd_price);
+
         $formattedSupply = (float) ($horizon['balances']['authorized'] ?? 0)
             + (float) ($horizon['claimable_balances_amount'] ?? 0)
             + (float) ($horizon['liquidity_pools_amount'] ?? 0)
@@ -213,6 +216,7 @@ class StellarTokenService
             'contracts_amount' => $horizon['contracts_amount'] ?? 0,
             'transactions' => $transactions,
             'volume_1h' => 0.0,
+            'volume_24h' => $volumes['total_volume_24h'],
             'usd_price' => $usd_price,
             'xlm_price' => $price_xlm,
 
@@ -679,6 +683,9 @@ class StellarTokenService
             }
         }
         
+        $volumes = $this->getAssetVolume24h($code, $issuer, $xlmUsdPrice, $usd_price);
+        $poolVolumes = $volumes['pool_volumes'];
+
         $pools = [];
         $totalTvl = 0;
         
@@ -733,8 +740,8 @@ class StellarTokenService
             
             $totalTvl += $tvl;
             
-            $shares = (float) ($record['total_shares'] ?? 0);
-            $volume = $tvl * (0.08 + (sin($shares) * 0.04));
+            $poolId = $record['id'];
+            $volume = $poolVolumes[$poolId] ?? 0.0;
             $apr = $tvl > 0 ? (($volume * 0.003 * 365) / $tvl) * 100 : 0;
             
             $pools[] = [
@@ -931,5 +938,100 @@ class StellarTokenService
                 'project_holders' => $projectHolders,
             ];
         });
+    }
+
+    public function getAssetVolume24h(string $code, string $issuer, float $xlmUsdPrice, float $usdPrice): array
+    {
+        $assetType = $this->getAssetType($code);
+        $totalVolumeXlm = 0.0;
+        
+        try {
+            $nowMs = time() * 1000;
+            $startMs = $nowMs - 24 * 3600 * 1000;
+            $aggResponse = Http::timeout(5)->get($this->horizon . '/trade_aggregations', [
+                'base_asset_type'    => $assetType,
+                'base_asset_code'    => $code,
+                'base_asset_issuer'  => $issuer,
+                'counter_asset_type' => 'native',
+                'resolution'         => 3600000,
+                'start_time'         => $startMs,
+                'end_time'           => $nowMs,
+                'limit'              => 50,
+            ]);
+            
+            if ($aggResponse->ok()) {
+                $records = $aggResponse->json('_embedded.records') ?? [];
+                foreach ($records as $r) {
+                    $totalVolumeXlm += (float) ($r['counter_volume'] ?? 0.0);
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('trade_aggregations failed', ['msg' => $e->getMessage()]);
+        }
+
+        $lpVolume24h = 0.0;
+        $dexVolume24h = 0.0;
+        $poolVolumes = [];
+        
+        try {
+            $response = Http::timeout(5)->get($this->horizon . '/trades', [
+                'base_asset_type'   => $assetType,
+                'base_asset_code'   => $code,
+                'base_asset_issuer' => $issuer,
+                'counter_asset_type' => 'native',
+                'order'             => 'desc',
+                'limit'             => 200,
+            ]);
+            
+            if ($response->ok()) {
+                $records = $response->json('_embedded.records') ?? [];
+                $now = time();
+                foreach ($records as $trade) {
+                    $closeTime = strtotime($trade['ledger_close_time'] ?? '');
+                    if ($now - $closeTime > 86400) {
+                        continue;
+                    }
+                    
+                    $tradeValUsd = 0.0;
+                    $isBase = (($trade['base_asset_code'] ?? null) === $code && ($trade['base_asset_issuer'] ?? null) === $issuer);
+                    
+                    if (($trade['counter_asset_type'] ?? null) === 'native') {
+                        $xlmAmount = (float) $trade['counter_amount'];
+                        $tradeValUsd = $xlmAmount * $xlmUsdPrice;
+                    } elseif (($trade['base_asset_type'] ?? null) === 'native') {
+                        $xlmAmount = (float) $trade['base_amount'];
+                        $tradeValUsd = $xlmAmount * $xlmUsdPrice;
+                    } else {
+                        $tokenAmount = $isBase ? (float) $trade['base_amount'] : (float) $trade['counter_amount'];
+                        $tradeValUsd = $tokenAmount * $usdPrice;
+                    }
+                    
+                    if ($trade['trade_type'] === 'liquidity_pool') {
+                        $lpVolume24h += $tradeValUsd;
+                        $poolId = $trade['counter_liquidity_pool_id'] ?? $trade['base_liquidity_pool_id'] ?? null;
+                        if ($poolId) {
+                            $poolVolumes[$poolId] = ($poolVolumes[$poolId] ?? 0.0) + $tradeValUsd;
+                        }
+                    } else {
+                        $dexVolume24h += $tradeValUsd;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('getAssetVolume24h trades failed', ['msg' => $e->getMessage()]);
+        }
+
+        $totalVolumeUsd = $totalVolumeXlm * $xlmUsdPrice;
+        
+        if ($totalVolumeUsd <= 0.0) {
+            $totalVolumeUsd = $lpVolume24h + $dexVolume24h;
+        }
+
+        return [
+            'lp_volume_24h' => $lpVolume24h,
+            'dex_volume_24h' => $dexVolume24h,
+            'total_volume_24h' => $totalVolumeUsd,
+            'pool_volumes' => $poolVolumes,
+        ];
     }
 }

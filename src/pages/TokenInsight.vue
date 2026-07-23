@@ -265,15 +265,15 @@
               <div class="st flex flex-col justify-between">
                 <div class="k">24H Volume</div>
                 <div class="v font-mono">
-                  <template v-if="token.liquidity_overview?.lp_volume_24h || token.volume_24h">
-                    {{ formatNumber((token.liquidity_overview?.lp_volume_24h || token.volume_24h) / xlmPriceInUsd) }} XLM
+                  <template v-if="token.volume_24h !== undefined ? token.volume_24h : token.liquidity_overview?.lp_volume_24h">
+                    {{ formatNumber((token.volume_24h !== undefined ? token.volume_24h : token.liquidity_overview?.lp_volume_24h) / xlmPriceInUsd) }} XLM
                   </template>
                   <template v-else-if="loading || liquidityLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                   <template v-else>0 XLM</template>
                 </div>
                 <div class="sub font-mono dim">
-                  <template v-if="token.liquidity_overview?.lp_volume_24h || token.volume_24h">
-                    ≈ ${{ formatNumber(token.liquidity_overview?.lp_volume_24h || token.volume_24h) }}
+                  <template v-if="token.volume_24h !== undefined ? token.volume_24h : token.liquidity_overview?.lp_volume_24h">
+                    ≈ ${{ formatNumber(token.volume_24h !== undefined ? token.volume_24h : token.liquidity_overview?.lp_volume_24h) }}
                   </template>
                   <template v-else-if="loading || liquidityLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                   <template v-else>≈ $0</template>
@@ -1528,6 +1528,7 @@ const token = reactive({
   usd_price: 0,
   xlm_price: 0,
   price_change_24h: 2.4,
+  volume_24h: undefined,
   total_supply: 10000000,
   top_holders: [],
   project_holders: [],
