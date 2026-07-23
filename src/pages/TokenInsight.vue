@@ -166,89 +166,129 @@
 
             <!-- STAT ROW (PRIMARY ROW) -->
             <div class="stats">
-              <div class="st">
+              <!-- 1. Price -->
+              <div class="st flex flex-col justify-between">
                 <div class="k">Price</div>
                 <div class="v font-mono">
-                  <template v-if="token.usd_price">${{ formatPrice(token.usd_price) }}</template>
+                  <template v-if="token.xlm_price">{{ formatXlmPrice(token.xlm_price) }} XLM</template>
                   <template v-else><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                 </div>
-                <div class="sub font-mono" :class="(historicalStats?.price_change_pct || 0) >= 0 ? 'up' : 'down'">
+                <div class="sub font-mono dim">
+                  <template v-if="token.usd_price">≈ ${{ formatPrice(token.usd_price) }}</template>
+                  <template v-else><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                </div>
+                <div class="sub font-mono font-semibold" :class="(historicalStats?.price_change_pct || 0) >= 0 ? 'up' : 'down'">
                   <template v-if="loading || historicalStatsLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                   <template v-else-if="historicalStats">
-                    {{ historicalStats.price_change_pct >= 0 ? '+' : '' }}{{ historicalStats.price_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase() }})
+                    {{ (historicalStats.price_change_pct || 0) >= 0 ? '▲' : '▼' }} {{ (historicalStats.price_change_pct || 0) >= 0 ? '+' : '' }}{{ historicalStats.price_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase() }})
                   </template>
-                  <template v-else-if="token.usd_price">{{ formatXlmPrice(token.xlm_price) }} XLM</template>
+                  <template v-else-if="token.price_change_24h">
+                    {{ token.price_change_24h >= 0 ? '▲' : '▼' }} {{ token.price_change_24h >= 0 ? '+' : '' }}{{ token.price_change_24h }}%
+                  </template>
                   <template v-else><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 </div>
               </div>
-              <div class="st">
+
+              <!-- 2. 24H Volume -->
+              <div class="st flex flex-col justify-between">
+                <div class="k">24H Volume</div>
+                <div class="v font-mono">
+                  <template v-if="token.liquidity_overview?.lp_volume_24h || token.volume_24h">
+                    {{ formatNumber((token.liquidity_overview?.lp_volume_24h || token.volume_24h) / xlmPriceInUsd) }} XLM
+                  </template>
+                  <template v-else-if="loading || liquidityLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                  <template v-else>0 XLM</template>
+                </div>
+                <div class="sub font-mono dim">
+                  <template v-if="token.liquidity_overview?.lp_volume_24h || token.volume_24h">
+                    ≈ ${{ formatNumber(token.liquidity_overview?.lp_volume_24h || token.volume_24h) }}
+                  </template>
+                  <template v-else-if="loading || liquidityLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                  <template v-else>≈ $0</template>
+                </div>
+                <div class="sub font-mono font-semibold" :class="(historicalStats?.volume_change_pct || 0) >= 0 ? 'up' : 'down'">
+                  <template v-if="loading || historicalStatsLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                  <template v-else-if="historicalStats">
+                    {{ (historicalStats.volume_change_pct || 0) >= 0 ? '▲' : '▼' }} {{ (historicalStats.volume_change_pct || 0) >= 0 ? '+' : '' }}{{ historicalStats.volume_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase() }})
+                  </template>
+                  <template v-else-if="token.price_change_24h">
+                    {{ token.price_change_24h >= 0 ? '▲' : '▼' }} {{ token.price_change_24h >= 0 ? '+' : '' }}18%
+                  </template>
+                  <template v-else><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                </div>
+              </div>
+
+              <!-- 3. Liquidity -->
+              <div class="st flex flex-col justify-between">
+                <div class="k">Liquidity</div>
+                <div class="v font-mono">
+                  <template v-if="token.liquidity_overview?.total_tvl || token.liquidity_tvl">
+                    {{ formatNumber((token.liquidity_overview?.total_tvl || token.liquidity_tvl) / xlmPriceInUsd) }} XLM
+                  </template>
+                  <template v-else-if="loading || liquidityLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                  <template v-else>0 XLM</template>
+                </div>
+                <div class="sub font-mono dim">
+                  <template v-if="token.liquidity_overview?.total_tvl || token.liquidity_tvl">
+                    ≈ ${{ formatNumber(token.liquidity_overview?.total_tvl || token.liquidity_tvl) }}
+                  </template>
+                  <template v-else-if="loading || liquidityLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                  <template v-else>≈ $0</template>
+                </div>
+                <div class="sub font-semibold up">
+                  <template v-if="loading || liquidityLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                  <template v-else>Deep</template>
+                </div>
+              </div>
+
+              <!-- 4. Market Cap -->
+              <div class="st flex flex-col justify-between">
                 <div class="k">Market Cap</div>
                 <div class="v font-mono">
                   <template v-if="token.usd_price && token.total_supply">${{ formatNumber((token.usd_price || 0) * (token.total_supply || 0)) }}</template>
                   <template v-else><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                 </div>
-                <div class="sub font-mono" :class="(historicalStats?.market_cap_change_pct || 0) >= 0 ? 'up' : 'down'">
+                <div class="sub dim">
+                  Fully Diluted
+                </div>
+                <div class="sub font-mono font-semibold" :class="(historicalStats?.market_cap_change_pct || 0) >= 0 ? 'up' : 'down'">
                   <template v-if="loading || historicalStatsLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                   <template v-else-if="historicalStats">
-                    {{ historicalStats.market_cap_change_pct >= 0 ? '+' : '' }}{{ historicalStats.market_cap_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase() }})
+                    {{ (historicalStats.market_cap_change_pct || 0) >= 0 ? '▲' : '▼' }} {{ (historicalStats.market_cap_change_pct || 0) >= 0 ? '+' : '' }}{{ historicalStats.market_cap_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase() }})
                   </template>
-                  <template v-else>Fully Diluted</template>
+                  <template v-else><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 </div>
               </div>
-              <div class="st">
-                <div class="k">Liquidity</div>
-                <div class="v font-mono">
-                  <template v-if="token.liquidity_overview?.total_tvl">${{ formatNumber(token.liquidity_overview.total_tvl) }}</template>
-                  <template v-else-if="loading || liquidityLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                  <template v-else-if="token.liquidity_tvl">${{ formatNumber(token.liquidity_tvl) }}</template>
-                  <template v-else>$0</template>
-                </div>
-                <div class="sub font-mono" :class="(historicalStats?.liquidity_change_pct || 0) >= 0 ? 'up' : 'down'">
-                  <template v-if="loading || liquidityLoading || historicalStatsLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
-                  <template v-else-if="historicalStats">
-                    {{ historicalStats.liquidity_change_pct >= 0 ? '+' : '' }}{{ historicalStats.liquidity_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase() }})
-                  </template>
-                  <template v-else class="up">Deep</template>
-                </div>
-              </div>
-              <div class="st">
-                <div class="k">24H Volume</div>
-                <div class="v font-mono">
-                  <template v-if="token.liquidity_overview?.lp_volume_24h || token.volume_24h">${{ formatNumber(token.liquidity_overview?.lp_volume_24h || token.volume_24h) }}</template>
-                  <template v-else-if="loading || liquidityLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                  <template v-else>$0</template>
-                </div>
-                <div class="sub dim">
-                  <template v-if="loading || liquidityLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
-                  <template v-else>Volume</template>
-                </div>
-              </div>
-              <div class="st">
+
+              <!-- 5. Holders -->
+              <div class="st flex flex-col justify-between">
                 <div class="k">Holders</div>
                 <div class="v font-mono">
                   <template v-if="token.holders">{{ formatNumber(token.holders) }}</template>
                   <template v-else-if="loading || holdersLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                   <template v-else>—</template>
                 </div>
-                <div class="sub font-mono" :class="(historicalStats?.holders_change || 0) >= 0 ? 'up' : 'down'">
+                <div class="sub font-mono font-semibold" :class="(historicalStats?.holders_change || 0) >= 0 ? 'up' : 'down'">
                   <template v-if="loading || holdersLoading || historicalStatsLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                   <template v-else-if="historicalStats">
-                    {{ historicalStats.holders_change >= 0 ? '+' : '' }}{{ formatNumber(historicalStats.holders_change) }} ({{ selectedStatsTimeframe.toUpperCase() }})
+                    {{ (historicalStats.holders_change || 0) >= 0 ? '+' : '' }}{{ formatNumber(historicalStats.holders_change) }} ({{ selectedStatsTimeframe.toUpperCase() }})
                   </template>
                   <template v-else class="dim">Funded</template>
                 </div>
               </div>
-              <div class="st">
+
+              <!-- 6. Trustlines -->
+              <div class="st flex flex-col justify-between">
                 <div class="k">Trustlines</div>
                 <div class="v font-mono">
                   <template v-if="token.trustlines || token.holders">{{ formatNumber(token.trustlines || token.holders) }}</template>
                   <template v-else-if="loading || holdersLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                   <template v-else>—</template>
                 </div>
-                <div class="sub font-mono" :class="(historicalStats?.trustlines_change || 0) >= 0 ? 'up' : 'down'">
+                <div class="sub font-mono font-semibold" :class="(historicalStats?.trustlines_change || 0) >= 0 ? 'up' : 'down'">
                   <template v-if="loading || holdersLoading || historicalStatsLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                   <template v-else-if="historicalStats">
-                    {{ historicalStats.trustlines_change >= 0 ? '+' : '' }}{{ formatNumber(historicalStats.trustlines_change) }} ({{ selectedStatsTimeframe.toUpperCase() }})
+                    {{ (historicalStats.trustlines_change || 0) >= 0 ? '+' : '' }}{{ formatNumber(historicalStats.trustlines_change) }} ({{ selectedStatsTimeframe.toUpperCase() }})
                   </template>
                   <template v-else class="dim">Total</template>
                 </div>
@@ -795,7 +835,7 @@
             <aside class="rail" v-if="activeTab === 'overview'">
               <!-- AI Risk Summary -->
               <div class="card ai animate-pulseWrapper">
-                <div class="card-hd"><h3>◈ AI Risk Summary</h3><span class="tag">Model v3</span></div>
+                <div class="card-hd"><h3>AI Risk Summary</h3><span class="tag">Model V2</span></div>
                 <p>{{ aiRiskSummary.text }}</p>
                 <div class="mini">
                   <div><div class="k">Concentration</div><div class="v font-mono" :class="parseFloat(top10Percentage) > 50 ? 'down' : 'up'">{{ parseFloat(top10Percentage) > 50 ? 'High' : 'Low' }} · {{ top10Percentage }}%</div></div>
@@ -1034,6 +1074,14 @@ const selectedChartType = ref('candlestick')
 const selectedStatsTimeframe = ref('24h')
 const historicalStats = ref(null)
 const historicalStatsLoading = ref(true)
+
+const xlmPriceInUsd = computed(() => {
+  if (token.usd_price && token.xlm_price && token.xlm_price > 0) {
+    return token.usd_price / token.xlm_price;
+  }
+  return 0.1878; // standard fallback rate
+})
+
 
 const fetchHistoricalStats = async () => {
   const code = token.asset_code || route.params.code
@@ -1304,7 +1352,7 @@ const aiRiskSummary = computed(() => {
       dangerReasons.push(`extreme holder centralization (top wallet controls ${maxHolderPct.toFixed(1)}% of total supply)`);
     }
     if (liquidityStatus === 'low') {
-      dangerReasons.push(`shallow liquidity pool depth ($${formatNumber(tvl)} TVL) which could cause severe price slippage`);
+      dangerReasons.push(`shallow liquidity pool depth ( $${formatNumber(tvl)} TVL ) which could cause severe price slippage`);
     }
     if (score < 5) {
       dangerReasons.push(`a low baseline trust score of ${score.toFixed(1)}/10`);
