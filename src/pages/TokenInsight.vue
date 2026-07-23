@@ -554,14 +554,16 @@
                     <!-- Bids (Buy Orders) -->
                     <div>
                       <div class="flex justify-between items-center mb-2 px-1">
-                        <span class="text-xs font-bold text-emerald-400 font-mono">BIDS (BUY)</span>
+                        <span class="text-xs font-bold text-emerald-400 font-mono">
+                          BIDS ({{ orderBook.bids.length }}): {{ formatNumber(totalBidVolume) }} {{ token.asset_code }} / {{ formatNumber(totalBidValue) }} XLM
+                        </span>
                         <span class="text-[10px] text-slate-500 font-mono">Spread: {{ spreadPercent }}%</span>
                       </div>
                       <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
                         <table class="trades select-all">
                           <thead>
                             <tr>
-                              <th style="text-align: left; padding: 6px 12px;">Depth ({{ token.asset_code }})</th>
+                              <th style="text-align: left; padding: 6px 12px;">Depth (XLM)</th>
                               <th style="text-align: right; padding: 6px 12px;">Total (XLM)</th>
                               <th style="text-align: right; padding: 6px 12px;">Size ({{ token.asset_code }})</th>
                               <th style="text-align: right; padding: 6px 12px; color: var(--up);">Price (XLM)</th>
@@ -571,8 +573,8 @@
                             <tr v-for="(bid, index) in orderBook.bids" :key="'bid-'+index"
                                 :style="{ background: 'linear-gradient(to left, rgba(46, 212, 122, 0.09) 0%, rgba(46, 212, 122, 0.09) ' + ((getBidDepth(index) / totalBidDepth) * 100) + '%, transparent ' + ((getBidDepth(index) / totalBidDepth) * 100) + '%)' }">
                               <td style="text-align: left; padding: 7px 12px;" class="dim">{{ formatNumber(getBidDepth(index)) }}</td>
-                              <td style="text-align: right; padding: 7px 12px;" class="dim">{{ formatPrice2Deci(bid.amount * bid.price) }}</td>
-                              <td style="text-align: right; padding: 7px 12px;">{{ formatNumber(bid.amount) }}</td>
+                              <td style="text-align: right; padding: 7px 12px;" class="dim">{{ formatPrice2Deci(bid.amount) }}</td>
+                              <td style="text-align: right; padding: 7px 12px;">{{ formatNumber(calculateBidSize(bid)) }}</td>
                               <td style="text-align: right; padding: 7px 12px;" class="up font-bold">{{ parseFloat(bid.price).toFixed(6) }}</td>
                             </tr>
                           </tbody>
@@ -588,8 +590,9 @@
                     <!-- Asks (Sell Orders) -->
                     <div>
                       <div class="flex justify-between items-center mb-2 px-1">
-                        <span class="text-xs font-bold text-rose-400 font-mono">ASKS (SELL)</span>
-                        <span class="text-[10px] text-slate-500 font-mono">Depth: {{ orderBook.asks.length }} orders</span>
+                        <span class="text-xs font-bold text-rose-400 font-mono">
+                          ASKS ({{ orderBook.asks.length }}): {{ formatNumber(totalAskVolume) }} {{ token.asset_code }} / {{ formatNumber(totalAskValue) }} XLM
+                        </span>
                       </div>
                       <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
                         <table class="trades select-all">
@@ -1325,11 +1328,40 @@ const spreadPercent = computed(() => {
   if (orderBook.bids?.length && orderBook.asks?.length) {
     const highestBid = parseFloat(orderBook.bids[0].price)
     const lowestAsk = parseFloat(orderBook.asks[0].price)
-    if (highestBid > 0) {
-      return (((lowestAsk - highestBid) / highestBid) * 100).toFixed(2)
+    if (lowestAsk > 0) {
+      return (((lowestAsk - highestBid) / lowestAsk) * 100).toFixed(2)
     }
   }
   return '0.00'
+})
+
+const calculateBidSize = (bid) => {
+  const amount = parseFloat(bid.amount || 0)
+  const price = parseFloat(bid.price || 0)
+  if (bid.price_r && bid.price_r.n > 0) {
+    return (amount * bid.price_r.d) / bid.price_r.n
+  }
+  return price > 0 ? amount / price : 0
+}
+
+const totalBidVolume = computed(() => {
+  if (!orderBook.bids?.length) return 0
+  return orderBook.bids.reduce((sum, bid) => sum + calculateBidSize(bid), 0)
+})
+
+const totalBidValue = computed(() => {
+  if (!orderBook.bids?.length) return 0
+  return orderBook.bids.reduce((sum, bid) => sum + parseFloat(bid.amount || 0), 0)
+})
+
+const totalAskVolume = computed(() => {
+  if (!orderBook.asks?.length) return 0
+  return orderBook.asks.reduce((sum, ask) => sum + parseFloat(ask.amount || 0), 0)
+})
+
+const totalAskValue = computed(() => {
+  if (!orderBook.asks?.length) return 0
+  return orderBook.asks.reduce((sum, ask) => sum + (parseFloat(ask.amount || 0) * parseFloat(ask.price || 0)), 0)
 })
 
 const bullishSignals = computed(() => {
