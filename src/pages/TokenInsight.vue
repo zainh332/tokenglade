@@ -66,27 +66,93 @@
           </section>
 
           <!-- DASHBOARD GRID SKELETON -->
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left: Chart & Stats -->
-            <div class="lg:col-span-2 space-y-8">
+          <div class="main-grid">
+            
+            <!-- Left Column SKELETON -->
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <!-- Chart Card Skeleton -->
               <div class="card p-6 space-y-4">
                 <div class="flex justify-between items-center">
                   <div class="h-5 bg-[#1D2531]/60 rounded w-36"></div>
-                  <div class="h-8 bg-[#1D2531]/60 rounded-xl w-48"></div>
+                  <div class="h-6 bg-[#1D2531]/60 rounded-lg w-40"></div>
                 </div>
-                <div class="h-[320px] bg-[#0E131C] rounded-2xl border border-[#1D2531]"></div>
+                <div class="h-[340px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+              </div>
+
+              <!-- Market Exposure Stats Skeleton -->
+              <div class="card expo">
+                <div class="expo-stats">
+                  <div v-for="i in 4" :key="i" class="st space-y-2">
+                    <div class="h-3 w-16 bg-[#1D2531]/60 rounded"></div>
+                    <div class="h-5 w-24 bg-[#1D2531]/80 rounded"></div>
+                    <div class="h-3 w-12 bg-[#1D2531]/40 rounded"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Order Book Skeleton -->
+              <div class="card" style="padding: 20px;">
+                <div class="card-hd">
+                  <div class="h-5 bg-[#1D2531]/60 rounded w-24"></div>
+                  <div class="h-4 bg-[#1D2531]/40 rounded w-16"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+                  <div class="space-y-4">
+                    <div class="h-3.5 bg-[#1D2531]/60 rounded w-28"></div>
+                    <div class="h-[200px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+                  </div>
+                  <div class="space-y-4">
+                    <div class="h-3.5 bg-[#1D2531]/60 rounded w-28"></div>
+                    <div class="h-[200px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent Trades Skeleton -->
+              <div class="card expo">
+                <div class="card-hd">
+                  <div class="h-5 bg-[#1D2531]/60 rounded w-28"></div>
+                  <div class="h-4 bg-[#1D2531]/40 rounded w-16"></div>
+                </div>
+                <div class="h-[200px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40 mt-4"></div>
               </div>
             </div>
-            <!-- Right: Security / AI Risk -->
-            <div class="space-y-8">
-              <div class="card p-6 h-36 bg-[#0E131C] border border-[#1D2531] rounded-2xl"></div>
-              <div class="card p-6 space-y-6">
+
+            <!-- RIGHT COLUMN (SIDEBAR) SKELETON -->
+            <aside class="rail">
+              <!-- Market Insight Card Skeleton -->
+              <div class="card ai p-4 space-y-4">
+                <div class="flex justify-between items-center">
+                  <div class="h-5 bg-[#1D2531]/60 rounded w-28"></div>
+                  <div class="h-4 bg-[#1D2531]/40 rounded w-16"></div>
+                </div>
+                <div class="space-y-3">
+                  <div class="h-3 bg-[#1D2531]/60 rounded w-full"></div>
+                  <div class="h-2 bg-[#1D2531]/40 rounded w-1/2"></div>
+                </div>
+                <div class="h-20 bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+                <div class="h-16 bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+              </div>
+
+              <!-- Voting Card Skeleton -->
+              <div class="card p-4 space-y-4">
+                <div class="h-5 bg-[#1D2531]/60 rounded w-36"></div>
+                <div class="grid grid-cols-3 gap-2">
+                  <div v-for="i in 3" :key="i" class="h-10 bg-[#1D2531]/40 rounded-lg"></div>
+                </div>
+              </div>
+
+              <!-- Security Parameters Skeleton -->
+              <div class="card p-4 space-y-4">
                 <div class="h-5 bg-[#1D2531]/60 rounded w-40"></div>
-                <div class="space-y-4">
-                  <div v-for="i in 4" :key="i" class="h-12 bg-[#0E131C] rounded-2xl border border-[#1D2531]"></div>
+                <div class="space-y-3">
+                  <div v-for="i in 4" :key="i" class="flex justify-between items-center">
+                    <div class="h-3 bg-[#1D2531]/40 rounded w-28"></div>
+                    <div class="h-3.5 bg-[#1D2531]/60 rounded w-12"></div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </aside>
           </div>
         </div>
 
@@ -920,7 +986,8 @@
                   <!-- Bullish Signals -->
                   <div class="p-4 space-y-2">
                     <span class="text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider block font-mono">▲ Bullish Signals</span>
-                    <ul class="text-xs space-y-1 text-slate-300">
+                    <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse">Analyzing...</div>
+                    <ul v-else class="text-xs space-y-1 text-slate-300">
                       <li v-for="sig in bullishSignals" :key="sig" class="flex items-start gap-1.5 leading-relaxed">
                         <span class="text-emerald-400 font-bold">✓</span>
                         <span>{{ sig }}</span>
@@ -931,7 +998,8 @@
                   <!-- Bearish Signals -->
                   <div class="p-4 space-y-2">
                     <span class="text-[10px] font-extrabold text-rose-400 uppercase tracking-wider block font-mono">▼ Bearish Signals</span>
-                    <ul class="text-xs space-y-1 text-slate-300">
+                    <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse">Analyzing...</div>
+                    <ul v-else class="text-xs space-y-1 text-slate-300">
                       <li v-for="sig in bearishSignals" :key="sig" class="flex items-start gap-1.5 leading-relaxed">
                         <span class="text-rose-400 font-bold">⚠</span>
                         <span>{{ sig }}</span>
@@ -943,7 +1011,8 @@
                 <!-- Key Metrics Grid -->
                 <div class="p-4 space-y-2 border-b border-slate-800/60">
                   <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block font-mono">◈ Key Metrics</span>
-                  <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                  <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse py-1">Loading metrics...</div>
+                  <div v-else class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                     <div class="flex justify-between items-center">
                       <span class="text-slate-400">Whales:</span>
                       <span class="font-mono text-white" :class="parseFloat(top10Percentage) > 50 ? 'text-rose-400' : 'text-emerald-400'">
@@ -966,7 +1035,8 @@
                 <!-- Conclusion -->
                 <div class="p-4 space-y-2">
                   <span class="text-[10px] font-extrabold text-cyan-400 uppercase tracking-wider block font-mono">✍ AI Conclusion</span>
-                  <p class="text-xs text-slate-300 leading-relaxed m-0 p-0" style="padding: 0 !important; color: var(--dim) !important;">
+                  <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse">Formulating...</div>
+                  <p v-else class="text-xs text-slate-300 leading-relaxed m-0 p-0" style="padding: 0 !important; color: var(--dim) !important;">
                     {{ aiRiskSummary.text }}
                   </p>
                 </div>
