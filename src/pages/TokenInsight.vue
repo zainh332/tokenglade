@@ -256,7 +256,7 @@
             </div>
 
             <!-- COMPACT SECONDARY STRIP -->
-            <div class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] grid grid-cols-[1fr_auto] sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-x-4 gap-y-3 text-xs font-mono select-none">
+            <div class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] grid grid-cols-[1fr_auto] sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-x-4 gap-y-3 text-xs font-mono">
               <!-- 1. Total Supply -->
               <div class="flex items-center gap-1.5">
                 <span class="text-slate-400 font-medium">Total Supply:</span>
