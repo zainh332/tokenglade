@@ -1396,9 +1396,6 @@ const bearishSignals = computed(() => {
   if (parseFloat(top10Percentage.value) > 50) {
     list.push(`Elevated whale concentration (top 10 hold ${top10Percentage.value}%)`)
   }
-  if (buySellVolume.value.buyPercent < 45) {
-    list.push(`Sell pressure dominant (${100 - buySellVolume.value.buyPercent}% sell volume)`)
-  }
   if (!token.issuer_locked) {
     list.push(`Issuer key unlocked (potential mint inflation risk)`)
   }
