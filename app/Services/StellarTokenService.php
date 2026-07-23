@@ -157,6 +157,17 @@ class StellarTokenService
         $issuerResponse = Http::get($this->horizon . "/accounts/{$issuer}");
         $issuerData = $issuerResponse->ok() ? $issuerResponse->json() : null;
 
+        $masterKeyWeight = 1;
+        if (isset($issuerData['signers'])) {
+            foreach ($issuerData['signers'] as $signer) {
+                if ($signer['key'] === $issuer) {
+                    $masterKeyWeight = (int) $signer['weight'];
+                    break;
+                }
+            }
+        }
+        $issuerLocked = ($masterKeyWeight === 0);
+
         return [
             'asset_code'       => $code,
             'issuer'           => $issuer,
@@ -173,8 +184,8 @@ class StellarTokenService
             'top_holders'  => array_slice($individualHolders, 0, 10),
             'project_holders' => $projectHolders,
 
-            'issuer_locked'    => $issuerData['flags']['auth_immutable'] ?? false,
-            'minting_possible' => !($issuerData['flags']['auth_immutable'] ?? false),
+            'issuer_locked'    => $issuerLocked,
+            'minting_possible' => !$issuerLocked,
             'mint_date_human' => Carbon::createFromTimestampUTC($mintDateRaw)->format('Y-m-d'),
             'liquidity_pools'     => (float) ($horizon['num_liquidity_pools'] ?? 0),
             'updated_at'     => '1 min ago',
