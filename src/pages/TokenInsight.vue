@@ -624,7 +624,7 @@
 
               <!-- Recent Trades -->
               <div class="card expo">
-                <div class="card-hd"><h3>Recent Trades</h3><span class="tag"><span class="dot"></span>Streaming</span></div>
+                <div class="card-hd"><h3>Recent Trades</h3><span class="tag"><span class="dot"></span>Live</span></div>
                 
                 <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
                   <table class="trades select-all">
