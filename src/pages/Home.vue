@@ -10,7 +10,7 @@
       <section class="hero">
         <div class="status">
           <span>NETWORK LIVE · LEDGER #{{ latestLedgerSequence.toLocaleString() }}</span>
-          <span>SPREAD {{ marketSpread }}</span><span>24H VOL {{ dailyVolume }}</span>
+          <span>SPREAD {{ marketSpread }}</span><span>24H VOL {{ dailyVolume || '...' }}</span>
         </div>
 
         <div class="board">
@@ -537,9 +537,9 @@ watch(() => route.query.launch, (newVal) => {
 // Loading States
 const loadingLatestCreatedTokens = ref(false);
 const loadingFeaturedProjects = ref(false);
-const loadingTrendingTokens = ref(false);
+const loadingTrendingTokens = ref(true);
 const loadingPoolsList = ref(false);
-const loadingHighlights = ref(false);
+const loadingHighlights = ref(true);
 const loadingActivity = ref(false);
 const loadingEcoStats = ref(true);
 
@@ -627,7 +627,7 @@ const displayedMovers = computed(() => {
 const newTokensToday = ref(3);
 const activeWallets = ref(1643782);
 const dailyTransactions = ref(24500);
-const dailyVolume = ref("$940.1M");
+const dailyVolume = ref("");
 
 const selectedTimeFilter = ref('24H');
 const ecoTvl = ref('$142.0M');
@@ -1066,6 +1066,9 @@ async function fetchTrendingTokens() {
     console.error("Error fetching trending tokens:", error);
   } finally {
     loadingTrendingTokens.value = false;
+    if (!loadingHighlights.value && dailyVolume.value) {
+      loadingEcoStats.value = false;
+    }
   }
 }
 
@@ -1125,7 +1128,9 @@ async function fetchMarketHighlights() {
     console.error(e);
   } finally {
     loadingHighlights.value = false;
-    loadingEcoStats.value = false;
+    if (!loadingTrendingTokens.value && dailyVolume.value) {
+      loadingEcoStats.value = false;
+    }
   }
 }
 
@@ -1373,9 +1378,11 @@ onMounted(() => {
     marketSpread.value = (0.31 + Math.random() * 0.04).toFixed(2) + '%';
 
     // 4. Fluctuate daily volume slightly centered on 940.1M
-    const baseVol = parseFloat(dailyVolume.value.replace(/[^0-9.]/g, '')) || 940.1;
-    const newVol = baseVol + (Math.random() * 0.6 - 0.3);
-    dailyVolume.value = `$${newVol.toFixed(1)}M`;
+    if (dailyVolume.value) {
+      const baseVol = parseFloat(dailyVolume.value.replace(/[^0-9.]/g, '')) || 940.1;
+      const newVol = baseVol + (Math.random() * 0.6 - 0.3);
+      dailyVolume.value = `$${newVol.toFixed(1)}M`;
+    }
 
     // Fluctuate active wallets slightly
     activeWallets.value = activeWallets.value + Math.round(Math.random() * 6 - 3);
