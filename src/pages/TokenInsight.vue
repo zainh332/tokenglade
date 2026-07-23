@@ -636,328 +636,340 @@
 
             <!-- LEFT COLUMN: HOLDERS -->
             <div style="grid-column: 1 / -1; display:flex;flex-direction:column;gap:14px;margin-bottom:2px" v-if="activeTab === 'holders'">
-              <section class="card asset" style="margin-top:0">
-                <div v-if="holdersLoading" class="flex flex-col items-center justify-center py-20">
-                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
-                  <span class="text-xs text-slate-400 font-bold mt-3">Loading holder distribution data...</span>
-                </div>
-                <template v-else>
-                <div class="flex justify-between items-center flex-wrap gap-4 mb-6">
-                  <div>
-                    <h2 class="text-xl font-bold text-white tracking-tight">Holder Distribution</h2>
-                    <p class="text-xs text-slate-400 mt-1 font-medium">On-chain wallet analysis and supply concentration metrics</p>
-                  </div>
-                  <div class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-[#0E131C] px-3 py-1.5 rounded-xl border border-[#1D2531] font-mono">
-                    Total Holders: {{ formatNumber(token.holders || 1240) }}
-                  </div>
-                </div>
-
-                <!-- Middle Grid: Donut Chart Card (Left 50%) + 4 Vertically Stacked Cards Container (Right 50%) -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch mb-6">
-                  <!-- Left Half (50% Width): Donut Chart Card -->
-                  <div class="flex flex-row md:flex-col items-center gap-4 sm:gap-6 justify-center bg-[#0E131C] p-4 sm:p-6 rounded-2xl border border-[#1D2531] h-full">
-                    <div class="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 flex items-center justify-center flex-shrink-0">
-                      <svg class="w-full h-full" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="40" stroke="#1d2531" stroke-width="12" fill="transparent" />
-                        <circle 
-                          cx="50" 
-                          cy="50" 
-                          r="40" 
-                          stroke="#12CBEE" 
-                          stroke-width="12" 
-                          fill="transparent" 
-                          stroke-linecap="round"
-                          :stroke-dasharray="251.3" 
-                          :stroke-dashoffset="251.3 - (251.3 * parseFloat(top10Percentage)) / 100" 
-                          transform="rotate(-90 50 50)"
-                        />
-                      </svg>
-                      <div class="absolute flex flex-col items-center justify-center text-center">
-                        <span class="text-lg sm:text-xl md:text-2xl font-black text-white">{{ top10Percentage }}%</span>
-                        <span class="text-[7px] sm:text-[8px] md:text-[9px] text-slate-400 font-extrabold uppercase tracking-wider mt-0.5">Top 10</span>
-                      </div>
+              <div v-if="holdersLoading" class="flex flex-col items-center justify-center py-20 bg-[#111620] rounded-xl border border-[#1D2531]">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
+                <span class="text-xs text-slate-400 font-bold mt-3">Loading holder distribution data...</span>
+              </div>
+              <template v-else>
+                <section class="card asset" style="margin-top:0">
+                  <div class="flex justify-between items-center flex-wrap gap-4 mb-6">
+                    <div>
+                      <h2 class="text-xl font-bold text-white tracking-tight">Holder Distribution</h2>
+                      <p class="text-xs text-slate-400 mt-1 font-medium">On-chain wallet analysis and supply concentration metrics</p>
                     </div>
-
-                    <div class="space-y-2 sm:space-y-3 text-[10px] sm:text-xs font-mono w-full flex-1">
-                      <div class="flex items-center justify-between gap-1.5 font-semibold bg-[#111620] p-2 sm:p-3 rounded-xl border border-[#1D2531]">
-                        <div class="flex items-center gap-1.5">
-                          <span class="w-2.5 h-2.5 rounded-full bg-[#12CBEE] flex-none"></span>
-                          <span class="text-slate-400">Top 10 Wallets:</span>
-                        </div>
-                        <span class="text-white font-bold">{{ top10Percentage }}%</span>
-                      </div>
-                      <div class="flex items-center justify-between gap-1.5 font-semibold bg-[#111620] p-2 sm:p-3 rounded-xl border border-[#1D2531]">
-                        <div class="flex items-center gap-1.5">
-                          <span class="w-2.5 h-2.5 rounded-full bg-[#1d2531] flex-none"></span>
-                          <span class="text-slate-400">Others:</span>
-                        </div>
-                        <span class="text-white font-bold">{{ (100 - parseFloat(top10Percentage)).toFixed(2) }}%</span>
-                      </div>
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-[#0E131C] px-3 py-1.5 rounded-xl border border-[#1D2531] font-mono">
+                      Total Holders: {{ formatNumber(token.holders || 1240) }}
                     </div>
                   </div>
 
-                  <!-- Right Half (50% Width): 4 Cards Stacked Vertically -->
-                  <div class="flex flex-col gap-4">
-                    <!-- 1. Healthy Distribution / Whale Concentration Warning -->
-                    <div class="bg-[#0E131C] p-5 rounded-2xl border border-[#1D2531]">
-                      <div v-if="parseFloat(top10Percentage) > 50" class="flex gap-3 bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 text-xs text-rose-400">
-                        <span class="text-xl flex-shrink-0">⚠️</span>
-                        <div>
-                          <span class="font-extrabold uppercase tracking-wider block text-[11px] text-rose-500 font-mono">Whale Concentration Warning</span>
-                          <span class="mt-1 block font-medium leading-relaxed">The top 10 wallets hold <strong class="font-black text-white">{{ top10Percentage }}%</strong> of supply. This asset has elevated whale concentration risk.</span>
+                  <!-- Middle Grid: Donut Chart Card (Left 50%) + 4 Vertically Stacked Cards Container (Right 50%) -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+                    <!-- Left Half (50% Width): Donut Chart Card -->
+                    <div class="flex flex-row md:flex-col items-center gap-4 sm:gap-6 justify-center bg-[#0E131C] p-4 sm:p-6 rounded-2xl border border-[#1D2531] h-full">
+                      <div class="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-full h-full" viewBox="0 0 100 100">
+                          <circle cx="50" cy="50" r="40" stroke="#1d2531" stroke-width="12" fill="transparent" />
+                          <circle 
+                            cx="50" 
+                            cy="50" 
+                            r="40" 
+                            stroke="#12CBEE" 
+                            stroke-width="12" 
+                            fill="transparent" 
+                            stroke-linecap="round"
+                            :stroke-dasharray="251.3" 
+                            :stroke-dashoffset="251.3 - (251.3 * parseFloat(top10Percentage)) / 100" 
+                            transform="rotate(-90 50 50)"
+                          />
+                        </svg>
+                        <div class="absolute flex flex-col items-center justify-center text-center">
+                          <span class="text-lg sm:text-xl md:text-2xl font-black text-white">{{ top10Percentage }}%</span>
+                          <span class="text-[7px] sm:text-[8px] md:text-[9px] text-slate-400 font-extrabold uppercase tracking-wider mt-0.5">Top 10</span>
                         </div>
                       </div>
-                      <div v-else class="flex gap-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-xs text-emerald-400">
-                        <span class="text-xl flex-shrink-0">✓</span>
-                        <div>
-                          <span class="font-extrabold uppercase tracking-wider block text-[11px] text-emerald-500 font-mono">Healthy Distribution</span>
-                          <span class="mt-1 block font-medium leading-relaxed">The top 10 wallets hold <strong class="font-black text-white">{{ top10Percentage }}%</strong> of supply, representing healthy decentralization across active holders.</span>
+
+                      <div class="space-y-2 sm:space-y-3 text-[10px] sm:text-xs font-mono w-full flex-1">
+                        <div class="flex items-center justify-between gap-1.5 font-semibold bg-[#111620] p-2 sm:p-3 rounded-xl border border-[#1D2531]">
+                          <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-[#12CBEE] flex-none"></span>
+                            <span class="text-slate-400">Top 10 Wallets:</span>
+                          </div>
+                          <span class="text-white font-bold">{{ top10Percentage }}%</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-1.5 font-semibold bg-[#111620] p-2 sm:p-3 rounded-xl border border-[#1D2531]">
+                          <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-[#1d2531] flex-none"></span>
+                            <span class="text-slate-400">Others:</span>
+                          </div>
+                          <span class="text-white font-bold">{{ (100 - parseFloat(top10Percentage)).toFixed(2) }}%</span>
                         </div>
                       </div>
                     </div>
 
-                    <!-- 2 & 3: Side-by-Side Stats Cards -->
-                    <div class="grid grid-cols-2 gap-4">
-                      <!-- 2. Average per Holder -->
-                      <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
-                        <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block leading-snug">Average per Holder</span>
-                        <span class="text-sm sm:text-base font-black text-white mt-1 block truncate">
-                          {{ formatNumber(averageTokensPerHolder) }} {{ token.asset_code }}
-                        </span>
+                    <!-- Right Half (50% Width): 4 Cards Stacked Vertically -->
+                    <div class="flex flex-col gap-4">
+                      <!-- 1. Healthy Distribution / Whale Concentration Warning -->
+                      <div class="bg-[#0E131C] p-5 rounded-2xl border border-[#1D2531]">
+                        <div v-if="parseFloat(top10Percentage) > 50" class="flex gap-3 bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 text-xs text-rose-400">
+                          <span class="text-xl flex-shrink-0">⚠️</span>
+                          <div>
+                            <span class="font-extrabold uppercase tracking-wider block text-[11px] text-rose-500 font-mono">Whale Concentration Warning</span>
+                            <span class="mt-1 block font-medium leading-relaxed">The top 10 wallets hold <strong class="font-black text-white">{{ top10Percentage }}%</strong> of supply. This asset has elevated whale concentration risk.</span>
+                          </div>
+                        </div>
+                        <div v-else class="flex gap-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-xs text-emerald-400">
+                          <span class="text-xl flex-shrink-0">✓</span>
+                          <div>
+                            <span class="font-extrabold uppercase tracking-wider block text-[11px] text-emerald-500 font-mono">Healthy Distribution</span>
+                            <span class="mt-1 block font-medium leading-relaxed">The top 10 wallets hold <strong class="font-black text-white">{{ top10Percentage }}%</strong> of supply, representing healthy decentralization across active holders.</span>
+                          </div>
+                        </div>
                       </div>
 
-                      <!-- 3. New Holders -->
-                      <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
-                        <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block leading-snug">New Holders (24h/7d)</span>
-                        <span class="text-sm sm:text-base font-black text-white mt-1 block">
-                          +{{ holderGrowth.growth24h }} <span class="text-slate-500 font-medium text-xs">/</span> +{{ holderGrowth.growth7d }}
-                        </span>
+                      <!-- 2 & 3: Side-by-Side Stats Cards -->
+                      <div class="grid grid-cols-2 gap-4">
+                        <!-- 2. Average per Holder -->
+                        <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                          <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block leading-snug">Average per Holder</span>
+                          <span class="text-sm sm:text-base font-black text-white mt-1 block truncate">
+                            {{ formatNumber(averageTokensPerHolder) }} {{ token.asset_code }}
+                          </span>
+                        </div>
+
+                        <!-- 3. New Holders -->
+                        <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                          <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block leading-snug">New Holders (24h/7d)</span>
+                          <span class="text-sm sm:text-base font-black text-white mt-1 block">
+                            +{{ holderGrowth.growth24h }} <span class="text-slate-500 font-medium text-xs">/</span> +{{ holderGrowth.growth7d }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- 4. Largest Non-Treasury Holder -->
+                      <div v-if="biggestIndividualHolder" class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                        <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest Non-Treasury Holder</span>
+                        <div class="flex items-center justify-between text-xs mt-1.5">
+                          <a 
+                            :href="`https://stellar.expert/explorer/public/account/${biggestIndividualHolder.address}`"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="font-mono text-cyan-400 hover:text-cyan-300 font-bold"
+                          >
+                            {{ shorten(biggestIndividualHolder.address) }}
+                          </a>
+                          <span class="font-black text-white font-mono">
+                            {{ formatNumber(biggestIndividualHolder.balance) }} {{ token.asset_code }} ({{ biggestIndividualHolder.percent }}%)
+                          </span>
+                        </div>
                       </div>
                     </div>
+                  </div>
+                </section>
 
-                    <!-- 4. Largest Non-Treasury Holder -->
-                    <div v-if="biggestIndividualHolder" class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
-                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest Non-Treasury Holder</span>
-                      <div class="flex items-center justify-between text-xs mt-1.5">
-                        <a 
-                          :href="`https://stellar.expert/explorer/public/account/${biggestIndividualHolder.address}`"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="font-mono text-cyan-400 hover:text-cyan-300 font-bold"
-                        >
-                          {{ shorten(biggestIndividualHolder.address) }}
-                        </a>
-                        <span class="font-black text-white font-mono">
-                          {{ formatNumber(biggestIndividualHolder.balance) }} {{ token.asset_code }} ({{ biggestIndividualHolder.percent }}%)
-                        </span>
+                <!-- Grid: Top Wallets vs Project Wallets (Separate cards!) -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-2">
+                  <!-- Left Card: Top Wallets Table -->
+                  <div class="card">
+                    <div class="card-hd">
+                      <h3>Largest Non-Project Holders</h3>
+                    </div>
+                    <div style="padding: 20px;">
+                      <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
+                        <table class="trades">
+                          <thead>
+                            <tr>
+                              <th style="text-align:left;width:15%">Rank</th>
+                              <th style="text-align:left;width:45%">Wallet Address</th>
+                              <th style="width:40%">Holdings</th>
+                            </tr>
+                          </thead>
+                          <tbody v-if="token.top_holders && token.top_holders.length">
+                            <tr v-for="(holder, index) in token.top_holders" :key="index" class="hover:bg-white/2 transition">
+                              <td class="font-bold text-white">#{{ index + 1 }}</td>
+                              <td class="font-mono text-xs text-left">
+                                <a 
+                                  :href="`https://stellar.expert/explorer/public/account/${holder.address}`" 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  class="text-cyan-400 hover:text-cyan-300 transition font-semibold"
+                                  :title="holder.address"
+                                >
+                                  {{ shorten(holder.address) }}
+                                </a>
+                              </td>
+                              <td>
+                                <div class="font-bold text-white font-mono">{{ formatNumber(holder.balance) }} {{ token.asset_code }}</div>
+                                <div class="text-[10px] text-slate-500 font-semibold mt-0.5">{{ getHolderPercentage(holder.balance) }}% of supply</div>
+                              </td>
+                            </tr>
+                          </tbody>
+                          <tbody v-else>
+                            <tr>
+                              <td colspan="3" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">No holder data available</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Right Card: Project Custody & Treasury Wallets Table -->
+                  <div class="card">
+                    <div class="card-hd">
+                      <h3>Project Custody & Treasury Wallets</h3>
+                    </div>
+                    <div style="padding: 20px;">
+                      <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
+                        <table class="trades">
+                          <thead>
+                            <tr>
+                              <th style="text-align:left;width:60%">Wallet Name / Address</th>
+                              <th style="width:40%">Holdings</th>
+                            </tr>
+                          </thead>
+                          <tbody v-if="token.project_holders && token.project_holders.length">
+                            <tr v-for="(holder, index) in token.project_holders" :key="index" class="hover:bg-white/2 transition">
+                              <td class="font-mono text-xs text-left">
+                                <div class="font-bold text-white font-sans text-xs">
+                                  {{ holder.name || 'Project Reserve Wallet' }}
+                                </div>
+                                <a 
+                                  :href="`https://stellar.expert/explorer/public/account/${holder.address}`" 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  class="text-cyan-400 hover:underline text-[10px] font-semibold mt-0.5 block"
+                                  :title="holder.address"
+                                >
+                                  {{ shorten(holder.address) }}
+                                </a>
+                              </td>
+                              <td>
+                                <div class="font-bold text-white font-mono">{{ formatNumber(holder.balance) }} {{ token.asset_code }}</div>
+                                <div class="text-[10px] text-slate-500 font-semibold mt-0.5">{{ getHolderPercentage(holder.balance) }}% of supply</div>
+                              </td>
+                            </tr>
+                          </tbody>
+                          <tbody v-else>
+                            <tr>
+                              <td colspan="2" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">No project custody wallets detected</td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </div>
                 </div>
-
-                <!-- Grid: Top Wallets vs Project Wallets -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
-                  <!-- Left: Top Wallets Table -->
-                  <div class="space-y-4">
-                    <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Largest Non-Project Holders</h3>
-                    <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
-                      <table class="trades">
-                        <thead>
-                          <tr>
-                            <th style="text-align:left;width:15%">Rank</th>
-                            <th style="text-align:left;width:45%">Wallet Address</th>
-                            <th style="width:40%">Holdings</th>
-                          </tr>
-                        </thead>
-                        <tbody v-if="token.top_holders && token.top_holders.length">
-                          <tr v-for="(holder, index) in token.top_holders" :key="index" class="hover:bg-white/2 transition">
-                            <td class="font-bold text-white">#{{ index + 1 }}</td>
-                            <td class="font-mono text-xs text-left">
-                              <a 
-                                :href="`https://stellar.expert/explorer/public/account/${holder.address}`" 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                class="text-cyan-400 hover:text-cyan-300 transition font-semibold"
-                                :title="holder.address"
-                              >
-                                {{ shorten(holder.address) }}
-                              </a>
-                            </td>
-                            <td>
-                              <div class="font-bold text-white font-mono">{{ formatNumber(holder.balance) }} {{ token.asset_code }}</div>
-                              <div class="text-[10px] text-slate-500 font-semibold mt-0.5">{{ getHolderPercentage(holder.balance) }}% of supply</div>
-                            </td>
-                          </tr>
-                        </tbody>
-                        <tbody v-else>
-                          <tr>
-                            <td colspan="3" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">No holder data available</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  <!-- Right: Project Custody & Treasury Wallets Table -->
-                  <div class="space-y-4">
-                    <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Project Custody & Treasury Wallets</h3>
-                    <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
-                      <table class="trades">
-                        <thead>
-                          <tr>
-                            <th style="text-align:left;width:60%">Wallet Name / Address</th>
-                            <th style="width:40%">Holdings</th>
-                          </tr>
-                        </thead>
-                        <tbody v-if="token.project_holders && token.project_holders.length">
-                          <tr v-for="(holder, index) in token.project_holders" :key="index" class="hover:bg-white/2 transition">
-                            <td class="font-mono text-xs text-left">
-                              <div class="font-bold text-white font-sans text-xs">
-                                {{ holder.name || 'Project Reserve Wallet' }}
-                              </div>
-                              <a 
-                                :href="`https://stellar.expert/explorer/public/account/${holder.address}`" 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                class="text-cyan-400 hover:underline text-[10px] font-semibold mt-0.5 block"
-                                :title="holder.address"
-                              >
-                                {{ shorten(holder.address) }}
-                              </a>
-                            </td>
-                            <td>
-                              <div class="font-bold text-white font-mono">{{ formatNumber(holder.balance) }} {{ token.asset_code }}</div>
-                              <div class="text-[10px] text-slate-500 font-semibold mt-0.5">{{ getHolderPercentage(holder.balance) }}% of supply</div>
-                            </td>
-                          </tr>
-                        </tbody>
-                        <tbody v-else>
-                          <tr>
-                            <td colspan="2" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">No project custody wallets detected</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-                </template>
-              </section>
+              </template>
             </div>
 
             <!-- LEFT COLUMN: LIQUIDITY -->
             <div style="grid-column: 1 / -1; display:flex;flex-direction:column;gap:14px;margin-bottom:2px;min-width:0;width:100%" v-if="activeTab === 'liquidity'">
-              <section class="card asset w-full max-w-full min-w-0" style="margin-top:0">
-                <div v-if="liquidityLoading" class="flex flex-col items-center justify-center py-20">
-                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
-                  <span class="text-xs text-slate-400 font-bold mt-3">Loading on-chain AMM liquidity stats...</span>
+              <div v-if="liquidityLoading" class="flex flex-col items-center justify-center py-20 bg-[#111620] rounded-xl border border-[#1D2531]">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
+                <span class="text-xs text-slate-400 font-bold mt-3">Loading on-chain AMM liquidity stats...</span>
+              </div>
+              <template v-else>
+                <section class="card asset w-full max-w-full min-w-0" style="margin-top:0">
+                  <div class="flex justify-between items-center flex-wrap gap-4 mb-6">
+                    <div>
+                      <h2 class="text-xl font-bold text-white tracking-tight">Liquidity Overview</h2>
+                      <p class="text-xs text-slate-400 mt-1 font-medium">Real-time analysis of automated market maker (AMM) pools & depth</p>
+                    </div>
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-[#0E131C] px-3 py-1.5 rounded-xl border border-[#1D2531] font-mono">
+                      Total TVL: ${{ formatNumber(token.liquidity_overview?.total_tvl || 0) }}
+                    </div>
+                  </div>
+
+                  <!-- Metrics Grid -->
+                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6 font-mono">
+                    <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Total TVL</span>
+                      <span class="text-sm sm:text-lg font-black text-white mt-1 block">
+                        ${{ formatNumber(token.liquidity_overview?.total_tvl) }}
+                      </span>
+                    </div>
+
+                    <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Active Pools</span>
+                      <span class="text-sm sm:text-lg font-black text-white mt-1 block">
+                        {{ token.liquidity_overview?.pools_count || 0 }}
+                      </span>
+                    </div>
+
+                    <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest Pool</span>
+                      <span class="text-xs sm:text-sm font-black text-white mt-1 block truncate font-sans py-1" :title="token.liquidity_overview?.largest_pool_name">
+                        {{ token.liquidity_overview?.largest_pool_name || '-' }}
+                      </span>
+                      <span class="text-[10px] text-slate-500 font-bold block mt-0.5">
+                        ${{ formatNumber(token.liquidity_overview?.largest_pool_tvl) }} TVL
+                      </span>
+                    </div>
+
+                    <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">24h LP Volume</span>
+                      <span class="text-sm sm:text-lg font-black text-white mt-1 block">
+                        ${{ formatNumber(token.liquidity_overview?.lp_volume_24h) }}
+                      </span>
+                    </div>
+
+                    <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Average APR</span>
+                      <span class="text-sm sm:text-lg font-black text-emerald-400 mt-1 block">
+                        {{ token.liquidity_overview?.avg_apr ? token.liquidity_overview.avg_apr.toFixed(2) : '0.00' }}%
+                      </span>
+                    </div>
+
+                    <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Depth (±2%)</span>
+                      <span class="text-sm sm:text-lg font-black text-white mt-1 block">
+                        ${{ formatNumber(token.liquidity_overview?.depth_2pct) }}
+                      </span>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- Top Pools Table Card (Separate!) -->
+                <div class="card mt-2">
+                  <div class="card-hd">
+                    <h3>Top Liquidity Pools</h3>
+                  </div>
+                  <div style="padding: 20px;">
+                    <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
+                      <table class="trades">
+                        <thead>
+                          <tr>
+                            <th style="text-align:left;width:40%">Market / Pool Pair</th>
+                            <th style="width:20%">Total TVL</th>
+                            <th style="width:20%">APR</th>
+                            <th style="width:20%">24h Volume</th>
+                          </tr>
+                        </thead>
+                        <tbody v-if="token.liquidity_overview?.pools && token.liquidity_overview.pools.length" class="font-mono">
+                          <tr v-for="(pool, index) in token.liquidity_overview.pools" :key="index" class="hover:bg-white/2 transition">
+                            <td style="text-align:left" class="font-bold text-white">
+                              <a 
+                                :href="`https://stellar.expert/explorer/public/liquidity-pool/${pool.id}`" 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                class="text-[#12CBEE] hover:underline transition font-semibold truncate block max-w-[120px] xs:max-w-[160px] sm:max-w-none"
+                              >
+                                {{ pool.name }}
+                              </a>
+                            </td>
+                            <td class="font-bold text-white">
+                              ${{ formatNumber(pool.tvl) }}
+                            </td>
+                            <td>
+                              <span class="font-extrabold text-xs px-2 py-0.5 rounded-lg bg-[#2ED47A]/10 text-[#2ED47A]">
+                                {{ pool.apr.toFixed(2) }}%
+                              </span>
+                            </td>
+                            <td class="font-semibold text-slate-300">
+                              ${{ formatNumber(pool.volume) }}
+                            </td>
+                          </tr>
+                        </tbody>
+                        <tbody v-else>
+                          <tr>
+                            <td colspan="4" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">No liquidity pool data detected on-chain</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
-                <template v-else>
-                <div class="flex justify-between items-center flex-wrap gap-4 mb-6">
-                  <div>
-                    <h2 class="text-xl font-bold text-white tracking-tight">Liquidity Overview</h2>
-                    <p class="text-xs text-slate-400 mt-1 font-medium">Real-time analysis of automated market maker (AMM) pools & depth</p>
-                  </div>
-                  <div class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-[#0E131C] px-3 py-1.5 rounded-xl border border-[#1D2531] font-mono">
-                    Total TVL: ${{ formatNumber(token.liquidity_overview?.total_tvl || 0) }}
-                  </div>
-                </div>
-
-                <!-- Metrics Grid -->
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6 font-mono">
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
-                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Total TVL</span>
-                    <span class="text-sm sm:text-lg font-black text-white mt-1 block">
-                      ${{ formatNumber(token.liquidity_overview?.total_tvl) }}
-                    </span>
-                  </div>
-
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
-                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Active Pools</span>
-                    <span class="text-sm sm:text-lg font-black text-white mt-1 block">
-                      {{ token.liquidity_overview?.pools_count || 0 }}
-                    </span>
-                  </div>
-
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
-                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest Pool</span>
-                    <span class="text-xs sm:text-sm font-black text-white mt-1 block truncate font-sans py-1" :title="token.liquidity_overview?.largest_pool_name">
-                      {{ token.liquidity_overview?.largest_pool_name || '-' }}
-                    </span>
-                    <span class="text-[10px] text-slate-500 font-bold block mt-0.5">
-                      ${{ formatNumber(token.liquidity_overview?.largest_pool_tvl) }} TVL
-                    </span>
-                  </div>
-
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
-                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">24h LP Volume</span>
-                    <span class="text-sm sm:text-lg font-black text-white mt-1 block">
-                      ${{ formatNumber(token.liquidity_overview?.lp_volume_24h) }}
-                    </span>
-                  </div>
-
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
-                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Average APR</span>
-                    <span class="text-sm sm:text-lg font-black text-emerald-400 mt-1 block">
-                      {{ token.liquidity_overview?.avg_apr ? token.liquidity_overview.avg_apr.toFixed(2) : '0.00' }}%
-                    </span>
-                  </div>
-
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
-                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Depth (±2%)</span>
-                    <span class="text-sm sm:text-lg font-black text-white mt-1 block">
-                      ${{ formatNumber(token.liquidity_overview?.depth_2pct) }}
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Top Pools Table -->
-                <div class="space-y-4 mt-6">
-                  <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Top Liquidity Pools</h3>
-                  <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
-                    <table class="trades">
-                      <thead>
-                        <tr>
-                          <th style="text-align:left;width:40%">Market / Pool Pair</th>
-                          <th style="width:20%">Total TVL</th>
-                          <th style="width:20%">APR</th>
-                          <th style="width:20%">24h Volume</th>
-                        </tr>
-                      </thead>
-                      <tbody v-if="token.liquidity_overview?.pools && token.liquidity_overview.pools.length" class="font-mono">
-                        <tr v-for="(pool, index) in token.liquidity_overview.pools" :key="index" class="hover:bg-white/2 transition">
-                          <td style="text-align:left" class="font-bold text-white">
-                            <a 
-                              :href="`https://stellar.expert/explorer/public/liquidity-pool/${pool.id}`" 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              class="text-[#12CBEE] hover:underline transition font-semibold truncate block max-w-[120px] xs:max-w-[160px] sm:max-w-none"
-                            >
-                              {{ pool.name }}
-                            </a>
-                          </td>
-                          <td class="font-bold text-white">
-                            ${{ formatNumber(pool.tvl) }}
-                          </td>
-                          <td>
-                            <span class="font-extrabold text-xs px-2 py-0.5 rounded-lg bg-[#2ED47A]/10 text-[#2ED47A]">
-                              {{ pool.apr.toFixed(2) }}%
-                            </span>
-                          </td>
-                          <td class="font-semibold text-slate-300">
-                            ${{ formatNumber(pool.volume) }}
-                          </td>
-                        </tr>
-                      </tbody>
-                      <tbody v-else>
-                        <tr>
-                          <td colspan="4" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">No liquidity pool data detected on-chain</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                </template>
-              </section>
+              </template>
             </div>
 
             <!-- RIGHT COLUMN: SIDEBAR WIDGETS -->
