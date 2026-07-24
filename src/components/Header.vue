@@ -133,7 +133,7 @@
               @focus="isFocusedMobile = true"
               type="text" 
               placeholder="Search token name or symbol..." 
-              class="bg-transparent border-0 outline-none text-xs text-white placeholder-slate-500 font-mono w-full p-0 focus:ring-0"
+              class="bg-transparent border-0 outline-none text-[16px] text-white placeholder-slate-500 font-mono w-full p-0 focus:ring-0"
             />
             <span v-if="loading && searchQuery.trim() !== ''" class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-cyan-400 flex-shrink-0"></span>
           </div>
@@ -155,7 +155,7 @@
             <!-- Results -->
             <div v-else-if="assets.length > 0">
               <div v-for="asset in assets" :key="`${asset.asset_code}_${asset.asset_issuer}`"
-                  @click="() => { selectAsset(asset); close(); }"
+                  @click="selectAsset(asset)"
                   class="p-3.5 cursor-pointer hover:bg-[#182235]/70 transition duration-150 text-left">
                   <div class="flex items-center gap-1.5 font-bold text-xs text-white">
                       <span class="font-mono uppercase">{{ asset.asset_code }}</span>
@@ -384,6 +384,7 @@ watch(searchQuery, (newValue) => {
 });
 
 function selectAsset(asset) {
+  document.activeElement?.blur();
   router.push({
     path: "/token-insight",
     query: {

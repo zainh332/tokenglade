@@ -44,7 +44,7 @@
                                     type="text" 
                                     id="asset_code_search"
                                     placeholder="e.g. TKG, XLM, USDC"
-                                    class="w-full px-3.5 py-2.5 bg-[#182235] border border-[rgba(148,163,184,0.16)] text-white placeholder-slate-500 rounded-xl focus:outline-none focus:ring-1 focus:ring-cyan-500 transition font-mono text-sm" 
+                                    class="w-full px-3.5 py-2.5 bg-[#182235] border border-[rgba(148,163,184,0.16)] text-white placeholder-slate-500 rounded-xl focus:outline-none focus:ring-1 focus:ring-cyan-500 transition font-mono text-[16px] md:text-sm" 
                                 />
                             </div>
 
@@ -343,6 +343,7 @@ watch(assetCodeInput, (newValue) => {
 })
 
 function selectAsset(asset) {
+    document.activeElement?.blur()
     router.push({
         path: "/token-insight",
         query: {
