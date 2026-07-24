@@ -55,7 +55,7 @@
                 <!-- Results -->
                 <div v-else-if="assets.length > 0">
                   <div v-for="asset in assets" :key="`${asset.asset_code}_${asset.asset_issuer}`"
-                      @click="selectAsset(asset)"
+                      @click="() => { selectAsset(asset); close(); }"
                       class="p-3.5 cursor-pointer hover:bg-[#182235]/70 transition duration-150 text-left">
                       <div class="flex items-center gap-1.5 font-bold text-xs text-white">
                           <span v-if="getAssetName(asset)" class="font-sans font-semibold text-white">
