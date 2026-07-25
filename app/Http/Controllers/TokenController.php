@@ -1203,9 +1203,10 @@ EOT;
                 $qLower = strtolower($q);
                 foreach ($seRecords as $rec) {
                     $parts = explode('-', $rec['asset'] ?? '');
-                    $code = strtoupper($parts[0] ?? '');
-                    $issuer = $parts[1] ?? '';
+                    $code = strtoupper($rec['tomlInfo']['code'] ?? ($parts[0] ?? ''));
+                    $issuer = $rec['tomlInfo']['issuer'] ?? ($parts[1] ?? '');
                     if (empty($code) || empty($issuer)) continue;
+                    if ($code === 'XLM') continue;
 
                     $name = $rec['tomlInfo']['name'] ?? null;
                     $orgName = $rec['tomlInfo']['orgName'] ?? null;
@@ -1294,6 +1295,7 @@ EOT;
                         $code = strtoupper($rec['asset_code'] ?? '');
                         $issuer = $rec['asset_issuer'] ?? '';
                         if (empty($code) || empty($issuer)) continue;
+                        if ($code === 'XLM') continue;
                         $key = $code . '_' . $issuer;
 
                         $seData = Cache::get("se_asset_{$code}_{$issuer}");
