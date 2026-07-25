@@ -247,6 +247,7 @@ class GlobalController extends Controller
                         'name' => $stellar->name ?? null,
                         'token_verify' => (int) ($token->token_verify ?? 0),
                         'asset_code' => $stellar->asset_code ?? null,
+                        'asset_issuer' => $stellar->issuer_public_key ?? null,
                         'total_supply' => $stellar->total_supply ?? null,
                         'logo_url' => $stellar->logo ?? null,
                         'issuer_locked' => $stellar->issuer_locked ?? false,
