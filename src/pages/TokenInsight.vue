@@ -390,10 +390,10 @@
             <div class="st flex flex-col justify-between">
               <div class="k">Holders</div>
               <div class="v font-mono">
-                <template v-if="token.holders">{{ formatNumber(token.holders) }}</template>
+                <template v-if="token.holders !== null && token.holders !== undefined && token.holders !== ''">{{ formatNumber(token.holders) }}</template>
                 <template v-else-if="loading || holdersLoading"><span
                     class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                <template v-else>—</template>
+                <template v-else>0</template>
               </div>
               <div class="sub font-mono font-semibold"
                 :class="(historicalStats?.holders_change || 0) >= 0 ? 'up' : 'down'">
@@ -411,11 +411,10 @@
             <div class="st flex flex-col justify-between">
               <div class="k">Trustlines</div>
               <div class="v font-mono">
-                <template v-if="token.trustlines || token.holders">{{ formatNumber(token.trustlines || token.holders)
-                  }}</template>
+                <template v-if="token.trustlines !== null && token.trustlines !== undefined && token.trustlines !== ''">{{ formatNumber(token.trustlines || token.holders) }}</template>
                 <template v-else-if="loading || holdersLoading"><span
                     class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                <template v-else>—</template>
+                <template v-else>0</template>
               </div>
               <div class="sub font-mono font-semibold"
                 :class="(historicalStats?.trustlines_change || 0) >= 0 ? 'up' : 'down'">
