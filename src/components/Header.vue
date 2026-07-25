@@ -158,7 +158,10 @@
                   @click="() => { selectAsset(asset); close(); }"
                   class="p-3.5 cursor-pointer hover:bg-[#182235]/70 transition duration-150 text-left">
                   <div class="flex items-center gap-1.5 font-bold text-xs text-white">
-                      <span class="font-mono uppercase">{{ asset.asset_code }}</span>
+                      <span v-if="getAssetName(asset)" class="font-sans font-semibold text-white">
+                        {{ getAssetName(asset) }} <span class="text-slate-400 font-mono font-normal text-[11px]">· {{ asset.asset_code }}</span>
+                      </span>
+                      <span v-else class="font-mono uppercase text-white">{{ asset.asset_code }}</span>
                       <img v-if="asset.is_verified" :src="verifiedImg" alt="Verified"
                           class="flex-shrink-0 w-3.5 h-3.5" title="Verified Token" />
                   </div>
@@ -359,6 +362,10 @@ async function searchAssets() {
     });
 
     assets.value = sortedAssets;
+
+    await enrichVerificationStatus(sortedAssets);
+    await fetchMissingAssetNames(sortedAssets);
+
     error.value = "";
   } catch (e) {
     if (requestId !== searchRequestId) return;

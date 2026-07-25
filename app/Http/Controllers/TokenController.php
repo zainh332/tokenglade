@@ -1060,11 +1060,11 @@ EOT;
 
         $names = [];
         foreach ($stellarTokens as $stellarToken) {
+            if (!empty($stellarToken->name)) {
+                $names[$stellarToken->issuer_public_key] = $stellarToken->name;
+            }
             if ($verifiedStellarTokenIds->has($stellarToken->id)) {
                 $verified[$stellarToken->issuer_public_key] = true;
-                if (!empty($stellarToken->created_token_name)) {
-                    $names[$stellarToken->issuer_public_key] = $stellarToken->created_token_name;
-                }
             }
         }
 
