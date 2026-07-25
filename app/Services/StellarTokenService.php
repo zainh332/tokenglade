@@ -170,14 +170,18 @@ class StellarTokenService
             }
         }
         $issuerLocked = ($masterKeyWeight === 0);
+        $dbToken = \App\Models\StellarToken::where('issuer_public_key', $issuer)
+            ->where('asset_code', $code)
+            ->where('created_token_transfer_status', 1)
+            ->first();
 
         return [
             'asset_code'       => $code,
             'issuer'           => $issuer,
 
-            'name'             => $toml['token']['name'] ?? $toml['project']['org_name'] ?? $code,
-            'image'            => $toml['token']['image'] ?? null,
-            'description'      => $toml['token']['description'] ?? null,
+            'name'             => $dbToken?->name ?? $toml['token']['name'] ?? $toml['project']['org_name'] ?? $code,
+            'image'            => $dbToken?->logo ?? $toml['token']['image'] ?? null,
+            'description'      => $dbToken?->desc ?? $toml['token']['description'] ?? null,
 
             'project'          => $toml['project'] ?? [],
 
@@ -192,7 +196,7 @@ class StellarTokenService
             'mint_date_human' => Carbon::createFromTimestampUTC($mintDateRaw)->format('Y-m-d'),
             'liquidity_pools'     => (float) ($horizon['num_liquidity_pools'] ?? 0),
             'updated_at'     => '1 min ago',
-            'website' => $toml['token']['website'] ?? $toml['project']['org_url'] ?? null,
+            'website' => $dbToken?->website_url ?? $toml['token']['website'] ?? $toml['project']['org_url'] ?? null,
             'twitter' =>
             isset($toml['project']['org_twitter'])
                 && !empty($toml['project']['org_twitter'])

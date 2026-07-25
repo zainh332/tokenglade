@@ -413,11 +413,10 @@
             </div>
 
             <!-- Bottom: Explore Button -->
-            <a v-if="token.tx_hash" :href="`https://stellar.expert/explorer/public/tx/${token.tx_hash}`" target="_blank"
-              @click.stop
-              class="mt-4 w-full py-2 text-center text-xs font-bold text-cyan-400 hover:text-white bg-slate-900/60 hover:bg-slate-900 border border-slate-850 hover:border-slate-800 rounded-2xl transition block">
+            <button @click.stop="goToProject(token)"
+              class="mt-4 w-full py-2 text-center text-xs font-bold text-cyan-400 hover:text-white bg-slate-900/60 hover:bg-slate-900 border border-slate-850 hover:border-slate-800 rounded-2xl transition block focus:outline-none">
               Explore →
-            </a>
+            </button>
           </div>
         </div>
       </div>
