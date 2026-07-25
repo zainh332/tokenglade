@@ -227,7 +227,6 @@
                 <div class="v uppercase"
                   :class="token.rating?.average >= 8 ? 'up' : (token.rating?.average >= 5 ? 'dim' : 'down')">{{
                   healthLabel.text }} Risk</div>
-                <small class="faint">Based on 10 checks</small>
               </div>
               <div class="gauge">
                 <svg viewBox="0 0 56 56" width="56" height="56">
