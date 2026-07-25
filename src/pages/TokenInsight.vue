@@ -159,7 +159,19 @@
           </div>
         </div>
 
-        <!-- ACTUAL CONTENT (Visible when loading is false) -->
+        <!-- NOT FOUND STATE -->
+        <div v-else-if="notFound" class="flex flex-col items-center justify-center text-center py-20 px-4 bg-[#111620] border border-[#1D2531] rounded-3xl mt-8">
+          <div class="w-16 h-16 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20 text-3xl mb-4">⚠️</div>
+          <h2 class="text-xl font-bold text-white tracking-tight font-display">Asset Not Found</h2>
+          <p class="text-xs text-slate-400 mt-2 max-w-sm leading-relaxed">
+            We couldn't retrieve on-chain ledger information for the requested issuer address on the Stellar network.
+          </p>
+          <router-link to="/" class="mt-6 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-95 text-xs font-extrabold uppercase tracking-wider text-white rounded-xl transition duration-150">
+            Back to Homepage
+          </router-link>
+        </div>
+
+        <!-- ACTUAL CONTENT (Visible when loading is false and notFound is false) -->
         <div v-else class="space-y-8">
           
           <!-- BREADCRUMB -->
@@ -501,7 +513,7 @@
                 <div class="expo-stats">
                   <div class="st">
                     <div class="k">Buy / Sell Ratio</div>
-                    <div class="v up font-mono">
+                    <div class="v font-mono" :class="buySellVolume.buyVol === 0 && buySellVolume.sellVol === 0 ? 'text-slate-400 font-semibold' : (buySellVolume.buyPercent >= 50 ? 'up font-bold' : 'down font-bold')">
                       <template v-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                       <template v-else>{{ buySellRatioText }}</template>
                     </div>
@@ -1167,6 +1179,7 @@ import {
 } from "lucide-vue-next";
 
 const loading = ref(true)
+const notFound = ref(false)
 const activeTab = ref('overview')
 const showAllTrades = ref(false)
 const holdersLoading = ref(true)
@@ -1595,8 +1608,8 @@ const buySellVolume = computed(() => {
     return {
       buyVol: 0,
       sellVol: 0,
-      buyPercent: 50,
-      sellPercent: 50
+      buyPercent: 0,
+      sellPercent: 0
     };
   }
 
@@ -1610,7 +1623,7 @@ const buySellVolume = computed(() => {
 
 const buySellRatioText = computed(() => {
   const { buyVol, sellVol, buyPercent } = buySellVolume.value;
-  if (buyVol === 0 && sellVol === 0) return '50% Buy';
+  if (buyVol === 0 && sellVol === 0) return '—';
   if (buyPercent >= 50) {
     return `${buyPercent}% Buy`;
   } else {
@@ -1825,6 +1838,7 @@ function fallbackCopy(onSuccess) {
 async function fetchToken() {
   if (!issuerInput.value) return
   loading.value = true
+  notFound.value = false
   holdersLoading.value = true
   liquidityLoading.value = true
   historicalStatsLoading.value = true
@@ -1842,6 +1856,13 @@ async function fetchToken() {
         issuer: issuerInput.value
       }
     })
+    
+    if (res.data?.error || !res.data?.asset_code) {
+      notFound.value = true
+      loading.value = false
+      return
+    }
+    
     Object.assign(token, res.data)
     
     // Reset holders and liquidity to empty state initially
@@ -1871,14 +1892,17 @@ async function fetchToken() {
     fetchOrderBook()
   } catch (error) {
     console.error("Error fetching token data:", error)
+    notFound.value = true
   } finally {
     loading.value = false
-    nextTick(() => {
-      setTimeout(async () => {
-        await initChart()
-        await fetchChartData()
-      }, 50)
-    })
+    if (!notFound.value) {
+      nextTick(() => {
+        setTimeout(async () => {
+          await initChart()
+          await fetchChartData()
+        }, 50)
+      })
+    }
   }
 }
 
