@@ -1626,7 +1626,7 @@ const buySellVolume = computed(() => {
 
 const buySellRatioText = computed(() => {
   const { buyVol, sellVol, buyPercent } = buySellVolume.value;
-  if (buyVol === 0 && sellVol === 0) return '—';
+  if (buyVol === 0 && sellVol === 0) return '0';
   if (buyPercent >= 50) {
     return `${buyPercent}% Buy`;
   } else {

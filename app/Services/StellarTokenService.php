@@ -174,6 +174,47 @@ class StellarTokenService
             ->where('asset_code', strtoupper($code))
             ->first();
 
+        $verifiedProj = \App\Models\VerifiedProject::where('identifier', $issuer)
+            ->where('blockchain_id', 1)
+            ->first();
+
+        $website = null;
+        $twitter = null;
+        $email = null;
+        $supportEmail = null;
+        $projectData = $toml['project'] ?? [];
+
+        if ($dbToken !== null) {
+            $website = $verifiedProj?->website ?: ($dbToken->website_url ?: null);
+            if ($verifiedProj && !empty($verifiedProj->twitter)) {
+                $tw = $verifiedProj->twitter;
+                if (str_contains($tw, 'twitter.com') || str_contains($tw, 'x.com')) {
+                    $twitter = $tw;
+                } else {
+                    $twitter = 'https://x.com/' . ltrim($tw, '@');
+                }
+            }
+            $email = $verifiedProj?->email ?: null;
+            $projectData['org_name'] = $dbToken->name;
+            $projectData['org_url'] = $website;
+            $projectData['org_email'] = $email;
+            if ($verifiedProj && !empty($verifiedProj->twitter)) {
+                $projectData['org_twitter'] = $verifiedProj->twitter;
+            }
+        } else {
+            $website = $toml['token']['website'] ?? $toml['project']['org_url'] ?? null;
+            if (isset($toml['project']['org_twitter']) && !empty($toml['project']['org_twitter'])) {
+                $tw = $toml['project']['org_twitter'];
+                if (str_contains($tw, 'http')) {
+                    $twitter = $tw;
+                } else {
+                    $twitter = 'https://x.com/' . ltrim($tw, '@');
+                }
+            }
+            $email = $toml['project']['org_email'] ?? null;
+            $supportEmail = $toml['project']['org_support'] ?? null;
+        }
+
         return [
             'asset_code'       => $code,
             'issuer'           => $issuer,
@@ -183,7 +224,7 @@ class StellarTokenService
             'image'            => $dbToken?->logo ?? $toml['token']['image'] ?? null,
             'description'      => $dbToken?->desc ?? $toml['token']['description'] ?? null,
 
-            'project'          => $toml['project'] ?? [],
+            'project'          => $projectData,
 
             'total_supply' => $formattedSupply,
             'trustlines'     => (int) ($horizon['accounts']['authorized'] ?? 0),
@@ -196,16 +237,10 @@ class StellarTokenService
             'mint_date_human' => Carbon::createFromTimestampUTC($mintDateRaw)->format('Y-m-d'),
             'liquidity_pools'     => (float) ($horizon['num_liquidity_pools'] ?? 0),
             'updated_at'     => '1 min ago',
-            'website' => $dbToken?->website_url ?? $toml['token']['website'] ?? $toml['project']['org_url'] ?? null,
-            'twitter' =>
-            isset($toml['project']['org_twitter'])
-                && !empty($toml['project']['org_twitter'])
-
-                ? 'https://x.com/' .
-                $toml['project']['org_twitter']
-                : null,
-            'email'             => $toml['project']['org_email'] ?? null,
-            'support_email'             => $toml['project']['org_support'] ?? null,
+            'website'           => $website,
+            'twitter'           => $twitter,
+            'email'             => $email,
+            'support_email'     => $supportEmail,
 
             'auth_required'     => ($horizon['flags']['auth_required'] ?? false),
             'auth_revocable'     => ($horizon['flags']['auth_revocable'] ?? false),
