@@ -1387,7 +1387,7 @@ EOT;
             'issuer' => 'required|string'
         ]);
 
-        $issuer = $request->issuer;
+        $issuer = strtoupper($request->issuer);
         $stellarToken = StellarToken::where('issuer_public_key', $issuer)
             ->where('created_token_transfer_status', 1)
             ->latest()->first();

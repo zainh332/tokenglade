@@ -170,8 +170,8 @@ class StellarTokenService
             }
         }
         $issuerLocked = ($masterKeyWeight === 0);
-        $dbToken = \App\Models\StellarToken::where('issuer_public_key', $issuer)
-            ->where('asset_code', $code)
+        $dbToken = \App\Models\StellarToken::where('issuer_public_key', strtoupper($issuer))
+            ->where('asset_code', strtoupper($code))
             ->where('created_token_transfer_status', 1)
             ->first();
 
