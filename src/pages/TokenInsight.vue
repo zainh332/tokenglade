@@ -254,12 +254,14 @@
               <div class="st flex flex-col justify-between">
                 <div class="k">Price</div>
                 <div class="v font-mono">
-                  <template v-if="token.xlm_price">{{ formatXlmPrice(token.xlm_price) }} XLM</template>
-                  <template v-else><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                  <template v-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                  <template v-else-if="token.xlm_price">{{ formatXlmPrice(token.xlm_price) }} XLM</template>
+                  <template v-else>0 XLM</template>
                 </div>
                 <div class="sub font-mono dim">
-                  <template v-if="token.usd_price">≈ ${{ formatPrice(token.usd_price) }}</template>
-                  <template v-else><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                  <template v-if="loading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                  <template v-else-if="token.usd_price">≈ ${{ formatPrice(token.usd_price) }}</template>
+                  <template v-else>≈ $0</template>
                 </div>
                 <div class="sub font-mono font-semibold" :class="(historicalStats?.price_change_pct || 0) >= 0 ? 'up' : 'down'">
                   <template v-if="loading || historicalStatsLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
@@ -269,7 +271,7 @@
                   <template v-else-if="token.price_change_24h">
                     {{ token.price_change_24h >= 0 ? '▲' : '▼' }} {{ token.price_change_24h >= 0 ? '+' : '' }}{{ token.price_change_24h }}%
                   </template>
-                  <template v-else><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                  <template v-else>▲ +0%</template>
                 </div>
               </div>
 
@@ -329,8 +331,9 @@
               <div class="st flex flex-col justify-between">
                 <div class="k">Market Cap</div>
                 <div class="v font-mono">
-                  <template v-if="token.usd_price && token.total_supply">${{ formatNumber((token.usd_price || 0) * (token.total_supply || 0)) }}</template>
-                  <template v-else><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                  <template v-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                  <template v-else-if="token.usd_price && token.total_supply">${{ formatNumber((token.usd_price || 0) * (token.total_supply || 0)) }}</template>
+                  <template v-else>$0</template>
                 </div>
                 <div class="sub dim">
                   Fully Diluted
@@ -340,7 +343,7 @@
                   <template v-else-if="historicalStats">
                     {{ (historicalStats.market_cap_change_pct || 0) >= 0 ? '▲' : '▼' }} {{ (historicalStats.market_cap_change_pct || 0) >= 0 ? '+' : '' }}{{ historicalStats.market_cap_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase() }})
                   </template>
-                  <template v-else><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                  <template v-else>▲ +0%</template>
                 </div>
               </div>
 
@@ -524,7 +527,7 @@
                     <div class="v font-mono">
                       <template v-if="avgTradeSizeUsd !== null">${{ formatPrice2Deci(avgTradeSizeUsd) }}</template>
                       <template v-else-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                      <template v-else>—</template>
+                      <template v-else>0</template>
                     </div>
                     <div class="sub dim font-mono">per fill</div>
                   </div>
