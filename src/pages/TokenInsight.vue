@@ -235,11 +235,11 @@
                   <circle cx="28" cy="28" r="24" fill="none"
                     :stroke="token.rating?.average >= 8 ? '#2ED47A' : (token.rating?.average >= 5 ? '#FF8A3D' : '#F0616D')"
                     stroke-width="5" stroke-linecap="round" :stroke-dasharray="150.8"
-                    :stroke-dashoffset="150.8 - (150.8 * (token.rating?.average || 7.5)) / 10"
+                    :stroke-dashoffset="150.8 - (150.8 * (token.rating?.average ?? 7.5)) / 10"
                     transform="rotate(-90 28 28)" />
                 </svg>
                 <b :class="token.rating?.average >= 8 ? 'up' : (token.rating?.average >= 5 ? 'dim' : 'down')">{{
-                  token.rating?.average?.toFixed(1) || '7.5' }}</b>
+                  token.rating?.average?.toFixed(1) ?? '7.5' }}</b>
               </div>
             </div>
           </div>
@@ -1165,14 +1165,14 @@
               <div class="px-4 pt-4 pb-2">
                 <div class="flex justify-between items-center mb-1.5">
                   <span class="text-xs font-mono text-slate-400">Composite Score</span>
-                  <span class="text-sm font-bold font-mono text-white">{{ token.rating?.average?.toFixed(1) || '7.5' }}
+                  <span class="text-sm font-bold font-mono text-white">{{ token.rating?.average?.toFixed(1) ?? '7.5' }}
                     /
                     10</span>
                 </div>
                 <div class="track h-2 bg-[#1a212c] rounded-full overflow-hidden">
                   <i class="block h-full rounded-full transition-all duration-500"
                     :class="token.rating?.average >= 8 ? 'bg-[#2ED47A]' : (token.rating?.average >= 5 ? 'bg-[#FF8A3D]' : 'bg-[#F0616D]')"
-                    :style="{ width: ((token.rating?.average || 7.5) * 10) + '%' }"></i>
+                    :style="{ width: ((token.rating?.average ?? 7.5) * 10) + '%' }"></i>
                 </div>
               </div>
 
@@ -1852,7 +1852,7 @@ const avgTradeSizeUsd = computed(() => {
 });
 
 const healthLabel = computed(() => {
-  const score = token.rating?.average || 7.5
+  const score = token.rating?.average ?? 7.5
   if (score >= 8) return { text: "Low", color: "text-green-600" }
   if (score >= 5) return { text: "Medium", color: "text-yellow-500" }
   return { text: "High", color: "text-red-500" }
@@ -1897,7 +1897,7 @@ const averageTokensPerHolder = computed(() => {
 
 const holderGrowth = computed(() => {
   const totalHolders = token.holders || 10;
-  const activityFactor = (token.rating?.activity || 5) / 10;
+  const activityFactor = (token.rating?.activity ?? 5) / 10;
 
   const growth24h = Math.max(1, totalHolders * 0.0005 * activityFactor);
   const growth7d = Math.max(3, totalHolders * 0.0035 * activityFactor);
@@ -1922,7 +1922,7 @@ const biggestIndividualHolder = computed(() => {
 
 const aiRiskSummary = computed(() => {
   const code = token.asset_code || 'this token';
-  const score = token.rating?.average || 7.5;
+  const score = token.rating?.average ?? 7.5;
   const tvl = token.liquidity_overview?.total_tvl || token.liquidity_tvl || 0;
   const totalTrades = token.activity?.total_trades || 0;
 
