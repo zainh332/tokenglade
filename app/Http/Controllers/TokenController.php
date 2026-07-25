@@ -1048,7 +1048,6 @@ EOT;
         $verified = array_fill_keys($issuers, false);
 
         $stellarTokens = StellarToken::whereIn('issuer_public_key', $issuers)
-            ->where('created_token_transfer_status', 1)
             ->orderByDesc('id')
             ->get()
             ->unique('issuer_public_key');
@@ -1389,7 +1388,6 @@ EOT;
 
         $issuer = strtoupper($request->issuer);
         $stellarToken = StellarToken::where('issuer_public_key', $issuer)
-            ->where('created_token_transfer_status', 1)
             ->latest()->first();
 
         $assets = Cache::remember("issuer_assets_{$issuer}", 3600, function () use ($service, $issuer) {
