@@ -1200,19 +1200,32 @@ EOT;
                     }
                 });
 
+                $qLower = strtolower($q);
                 foreach ($seRecords as $rec) {
                     $parts = explode('-', $rec['asset'] ?? '');
-                    $code = strtoupper($rec['tomlInfo']['code'] ?? ($parts[0] ?? ''));
-                    $issuer = $rec['tomlInfo']['issuer'] ?? ($parts[1] ?? '');
+                    $code = strtoupper($parts[0] ?? '');
+                    $issuer = $parts[1] ?? '';
                     if (empty($code) || empty($issuer)) continue;
 
+                    $name = $rec['tomlInfo']['name'] ?? null;
+                    $orgName = $rec['tomlInfo']['orgName'] ?? null;
+
+                    // Filter: query must match code, currency name, or issuer address
+                    $codeMatches = (strpos(strtolower($code), $qLower) !== false);
+                    $nameMatches = ($name && strpos(strtolower($name), $qLower) !== false);
+                    $issuerMatches = (strpos(strtolower($issuer), $qLower) !== false);
+
+                    if (!$codeMatches && !$nameMatches && !$issuerMatches) {
+                        continue;
+                    }
+
                     $key = $code . '_' . $issuer;
-                    $name = $rec['tomlInfo']['name'] ?? ($rec['tomlInfo']['orgName'] ?? null);
+                    $displayName = $name ?? ($orgName ?? null);
                     $trustlines = $rec['trustlines'][0] ?? 0;
 
                     if (isset($results[$key])) {
-                        if (empty($results[$key]['name']) && !empty($name)) {
-                            $results[$key]['name'] = $name;
+                        if (empty($results[$key]['name']) && !empty($displayName)) {
+                            $results[$key]['name'] = $displayName;
                         }
                         if (($results[$key]['accounts']['authorized'] ?? 0) < $trustlines) {
                             $results[$key]['accounts'] = ['authorized' => $trustlines];
@@ -1221,7 +1234,7 @@ EOT;
                         $results[$key] = [
                             'asset_code' => $code,
                             'asset_issuer' => $issuer,
-                            'name' => $name,
+                            'name' => $displayName,
                             'is_verified' => false,
                             'accounts' => ['authorized' => $trustlines],
                             'num_liquidity_pools' => $rec['trades'] ?? 0,
