@@ -177,6 +177,7 @@ class StellarTokenService
         return [
             'asset_code'       => $code,
             'issuer'           => $issuer,
+            'is_minted_on_tokenglade' => $dbToken !== null,
 
             'name'             => $dbToken?->name ?? $toml['token']['name'] ?? $toml['project']['org_name'] ?? $code,
             'image'            => $dbToken?->logo ?? $toml['token']['image'] ?? null,

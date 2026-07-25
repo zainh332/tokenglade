@@ -183,7 +183,7 @@
                 <!-- Name and Issuer info -->
                 <div class="name-col min-w-0">
                   <div class="name-row">
-                    <h1 class="truncate">{{ token.project?.org_name || token.name || 'Token Detail' }}</h1>
+                    <h1 class="truncate">{{ token.is_minted_on_tokenglade ? (token.name || token.project?.org_name || 'Token Detail') : (token.project?.org_name || token.name || 'Token Detail') }}</h1>
                     <span class="chip sym uppercase">{{ token.asset_code }}</span>
                     <span v-if="isVerified" class="chip verified">✓ Verified</span>
                     <span v-else-if="isVerificationPending" class="chip" style="color:var(--pink);border-color:rgba(240,24,156,0.25)">Pending</span>
@@ -1508,6 +1508,7 @@ const chartData = ref([])
 const token = reactive({
   name: "",
   asset_code: "",
+  is_minted_on_tokenglade: false,
   liquidity_pools: "",
   issuer: "",
   image: null,
