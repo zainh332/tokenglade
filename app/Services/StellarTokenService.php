@@ -62,28 +62,26 @@ class StellarTokenService
 
         $assetId = "{$code}-{$issuer}";
         $expertUrl = "https://api.stellar.expert/explorer/public/asset/{$assetId}";
+        $seData = null;
+        $seCacheKey = "se_asset_details_{$assetId}";
         try {
-
             $response = Http::timeout(4)->get($expertUrl);
-
-            if (!$response->ok()) {
-
-                $response = null;
+            if ($response->ok()) {
+                $seData = $response->json();
+                Cache::put($seCacheKey, $seData, 3600); // Cache for 1 hour
+            } else {
+                $seData = Cache::get($seCacheKey);
             }
         } catch (\Throwable $e) {
-
-            $response = null;
+            $seData = Cache::get($seCacheKey);
         }
 
-        $totalTrades = (int) ($response?->json('trades') ?? 0
-);
-        $tradedAmountRaw = $response?->json('traded_amount');
-
-        $payments = (int) ($response?->json('payments') ?? 0);
-        $paymentsAmountRaw = $response?->json('payments_amount');
-
-        $rating = $response?->json('rating') ?? [];
-        $decimals = (int) ($response?->json('decimals') ?? 7);
+        $totalTrades = (int) ($seData['trades'] ?? 0);
+        $tradedAmountRaw = $seData['traded_amount'] ?? null;
+        $payments = (int) ($seData['payments'] ?? 0);
+        $paymentsAmountRaw = $seData['payments_amount'] ?? null;
+        $rating = $seData['rating'] ?? [];
+        $decimals = (int) ($seData['decimals'] ?? 7);
 
         $transactions = $this->getRecentTransactions($issuer, $code);
 
@@ -110,7 +108,7 @@ class StellarTokenService
         $toml = $this->fetchTomlMetadata($horizon);
 
         $tokenDomain = null;
-        $rawDomain = $response?->json('home_domain') ?? $toml['token']['website'] ?? $toml['project']['org_url'] ?? null;
+        $rawDomain = ($seData['home_domain'] ?? null) ?? $toml['token']['website'] ?? $toml['project']['org_url'] ?? null;
         if ($rawDomain) {
             $tokenDomain = parse_url($rawDomain, PHP_URL_HOST) ?: $rawDomain;
             $tokenDomain = str_replace('www.', '', strtolower($tokenDomain));
@@ -119,8 +117,8 @@ class StellarTokenService
         $individualHolders = [];
         $projectHolders = [];
 
-        $mintDateRaw = $response?->json('created');
-        $holders = $response?->json('trustlines.funded');
+        $mintDateRaw = $seData['created'] ?? null;
+        $holders = $seData['trustlines']['funded'] ?? null;
         $xlmUsdPrice = $this->getXlmUsdPrice();
         $usd_price = $price_xlm !== null ? ($price_xlm * $xlmUsdPrice) : 0.0;
         
