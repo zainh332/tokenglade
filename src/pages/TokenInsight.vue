@@ -1,1141 +1,1342 @@
 <template>
   <div class="asset-page-wrapper min-h-screen selection:bg-cyan-500/20 selection:text-white">
     <Header />
-    
+
     <!-- MAIN CONTAINER -->
     <div class="wrap space-y-8 pb-24 sm:pb-32">
 
-        <!-- SKELETON LOADER (Visible when loading is true) -->
-        <div v-if="loading" class="space-y-8 animate-pulse mt-4">
-          <!-- BREADCRUMB SKELETON -->
-          <div class="h-4 w-48 bg-[#1D2531]/60 rounded"></div>
+      <!-- SKELETON LOADER (Visible when loading is true) -->
+      <div v-if="loading" class="space-y-8 animate-pulse mt-4">
+        <!-- BREADCRUMB SKELETON -->
+        <div class="h-4 w-48 bg-[#1D2531]/60 rounded"></div>
 
-          <!-- ASSET HEADER CARD SKELETON -->
-          <section class="card asset">
-            <div class="ahead">
-              <!-- Logo & Name Skeleton Container (Flex Row for Mobile side-by-side) -->
-              <div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
-                <!-- Icon Skeleton -->
-                <div class="token-ico flex-none">
-                  <div class="w-full h-full bg-[#1D2531]/60 rounded-xl"></div>
-                </div>
-                
-                <!-- Name and Issuer Skeleton -->
-                <div class="name-col space-y-2 flex-1 min-w-0">
-                  <div class="flex items-center gap-3 flex-wrap">
-                    <div class="h-7 w-40 bg-[#1D2531]/80 rounded-lg"></div>
-                    <div class="h-5 w-12 bg-[#1D2531]/60 rounded-md"></div>
-                    <div class="h-5 w-16 bg-[#1D2531]/60 rounded-md"></div>
-                  </div>
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <div class="h-4 w-44 bg-[#1D2531]/60 rounded"></div>
-                    <div class="h-5 w-20 bg-[#1D2531]/40 rounded-md"></div>
-                  </div>
-                </div>
+        <!-- ASSET HEADER CARD SKELETON -->
+        <section class="card asset">
+          <div class="ahead">
+            <!-- Logo & Name Skeleton Container (Flex Row for Mobile side-by-side) -->
+            <div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+              <!-- Icon Skeleton -->
+              <div class="token-ico flex-none">
+                <div class="w-full h-full bg-[#1D2531]/60 rounded-xl"></div>
               </div>
 
-              <!-- Trust Box Skeleton -->
-              <div class="trust">
-                <div class="space-y-1.5 text-right">
-                  <div class="h-3 w-16 bg-[#1D2531]/60 rounded ml-auto"></div>
-                  <div class="h-4 w-20 bg-[#1D2531]/80 rounded ml-auto"></div>
-                  <div class="h-2.5 w-24 bg-[#1D2531]/40 rounded ml-auto"></div>
+              <!-- Name and Issuer Skeleton -->
+              <div class="name-col space-y-2 flex-1 min-w-0">
+                <div class="flex items-center gap-3 flex-wrap">
+                  <div class="h-7 w-40 bg-[#1D2531]/80 rounded-lg"></div>
+                  <div class="h-5 w-12 bg-[#1D2531]/60 rounded-md"></div>
+                  <div class="h-5 w-16 bg-[#1D2531]/60 rounded-md"></div>
                 </div>
-                <div class="w-14 h-14 rounded-full border-4 border-[#1D2531]/60 flex-none"></div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <div class="h-4 w-44 bg-[#1D2531]/60 rounded"></div>
+                  <div class="h-5 w-20 bg-[#1D2531]/40 rounded-md"></div>
+                </div>
               </div>
             </div>
 
-            <!-- STAT ROW (PRIMARY ROW SKELETON) -->
-            <div class="stats">
-              <div v-for="i in 6" :key="i" class="st space-y-2">
-                <div class="h-3 w-14 bg-[#1D2531]/60 rounded"></div>
-                <div class="h-5 w-20 bg-[#1D2531]/80 rounded"></div>
-                <div class="h-3 w-12 bg-[#1D2531]/40 rounded"></div>
+            <!-- Trust Box Skeleton -->
+            <div class="trust">
+              <div class="space-y-1.5 text-right">
+                <div class="h-3 w-16 bg-[#1D2531]/60 rounded ml-auto"></div>
+                <div class="h-4 w-20 bg-[#1D2531]/80 rounded ml-auto"></div>
+                <div class="h-2.5 w-24 bg-[#1D2531]/40 rounded ml-auto"></div>
               </div>
+              <div class="w-14 h-14 rounded-full border-4 border-[#1D2531]/60 flex-none"></div>
             </div>
+          </div>
 
-            <!-- SECONDARY STRIP SKELETON -->
-            <div class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] flex flex-wrap items-center justify-between gap-3">
-              <div v-for="i in 4" :key="i" class="h-3.5 w-32 bg-[#1D2531]/60 rounded"></div>
+          <!-- STAT ROW (PRIMARY ROW SKELETON) -->
+          <div class="stats">
+            <div v-for="i in 6" :key="i" class="st space-y-2">
+              <div class="h-3 w-14 bg-[#1D2531]/60 rounded"></div>
+              <div class="h-5 w-20 bg-[#1D2531]/80 rounded"></div>
+              <div class="h-3 w-12 bg-[#1D2531]/40 rounded"></div>
             </div>
+          </div>
 
-            <!-- ACTIONS SKELETON -->
-            <div class="acts">
-              <div class="h-9 w-32 bg-[#1D2531]/80 rounded-lg"></div>
-              <div class="h-9 w-40 bg-[#1D2531]/80 rounded-lg"></div>
-              <div class="h-9 w-10 bg-[#1D2531]/60 rounded-lg"></div>
-              <div class="h-9 w-10 bg-[#1D2531]/60 rounded-lg"></div>
-            </div>
-          </section>
+          <!-- SECONDARY STRIP SKELETON -->
+          <div
+            class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] flex flex-wrap items-center justify-between gap-3">
+            <div v-for="i in 4" :key="i" class="h-3.5 w-32 bg-[#1D2531]/60 rounded"></div>
+          </div>
 
-          <!-- DASHBOARD GRID SKELETON -->
-          <div class="main-grid">
-            
-            <!-- Left Column SKELETON -->
-            <div style="display:flex;flex-direction:column;gap:14px">
-              <!-- Chart Card Skeleton -->
-              <div class="card p-6 space-y-4">
-                <div class="flex justify-between items-center">
-                  <div class="h-5 bg-[#1D2531]/60 rounded w-36"></div>
-                  <div class="h-6 bg-[#1D2531]/60 rounded-lg w-40"></div>
-                </div>
-                <div class="h-[340px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
-              </div>
+          <!-- ACTIONS SKELETON -->
+          <div class="acts">
+            <div class="h-9 w-32 bg-[#1D2531]/80 rounded-lg"></div>
+            <div class="h-9 w-40 bg-[#1D2531]/80 rounded-lg"></div>
+            <div class="h-9 w-10 bg-[#1D2531]/60 rounded-lg"></div>
+            <div class="h-9 w-10 bg-[#1D2531]/60 rounded-lg"></div>
+          </div>
+        </section>
 
-              <!-- Market Exposure Stats Skeleton -->
-              <div class="card expo">
-                <div class="expo-stats">
-                  <div v-for="i in 4" :key="i" class="st space-y-2">
-                    <div class="h-3 w-16 bg-[#1D2531]/60 rounded"></div>
-                    <div class="h-5 w-24 bg-[#1D2531]/80 rounded"></div>
-                    <div class="h-3 w-12 bg-[#1D2531]/40 rounded"></div>
-                  </div>
-                </div>
-              </div>
+        <!-- DASHBOARD GRID SKELETON -->
+        <div class="main-grid">
 
-              <!-- Order Book Skeleton -->
-              <div class="card" style="padding: 20px;">
-                <div class="card-hd">
-                  <div class="h-5 bg-[#1D2531]/60 rounded w-24"></div>
-                  <div class="h-4 bg-[#1D2531]/40 rounded w-16"></div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
-                  <div class="space-y-4">
-                    <div class="h-3.5 bg-[#1D2531]/60 rounded w-28"></div>
-                    <div class="h-[200px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
-                  </div>
-                  <div class="space-y-4">
-                    <div class="h-3.5 bg-[#1D2531]/60 rounded w-28"></div>
-                    <div class="h-[200px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Recent Trades Skeleton -->
-              <div class="card expo">
-                <div class="card-hd">
-                  <div class="h-5 bg-[#1D2531]/60 rounded w-28"></div>
-                  <div class="h-4 bg-[#1D2531]/40 rounded w-16"></div>
-                </div>
-                <div class="h-[200px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40 mt-4"></div>
-              </div>
-            </div>
-
-            <!-- RIGHT COLUMN (SIDEBAR) SKELETON -->
-            <aside class="rail">
-              <!-- Market Insight Card Skeleton -->
-              <div class="card ai p-4 space-y-4">
-                <div class="flex justify-between items-center">
-                  <div class="h-5 bg-[#1D2531]/60 rounded w-28"></div>
-                  <div class="h-4 bg-[#1D2531]/40 rounded w-16"></div>
-                </div>
-                <div class="space-y-3">
-                  <div class="h-3 bg-[#1D2531]/60 rounded w-full"></div>
-                  <div class="h-2 bg-[#1D2531]/40 rounded w-1/2"></div>
-                </div>
-                <div class="h-20 bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
-                <div class="h-16 bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
-              </div>
-
-              <!-- Voting Card Skeleton -->
-              <div class="card p-4 space-y-4">
+          <!-- Left Column SKELETON -->
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <!-- Chart Card Skeleton -->
+            <div class="card p-6 space-y-4">
+              <div class="flex justify-between items-center">
                 <div class="h-5 bg-[#1D2531]/60 rounded w-36"></div>
-                <div class="grid grid-cols-3 gap-2">
-                  <div v-for="i in 3" :key="i" class="h-10 bg-[#1D2531]/40 rounded-lg"></div>
-                </div>
+                <div class="h-6 bg-[#1D2531]/60 rounded-lg w-40"></div>
               </div>
+              <div class="h-[340px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+            </div>
 
-              <!-- Security Parameters Skeleton -->
-              <div class="card p-4 space-y-4">
-                <div class="h-5 bg-[#1D2531]/60 rounded w-40"></div>
-                <div class="space-y-3">
-                  <div v-for="i in 4" :key="i" class="flex justify-between items-center">
-                    <div class="h-3 bg-[#1D2531]/40 rounded w-28"></div>
-                    <div class="h-3.5 bg-[#1D2531]/60 rounded w-12"></div>
-                  </div>
+            <!-- Market Exposure Stats Skeleton -->
+            <div class="card expo">
+              <div class="expo-stats">
+                <div v-for="i in 4" :key="i" class="st space-y-2">
+                  <div class="h-3 w-16 bg-[#1D2531]/60 rounded"></div>
+                  <div class="h-5 w-24 bg-[#1D2531]/80 rounded"></div>
+                  <div class="h-3 w-12 bg-[#1D2531]/40 rounded"></div>
                 </div>
               </div>
-            </aside>
+            </div>
+
+            <!-- Order Book Skeleton -->
+            <div class="card" style="padding: 20px;">
+              <div class="card-hd">
+                <div class="h-5 bg-[#1D2531]/60 rounded w-24"></div>
+                <div class="h-4 bg-[#1D2531]/40 rounded w-16"></div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+                <div class="space-y-4">
+                  <div class="h-3.5 bg-[#1D2531]/60 rounded w-28"></div>
+                  <div class="h-[200px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+                </div>
+                <div class="space-y-4">
+                  <div class="h-3.5 bg-[#1D2531]/60 rounded w-28"></div>
+                  <div class="h-[200px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Trades Skeleton -->
+            <div class="card expo">
+              <div class="card-hd">
+                <div class="h-5 bg-[#1D2531]/60 rounded w-28"></div>
+                <div class="h-4 bg-[#1D2531]/40 rounded w-16"></div>
+              </div>
+              <div class="h-[200px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40 mt-4"></div>
+            </div>
           </div>
+
+          <!-- RIGHT COLUMN (SIDEBAR) SKELETON -->
+          <aside class="rail">
+            <!-- Market Insight Card Skeleton -->
+            <div class="card ai p-4 space-y-4">
+              <div class="flex justify-between items-center">
+                <div class="h-5 bg-[#1D2531]/60 rounded w-28"></div>
+                <div class="h-4 bg-[#1D2531]/40 rounded w-16"></div>
+              </div>
+              <div class="space-y-3">
+                <div class="h-3 bg-[#1D2531]/60 rounded w-full"></div>
+                <div class="h-2 bg-[#1D2531]/40 rounded w-1/2"></div>
+              </div>
+              <div class="h-20 bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+              <div class="h-16 bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+            </div>
+
+            <!-- Voting Card Skeleton -->
+            <div class="card p-4 space-y-4">
+              <div class="h-5 bg-[#1D2531]/60 rounded w-36"></div>
+              <div class="grid grid-cols-3 gap-2">
+                <div v-for="i in 3" :key="i" class="h-10 bg-[#1D2531]/40 rounded-lg"></div>
+              </div>
+            </div>
+
+            <!-- Security Parameters Skeleton -->
+            <div class="card p-4 space-y-4">
+              <div class="h-5 bg-[#1D2531]/60 rounded w-40"></div>
+              <div class="space-y-3">
+                <div v-for="i in 4" :key="i" class="flex justify-between items-center">
+                  <div class="h-3 bg-[#1D2531]/40 rounded w-28"></div>
+                  <div class="h-3.5 bg-[#1D2531]/60 rounded w-12"></div>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- NOT FOUND STATE -->
+      <div v-else-if="notFound"
+        class="flex flex-col items-center justify-center text-center py-20 px-4 bg-[#111620] border border-[#1D2531] rounded-3xl mt-8">
+        <div
+          class="w-16 h-16 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20 text-3xl mb-4">
+          ⚠️</div>
+        <h2 class="text-xl font-bold text-white tracking-tight font-display">Asset Not Found</h2>
+        <p class="text-xs text-slate-400 mt-2 max-w-sm leading-relaxed">
+          We couldn't retrieve on-chain ledger information for the requested issuer address on the Stellar network.
+        </p>
+        <router-link to="/"
+          class="mt-6 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-95 text-xs font-extrabold uppercase tracking-wider text-white rounded-xl transition duration-150">
+          Back to Homepage
+        </router-link>
+      </div>
+
+      <!-- ACTUAL CONTENT (Visible when loading is false and notFound is false) -->
+      <div v-else class="space-y-8">
+
+        <!-- BREADCRUMB -->
+        <div class="crumb select-none">
+          <router-link to="/">Terminal</router-link> &middot;
+          <span class="dim">Asset Insight</span> &middot;
+          <span class="mono">{{ token.asset_code }}</span>
         </div>
 
-        <!-- NOT FOUND STATE -->
-        <div v-else-if="notFound" class="flex flex-col items-center justify-center text-center py-20 px-4 bg-[#111620] border border-[#1D2531] rounded-3xl mt-8">
-          <div class="w-16 h-16 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20 text-3xl mb-4">⚠️</div>
-          <h2 class="text-xl font-bold text-white tracking-tight font-display">Asset Not Found</h2>
-          <p class="text-xs text-slate-400 mt-2 max-w-sm leading-relaxed">
-            We couldn't retrieve on-chain ledger information for the requested issuer address on the Stellar network.
-          </p>
-          <router-link to="/" class="mt-6 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-95 text-xs font-extrabold uppercase tracking-wider text-white rounded-xl transition duration-150">
-            Back to Homepage
-          </router-link>
-        </div>
+        <!-- ASSET HEADER CARD -->
+        <section class="card asset">
+          <div class="ahead">
+            <!-- Logo & Name Container (Flex Row for Mobile side-by-side) -->
+            <div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+              <!-- Icon -->
+              <div class="token-ico select-none flex-shrink-0">
+                <img v-if="token.image" :src="token.image" class="w-full h-full object-cover rounded-xl" />
+                <span v-else>{{ getTokenInitials(token.asset_code) }}</span>
+              </div>
 
-        <!-- ACTUAL CONTENT (Visible when loading is false and notFound is false) -->
-        <div v-else class="space-y-8">
-          
-          <!-- BREADCRUMB -->
-          <div class="crumb select-none">
-            <router-link to="/">Terminal</router-link> &middot; 
-            <span class="dim">Asset Insight</span> &middot; 
-            <span class="mono">{{ token.asset_code }}</span>
+              <!-- Name and Issuer info -->
+              <div class="name-col min-w-0">
+                <div class="name-row">
+                  <h1 class="truncate">{{ token.is_minted_on_tokenglade ? (token.name || token.project?.org_name ||
+                    'Token Detail') : (token.project?.org_name || token.name || 'Token Detail') }}</h1>
+                  <span class="chip sym uppercase">{{ token.asset_code }}</span>
+                  <span v-if="isVerified" class="chip verified">✓ Verified</span>
+                  <span v-else-if="isVerificationPending" class="chip"
+                    style="color:var(--pink);border-color:rgba(240,24,156,0.25)">Pending</span>
+                  <span v-else @click="verificationModal = true"
+                    class="chip select-none cursor-pointer hover:bg-white/5 transition">Unverified</span>
+                </div>
+
+                <div class="issuer">
+                  <span>Issuer: <a :href="stellarExpertAssetUrl" target="_blank" rel="noopener noreferrer"
+                      class="mono">{{ shorten(token.issuer) }}</a></span>
+                  <button @click="copyIssuer" class="btn dark select-none" style="padding:2px 8px;font-size:10.5px">
+                    {{ copied ? 'Copied!' : 'Copy Address' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Trust box -->
+            <div class="trust">
+              <div class="lbl">
+                <div class="k">Trust Score</div>
+                <div class="v uppercase"
+                  :class="token.rating?.average >= 8 ? 'up' : (token.rating?.average >= 5 ? 'dim' : 'down')">{{
+                  healthLabel.text }} Risk</div>
+                <small class="faint">Based on 10 checks</small>
+              </div>
+              <div class="gauge">
+                <svg viewBox="0 0 56 56" width="56" height="56">
+                  <circle cx="28" cy="28" r="24" fill="none" stroke="#1a212c" stroke-width="5" />
+                  <circle cx="28" cy="28" r="24" fill="none"
+                    :stroke="token.rating?.average >= 8 ? '#2ED47A' : (token.rating?.average >= 5 ? '#FF8A3D' : '#F0616D')"
+                    stroke-width="5" stroke-linecap="round" :stroke-dasharray="150.8"
+                    :stroke-dashoffset="150.8 - (150.8 * (token.rating?.average || 7.5)) / 10"
+                    transform="rotate(-90 28 28)" />
+                </svg>
+                <b :class="token.rating?.average >= 8 ? 'up' : (token.rating?.average >= 5 ? 'dim' : 'down')">{{
+                  token.rating?.average?.toFixed(1) || '7.5' }}</b>
+              </div>
+            </div>
           </div>
 
-          <!-- ASSET HEADER CARD -->
-          <section class="card asset">
-            <div class="ahead">
-              <!-- Logo & Name Container (Flex Row for Mobile side-by-side) -->
-              <div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
-                <!-- Icon -->
-                <div class="token-ico select-none flex-shrink-0">
-                  <img v-if="token.image" :src="token.image" class="w-full h-full object-cover rounded-xl" />
-                  <span v-else>{{ getTokenInitials(token.asset_code) }}</span>
-                </div>
-                
-                <!-- Name and Issuer info -->
-                <div class="name-col min-w-0">
-                  <div class="name-row">
-                    <h1 class="truncate">{{ token.is_minted_on_tokenglade ? (token.name || token.project?.org_name || 'Token Detail') : (token.project?.org_name || token.name || 'Token Detail') }}</h1>
-                    <span class="chip sym uppercase">{{ token.asset_code }}</span>
-                    <span v-if="isVerified" class="chip verified">✓ Verified</span>
-                    <span v-else-if="isVerificationPending" class="chip" style="color:var(--pink);border-color:rgba(240,24,156,0.25)">Pending</span>
-                    <span v-else @click="verificationModal = true" class="chip select-none cursor-pointer hover:bg-white/5 transition">Unverified</span>
-                  </div>
-                  
-                  <div class="issuer">
-                    <span>Issuer: <a :href="stellarExpertAssetUrl" target="_blank" rel="noopener noreferrer" class="mono">{{ shorten(token.issuer) }}</a></span>
-                    <button @click="copyIssuer" class="btn dark select-none" style="padding:2px 8px;font-size:10.5px">
-                      {{ copied ? 'Copied!' : 'Copy Address' }}
-                    </button>
-                  </div>
-                </div>
-              </div>
+          <!-- STATS TIMEFRAME HEADER -->
+          <div class="flex items-center justify-between mt-4 mb-2 px-1">
+            <span class="text-xs font-mono font-semibold text-slate-400 uppercase tracking-wider">Key Metrics</span>
+            <div class="flex items-center gap-1 bg-[#0E131C] p-1 rounded-lg border border-[rgba(148,163,184,0.12)]">
+              <button @click="changeStatsTimeframe('24h')"
+                class="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold transition-all"
+                :class="selectedStatsTimeframe === '24h' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-slate-400 hover:text-white'">
+                24H Track
+              </button>
+              <button @click="changeStatsTimeframe('7d')"
+                class="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold transition-all"
+                :class="selectedStatsTimeframe === '7d' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-slate-400 hover:text-white'">
+                7D Track
+              </button>
+            </div>
+          </div>
 
-              <!-- Trust box -->
-              <div class="trust">
-                <div class="lbl">
-                  <div class="k">Trust Score</div>
-                  <div class="v uppercase" :class="token.rating?.average >= 8 ? 'up' : (token.rating?.average >= 5 ? 'dim' : 'down')">{{ healthLabel.text }} Risk</div>
-                  <small class="faint">Based on 10 checks</small>
-                </div>
-                <div class="gauge">
-                  <svg viewBox="0 0 56 56" width="56" height="56">
-                    <circle cx="28" cy="28" r="24" fill="none" stroke="#1a212c" stroke-width="5"/>
-                    <circle cx="28" cy="28" r="24" fill="none" :stroke="token.rating?.average >= 8 ? '#2ED47A' : (token.rating?.average >= 5 ? '#FF8A3D' : '#F0616D')" stroke-width="5" stroke-linecap="round"
-                      :stroke-dasharray="150.8" :stroke-dashoffset="150.8 - (150.8 * (token.rating?.average || 7.5)) / 10" transform="rotate(-90 28 28)"/>
-                  </svg>
-                  <b :class="token.rating?.average >= 8 ? 'up' : (token.rating?.average >= 5 ? 'dim' : 'down')">{{ token.rating?.average?.toFixed(1) || '7.5' }}</b>
-                </div>
+          <!-- STAT ROW (PRIMARY ROW) -->
+          <div class="stats">
+            <!-- 1. Price -->
+            <div class="st flex flex-col justify-between">
+              <div class="k">Price</div>
+              <div class="v font-mono">
+                <template v-if="loading"><span
+                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="token.xlm_price">{{ formatXlmPrice(token.xlm_price) }} XLM</template>
+                <template v-else>0 XLM</template>
+              </div>
+              <div class="sub font-mono dim">
+                <template v-if="loading"><span
+                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="token.usd_price">≈ ${{ formatPrice(token.usd_price) }}</template>
+                <template v-else>≈ $0</template>
+              </div>
+              <div class="sub font-mono font-semibold"
+                :class="(historicalStats?.price_change_pct || 0) >= 0 ? 'up' : 'down'">
+                <template v-if="loading || historicalStatsLoading"><span
+                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="historicalStats">
+                  {{ (historicalStats.price_change_pct || 0) >= 0 ? '▲' : '▼' }} {{ (historicalStats.price_change_pct ||
+                    0) >= 0 ? '+' : '' }}{{ historicalStats.price_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase()
+                  }})
+                </template>
+                <template v-else-if="token.price_change_24h">
+                  {{ token.price_change_24h >= 0 ? '▲' : '▼' }} {{ token.price_change_24h >= 0 ? '+' : '' }}{{
+                    token.price_change_24h }}%
+                </template>
+                <template v-else>▲ +0%</template>
               </div>
             </div>
 
-            <!-- STATS TIMEFRAME HEADER -->
-            <div class="flex items-center justify-between mt-4 mb-2 px-1">
-              <span class="text-xs font-mono font-semibold text-slate-400 uppercase tracking-wider">Key Metrics</span>
-              <div class="flex items-center gap-1 bg-[#0E131C] p-1 rounded-lg border border-[rgba(148,163,184,0.12)]">
-                <button 
-                  @click="changeStatsTimeframe('24h')" 
-                  class="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold transition-all"
-                  :class="selectedStatsTimeframe === '24h' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-slate-400 hover:text-white'">
-                  24H Track
-                </button>
-                <button 
-                  @click="changeStatsTimeframe('7d')" 
-                  class="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold transition-all"
-                  :class="selectedStatsTimeframe === '7d' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-slate-400 hover:text-white'">
-                  7D Track
-                </button>
+            <!-- 2. 24H Volume -->
+            <div class="st flex flex-col justify-between">
+              <div class="k">24H Volume</div>
+              <div class="v font-mono">
+                <template
+                  v-if="token.volume_24h !== undefined ? token.volume_24h : token.liquidity_overview?.lp_volume_24h">
+                  {{ formatNumber((token.volume_24h !== undefined ? token.volume_24h :
+                    token.liquidity_overview?.lp_volume_24h) / xlmPriceInUsd) }} XLM
+                </template>
+                <template v-else-if="loading || liquidityLoading"><span
+                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <template v-else>0 XLM</template>
+              </div>
+              <div class="sub font-mono dim">
+                <template
+                  v-if="token.volume_24h !== undefined ? token.volume_24h : token.liquidity_overview?.lp_volume_24h">
+                  ≈ ${{ formatNumber(token.volume_24h !== undefined ? token.volume_24h :
+                    token.liquidity_overview?.lp_volume_24h) }}
+                </template>
+                <template v-else-if="loading || liquidityLoading"><span
+                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                <template v-else>≈ $0</template>
+              </div>
+              <div class="sub font-mono font-semibold"
+                :class="(historicalStats?.volume_change_pct || 0) >= 0 ? 'up' : 'down'">
+                <template v-if="loading || historicalStatsLoading"><span
+                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="historicalStats">
+                  {{ (historicalStats.volume_change_pct || 0) >= 0 ? '▲' : '▼' }} {{ (historicalStats.volume_change_pct
+                    || 0) >= 0 ? '+' : '' }}{{ historicalStats.volume_change_pct }}% ({{
+                    selectedStatsTimeframe.toUpperCase() }})
+                </template>
+                <template v-else-if="token.price_change_24h">
+                  {{ token.price_change_24h >= 0 ? '▲' : '▼' }} {{ token.price_change_24h >= 0 ? '+' : '' }}18%
+                </template>
+                <template v-else><span
+                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
               </div>
             </div>
 
-            <!-- STAT ROW (PRIMARY ROW) -->
-            <div class="stats">
-              <!-- 1. Price -->
-              <div class="st flex flex-col justify-between">
-                <div class="k">Price</div>
-                <div class="v font-mono">
-                  <template v-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                  <template v-else-if="token.xlm_price">{{ formatXlmPrice(token.xlm_price) }} XLM</template>
-                  <template v-else>0 XLM</template>
-                </div>
-                <div class="sub font-mono dim">
-                  <template v-if="loading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
-                  <template v-else-if="token.usd_price">≈ ${{ formatPrice(token.usd_price) }}</template>
-                  <template v-else>≈ $0</template>
-                </div>
-                <div class="sub font-mono font-semibold" :class="(historicalStats?.price_change_pct || 0) >= 0 ? 'up' : 'down'">
-                  <template v-if="loading || historicalStatsLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
-                  <template v-else-if="historicalStats">
-                    {{ (historicalStats.price_change_pct || 0) >= 0 ? '▲' : '▼' }} {{ (historicalStats.price_change_pct || 0) >= 0 ? '+' : '' }}{{ historicalStats.price_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase() }})
-                  </template>
-                  <template v-else-if="token.price_change_24h">
-                    {{ token.price_change_24h >= 0 ? '▲' : '▼' }} {{ token.price_change_24h >= 0 ? '+' : '' }}{{ token.price_change_24h }}%
-                  </template>
-                  <template v-else>▲ +0%</template>
-                </div>
+            <!-- 3. Liquidity -->
+            <div class="st flex flex-col justify-between">
+              <div class="k">Liquidity</div>
+              <div class="v font-mono">
+                <template v-if="token.liquidity_overview?.total_tvl || token.liquidity_tvl">
+                  {{ formatNumber((token.liquidity_overview?.total_tvl || token.liquidity_tvl) / xlmPriceInUsd) }} XLM
+                </template>
+                <template v-else-if="loading || liquidityLoading"><span
+                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <template v-else>0 XLM</template>
               </div>
-
-              <!-- 2. 24H Volume -->
-              <div class="st flex flex-col justify-between">
-                <div class="k">24H Volume</div>
-                <div class="v font-mono">
-                  <template v-if="token.volume_24h !== undefined ? token.volume_24h : token.liquidity_overview?.lp_volume_24h">
-                    {{ formatNumber((token.volume_24h !== undefined ? token.volume_24h : token.liquidity_overview?.lp_volume_24h) / xlmPriceInUsd) }} XLM
-                  </template>
-                  <template v-else-if="loading || liquidityLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                  <template v-else>0 XLM</template>
-                </div>
-                <div class="sub font-mono dim">
-                  <template v-if="token.volume_24h !== undefined ? token.volume_24h : token.liquidity_overview?.lp_volume_24h">
-                    ≈ ${{ formatNumber(token.volume_24h !== undefined ? token.volume_24h : token.liquidity_overview?.lp_volume_24h) }}
-                  </template>
-                  <template v-else-if="loading || liquidityLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
-                  <template v-else>≈ $0</template>
-                </div>
-                <div class="sub font-mono font-semibold" :class="(historicalStats?.volume_change_pct || 0) >= 0 ? 'up' : 'down'">
-                  <template v-if="loading || historicalStatsLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
-                  <template v-else-if="historicalStats">
-                    {{ (historicalStats.volume_change_pct || 0) >= 0 ? '▲' : '▼' }} {{ (historicalStats.volume_change_pct || 0) >= 0 ? '+' : '' }}{{ historicalStats.volume_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase() }})
-                  </template>
-                  <template v-else-if="token.price_change_24h">
-                    {{ token.price_change_24h >= 0 ? '▲' : '▼' }} {{ token.price_change_24h >= 0 ? '+' : '' }}18%
-                  </template>
-                  <template v-else><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
-                </div>
+              <div class="sub font-mono dim">
+                <template v-if="token.liquidity_overview?.total_tvl || token.liquidity_tvl">
+                  ≈ ${{ formatNumber(token.liquidity_overview?.total_tvl || token.liquidity_tvl) }}
+                </template>
+                <template v-else-if="loading || liquidityLoading"><span
+                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                <template v-else>≈ $0</template>
               </div>
-
-              <!-- 3. Liquidity -->
-              <div class="st flex flex-col justify-between">
-                <div class="k">Liquidity</div>
-                <div class="v font-mono">
-                  <template v-if="token.liquidity_overview?.total_tvl || token.liquidity_tvl">
-                    {{ formatNumber((token.liquidity_overview?.total_tvl || token.liquidity_tvl) / xlmPriceInUsd) }} XLM
-                  </template>
-                  <template v-else-if="loading || liquidityLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                  <template v-else>0 XLM</template>
-                </div>
-                <div class="sub font-mono dim">
-                  <template v-if="token.liquidity_overview?.total_tvl || token.liquidity_tvl">
-                    ≈ ${{ formatNumber(token.liquidity_overview?.total_tvl || token.liquidity_tvl) }}
-                  </template>
-                  <template v-else-if="loading || liquidityLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
-                  <template v-else>≈ $0</template>
-                </div>
-                <div class="sub font-semibold up">
-                  <template v-if="loading || liquidityLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
-                  <template v-else>Deep</template>
-                </div>
-              </div>
-
-              <!-- 4. Market Cap -->
-              <div class="st flex flex-col justify-between">
-                <div class="k">Market Cap</div>
-                <div class="v font-mono">
-                  <template v-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                  <template v-else-if="token.usd_price && token.total_supply">${{ formatNumber((token.usd_price || 0) * (token.total_supply || 0)) }}</template>
-                  <template v-else>$0</template>
-                </div>
-                <div class="sub dim">
-                  Fully Diluted
-                </div>
-                <div class="sub font-mono font-semibold" :class="(historicalStats?.market_cap_change_pct || 0) >= 0 ? 'up' : 'down'">
-                  <template v-if="loading || historicalStatsLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
-                  <template v-else-if="historicalStats">
-                    {{ (historicalStats.market_cap_change_pct || 0) >= 0 ? '▲' : '▼' }} {{ (historicalStats.market_cap_change_pct || 0) >= 0 ? '+' : '' }}{{ historicalStats.market_cap_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase() }})
-                  </template>
-                  <template v-else>▲ +0%</template>
-                </div>
-              </div>
-
-              <!-- 5. Holders -->
-              <div class="st flex flex-col justify-between">
-                <div class="k">Holders</div>
-                <div class="v font-mono">
-                  <template v-if="token.holders">{{ formatNumber(token.holders) }}</template>
-                  <template v-else-if="loading || holdersLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                  <template v-else>—</template>
-                </div>
-                <div class="sub font-mono font-semibold" :class="(historicalStats?.holders_change || 0) >= 0 ? 'up' : 'down'">
-                  <template v-if="loading || holdersLoading || historicalStatsLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
-                  <template v-else-if="historicalStats">
-                    {{ (historicalStats.holders_change || 0) >= 0 ? '+' : '' }}{{ formatNumber(historicalStats.holders_change) }} ({{ selectedStatsTimeframe.toUpperCase() }})
-                  </template>
-                  <template v-else class="dim">Funded</template>
-                </div>
-              </div>
-
-              <!-- 6. Trustlines -->
-              <div class="st flex flex-col justify-between">
-                <div class="k">Trustlines</div>
-                <div class="v font-mono">
-                  <template v-if="token.trustlines || token.holders">{{ formatNumber(token.trustlines || token.holders) }}</template>
-                  <template v-else-if="loading || holdersLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                  <template v-else>—</template>
-                </div>
-                <div class="sub font-mono font-semibold" :class="(historicalStats?.trustlines_change || 0) >= 0 ? 'up' : 'down'">
-                  <template v-if="loading || holdersLoading || historicalStatsLoading"><span class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
-                  <template v-else-if="historicalStats">
-                    {{ (historicalStats.trustlines_change || 0) >= 0 ? '+' : '' }}{{ formatNumber(historicalStats.trustlines_change) }} ({{ selectedStatsTimeframe.toUpperCase() }})
-                  </template>
-                  <template v-else class="dim">Total</template>
-                </div>
+              <div class="sub font-semibold up">
+                <template v-if="loading || liquidityLoading"><span
+                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                <template v-else>Deep</template>
               </div>
             </div>
 
-            <!-- COMPACT SECONDARY STRIP -->
-            <div class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] grid grid-cols-[1fr_auto] sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-x-4 gap-y-3 text-xs font-mono">
-              <!-- 1. Total Supply -->
-              <div class="flex items-center gap-1.5">
-                <span class="text-slate-400 font-medium">Total Supply:</span>
-                <span class="text-white font-bold">
-                  <template v-if="token.total_supply">{{ formatCompactNumber(token.total_supply) }} {{ token.asset_code }}</template>
-                  <template v-else><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+            <!-- 4. Market Cap -->
+            <div class="st flex flex-col justify-between">
+              <div class="k">Market Cap</div>
+              <div class="v font-mono">
+                <template v-if="loading"><span
+                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="token.usd_price && token.total_supply">${{ formatNumber((token.usd_price || 0) *
+                  (token.total_supply || 0)) }}</template>
+                <template v-else>$0</template>
+              </div>
+              <div class="sub dim">
+                Fully Diluted
+              </div>
+              <div class="sub font-mono font-semibold"
+                :class="(historicalStats?.market_cap_change_pct || 0) >= 0 ? 'up' : 'down'">
+                <template v-if="loading || historicalStatsLoading"><span
+                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="historicalStats">
+                  {{ (historicalStats.market_cap_change_pct || 0) >= 0 ? '▲' : '▼' }} {{
+                    (historicalStats.market_cap_change_pct || 0) >= 0 ? '+' : '' }}{{
+                    historicalStats.market_cap_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase() }})
+                </template>
+                <template v-else>▲ +0%</template>
+              </div>
+            </div>
+
+            <!-- 5. Holders -->
+            <div class="st flex flex-col justify-between">
+              <div class="k">Holders</div>
+              <div class="v font-mono">
+                <template v-if="token.holders">{{ formatNumber(token.holders) }}</template>
+                <template v-else-if="loading || holdersLoading"><span
+                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <template v-else>—</template>
+              </div>
+              <div class="sub font-mono font-semibold"
+                :class="(historicalStats?.holders_change || 0) >= 0 ? 'up' : 'down'">
+                <template v-if="loading || holdersLoading || historicalStatsLoading"><span
+                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="historicalStats">
+                  {{ (historicalStats.holders_change || 0) >= 0 ? '+' : '' }}{{
+                    formatNumber(historicalStats.holders_change) }} ({{ selectedStatsTimeframe.toUpperCase() }})
+                </template>
+                <template v-else class="dim">Funded</template>
+              </div>
+            </div>
+
+            <!-- 6. Trustlines -->
+            <div class="st flex flex-col justify-between">
+              <div class="k">Trustlines</div>
+              <div class="v font-mono">
+                <template v-if="token.trustlines || token.holders">{{ formatNumber(token.trustlines || token.holders)
+                  }}</template>
+                <template v-else-if="loading || holdersLoading"><span
+                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <template v-else>—</template>
+              </div>
+              <div class="sub font-mono font-semibold"
+                :class="(historicalStats?.trustlines_change || 0) >= 0 ? 'up' : 'down'">
+                <template v-if="loading || holdersLoading || historicalStatsLoading"><span
+                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="historicalStats">
+                  {{ (historicalStats.trustlines_change || 0) >= 0 ? '+' : '' }}{{
+                    formatNumber(historicalStats.trustlines_change) }} ({{ selectedStatsTimeframe.toUpperCase() }})
+                </template>
+                <template v-else class="dim">Total</template>
+              </div>
+            </div>
+          </div>
+
+          <!-- COMPACT SECONDARY STRIP -->
+          <div
+            class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] grid grid-cols-[1fr_auto] sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-x-4 gap-y-3 text-xs font-mono">
+            <!-- 1. Total Supply -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400 font-medium">Total Supply:</span>
+              <span class="text-white font-bold">
+                <template v-if="token.total_supply">{{ formatCompactNumber(token.total_supply) }} {{ token.asset_code
+                  }}</template>
+                <template v-else><span
+                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+              </span>
+            </div>
+            <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
+
+            <!-- 2. Created -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400 font-medium">Created:</span>
+              <span class="text-white font-bold">
+                <template v-if="token.mint_date_human && token.mint_date_human !== '-'">{{ token.mint_date_human
+                  }}</template>
+                <template v-else-if="loading"><span
+                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <template v-else>May 2019</template>
+              </span>
+            </div>
+            <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
+
+            <!-- 3. Circulating Supply -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400 font-medium">Circulating Supply:</span>
+              <span class="text-white font-bold flex items-center gap-1">
+                <template v-if="token.total_supply">{{ formatCompactNumber(token.circulating_supply ||
+                  (token.total_supply * 0.425)) }} {{ token.asset_code }}</template>
+                <template v-else><span
+                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <span v-if="!historicalStatsLoading && historicalStats?.circulating_supply_change_pct"
+                  class="text-[10px] font-mono font-semibold"
+                  :class="historicalStats.circulating_supply_change_pct >= 0 ? 'text-emerald-400' : 'text-rose-400'">
+                  ({{ historicalStats.circulating_supply_change_pct >= 0 ? '+' : '' }}{{
+                    historicalStats.circulating_supply_change_pct }}%)
                 </span>
-              </div>
-              <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
+              </span>
+            </div>
+            <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
 
-              <!-- 2. Created -->
-              <div class="flex items-center gap-1.5">
-                <span class="text-slate-400 font-medium">Created:</span>
-                <span class="text-white font-bold">
-                  <template v-if="token.mint_date_human && token.mint_date_human !== '-'">{{ token.mint_date_human }}</template>
-                  <template v-else-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                  <template v-else>May 2019</template>
+            <!-- 4. Pools -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400 font-medium">Pools:</span>
+              <span class="text-white font-bold flex items-center gap-1">
+                <template v-if="liquidityLoading"><span
+                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <template v-else>{{ token.liquidity_overview?.pools_count || token.num_liquidity_pools || 0
+                  }}</template>
+                <span v-if="!liquidityLoading && !historicalStatsLoading && historicalStats?.pools_change"
+                  class="text-[10px] font-mono font-semibold"
+                  :class="historicalStats.pools_change >= 0 ? 'text-emerald-400' : 'text-rose-400'">
+                  ({{ historicalStats.pools_change >= 0 ? '+' : '' }}{{ historicalStats.pools_change }})
                 </span>
-              </div>
-              <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
+              </span>
+            </div>
+          </div>
 
-              <!-- 3. Circulating Supply -->
-              <div class="flex items-center gap-1.5">
-                <span class="text-slate-400 font-medium">Circulating Supply:</span>
-                <span class="text-white font-bold flex items-center gap-1">
-                  <template v-if="token.total_supply">{{ formatCompactNumber(token.circulating_supply || (token.total_supply * 0.425)) }} {{ token.asset_code }}</template>
-                  <template v-else><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                  <span v-if="!historicalStatsLoading && historicalStats?.circulating_supply_change_pct" class="text-[10px] font-mono font-semibold" :class="historicalStats.circulating_supply_change_pct >= 0 ? 'text-emerald-400' : 'text-rose-400'">
-                    ({{ historicalStats.circulating_supply_change_pct >= 0 ? '+' : '' }}{{ historicalStats.circulating_supply_change_pct }}%)
-                  </span>
-                </span>
-              </div>
-              <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
+          <!-- Actions -->
+          <div class="acts">
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 w-full sm:w-auto">
+              <a :href="scopulyTradeUrl" target="_blank" rel="noopener noreferrer"
+                class="btn brand select-none inline-flex items-center gap-1.5">
+                <ArrowRightLeft class="w-4 h-4" /> Trade Asset
+              </a>
+              <button @click="handleEstablishTrustline" :disabled="establishingTrustline"
+                class="btn dark select-none inline-flex items-center gap-1.5 hover:border-cyan-500/50 transition">
+                <Lock class="w-4 h-4 text-cyan-400" />
+                <span v-if="establishingTrustline" class="animate-pulse">Establishing...</span>
+                <span v-else>Establish Trustline</span>
+              </button>
+            </div>
+            <div class="flex items-center gap-2.5 w-full sm:w-auto mt-2 sm:mt-0 justify-center sm:justify-start">
+              <a v-if="token.website" :href="token.website" target="_blank" title="Website" aria-label="Website"
+                class="btn icon-btn select-none hover:text-white transition">
+                <Globe class="w-4 h-4 text-slate-300" />
+              </a>
+              <a v-if="token.twitter" :href="token.twitter" target="_blank" title="X (Twitter)" aria-label="X (Twitter)"
+                class="btn icon-btn select-none hover:text-white transition">
+                <svg class="w-3.5 h-3.5 fill-current text-slate-300" viewBox="0 0 24 24">
+                  <path
+                    d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+              </a>
+              <a v-if="token.telegram" :href="token.telegram" target="_blank" title="Telegram" aria-label="Telegram"
+                class="btn icon-btn select-none hover:text-white transition">
+                <svg class="w-4 h-4 fill-current text-slate-300" viewBox="0 0 24 24">
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.67-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.37-.49 1.02-.75 3.99-1.73 6.66-2.87 8.01-3.43 3.81-1.58 4.6-1.86 5.12-1.87.11 0 .37.03.54.17.14.12.18.28.2.45-.02.07-.02.16-.04.25z" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </section>
 
-              <!-- 4. Pools -->
-              <div class="flex items-center gap-1.5">
-                <span class="text-slate-400 font-medium">Pools:</span>
-                <span class="text-white font-bold flex items-center gap-1">
-                  <template v-if="liquidityLoading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                  <template v-else>{{ token.liquidity_overview?.pools_count || token.num_liquidity_pools || 0 }}</template>
-                  <span v-if="!liquidityLoading && !historicalStatsLoading && historicalStats?.pools_change" class="text-[10px] font-mono font-semibold" :class="historicalStats.pools_change >= 0 ? 'text-emerald-400' : 'text-rose-400'">
-                    ({{ historicalStats.pools_change >= 0 ? '+' : '' }}{{ historicalStats.pools_change }})
-                  </span>
-                </span>
+        <!-- TABS -->
+        <nav class="tabs select-none">
+          <a href="#" @click.prevent="switchTab('overview')" :class="{ on: activeTab === 'overview' }">Overview</a>
+          <a href="#" @click.prevent="switchTab('holders')" :class="{ on: activeTab === 'holders' }">Holders</a>
+          <a href="#" @click.prevent="switchTab('liquidity')" :class="{ on: activeTab === 'liquidity' }">Liquidity</a>
+        </nav>
+
+        <!-- MAIN GRID -->
+        <div class="main-grid">
+
+          <!-- LEFT COLUMN: OVERVIEW -->
+          <div style="display:flex;flex-direction:column;gap:14px" v-if="activeTab === 'overview'">
+            <!-- Chart -->
+            <div class="card">
+              <div class="card-hd">
+                <h3>{{ token.asset_code }}/XLM <span class="tag hidden sm:inline-block" style="margin-left:8px">{{
+                    selectedChartType }} · {{ selectedTimeframe }}</span></h3>
+                <div class="chart-tools select-none">
+                  <div class="seg">
+                    <span v-for="type in ['candlestick', 'line', 'area']" :key="type"
+                      :class="{ on: selectedChartType === type }" @click="selectedChartType = type"
+                      class="capitalize">{{ type
+                      }}</span>
+                  </div>
+                  <div class="seg">
+                    <span v-for="t in ['4H', '1D', '1W']" :key="t" :class="{ on: selectedTimeframe === t }"
+                      @click="selectedTimeframe = t">{{ t }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ohlc font-mono select-all">
+                <span>O<b>{{ formatCandleValue(activeCandle.open) }}</b></span>
+                <span>H<b class="up">{{ formatCandleValue(activeCandle.high) }}</b></span>
+                <span>L<b class="down">{{ formatCandleValue(activeCandle.low) }}</b></span>
+                <span>C<b>{{ formatCandleValue(activeCandle.close) }}</b></span>
+                <span>Chg<b :class="activeCandle.change >= 0 ? 'up' : 'down'">{{ activeCandle.change >= 0 ? '+' : ''
+                    }}{{
+                      activeCandle.change?.toFixed(2) }}%</b></span>
+                <span>Vol<b>{{ formatNumber(activeCandle.volume) }}</b></span>
+              </div>
+
+              <!-- Interactive Chart Container -->
+              <div class="relative w-full h-[340px] bg-transparent">
+                <div ref="chartContainer" class="w-full h-full"></div>
               </div>
             </div>
 
-            <!-- Actions -->
-            <div class="acts">
-              <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 w-full sm:w-auto">
-                <a :href="scopulyTradeUrl" target="_blank" rel="noopener noreferrer" class="btn brand select-none inline-flex items-center gap-1.5">
-                  <ArrowRightLeft class="w-4 h-4" /> Trade Asset
-                </a>
-                <button @click="handleEstablishTrustline" :disabled="establishingTrustline" class="btn dark select-none inline-flex items-center gap-1.5 hover:border-cyan-500/50 transition">
-                  <Lock class="w-4 h-4 text-cyan-400" />
-                  <span v-if="establishingTrustline" class="animate-pulse">Establishing...</span>
-                  <span v-else>Establish Trustline</span>
-                </button>
+            <!-- Market Exposure Stats -->
+            <div class="card expo">
+              <div class="card-hd" style="align-items: flex-start; flex-direction: column; gap: 4px;">
+                <div class="flex justify-between items-center w-full">
+                  <h3>Market Exposure</h3>
+                  <span class="tag">On-Chain Activity</span>
+                </div>
+                <p class="text-[10px] text-slate-400 font-medium normal-case leading-relaxed"
+                  style="margin: 2px 0 0 0;">
+                  Live ratio and trade size are based on the last 30 DEX fills.
+                </p>
               </div>
-              <div class="flex items-center gap-2.5 w-full sm:w-auto mt-2 sm:mt-0 justify-center sm:justify-start">
-                <a v-if="token.website" :href="token.website" target="_blank" title="Website" aria-label="Website" class="btn icon-btn select-none hover:text-white transition">
-                  <Globe class="w-4 h-4 text-slate-300" />
-                </a>
-                <a v-if="token.twitter" :href="token.twitter" target="_blank" title="X (Twitter)" aria-label="X (Twitter)" class="btn icon-btn select-none hover:text-white transition">
-                  <svg class="w-3.5 h-3.5 fill-current text-slate-300" viewBox="0 0 24 24">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                  </svg>
-                </a>
-                <a v-if="token.telegram" :href="token.telegram" target="_blank" title="Telegram" aria-label="Telegram" class="btn icon-btn select-none hover:text-white transition">
-                  <svg class="w-4 h-4 fill-current text-slate-300" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.67-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.37-.49 1.02-.75 3.99-1.73 6.66-2.87 8.01-3.43 3.81-1.58 4.6-1.86 5.12-1.87.11 0 .37.03.54.17.14.12.18.28.2.45-.02.07-.02.16-.04.25z"/>
-                  </svg>
-                </a>
+              <div class="expo-stats">
+                <div class="st">
+                  <div class="k">Buy / Sell Ratio</div>
+                  <div class="v font-mono"
+                    :class="buySellVolume.buyVol === 0 && buySellVolume.sellVol === 0 ? 'text-slate-400 font-semibold' : (buySellVolume.buyPercent >= 50 ? 'up font-bold' : 'down font-bold')">
+                    <template v-if="loading"><span
+                        class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                    <template v-else>{{ buySellRatioText }}</template>
+                  </div>
+                  <div class="sub dim font-mono">recent fills</div>
+                </div>
+                <div class="st">
+                  <div class="k">Avg Trade Size</div>
+                  <div class="v font-mono">
+                    <template v-if="avgTradeSizeUsd !== null">${{ formatPrice2Deci(avgTradeSizeUsd) }}</template>
+                    <template v-else-if="loading"><span
+                        class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                    <template v-else>0</template>
+                  </div>
+                  <div class="sub dim font-mono">per fill</div>
+                </div>
+                <div class="st">
+                  <div class="k">Trades count</div>
+                  <div class="v font-mono">
+                    <template v-if="token.activity?.total_trades !== undefined">{{
+                      formatNumber(token.activity?.total_trades) }}</template>
+                    <template v-else-if="loading"><span
+                        class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                    <template v-else>0</template>
+                  </div>
+                  <div class="sub dim font-mono">executions</div>
+                </div>
+                <div class="st">
+                  <div class="k">Payments Vol</div>
+                  <div class="v font-mono">
+                    <template v-if="token.activity?.payments_volume !== undefined">{{
+                      formatNumber(token.activity?.payments_volume) }}</template>
+                    <template v-else-if="loading"><span
+                        class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                    <template v-else>0</template>
+                  </div>
+                  <div class="sub dim font-mono">lifetime</div>
+                </div>
               </div>
             </div>
-          </section>
 
-          <!-- TABS -->
-          <nav class="tabs select-none">
-            <a href="#" @click.prevent="switchTab('overview')" :class="{ on: activeTab === 'overview' }">Overview</a>
-            <a href="#" @click.prevent="switchTab('holders')" :class="{ on: activeTab === 'holders' }">Holders</a>
-            <a href="#" @click.prevent="switchTab('liquidity')" :class="{ on: activeTab === 'liquidity' }">Liquidity</a>
-          </nav>
-
-          <!-- MAIN GRID -->
-          <div class="main-grid">
-            
-            <!-- LEFT COLUMN: OVERVIEW -->
-            <div style="display:flex;flex-direction:column;gap:14px" v-if="activeTab === 'overview'">
-              <!-- Chart -->
-              <div class="card">
-                <div class="card-hd">
-                  <h3>{{ token.asset_code }}/XLM <span class="tag hidden sm:inline-block" style="margin-left:8px">{{ selectedChartType }} · {{ selectedTimeframe }}</span></h3>
-                  <div class="chart-tools select-none">
-                    <div class="seg">
-                      <span v-for="type in ['candlestick', 'line', 'area']" :key="type" :class="{ on: selectedChartType === type }" @click="selectedChartType = type" class="capitalize">{{ type }}</span>
-                    </div>
-                    <div class="seg">
-                      <span v-for="t in ['4H', '1D', '1W']" :key="t" :class="{ on: selectedTimeframe === t }" @click="selectedTimeframe = t">{{ t }}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="ohlc font-mono select-all">
-                  <span>O<b>{{ formatCandleValue(activeCandle.open) }}</b></span>
-                  <span>H<b class="up">{{ formatCandleValue(activeCandle.high) }}</b></span>
-                  <span>L<b class="down">{{ formatCandleValue(activeCandle.low) }}</b></span>
-                  <span>C<b>{{ formatCandleValue(activeCandle.close) }}</b></span>
-                  <span>Chg<b :class="activeCandle.change >= 0 ? 'up' : 'down'">{{ activeCandle.change >= 0 ? '+' : '' }}{{ activeCandle.change?.toFixed(2) }}%</b></span>
-                  <span>Vol<b>{{ formatNumber(activeCandle.volume) }}</b></span>
-                </div>
-
-                <!-- Interactive Chart Container -->
-                <div class="relative w-full h-[340px] bg-transparent">
-                  <div ref="chartContainer" class="w-full h-full"></div>
-                </div>
+            <!-- Order Book (Buy/Sell) -->
+            <div class="card">
+              <div class="card-hd">
+                <h3>Order Book</h3>
+                <span class="tag">DEX Depth</span>
               </div>
 
-              <!-- Market Exposure Stats -->
-              <div class="card expo">
-                <div class="card-hd" style="align-items: flex-start; flex-direction: column; gap: 4px;">
-                  <div class="flex justify-between items-center w-full">
-                    <h3>Market Exposure</h3>
-                    <span class="tag">On-Chain Activity</span>
-                  </div>
-                  <p class="text-[10px] text-slate-400 font-medium normal-case leading-relaxed" style="margin: 2px 0 0 0;">
-                    Live ratio and trade size are based on the last 30 DEX fills.
-                  </p>
+              <div style="padding: 20px;">
+                <div v-if="orderBook.loading" class="flex flex-col items-center justify-center py-12">
+                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-cyan-500"></div>
+                  <span class="text-xs text-slate-400 font-bold mt-2">Loading DEX order book...</span>
                 </div>
-                <div class="expo-stats">
-                  <div class="st">
-                    <div class="k">Buy / Sell Ratio</div>
-                    <div class="v font-mono" :class="buySellVolume.buyVol === 0 && buySellVolume.sellVol === 0 ? 'text-slate-400 font-semibold' : (buySellVolume.buyPercent >= 50 ? 'up font-bold' : 'down font-bold')">
-                      <template v-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                      <template v-else>{{ buySellRatioText }}</template>
-                    </div>
-                    <div class="sub dim font-mono">recent fills</div>
-                  </div>
-                  <div class="st">
-                    <div class="k">Avg Trade Size</div>
-                    <div class="v font-mono">
-                      <template v-if="avgTradeSizeUsd !== null">${{ formatPrice2Deci(avgTradeSizeUsd) }}</template>
-                      <template v-else-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                      <template v-else>0</template>
-                    </div>
-                    <div class="sub dim font-mono">per fill</div>
-                  </div>
-                  <div class="st">
-                    <div class="k">Trades count</div>
-                    <div class="v font-mono">
-                      <template v-if="token.activity?.total_trades !== undefined">{{ formatNumber(token.activity?.total_trades) }}</template>
-                      <template v-else-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                      <template v-else>0</template>
-                    </div>
-                    <div class="sub dim font-mono">executions</div>
-                  </div>
-                  <div class="st">
-                    <div class="k">Payments Vol</div>
-                    <div class="v font-mono">
-                      <template v-if="token.activity?.payments_volume !== undefined">{{ formatNumber(token.activity?.payments_volume) }}</template>
-                      <template v-else-if="loading"><span class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                      <template v-else>0</template>
-                    </div>
-                    <div class="sub dim font-mono">lifetime</div>
-                  </div>
-                </div>
-              </div>
 
-              <!-- Order Book (Buy/Sell) -->
-              <div class="card">
-                <div class="card-hd">
-                  <h3>Order Book</h3>
-                  <span class="tag">DEX Depth</span>
-                </div>
-                
-                <div style="padding: 20px;">
-                  <div v-if="orderBook.loading" class="flex flex-col items-center justify-center py-12">
-                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-cyan-500"></div>
-                    <span class="text-xs text-slate-400 font-bold mt-2">Loading DEX order book...</span>
-                  </div>
-                  
-                  <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Bids (Buy Orders) -->
-                    <div>
-                      <div class="flex justify-between items-center mb-2 px-1">
-                        <span class="text-xs font-bold text-emerald-400 font-mono">
-                          BIDS ({{ orderBook.bids.length }}): {{ formatNumber(totalBidVolume) }} {{ token.asset_code }} / {{ formatNumber(totalBidValue) }} XLM
-                        </span>
-                        <span class="text-[10px] text-slate-500 font-mono">Spread: {{ spreadPercent }}%</span>
-                      </div>
-                      <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
-                        <table class="trades select-all">
-                          <thead>
-                            <tr>
-                              <th style="text-align: left; padding: 6px 12px;">Depth (XLM)</th>
-                              <th style="text-align: right; padding: 6px 12px;">Total (XLM)</th>
-                              <th style="text-align: right; padding: 6px 12px;">Size ({{ token.asset_code }})</th>
-                              <th style="text-align: right; padding: 6px 12px; color: var(--up);">Price (XLM)</th>
-                            </tr>
-                          </thead>
-                          <tbody v-if="orderBook.bids.length">
-                            <tr v-for="(bid, index) in orderBook.bids" :key="'bid-'+index"
-                                :style="{ background: 'linear-gradient(to left, rgba(46, 212, 122, 0.09) 0%, rgba(46, 212, 122, 0.09) ' + ((getBidDepth(index) / totalBidDepth) * 100) + '%, transparent ' + ((getBidDepth(index) / totalBidDepth) * 100) + '%)' }">
-                              <td style="text-align: left; padding: 7px 12px;" class="dim">{{ formatNumber(getBidDepth(index)) }}</td>
-                              <td style="text-align: right; padding: 7px 12px;" class="dim">{{ formatPrice2Deci(bid.amount) }}</td>
-                              <td style="text-align: right; padding: 7px 12px;">{{ formatNumber(calculateBidSize(bid)) }}</td>
-                              <td style="text-align: right; padding: 7px 12px;" class="up font-bold">{{ parseFloat(bid.price).toFixed(6) }}</td>
-                            </tr>
-                          </tbody>
-                          <tbody v-else>
-                            <tr>
-                              <td colspan="4" class="py-6 text-center text-xs font-medium" style="color:var(--faint)">No buy bids detected</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-                    <!-- Asks (Sell Orders) -->
-                    <div>
-                      <div class="flex justify-between items-center mb-2 px-1">
-                        <span class="text-xs font-bold text-rose-400 font-mono">
-                          ASKS ({{ orderBook.asks.length }}): {{ formatNumber(totalAskVolume) }} {{ token.asset_code }} / {{ formatNumber(totalAskValue) }} XLM
-                        </span>
-                      </div>
-                      <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
-                        <table class="trades select-all">
-                          <thead>
-                            <tr>
-                              <th style="text-align: left; padding: 6px 12px; color: var(--down);">Price (XLM)</th>
-                              <th style="text-align: right; padding: 6px 12px;">Size ({{ token.asset_code }})</th>
-                              <th style="text-align: right; padding: 6px 12px;">Total (XLM)</th>
-                              <th style="text-align: right; padding: 6px 12px;">Depth ({{ token.asset_code }})</th>
-                            </tr>
-                          </thead>
-                          <tbody v-if="orderBook.asks.length">
-                            <tr v-for="(ask, index) in orderBook.asks" :key="'ask-'+index"
-                                :style="{ background: 'linear-gradient(to right, rgba(240, 97, 109, 0.09) 0%, rgba(240, 97, 109, 0.09) ' + ((getAskDepth(index) / totalAskDepth) * 100) + '%, transparent ' + ((getAskDepth(index) / totalAskDepth) * 100) + '%)' }">
-                              <td style="text-align: left; padding: 7px 12px;" class="down font-bold">{{ parseFloat(ask.price).toFixed(6) }}</td>
-                              <td style="text-align: right; padding: 7px 12px;">{{ formatNumber(ask.amount) }}</td>
-                              <td style="text-align: right; padding: 7px 12px;" class="dim">{{ formatPrice2Deci(ask.amount * ask.price) }}</td>
-                              <td style="text-align: right; padding: 7px 12px;" class="dim">{{ formatNumber(getAskDepth(index)) }}</td>
-                            </tr>
-                          </tbody>
-                          <tbody v-else>
-                            <tr>
-                              <td colspan="4" class="py-6 text-center text-xs font-medium" style="color:var(--faint)">No sell asks detected</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Recent Trades -->
-              <div class="card expo">
-                <div class="card-hd"><h3>Recent Trades</h3><span class="tag"><span class="dot"></span>Live</span></div>
-                
-                <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
-                  <table class="trades select-all">
-                    <thead><tr><th>Side</th><th>Amount</th><th>Price</th><th>Value</th><th>Time</th></tr></thead>
-                    <tbody v-if="token.transactions && token.transactions.length">
-                      <tr v-for="(tx, i) in (token.transactions || []).slice(0, 30)" :key="i">
-                        <td><span class="side" :class="tx.side === 'buy' ? 'buy' : 'sell'">{{ tx.side.toUpperCase() }}</span></td>
-                        <td>{{ formatPrice2Deci(tx.amount) }} {{ token.asset_code }}</td>
-                        <td>{{ formatPrice(tx.price) }}</td>
-                        <td class="dim">{{ formatPrice2Deci(tx.value) }} XLM</td>
-                        <td class="dim">{{ tx.time }}</td>
-                      </tr>
-                    </tbody>
-                    <tbody v-else>
-                      <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--faint)">No live trade logs detected</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-
-            </div>
-
-            <!-- LEFT COLUMN: HOLDERS -->
-            <div style="grid-column: 1 / -1; display:flex;flex-direction:column;gap:14px;margin-bottom:2px" v-if="activeTab === 'holders'">
-              <div v-if="holdersLoading" class="flex flex-col items-center justify-center py-20 bg-[#111620] rounded-xl border border-[#1D2531]">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
-                <span class="text-xs text-slate-400 font-bold mt-3">Loading holder distribution data...</span>
-              </div>
-              <template v-else>
-                <section class="card asset" style="margin-top:0">
-                  <div class="flex justify-between items-center flex-wrap gap-4 mb-6">
-                    <div>
-                      <h2 class="text-xl font-bold text-white tracking-tight">Holder Distribution</h2>
-                      <p class="text-xs text-slate-400 mt-1 font-medium">On-chain wallet analysis and supply concentration metrics</p>
-                    </div>
-                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-[#0E131C] px-3 py-1.5 rounded-xl border border-[#1D2531] font-mono">
-                      Total Holders: {{ formatNumber(token.holders || 1240) }}
-                    </div>
-                  </div>
-
-                  <!-- Middle Grid: Donut Chart Card (Left 50%) + 4 Vertically Stacked Cards Container (Right 50%) -->
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-                    <!-- Left Half (50% Width): Donut Chart Card -->
-                    <div class="flex flex-row md:flex-col items-center gap-4 sm:gap-6 justify-center bg-[#0E131C] p-4 sm:p-6 rounded-2xl border border-[#1D2531] h-full">
-                      <div class="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 flex items-center justify-center flex-shrink-0">
-                        <svg class="w-full h-full" viewBox="0 0 100 100">
-                          <circle cx="50" cy="50" r="40" stroke="#1d2531" stroke-width="12" fill="transparent" />
-                          <circle 
-                            cx="50" 
-                            cy="50" 
-                            r="40" 
-                            stroke="#12CBEE" 
-                            stroke-width="12" 
-                            fill="transparent" 
-                            stroke-linecap="round"
-                            :stroke-dasharray="251.3" 
-                            :stroke-dashoffset="251.3 - (251.3 * parseFloat(top10Percentage)) / 100" 
-                            transform="rotate(-90 50 50)"
-                          />
-                        </svg>
-                        <div class="absolute flex flex-col items-center justify-center text-center">
-                          <span class="text-lg sm:text-xl md:text-2xl font-black text-white">{{ top10Percentage }}%</span>
-                          <span class="text-[7px] sm:text-[8px] md:text-[9px] text-slate-400 font-extrabold uppercase tracking-wider mt-0.5">Top 10</span>
-                        </div>
-                      </div>
-
-                      <div class="space-y-2 sm:space-y-3 text-[10px] sm:text-xs font-mono w-full flex-1">
-                        <div class="flex items-center justify-between gap-1.5 font-semibold bg-[#111620] p-2 sm:p-3 rounded-xl border border-[#1D2531]">
-                          <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-[#12CBEE] flex-none"></span>
-                            <span class="text-slate-400">Top 10 Wallets:</span>
-                          </div>
-                          <span class="text-white font-bold">{{ top10Percentage }}%</span>
-                        </div>
-                        <div class="flex items-center justify-between gap-1.5 font-semibold bg-[#111620] p-2 sm:p-3 rounded-xl border border-[#1D2531]">
-                          <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-[#1d2531] flex-none"></span>
-                            <span class="text-slate-400">Others:</span>
-                          </div>
-                          <span class="text-white font-bold">{{ (100 - parseFloat(top10Percentage)).toFixed(2) }}%</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Right Half (50% Width): 4 Cards Stacked Vertically -->
-                    <div class="flex flex-col gap-4">
-                      <!-- 1. Healthy Distribution / Whale Concentration Warning -->
-                      <div class="bg-[#0E131C] p-5 rounded-2xl border border-[#1D2531]">
-                        <div v-if="parseFloat(top10Percentage) > 50" class="flex gap-3 bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 text-xs text-rose-400">
-                          <span class="text-xl flex-shrink-0">⚠️</span>
-                          <div>
-                            <span class="font-extrabold uppercase tracking-wider block text-[11px] text-rose-500 font-mono">Whale Concentration Warning</span>
-                            <span class="mt-1 block font-medium leading-relaxed">The top 10 wallets hold <strong class="font-black text-white">{{ top10Percentage }}%</strong> of supply. This asset has elevated whale concentration risk.</span>
-                          </div>
-                        </div>
-                        <div v-else class="flex gap-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-xs text-emerald-400">
-                          <span class="text-xl flex-shrink-0">✓</span>
-                          <div>
-                            <span class="font-extrabold uppercase tracking-wider block text-[11px] text-emerald-500 font-mono">Healthy Distribution</span>
-                            <span class="mt-1 block font-medium leading-relaxed">The top 10 wallets hold <strong class="font-black text-white">{{ top10Percentage }}%</strong> of supply, representing healthy decentralization across active holders.</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- 2 & 3: Side-by-Side Stats Cards -->
-                      <div class="grid grid-cols-2 gap-4">
-                        <!-- 2. Average per Holder -->
-                        <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
-                          <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block leading-snug">Average per Holder</span>
-                          <span class="text-sm sm:text-base font-black text-white mt-1 block truncate">
-                            {{ formatNumber(averageTokensPerHolder) }} {{ token.asset_code }}
-                          </span>
-                        </div>
-
-                        <!-- 3. New Holders -->
-                        <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
-                          <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block leading-snug">New Holders (24h/7d)</span>
-                          <span class="text-sm sm:text-base font-black text-white mt-1 block">
-                            +{{ holderGrowth.growth24h }} <span class="text-slate-500 font-medium text-xs">/</span> +{{ holderGrowth.growth7d }}
-                          </span>
-                        </div>
-                      </div>
-
-                      <!-- 4. Largest Non-Treasury Holder -->
-                      <div v-if="biggestIndividualHolder" class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
-                        <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest Non-Treasury Holder</span>
-                        <div class="flex items-center justify-between text-xs mt-1.5">
-                          <a 
-                            :href="`https://stellar.expert/explorer/public/account/${biggestIndividualHolder.address}`"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="font-mono text-cyan-400 hover:text-cyan-300 font-bold"
-                          >
-                            {{ shorten(biggestIndividualHolder.address) }}
-                          </a>
-                          <span class="font-black text-white font-mono">
-                            {{ formatNumber(biggestIndividualHolder.balance) }} {{ token.asset_code }} ({{ biggestIndividualHolder.percent }}%)
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-
-                <!-- Grid: Top Wallets vs Project Wallets (Separate cards!) -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-2">
-                  <!-- Left Card: Top Wallets Table -->
-                  <div class="card">
-                    <div class="card-hd">
-                      <h3>Largest Non-Project Holders</h3>
-                    </div>
-                    <div style="padding: 20px;">
-                      <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
-                        <table class="trades">
-                          <thead>
-                            <tr>
-                              <th style="text-align:left;width:15%">Rank</th>
-                              <th style="text-align:left;width:45%">Wallet Address</th>
-                              <th style="width:40%">Holdings</th>
-                            </tr>
-                          </thead>
-                          <tbody v-if="token.top_holders && token.top_holders.length">
-                            <tr v-for="(holder, index) in token.top_holders" :key="index" class="hover:bg-white/2 transition">
-                              <td class="font-bold text-white">#{{ index + 1 }}</td>
-                              <td class="font-mono text-xs text-left">
-                                <a 
-                                  :href="`https://stellar.expert/explorer/public/account/${holder.address}`" 
-                                  target="_blank" 
-                                  rel="noopener noreferrer" 
-                                  class="text-cyan-400 hover:text-cyan-300 transition font-semibold"
-                                  :title="holder.address"
-                                >
-                                  {{ shorten(holder.address) }}
-                                </a>
-                              </td>
-                              <td>
-                                <div class="font-bold text-white font-mono">{{ formatNumber(holder.balance) }} {{ token.asset_code }}</div>
-                                <div class="text-[10px] text-slate-500 font-semibold mt-0.5">{{ getHolderPercentage(holder.balance) }}% of supply</div>
-                              </td>
-                            </tr>
-                          </tbody>
-                          <tbody v-else>
-                            <tr>
-                              <td colspan="3" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">No holder data available</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Right Card: Project Custody & Treasury Wallets Table -->
-                  <div class="card">
-                    <div class="card-hd">
-                      <h3>Project Custody & Treasury Wallets</h3>
-                    </div>
-                    <div style="padding: 20px;">
-                      <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
-                        <table class="trades">
-                          <thead>
-                            <tr>
-                              <th style="text-align:left;width:60%">Wallet Name / Address</th>
-                              <th style="width:40%">Holdings</th>
-                            </tr>
-                          </thead>
-                          <tbody v-if="token.project_holders && token.project_holders.length">
-                            <tr v-for="(holder, index) in token.project_holders" :key="index" class="hover:bg-white/2 transition">
-                              <td class="font-mono text-xs text-left">
-                                <div class="font-bold text-white font-sans text-xs">
-                                  {{ holder.name || 'Project Reserve Wallet' }}
-                                </div>
-                                <a 
-                                  :href="`https://stellar.expert/explorer/public/account/${holder.address}`" 
-                                  target="_blank" 
-                                  rel="noopener noreferrer" 
-                                  class="text-cyan-400 hover:underline text-[10px] font-semibold mt-0.5 block"
-                                  :title="holder.address"
-                                >
-                                  {{ shorten(holder.address) }}
-                                </a>
-                              </td>
-                              <td>
-                                <div class="font-bold text-white font-mono">{{ formatNumber(holder.balance) }} {{ token.asset_code }}</div>
-                                <div class="text-[10px] text-slate-500 font-semibold mt-0.5">{{ getHolderPercentage(holder.balance) }}% of supply</div>
-                              </td>
-                            </tr>
-                          </tbody>
-                          <tbody v-else>
-                            <tr>
-                              <td colspan="2" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">No project custody wallets detected</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </template>
-            </div>
-
-            <!-- LEFT COLUMN: LIQUIDITY -->
-            <div style="grid-column: 1 / -1; display:flex;flex-direction:column;gap:14px;margin-bottom:2px;min-width:0;width:100%" v-if="activeTab === 'liquidity'">
-              <div v-if="liquidityLoading" class="flex flex-col items-center justify-center py-20 bg-[#111620] rounded-xl border border-[#1D2531]">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
-                <span class="text-xs text-slate-400 font-bold mt-3">Loading on-chain AMM liquidity stats...</span>
-              </div>
-              <template v-else>
-                <section class="card asset w-full max-w-full min-w-0" style="margin-top:0">
-                  <div class="flex justify-between items-center flex-wrap gap-4 mb-6">
-                    <div>
-                      <h2 class="text-xl font-bold text-white tracking-tight">Liquidity Overview</h2>
-                      <p class="text-xs text-slate-400 mt-1 font-medium">Real-time analysis of automated market maker (AMM) pools & depth</p>
-                    </div>
-                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-[#0E131C] px-3 py-1.5 rounded-xl border border-[#1D2531] font-mono">
-                      Total TVL: ${{ formatNumber(token.liquidity_overview?.total_tvl || 0) }}
-                    </div>
-                  </div>
-
-                  <!-- Metrics Grid -->
-                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6 font-mono">
-                    <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
-                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Total TVL</span>
-                      <span class="text-sm sm:text-lg font-black text-white mt-1 block">
-                        ${{ formatNumber(token.liquidity_overview?.total_tvl) }}
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <!-- Bids (Buy Orders) -->
+                  <div>
+                    <div class="flex justify-between items-center mb-2 px-1">
+                      <span class="text-xs font-bold text-emerald-400 font-mono">
+                        BIDS ({{ orderBook.bids.length }}): {{ formatNumber(totalBidVolume) }} {{ token.asset_code }} /
+                        {{
+                        formatNumber(totalBidValue) }} XLM
                       </span>
+                      <span class="text-[10px] text-slate-500 font-mono">Spread: {{ spreadPercent }}%</span>
                     </div>
-
-                    <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
-                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Active Pools</span>
-                      <span class="text-sm sm:text-lg font-black text-white mt-1 block">
-                        {{ token.liquidity_overview?.pools_count || 0 }}
-                      </span>
-                    </div>
-
-                    <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
-                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest Pool</span>
-                      <span class="text-xs sm:text-sm font-black text-white mt-1 block truncate font-sans py-1" :title="token.liquidity_overview?.largest_pool_name">
-                        {{ token.liquidity_overview?.largest_pool_name || '-' }}
-                      </span>
-                      <span class="text-[10px] text-slate-500 font-bold block mt-0.5">
-                        ${{ formatNumber(token.liquidity_overview?.largest_pool_tvl) }} TVL
-                      </span>
-                    </div>
-
-                    <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
-                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">24h LP Volume</span>
-                      <span class="text-sm sm:text-lg font-black text-white mt-1 block">
-                        ${{ formatNumber(token.liquidity_overview?.lp_volume_24h) }}
-                      </span>
-                    </div>
-
-                    <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
-                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Average APR</span>
-                      <span class="text-sm sm:text-lg font-black text-emerald-400 mt-1 block">
-                        {{ token.liquidity_overview?.avg_apr ? token.liquidity_overview.avg_apr.toFixed(2) : '0.00' }}%
-                      </span>
-                    </div>
-
-                    <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
-                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Depth (±2%)</span>
-                      <span class="text-sm sm:text-lg font-black text-white mt-1 block">
-                        ${{ formatNumber(token.liquidity_overview?.depth_2pct) }}
-                      </span>
-                    </div>
-                  </div>
-                </section>
-
-                <!-- Top Pools Table Card (Separate!) -->
-                <div class="card mt-2">
-                  <div class="card-hd">
-                    <h3>Top Liquidity Pools</h3>
-                  </div>
-                  <div style="padding: 20px;">
-                    <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
-                      <table class="trades">
+                    <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
+                      <table class="trades select-all">
                         <thead>
                           <tr>
-                            <th style="text-align:left;width:40%">Market / Pool Pair</th>
-                            <th style="width:20%">Total TVL</th>
-                            <th style="width:20%">APR</th>
-                            <th style="width:20%">24h Volume</th>
+                            <th style="text-align: left; padding: 6px 12px;">Depth (XLM)</th>
+                            <th style="text-align: right; padding: 6px 12px;">Total (XLM)</th>
+                            <th style="text-align: right; padding: 6px 12px;">Size ({{ token.asset_code }})</th>
+                            <th style="text-align: right; padding: 6px 12px; color: var(--up);">Price (XLM)</th>
                           </tr>
                         </thead>
-                        <tbody v-if="token.liquidity_overview?.pools && token.liquidity_overview.pools.length" class="font-mono">
-                          <tr v-for="(pool, index) in token.liquidity_overview.pools" :key="index" class="hover:bg-white/2 transition">
-                            <td style="text-align:left" class="font-bold text-white">
-                              <a 
-                                :href="`https://stellar.expert/explorer/public/liquidity-pool/${pool.id}`" 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                class="text-[#12CBEE] hover:underline transition font-semibold truncate block max-w-[120px] xs:max-w-[160px] sm:max-w-none"
-                              >
-                                {{ pool.name }}
-                              </a>
+                        <tbody v-if="orderBook.bids.length">
+                          <tr v-for="(bid, index) in orderBook.bids" :key="'bid-' + index"
+                            :style="{ background: 'linear-gradient(to left, rgba(46, 212, 122, 0.09) 0%, rgba(46, 212, 122, 0.09) ' + ((getBidDepth(index) / totalBidDepth) * 100) + '%, transparent ' + ((getBidDepth(index) / totalBidDepth) * 100) + '%)' }">
+                            <td style="text-align: left; padding: 7px 12px;" class="dim">{{
+                              formatNumber(getBidDepth(index)) }}
                             </td>
-                            <td class="font-bold text-white">
-                              ${{ formatNumber(pool.tvl) }}
+                            <td style="text-align: right; padding: 7px 12px;" class="dim">{{
+                              formatPrice2Deci(bid.amount) }}
                             </td>
-                            <td>
-                              <span class="font-extrabold text-xs px-2 py-0.5 rounded-lg bg-[#2ED47A]/10 text-[#2ED47A]">
-                                {{ pool.apr.toFixed(2) }}%
-                              </span>
+                            <td style="text-align: right; padding: 7px 12px;">{{ formatNumber(calculateBidSize(bid)) }}
                             </td>
-                            <td class="font-semibold text-slate-300">
-                              ${{ formatNumber(pool.volume) }}
+                            <td style="text-align: right; padding: 7px 12px;" class="up font-bold">{{
+                              parseFloat(bid.price).toFixed(6) }}</td>
+                          </tr>
+                        </tbody>
+                        <tbody v-else>
+                          <tr>
+                            <td colspan="4" class="py-6 text-center text-xs font-medium" style="color:var(--faint)">No
+                              buy bids
+                              detected</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- Asks (Sell Orders) -->
+                  <div>
+                    <div class="flex justify-between items-center mb-2 px-1">
+                      <span class="text-xs font-bold text-rose-400 font-mono">
+                        ASKS ({{ orderBook.asks.length }}): {{ formatNumber(totalAskVolume) }} {{ token.asset_code }} /
+                        {{
+                        formatNumber(totalAskValue) }} XLM
+                      </span>
+                    </div>
+                    <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
+                      <table class="trades select-all">
+                        <thead>
+                          <tr>
+                            <th style="text-align: left; padding: 6px 12px; color: var(--down);">Price (XLM)</th>
+                            <th style="text-align: right; padding: 6px 12px;">Size ({{ token.asset_code }})</th>
+                            <th style="text-align: right; padding: 6px 12px;">Total (XLM)</th>
+                            <th style="text-align: right; padding: 6px 12px;">Depth ({{ token.asset_code }})</th>
+                          </tr>
+                        </thead>
+                        <tbody v-if="orderBook.asks.length">
+                          <tr v-for="(ask, index) in orderBook.asks" :key="'ask-' + index"
+                            :style="{ background: 'linear-gradient(to right, rgba(240, 97, 109, 0.09) 0%, rgba(240, 97, 109, 0.09) ' + ((getAskDepth(index) / totalAskDepth) * 100) + '%, transparent ' + ((getAskDepth(index) / totalAskDepth) * 100) + '%)' }">
+                            <td style="text-align: left; padding: 7px 12px;" class="down font-bold">{{
+                              parseFloat(ask.price).toFixed(6) }}</td>
+                            <td style="text-align: right; padding: 7px 12px;">{{ formatNumber(ask.amount) }}</td>
+                            <td style="text-align: right; padding: 7px 12px;" class="dim">{{ formatPrice2Deci(ask.amount
+                              *
+                              ask.price) }}</td>
+                            <td style="text-align: right; padding: 7px 12px;" class="dim">{{
+                              formatNumber(getAskDepth(index)) }}
                             </td>
                           </tr>
                         </tbody>
                         <tbody v-else>
                           <tr>
-                            <td colspan="4" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">No liquidity pool data detected on-chain</td>
+                            <td colspan="4" class="py-6 text-center text-xs font-medium" style="color:var(--faint)">No
+                              sell asks
+                              detected</td>
                           </tr>
                         </tbody>
                       </table>
                     </div>
                   </div>
                 </div>
-              </template>
+              </div>
             </div>
 
-            <!-- RIGHT COLUMN: SIDEBAR WIDGETS -->
-            <aside class="rail" v-if="activeTab === 'overview'">
-              <!-- Market Insight -->
-              <div class="card ai select-text">
-                <div class="card-hd"><h3>Market Insight</h3><span class="tag">AI Engine</span></div>
-                
-                <!-- Score Bar -->
-                <div class="px-4 pt-4 pb-2">
-                  <div class="flex justify-between items-center mb-1.5">
-                    <span class="text-xs font-mono text-slate-400">Composite Score</span>
-                    <span class="text-sm font-bold font-mono text-white">{{ token.rating?.average?.toFixed(1) || '7.5' }} / 10</span>
-                  </div>
-                  <div class="track h-2 bg-[#1a212c] rounded-full overflow-hidden">
-                    <i class="block h-full rounded-full transition-all duration-500" 
-                       :class="token.rating?.average >= 8 ? 'bg-[#2ED47A]' : (token.rating?.average >= 5 ? 'bg-[#FF8A3D]' : 'bg-[#F0616D]')"
-                       :style="{ width: ((token.rating?.average || 7.5) * 10) + '%' }"></i>
-                  </div>
-                </div>
-
-                <!-- Signals Grid -->
-                <div class="grid grid-cols-1 divide-y divide-slate-800/60 border-t border-b border-slate-800/60 bg-[#0E131C]">
-                  <!-- Bullish Signals -->
-                  <div class="p-4 space-y-2">
-                    <span class="text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider block font-mono">▲ Bullish Signals</span>
-                    <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse">Analyzing...</div>
-                    <ul v-else class="text-xs space-y-1 text-slate-300">
-                      <li v-for="sig in bullishSignals" :key="sig" class="flex items-start gap-1.5 leading-relaxed">
-                        <span class="text-emerald-400 font-bold">✓</span>
-                        <span>{{ sig }}</span>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <!-- Bearish Signals -->
-                  <div class="p-4 space-y-2">
-                    <span class="text-[10px] font-extrabold text-rose-400 uppercase tracking-wider block font-mono">▼ Bearish Signals</span>
-                    <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse">Analyzing...</div>
-                    <ul v-else class="text-xs space-y-1 text-slate-300">
-                      <li v-for="sig in bearishSignals" :key="sig" class="flex items-start gap-1.5 leading-relaxed">
-                        <span class="text-rose-400 font-bold">⚠</span>
-                        <span>{{ sig }}</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <!-- Key Metrics Grid -->
-                <div class="p-4 space-y-2 border-b border-slate-800/60">
-                  <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block font-mono">Key Metrics</span>
-                  <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse py-1">Loading metrics...</div>
-                  <div v-else class="grid grid-cols-3 gap-2 text-xs">
-                    <div class="flex flex-col gap-0.5">
-                      <span class="text-slate-400">Whales:</span>
-                      <span class="font-mono text-white" :class="parseFloat(top10Percentage) > 50 ? 'text-rose-400' : 'text-emerald-400'">
-                        {{ parseFloat(top10Percentage) > 50 ? 'High' : 'Low' }} ({{ top10Percentage }}%)
-                      </span>
-                    </div>
-                    <div class="flex flex-col gap-0.5">
-                      <span class="text-slate-400">Slippage ($10k):</span>
-                      <span class="font-mono text-white">{{ calculatedSlippage }}</span>
-                    </div>
-                    <div class="flex flex-col gap-0.5">
-                      <span class="text-slate-400">Contract Lock:</span>
-                      <span class="font-mono" :class="token.issuer_locked ? 'text-emerald-400' : 'text-amber'">
-                        {{ token.issuer_locked ? 'Secured (Locked)' : 'Unlocked Issuer' }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Conclusion -->
-                <div class="p-4 space-y-2">
-                  <span class="text-[10px] font-extrabold text-cyan-400 uppercase tracking-wider block font-mono">✍ AI Conclusion</span>
-                  <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse">Formulating...</div>
-                  <p v-else class="text-xs text-slate-300 leading-relaxed m-0 p-0" style="padding: 0 !important; color: var(--dim) !important;">
-                    {{ aiRiskSummary.text }}
-                  </p>
-                </div>
+            <!-- Recent Trades -->
+            <div class="card expo">
+              <div class="card-hd">
+                <h3>Recent Trades</h3><span class="tag"><span class="dot"></span>Live</span>
               </div>
 
-              <!-- Voting -->
-              <div class="card">
-                <div class="card-hd"><h3>Ecosystem Voting</h3><span class="tag">Community</span></div>
-                <div class="vote select-none">
-                  <div @click="submitVote('trusted')" class="vopt t"><div class="ic"></div><div class="l">Trusted</div><div class="n">{{ votes.trusted }}</div></div>
-                  <div @click="submitVote('suspicious')" class="vopt s"><div class="ic"></div><div class="l">Suspicious</div><div class="n">{{ votes.suspicious }}</div></div>
-                  <div @click="submitVote('scam')" class="vopt x"><div class="ic"></div><div class="l">Scam</div><div class="n">{{ votes.scam }}</div></div>
-                </div>
+              <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
+                <table class="trades select-all">
+                  <thead>
+                    <tr>
+                      <th>Side</th>
+                      <th>Amount</th>
+                      <th>Price</th>
+                      <th>Value</th>
+                      <th>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody v-if="token.transactions && token.transactions.length">
+                    <tr v-for="(tx, i) in (token.transactions || []).slice(0, 30)" :key="i">
+                      <td><span class="side" :class="tx.side === 'buy' ? 'buy' : 'sell'">{{ tx.side.toUpperCase()
+                          }}</span></td>
+                      <td>{{ formatPrice2Deci(tx.amount) }} {{ token.asset_code }}</td>
+                      <td>{{ formatPrice(tx.price) }}</td>
+                      <td class="dim">{{ formatPrice2Deci(tx.value) }} XLM</td>
+                      <td class="dim">{{ tx.time }}</td>
+                    </tr>
+                  </tbody>
+                  <tbody v-else>
+                    <tr>
+                      <td colspan="5" style="text-align:center;padding:20px;color:var(--faint)">No live trade logs
+                        detected</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
+            </div>
 
-              <!-- Security Parameters -->
-              <div class="card">
-                <div class="card-hd"><h3>Security Parameters</h3><span class="tag">On-chain</span></div>
-                <div class="sec">
-                  <div class="row">
-                    <span class="nm">
-                      <span class="shield">🛡</span>Immutable code
-                      <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5" title="YES means the issuer account is locked and cannot mint more tokens (0% inflation risk).">i</span>
-                    </span>
-                    <span class="sval" :class="token.issuer_locked ? 'yes' : 'none'">{{ token.issuer_locked ? 'YES' : 'NO' }}</span>
-                  </div>
-                  <div class="row">
-                    <span class="nm">
-                      <span class="shield">🛡</span>Clawback disabled
-                      <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5" title="YES means clawbacks are disabled; the issuer cannot seize or recall tokens from user accounts.">i</span>
-                    </span>
-                    <span class="sval" :class="!token.auth_clawback_enabled ? 'yes' : 'none'">{{ !token.auth_clawback_enabled ? 'YES' : 'NO' }}</span>
-                  </div>
-                  <div class="row">
-                    <span class="nm">
-                      <span class="shield">🛡</span>Revocation disabled
-                      <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5" title="YES means authorization revocation is disabled; the issuer cannot freeze your account's trustline.">i</span>
-                    </span>
-                    <span class="sval" :class="!token.auth_revocable ? 'yes' : 'none'">{{ !token.auth_revocable ? 'YES' : 'NO' }}</span>
-                  </div>
-                  <div class="row">
-                    <span class="nm">
-                      <span class="shield">🛡</span>Authorization required
-                      <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5" title="NONE means anyone can hold, trade, or transfer this token freely without manual approval.">i</span>
-                    </span>
-                    <span class="sval" :class="token.auth_required ? 'none' : 'yes'" style="font-size:10px">{{ token.auth_required ? 'REQUIRED' : 'NONE' }}</span>
-                  </div>
-                </div>
-              </div>
-            </aside>
+
           </div>
+
+          <!-- LEFT COLUMN: HOLDERS -->
+          <div style="grid-column: 1 / -1; display:flex;flex-direction:column;gap:14px;margin-bottom:2px"
+            v-if="activeTab === 'holders'">
+            <div v-if="holdersLoading"
+              class="flex flex-col items-center justify-center py-20 bg-[#111620] rounded-xl border border-[#1D2531]">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
+              <span class="text-xs text-slate-400 font-bold mt-3">Loading holder distribution data...</span>
+            </div>
+            <template v-else>
+              <section class="card asset" style="margin-top:0">
+                <div class="flex justify-between items-center flex-wrap gap-4 mb-6">
+                  <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Holder Distribution</h2>
+                    <p class="text-xs text-slate-400 mt-1 font-medium">On-chain wallet analysis and supply concentration
+                      metrics</p>
+                  </div>
+                  <div
+                    class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-[#0E131C] px-3 py-1.5 rounded-xl border border-[#1D2531] font-mono">
+                    Total Holders: {{ formatNumber(token.holders || 1240) }}
+                  </div>
+                </div>
+
+                <!-- Middle Grid: Donut Chart Card (Left 50%) + 4 Vertically Stacked Cards Container (Right 50%) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+                  <!-- Left Half (50% Width): Donut Chart Card -->
+                  <div
+                    class="flex flex-row md:flex-col items-center gap-4 sm:gap-6 justify-center bg-[#0E131C] p-4 sm:p-6 rounded-2xl border border-[#1D2531] h-full">
+                    <div
+                      class="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 flex items-center justify-center flex-shrink-0">
+                      <svg class="w-full h-full" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="40" stroke="#1d2531" stroke-width="12" fill="transparent" />
+                        <circle cx="50" cy="50" r="40" stroke="#12CBEE" stroke-width="12" fill="transparent"
+                          stroke-linecap="round" :stroke-dasharray="251.3"
+                          :stroke-dashoffset="251.3 - (251.3 * parseFloat(top10Percentage)) / 100"
+                          transform="rotate(-90 50 50)" />
+                      </svg>
+                      <div class="absolute flex flex-col items-center justify-center text-center">
+                        <span class="text-lg sm:text-xl md:text-2xl font-black text-white">{{ top10Percentage }}%</span>
+                        <span
+                          class="text-[7px] sm:text-[8px] md:text-[9px] text-slate-400 font-extrabold uppercase tracking-wider mt-0.5">Top
+                          10</span>
+                      </div>
+                    </div>
+
+                    <div class="space-y-2 sm:space-y-3 text-[10px] sm:text-xs font-mono w-full flex-1">
+                      <div
+                        class="flex items-center justify-between gap-1.5 font-semibold bg-[#111620] p-2 sm:p-3 rounded-xl border border-[#1D2531]">
+                        <div class="flex items-center gap-1.5">
+                          <span class="w-2.5 h-2.5 rounded-full bg-[#12CBEE] flex-none"></span>
+                          <span class="text-slate-400">Top 10 Wallets:</span>
+                        </div>
+                        <span class="text-white font-bold">{{ top10Percentage }}%</span>
+                      </div>
+                      <div
+                        class="flex items-center justify-between gap-1.5 font-semibold bg-[#111620] p-2 sm:p-3 rounded-xl border border-[#1D2531]">
+                        <div class="flex items-center gap-1.5">
+                          <span class="w-2.5 h-2.5 rounded-full bg-[#1d2531] flex-none"></span>
+                          <span class="text-slate-400">Others:</span>
+                        </div>
+                        <span class="text-white font-bold">{{ (100 - parseFloat(top10Percentage)).toFixed(2) }}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Right Half (50% Width): 4 Cards Stacked Vertically -->
+                  <div class="flex flex-col gap-4">
+                    <!-- 1. Healthy Distribution / Whale Concentration Warning -->
+                    <div class="bg-[#0E131C] p-5 rounded-2xl border border-[#1D2531]">
+                      <div v-if="parseFloat(top10Percentage) > 50"
+                        class="flex gap-3 bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 text-xs text-rose-400">
+                        <span class="text-xl flex-shrink-0">⚠️</span>
+                        <div>
+                          <span
+                            class="font-extrabold uppercase tracking-wider block text-[11px] text-rose-500 font-mono">Whale
+                            Concentration Warning</span>
+                          <span class="mt-1 block font-medium leading-relaxed">The top 10 wallets hold <strong
+                              class="font-black text-white">{{ top10Percentage }}%</strong> of supply. This asset has
+                            elevated whale concentration risk.</span>
+                        </div>
+                      </div>
+                      <div v-else
+                        class="flex gap-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-xs text-emerald-400">
+                        <span class="text-xl flex-shrink-0">✓</span>
+                        <div>
+                          <span
+                            class="font-extrabold uppercase tracking-wider block text-[11px] text-emerald-500 font-mono">Healthy
+                            Distribution</span>
+                          <span class="mt-1 block font-medium leading-relaxed">The top 10 wallets hold <strong
+                              class="font-black text-white">{{ top10Percentage }}%</strong> of supply, representing
+                            healthy decentralization across active holders.</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 2 & 3: Side-by-Side Stats Cards -->
+                    <div class="grid grid-cols-2 gap-4">
+                      <!-- 2. Average per Holder -->
+                      <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                        <span
+                          class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block leading-snug">Average
+                          per Holder</span>
+                        <span class="text-sm sm:text-base font-black text-white mt-1 block truncate">
+                          {{ formatNumber(averageTokensPerHolder) }} {{ token.asset_code }}
+                        </span>
+                      </div>
+
+                      <!-- 3. New Holders -->
+                      <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                        <span
+                          class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block leading-snug">New
+                          Holders (24h/7d)</span>
+                        <span class="text-sm sm:text-base font-black text-white mt-1 block">
+                          +{{ holderGrowth.growth24h }} <span class="text-slate-500 font-medium text-xs">/</span> +{{
+                          holderGrowth.growth7d }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- 4. Largest Non-Treasury Holder -->
+                    <div v-if="biggestIndividualHolder"
+                      class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest
+                        Non-Treasury Holder</span>
+                      <div class="flex items-center justify-between text-xs mt-1.5">
+                        <a :href="`https://stellar.expert/explorer/public/account/${biggestIndividualHolder.address}`"
+                          target="_blank" rel="noopener noreferrer"
+                          class="font-mono text-cyan-400 hover:text-cyan-300 font-bold">
+                          {{ shorten(biggestIndividualHolder.address) }}
+                        </a>
+                        <span class="font-black text-white font-mono">
+                          {{ formatNumber(biggestIndividualHolder.balance) }} {{ token.asset_code }} ({{
+                          biggestIndividualHolder.percent }}%)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Grid: Top Wallets vs Project Wallets (Separate cards!) -->
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-2">
+                <!-- Left Card: Top Wallets Table -->
+                <div class="card">
+                  <div class="card-hd">
+                    <h3>Largest Non-Project Holders</h3>
+                  </div>
+                  <div style="padding: 20px;">
+                    <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
+                      <table class="trades">
+                        <thead>
+                          <tr>
+                            <th style="text-align:left;width:15%">Rank</th>
+                            <th style="text-align:left;width:45%">Wallet Address</th>
+                            <th style="width:40%">Holdings</th>
+                          </tr>
+                        </thead>
+                        <tbody v-if="token.top_holders && token.top_holders.length">
+                          <tr v-for="(holder, index) in token.top_holders" :key="index"
+                            class="hover:bg-white/2 transition">
+                            <td class="font-bold text-white">#{{ index + 1 }}</td>
+                            <td class="font-mono text-xs text-left">
+                              <a :href="`https://stellar.expert/explorer/public/account/${holder.address}`"
+                                target="_blank" rel="noopener noreferrer"
+                                class="text-cyan-400 hover:text-cyan-300 transition font-semibold"
+                                :title="holder.address">
+                                {{ shorten(holder.address) }}
+                              </a>
+                            </td>
+                            <td>
+                              <div class="font-bold text-white font-mono">{{ formatNumber(holder.balance) }} {{
+                                token.asset_code }}</div>
+                              <div class="text-[10px] text-slate-500 font-semibold mt-0.5">{{
+                                getHolderPercentage(holder.balance) }}% of supply</div>
+                            </td>
+                          </tr>
+                        </tbody>
+                        <tbody v-else>
+                          <tr>
+                            <td colspan="3" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">No
+                              holder data available</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Card: Project Custody & Treasury Wallets Table -->
+                <div class="card">
+                  <div class="card-hd">
+                    <h3>Project Custody & Treasury Wallets</h3>
+                  </div>
+                  <div style="padding: 20px;">
+                    <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
+                      <table class="trades">
+                        <thead>
+                          <tr>
+                            <th style="text-align:left;width:60%">Wallet Name / Address</th>
+                            <th style="width:40%">Holdings</th>
+                          </tr>
+                        </thead>
+                        <tbody v-if="token.project_holders && token.project_holders.length">
+                          <tr v-for="(holder, index) in token.project_holders" :key="index"
+                            class="hover:bg-white/2 transition">
+                            <td class="font-mono text-xs text-left">
+                              <div class="font-bold text-white font-sans text-xs">
+                                {{ holder.name || 'Project Reserve Wallet' }}
+                              </div>
+                              <a :href="`https://stellar.expert/explorer/public/account/${holder.address}`"
+                                target="_blank" rel="noopener noreferrer"
+                                class="text-cyan-400 hover:underline text-[10px] font-semibold mt-0.5 block"
+                                :title="holder.address">
+                                {{ shorten(holder.address) }}
+                              </a>
+                            </td>
+                            <td>
+                              <div class="font-bold text-white font-mono">{{ formatNumber(holder.balance) }} {{
+                                token.asset_code }}</div>
+                              <div class="text-[10px] text-slate-500 font-semibold mt-0.5">{{
+                                getHolderPercentage(holder.balance) }}% of supply</div>
+                            </td>
+                          </tr>
+                        </tbody>
+                        <tbody v-else>
+                          <tr>
+                            <td colspan="2" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">No
+                              project custody wallets detected</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- LEFT COLUMN: LIQUIDITY -->
+          <div
+            style="grid-column: 1 / -1; display:flex;flex-direction:column;gap:14px;margin-bottom:2px;min-width:0;width:100%"
+            v-if="activeTab === 'liquidity'">
+            <div v-if="liquidityLoading"
+              class="flex flex-col items-center justify-center py-20 bg-[#111620] rounded-xl border border-[#1D2531]">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
+              <span class="text-xs text-slate-400 font-bold mt-3">Loading on-chain AMM liquidity stats...</span>
+            </div>
+            <template v-else>
+              <section class="card asset w-full max-w-full min-w-0" style="margin-top:0">
+                <div class="flex justify-between items-center flex-wrap gap-4 mb-6">
+                  <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Liquidity Overview</h2>
+                    <p class="text-xs text-slate-400 mt-1 font-medium">Real-time analysis of automated market maker
+                      (AMM) pools & depth</p>
+                  </div>
+                  <div
+                    class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-[#0E131C] px-3 py-1.5 rounded-xl border border-[#1D2531] font-mono">
+                    Total TVL: ${{ formatNumber(token.liquidity_overview?.total_tvl || 0) }}
+                  </div>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6 font-mono">
+                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Total
+                      TVL</span>
+                    <span class="text-sm sm:text-lg font-black text-white mt-1 block">
+                      ${{ formatNumber(token.liquidity_overview?.total_tvl) }}
+                    </span>
+                  </div>
+
+                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Active
+                      Pools</span>
+                    <span class="text-sm sm:text-lg font-black text-white mt-1 block">
+                      {{ token.liquidity_overview?.pools_count || 0 }}
+                    </span>
+                  </div>
+
+                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest
+                      Pool</span>
+                    <span class="text-xs sm:text-sm font-black text-white mt-1 block truncate font-sans py-1"
+                      :title="token.liquidity_overview?.largest_pool_name">
+                      {{ token.liquidity_overview?.largest_pool_name || '-' }}
+                    </span>
+                    <span class="text-[10px] text-slate-500 font-bold block mt-0.5">
+                      ${{ formatNumber(token.liquidity_overview?.largest_pool_tvl) }} TVL
+                    </span>
+                  </div>
+
+                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">24h LP
+                      Volume</span>
+                    <span class="text-sm sm:text-lg font-black text-white mt-1 block">
+                      ${{ formatNumber(token.liquidity_overview?.lp_volume_24h) }}
+                    </span>
+                  </div>
+
+                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Average
+                      APR</span>
+                    <span class="text-sm sm:text-lg font-black text-emerald-400 mt-1 block">
+                      {{ token.liquidity_overview?.avg_apr ? token.liquidity_overview.avg_apr.toFixed(2) : '0.00' }}%
+                    </span>
+                  </div>
+
+                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Depth
+                      (±2%)</span>
+                    <span class="text-sm sm:text-lg font-black text-white mt-1 block">
+                      ${{ formatNumber(token.liquidity_overview?.depth_2pct) }}
+                    </span>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Top Pools Table Card (Separate!) -->
+              <div class="card mt-2">
+                <div class="card-hd">
+                  <h3>Top Liquidity Pools</h3>
+                </div>
+                <div style="padding: 20px;">
+                  <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
+                    <table class="trades">
+                      <thead>
+                        <tr>
+                          <th style="text-align:left;width:40%">Market / Pool Pair</th>
+                          <th style="width:20%">Total TVL</th>
+                          <th style="width:20%">APR</th>
+                          <th style="width:20%">24h Volume</th>
+                        </tr>
+                      </thead>
+                      <tbody v-if="token.liquidity_overview?.pools && token.liquidity_overview.pools.length"
+                        class="font-mono">
+                        <tr v-for="(pool, index) in token.liquidity_overview.pools" :key="index"
+                          class="hover:bg-white/2 transition">
+                          <td style="text-align:left" class="font-bold text-white">
+                            <a :href="`https://stellar.expert/explorer/public/liquidity-pool/${pool.id}`"
+                              target="_blank" rel="noopener noreferrer"
+                              class="text-[#12CBEE] hover:underline transition font-semibold truncate block max-w-[120px] xs:max-w-[160px] sm:max-w-none">
+                              {{ pool.name }}
+                            </a>
+                          </td>
+                          <td class="font-bold text-white">
+                            ${{ formatNumber(pool.tvl) }}
+                          </td>
+                          <td>
+                            <span class="font-extrabold text-xs px-2 py-0.5 rounded-lg bg-[#2ED47A]/10 text-[#2ED47A]">
+                              {{ pool.apr.toFixed(2) }}%
+                            </span>
+                          </td>
+                          <td class="font-semibold text-slate-300">
+                            ${{ formatNumber(pool.volume) }}
+                          </td>
+                        </tr>
+                      </tbody>
+                      <tbody v-else>
+                        <tr>
+                          <td colspan="4" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">No
+                            liquidity pool data detected on-chain</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- RIGHT COLUMN: SIDEBAR WIDGETS -->
+          <aside class="rail" v-if="activeTab === 'overview'">
+            <!-- Market Insight -->
+            <div class="card ai select-text">
+              <div class="card-hd">
+                <h3>Market Insight</h3><span class="tag">AI Engine</span>
+              </div>
+
+              <!-- Score Bar -->
+              <div class="px-4 pt-4 pb-2">
+                <div class="flex justify-between items-center mb-1.5">
+                  <span class="text-xs font-mono text-slate-400">Composite Score</span>
+                  <span class="text-sm font-bold font-mono text-white">{{ token.rating?.average?.toFixed(1) || '7.5' }}
+                    /
+                    10</span>
+                </div>
+                <div class="track h-2 bg-[#1a212c] rounded-full overflow-hidden">
+                  <i class="block h-full rounded-full transition-all duration-500"
+                    :class="token.rating?.average >= 8 ? 'bg-[#2ED47A]' : (token.rating?.average >= 5 ? 'bg-[#FF8A3D]' : 'bg-[#F0616D]')"
+                    :style="{ width: ((token.rating?.average || 7.5) * 10) + '%' }"></i>
+                </div>
+              </div>
+
+              <!-- Signals Grid -->
+              <div
+                class="grid grid-cols-1 divide-y divide-slate-800/60 border-t border-b border-slate-800/60 bg-[#0E131C]">
+                <!-- Bullish Signals -->
+                <div class="p-4 space-y-2">
+                  <span class="text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider block font-mono">▲
+                    Bullish
+                    Signals</span>
+                  <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse">Analyzing...
+                  </div>
+                  <ul v-else class="text-xs space-y-1 text-slate-300">
+                    <li v-for="sig in bullishSignals" :key="sig" class="flex items-start gap-1.5 leading-relaxed">
+                      <span class="text-emerald-400 font-bold">✓</span>
+                      <span>{{ sig }}</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Bearish Signals -->
+                <div class="p-4 space-y-2">
+                  <span class="text-[10px] font-extrabold text-rose-400 uppercase tracking-wider block font-mono">▼
+                    Bearish
+                    Signals</span>
+                  <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse">Analyzing...
+                  </div>
+                  <ul v-else class="text-xs space-y-1 text-slate-300">
+                    <li v-for="sig in bearishSignals" :key="sig" class="flex items-start gap-1.5 leading-relaxed">
+                      <span class="text-rose-400 font-bold">⚠</span>
+                      <span>{{ sig }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Key Metrics Grid -->
+              <div class="p-4 space-y-2 border-b border-slate-800/60">
+                <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block font-mono">Key
+                  Metrics</span>
+                <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse py-1">Loading
+                  metrics...
+                </div>
+                <div v-else class="grid grid-cols-3 gap-2 text-xs">
+                  <div class="flex flex-col gap-0.5">
+                    <span class="text-slate-400">Whales:</span>
+                    <span class="font-mono text-white"
+                      :class="parseFloat(top10Percentage) > 50 ? 'text-rose-400' : 'text-emerald-400'">
+                      {{ parseFloat(top10Percentage) > 50 ? 'High' : 'Low' }} ({{ top10Percentage }}%)
+                    </span>
+                  </div>
+                  <div class="flex flex-col gap-0.5">
+                    <span class="text-slate-400">Slippage ($10k):</span>
+                    <span class="font-mono text-white">{{ calculatedSlippage }}</span>
+                  </div>
+                  <div class="flex flex-col gap-0.5">
+                    <span class="text-slate-400">Contract Lock:</span>
+                    <span class="font-mono" :class="token.issuer_locked ? 'text-emerald-400' : 'text-amber'">
+                      {{ token.issuer_locked ? 'Secured (Locked)' : 'Unlocked Issuer' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Conclusion -->
+              <div class="p-4 space-y-2">
+                <span class="text-[10px] font-extrabold text-cyan-400 uppercase tracking-wider block font-mono">✍ AI
+                  Conclusion</span>
+                <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse">Formulating...
+                </div>
+                <p v-else class="text-xs text-slate-300 leading-relaxed m-0 p-0"
+                  style="padding: 0 !important; color: var(--dim) !important;">
+                  {{ aiRiskSummary.text }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Voting -->
+            <div class="card">
+              <div class="card-hd">
+                <h3>Ecosystem Voting</h3><span class="tag">Community</span>
+              </div>
+              <div class="vote select-none">
+                <div @click="submitVote('trusted')" class="vopt t">
+                  <div class="ic"></div>
+                  <div class="l">Trusted</div>
+                  <div class="n">{{ votes.trusted }}</div>
+                </div>
+                <div @click="submitVote('suspicious')" class="vopt s">
+                  <div class="ic"></div>
+                  <div class="l">Suspicious</div>
+                  <div class="n">{{ votes.suspicious }}</div>
+                </div>
+                <div @click="submitVote('scam')" class="vopt x">
+                  <div class="ic"></div>
+                  <div class="l">Scam</div>
+                  <div class="n">{{ votes.scam }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Security Parameters -->
+            <div class="card">
+              <div class="card-hd">
+                <h3>Security Parameters</h3><span class="tag">On-chain</span>
+              </div>
+              <div class="sec">
+                <div class="row">
+                  <span class="nm">
+                    <span class="shield">🛡</span>Immutable code
+                    <span
+                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5"
+                      title="YES means the issuer account is locked and cannot mint more tokens (0% inflation risk).">i</span>
+                  </span>
+                  <span class="sval" :class="token.issuer_locked ? 'yes' : 'none'">{{ token.issuer_locked ? 'YES' : 'NO'
+                    }}</span>
+                </div>
+                <div class="row">
+                  <span class="nm">
+                    <span class="shield">🛡</span>Clawback disabled
+                    <span
+                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5"
+                      title="YES means clawbacks are disabled; the issuer cannot seize or recall tokens from user accounts.">i</span>
+                  </span>
+                  <span class="sval" :class="!token.auth_clawback_enabled ? 'yes' : 'none'">{{
+                    !token.auth_clawback_enabled ?
+                    'YES' : 'NO' }}</span>
+                </div>
+                <div class="row">
+                  <span class="nm">
+                    <span class="shield">🛡</span>Revocation disabled
+                    <span
+                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5"
+                      title="YES means authorization revocation is disabled; the issuer cannot freeze your account's trustline.">i</span>
+                  </span>
+                  <span class="sval" :class="!token.auth_revocable ? 'yes' : 'none'">{{ !token.auth_revocable ? 'YES' :
+                    'NO'
+                    }}</span>
+                </div>
+                <div class="row">
+                  <span class="nm">
+                    <span class="shield">🛡</span>Authorization required
+                    <span
+                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5"
+                      title="NONE means anyone can hold, trade, or transfer this token freely without manual approval.">i</span>
+                  </span>
+                  <span class="sval" :class="token.auth_required ? 'none' : 'yes'" style="font-size:10px">{{
+                    token.auth_required
+                    ? 'REQUIRED' : 'NONE' }}</span>
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
-    
+    </div>
+
     <!-- Connect Wallet Modals -->
     <ConnectWalletModal v-model="ConnectWalletModals" :connected="isWalletConnected" :walletKey="walletKey" />
-    <VerificationModal :open="verificationModal" :connected="isWalletConnected" :loading="verificationLoading" :payment-assets="verificationPaymentAssets" :selected-asset="selectedVerificationAsset" @select-asset="selectedVerificationAsset = $event" @close="verificationModal = false" @connect-wallet="ConnectWalletModals = true" @pay="contactVerification" />
+    <VerificationModal :open="verificationModal" :connected="isWalletConnected" :loading="verificationLoading"
+      :payment-assets="verificationPaymentAssets" :selected-asset="selectedVerificationAsset"
+      @select-asset="selectedVerificationAsset = $event" @close="verificationModal = false"
+      @connect-wallet="ConnectWalletModals = true" @pay="contactVerification" />
     <Footer />
   </div>
 </template>
@@ -1236,7 +1437,7 @@ const establishingTrustline = ref(false)
 
 const handleEstablishTrustline = async () => {
   const pk = getCookie('public_key') || localStorage.getItem('public_key') || localStorage.getItem('wallet_key') || ''
-  
+
   if (!pk) {
     Swal.fire({
       icon: 'info',
@@ -1402,6 +1603,10 @@ const bullishSignals = computed(() => {
 
 const bearishSignals = computed(() => {
   const list = []
+  const tvl = token.liquidity_overview?.total_tvl || token.liquidity_tvl || 0
+  if (tvl < 500) {
+    list.push(`Liquidity pool is shallow ($${formatNumber(tvl)} TVL), check slippage`)
+  }
   if (historicalStats.value?.price_change_pct < 0) {
     list.push(`Price is down (${historicalStats.value.price_change_pct}% change)`)
   }
@@ -1465,7 +1670,7 @@ const fetchOrderBook = async () => {
     const envRes = await axios.get('/api/env')
     const isTestnet = envRes.data?.stellar_env !== 'public'
     const horizonUrl = isTestnet ? 'https://horizon-testnet.stellar.org' : 'https://horizon.stellar.org'
-    
+
     const sellingType = code.length <= 4 ? 'credit_alphanum4' : 'credit_alphanum12'
     const res = await axios.get(`${horizonUrl}/order_book`, {
       params: {
@@ -1476,7 +1681,7 @@ const fetchOrderBook = async () => {
         limit: 200
       }
     })
-    
+
     orderBook.bids = res.data?.bids || []
     orderBook.asks = res.data?.asks || []
   } catch (err) {
@@ -1596,7 +1801,7 @@ const buySellVolume = computed(() => {
   const txs = token.transactions || [];
   let buyVol = 0;
   let sellVol = 0;
-  
+
   txs.forEach(tx => {
     const vol = Number(tx.amount);
     if (tx.side === 'buy') {
@@ -1693,10 +1898,10 @@ const averageTokensPerHolder = computed(() => {
 const holderGrowth = computed(() => {
   const totalHolders = token.holders || 10;
   const activityFactor = (token.rating?.activity || 5) / 10;
-  
+
   const growth24h = Math.max(1, totalHolders * 0.0005 * activityFactor);
   const growth7d = Math.max(3, totalHolders * 0.0035 * activityFactor);
-  
+
   return {
     growth24h: growth24h >= 10 ? Math.round(growth24h) : growth24h.toFixed(1),
     growth7d: growth7d >= 10 ? Math.round(growth7d) : growth7d.toFixed(1)
@@ -1735,7 +1940,12 @@ const aiRiskSummary = computed(() => {
   }
 
   // 2. Liquidity check
-  let liquidityStatus = 'robust';
+  let liquidityStatus = 'low';
+  if (tvl >= 10000) {
+    liquidityStatus = 'robust';
+  } else if (tvl >= 500) {
+    liquidityStatus = 'moderate';
+  }
 
   // 3. Synthesize risk assessment
   let riskLevel = 'Low Risk';
@@ -1746,7 +1956,7 @@ const aiRiskSummary = computed(() => {
     analysis = `TokenGlade AI identifies ${code} as a stable asset. It has a high health rating of ${score.toFixed(1)}/10, deep liquidity pool depth ($${formatNumber(tvl)} TVL), and a decentralized holder structure where the largest wallet holds a safe ${maxHolderPct.toFixed(1)}% of supply.`;
   } else if (score < 5 || centralizationRisk === 'critical' || liquidityStatus === 'low') {
     riskLevel = 'High Risk';
-    
+
     let dangerReasons = [];
     if (centralizationRisk === 'critical') {
       dangerReasons.push(`extreme holder centralization (top wallet controls ${maxHolderPct.toFixed(1)}% of total supply)`);
@@ -1757,11 +1967,11 @@ const aiRiskSummary = computed(() => {
     if (score < 5) {
       dangerReasons.push(`a low baseline trust score of ${score.toFixed(1)}/10`);
     }
-    
+
     analysis = `TokenGlade AI flags ${code} as High Risk due to ${dangerReasons.join(' and ')}. Exercise caution when trading.`;
   } else {
     riskLevel = 'Medium Risk';
-    
+
     let warningReasons = [];
     if (centralizationRisk === 'warning') {
       warningReasons.push(`moderate centralization (top wallet owns ${maxHolderPct.toFixed(1)}%)`);
@@ -1769,7 +1979,7 @@ const aiRiskSummary = computed(() => {
     if (liquidityStatus === 'moderate') {
       warningReasons.push(`moderate liquidity pool support ($${formatNumber(tvl)} TVL)`);
     }
-    
+
     const warningText = warningReasons.length ? ` showing ${warningReasons.join(' and ')}` : '';
     analysis = `TokenGlade AI rates ${code} as Medium Risk. The asset displays steady trading velocity (${totalTrades} total trades) and moderate health parameters (${score.toFixed(1)}/10)${warningText}.`;
   }
@@ -1859,15 +2069,15 @@ async function fetchToken() {
         issuer: issuerInput.value
       }
     })
-    
+
     if (res.data?.error || !res.data?.asset_code) {
       notFound.value = true
       loading.value = false
       return
     }
-    
+
     Object.assign(token, res.data)
-    
+
     // Reset holders and liquidity to empty state initially
     token.top_holders = []
     token.project_holders = []
@@ -1881,13 +2091,13 @@ async function fetchToken() {
       depth_2pct: 0,
       pools: []
     }
-    
+
     votes.value = res.data.votes || {
       trusted: 0,
       suspicious: 0,
       scam: 0
     }
-    
+
     // Trigger background loads immediately in the background
     fetchHolders()
     fetchLiquidity()
@@ -2176,7 +2386,7 @@ async function initChart() {
           const low = data.low !== undefined ? data.low : data.value;
           const close = data.close !== undefined ? data.close : data.value;
           const volume = volData ? volData.value : null;
-          
+
           updateActiveCandle({ open, high, low, close, volume });
         } else if (chartData.value.length > 0) {
           updateActiveCandle(chartData.value[chartData.value.length - 1]);
@@ -2225,11 +2435,11 @@ async function fetchChartData() {
 
 function renderChartData() {
   if (!chartInstance) return;
-  
-  if (candleSeries) { try { chartInstance.removeSeries(candleSeries); } catch (e) {} candleSeries = null; }
-  if (lineSeries) { try { chartInstance.removeSeries(lineSeries); } catch (e) {} lineSeries = null; }
-  if (areaSeries) { try { chartInstance.removeSeries(areaSeries); } catch (e) {} areaSeries = null; }
-  if (volumeSeries) { try { chartInstance.removeSeries(volumeSeries); } catch (e) {} volumeSeries = null; }
+
+  if (candleSeries) { try { chartInstance.removeSeries(candleSeries); } catch (e) { } candleSeries = null; }
+  if (lineSeries) { try { chartInstance.removeSeries(lineSeries); } catch (e) { } lineSeries = null; }
+  if (areaSeries) { try { chartInstance.removeSeries(areaSeries); } catch (e) { } areaSeries = null; }
+  if (volumeSeries) { try { chartInstance.removeSeries(volumeSeries); } catch (e) { } volumeSeries = null; }
 
   if (!chartData.value || !chartData.value.length) return;
 
@@ -2307,7 +2517,7 @@ function renderChartData() {
     lastValueVisible: false,
     priceLineVisible: false,
   });
-  
+
   chartInstance.priceScale('volume').applyOptions({
     scaleMargins: {
       top: 0.8,
@@ -2395,7 +2605,7 @@ watch(chartContainer, (el) => {
   --mono: "JetBrains Mono", ui-monospace, monospace;
   --disp: "Space Grotesk", sans-serif;
   --body: "Inter", sans-serif;
-  
+
   background: var(--bg);
   color: var(--ink);
   font-family: var(--body);
@@ -2412,10 +2622,21 @@ watch(chartContainer, (el) => {
   font-variant-numeric: tabular-nums;
 }
 
-.up { color: var(--up); }
-.down { color: var(--down); }
-.dim { color: var(--dim); }
-.faint { color: var(--faint); }
+.up {
+  color: var(--up);
+}
+
+.down {
+  color: var(--down);
+}
+
+.dim {
+  color: var(--dim);
+}
+
+.faint {
+  color: var(--faint);
+}
 
 .wrap {
   max-width: 1440px;
@@ -2443,10 +2664,12 @@ watch(chartContainer, (el) => {
   color: var(--faint);
   padding: 14px 0 0;
 }
+
 .crumb a {
   color: var(--faint);
   transition: color 0.15s ease;
 }
+
 .crumb a:hover {
   color: var(--amber);
 }
@@ -2465,6 +2688,7 @@ watch(chartContainer, (el) => {
   padding: 13px 16px;
   border-bottom: 1px solid var(--line);
 }
+
 .card-hd h3 {
   margin: 0;
   font-family: var(--disp);
@@ -2492,8 +2716,11 @@ watch(chartContainer, (el) => {
   animation: pulse 2.4s infinite;
   vertical-align: middle;
 }
+
 @keyframes pulse {
-  50% { opacity: .35; }
+  50% {
+    opacity: .35;
+  }
 }
 
 .asset {
@@ -2536,6 +2763,7 @@ watch(chartContainer, (el) => {
   gap: 10px;
   flex-wrap: wrap;
 }
+
 .name-row h1 {
   font-family: var(--disp);
   font-weight: 700;
@@ -2554,11 +2782,13 @@ watch(chartContainer, (el) => {
   border: 1px solid var(--line2);
   color: var(--dim);
 }
+
 .chip.sym {
   color: var(--cyan);
   border-color: rgba(18, 203, 238, 0.25);
   background: rgba(18, 203, 238, 0.07);
 }
+
 .chip.verified {
   color: var(--up);
   border-color: rgba(46, 212, 122, 0.25);
@@ -2575,6 +2805,7 @@ watch(chartContainer, (el) => {
   flex-wrap: wrap;
   align-items: center;
 }
+
 .issuer a {
   color: var(--amber);
 }
@@ -2589,12 +2820,15 @@ watch(chartContainer, (el) => {
   padding: 12px 16px;
   background: var(--panel2);
 }
+
 .trust .lbl {
   text-align: right;
 }
+
 .k {
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
+
 .trust .lbl .k {
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 10px;
@@ -2602,12 +2836,14 @@ watch(chartContainer, (el) => {
   color: var(--faint);
   text-transform: uppercase;
 }
+
 .trust .lbl .v {
   font-family: var(--disp);
   font-weight: 600;
   font-size: 15px;
   margin-top: 2px;
 }
+
 .trust .lbl small {
   font-family: var(--mono);
   font-size: 11px;
@@ -2620,6 +2856,7 @@ watch(chartContainer, (el) => {
   height: 56px;
   flex: none;
 }
+
 .gauge b {
   position: absolute;
   inset: 0;
@@ -2640,10 +2877,12 @@ watch(chartContainer, (el) => {
   overflow: hidden;
   margin-top: 20px;
 }
+
 .st {
   background: var(--panel);
   padding: 13px 15px;
 }
+
 .st .k {
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 10px;
@@ -2651,6 +2890,7 @@ watch(chartContainer, (el) => {
   text-transform: uppercase;
   color: var(--faint);
 }
+
 .st .v {
   font-family: var(--mono);
   font-size: 17px;
@@ -2659,6 +2899,7 @@ watch(chartContainer, (el) => {
   letter-spacing: -.01em;
   color: var(--ink);
 }
+
 .st .sub {
   font-family: var(--mono);
   font-size: 11px;
@@ -2686,10 +2927,12 @@ watch(chartContainer, (el) => {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
+
 .acts .btn:hover {
   border-color: var(--amber);
   transform: translateY(-1px);
 }
+
 .acts .btn.brand {
   background: var(--amber);
   color: #08131a;
@@ -2697,18 +2940,22 @@ watch(chartContainer, (el) => {
   font-weight: 700;
   box-shadow: 0 0 16px rgba(18, 203, 238, 0.25);
 }
+
 .acts .btn.brand:hover {
   filter: brightness(1.08);
   box-shadow: 0 0 20px rgba(18, 203, 238, 0.35);
 }
+
 .acts .btn.dark {
   background: #0E131C;
   border-color: rgba(148, 163, 184, 0.16);
 }
+
 .acts .btn.dark:hover {
   background: #131A26;
   border-color: var(--amber);
 }
+
 .acts .btn.icon-btn {
   padding: 0;
   width: 38px;
@@ -2724,6 +2971,7 @@ watch(chartContainer, (el) => {
   border-bottom: 1px solid var(--line);
   margin-top: 22px;
 }
+
 .tabs a {
   font-family: var(--mono);
   font-size: 13px;
@@ -2732,10 +2980,12 @@ watch(chartContainer, (el) => {
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
 }
+
 .tabs a.on {
   color: var(--ink);
   border-bottom-color: var(--amber);
 }
+
 .tabs a:hover {
   color: var(--ink);
 }
@@ -2757,9 +3007,11 @@ watch(chartContainer, (el) => {
   font-family: var(--mono);
   font-size: 12px;
 }
+
 .ohlc span {
   color: var(--faint);
 }
+
 .ohlc b {
   color: var(--ink);
   font-weight: 600;
@@ -2771,6 +3023,7 @@ watch(chartContainer, (el) => {
   gap: 8px;
   align-items: center;
 }
+
 .seg {
   display: flex;
   border: 1px solid var(--line2);
@@ -2779,15 +3032,18 @@ watch(chartContainer, (el) => {
   font-family: var(--mono);
   font-size: 11px;
 }
+
 .seg span {
   padding: 5px 10px;
   color: var(--faint);
   cursor: pointer;
   border-right: 1px solid var(--line2);
 }
+
 .seg span:last-child {
   border-right: 0;
 }
+
 .seg span.on {
   color: var(--amber);
   background: rgba(18, 203, 238, 0.07);
@@ -2797,6 +3053,7 @@ watch(chartContainer, (el) => {
   padding: 14px 16px;
   border-top: 1px solid var(--line);
 }
+
 .depth-top {
   display: flex;
   justify-content: space-between;
@@ -2804,6 +3061,7 @@ watch(chartContainer, (el) => {
   font-size: 12px;
   font-weight: 600;
 }
+
 .depth-bar {
   height: 8px;
   border-radius: 5px;
@@ -2812,10 +3070,12 @@ watch(chartContainer, (el) => {
   margin-top: 8px;
   border: 1px solid var(--line);
 }
+
 .depth-bar i {
   display: block;
   height: 100%;
 }
+
 .depth-sub {
   display: flex;
   justify-content: space-between;
@@ -2831,6 +3091,7 @@ watch(chartContainer, (el) => {
   grid-template-columns: 1fr 1fr;
   gap: 16px 28px;
 }
+
 .hm .top {
   display: flex;
   justify-content: space-between;
@@ -2838,21 +3099,25 @@ watch(chartContainer, (el) => {
   font-size: 12px;
   margin-bottom: 6px;
 }
+
 .hm .top b {
   font-weight: 600;
   color: var(--ink);
 }
+
 .track {
   height: 5px;
   border-radius: 3px;
   background: #1a212c;
   overflow: hidden;
 }
+
 .track i {
   display: block;
   height: 100%;
   background: var(--amber);
 }
+
 .hm.weak .track i {
   background: var(--coral);
 }
@@ -2870,6 +3135,7 @@ watch(chartContainer, (el) => {
   font-size: 12.5px;
   line-height: 1.55;
 }
+
 .ai .mini {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2877,10 +3143,12 @@ watch(chartContainer, (el) => {
   background: var(--line);
   border-top: 1px solid var(--line);
 }
+
 .ai .mini div {
   background: var(--panel);
   padding: 10px 14px;
 }
+
 .ai .mini .k {
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 9.5px;
@@ -2888,6 +3156,7 @@ watch(chartContainer, (el) => {
   color: var(--faint);
   text-transform: uppercase;
 }
+
 .ai .mini .v {
   font-family: var(--mono);
   font-size: 13px;
@@ -2902,6 +3171,7 @@ watch(chartContainer, (el) => {
   gap: 8px;
   padding: 14px;
 }
+
 .vopt {
   border: 1px solid var(--line);
   border-radius: 9px;
@@ -2910,13 +3180,16 @@ watch(chartContainer, (el) => {
   cursor: pointer;
   transition: all 0.2s ease;
 }
+
 .vopt:hover {
   border-color: var(--line2);
   background: rgba(255, 255, 255, 0.02);
 }
+
 .vopt .ic {
   font-size: 15px;
 }
+
 .vopt .l {
   font-family: var(--mono);
   font-size: 10px;
@@ -2924,21 +3197,26 @@ watch(chartContainer, (el) => {
   margin-top: 5px;
   letter-spacing: .04em;
 }
+
 .vopt .n {
   font-family: var(--mono);
   font-size: 16px;
   font-weight: 700;
   margin-top: 2px;
 }
+
 .vopt.t {
   border-color: rgba(46, 212, 122, 0.2);
 }
+
 .vopt.t .n {
   color: var(--up);
 }
+
 .vopt.s .n {
   color: var(--coral);
 }
+
 .vopt.x .n {
   color: var(--down);
 }
@@ -2946,6 +3224,7 @@ watch(chartContainer, (el) => {
 .sec {
   padding: 6px 0;
 }
+
 .sec .row {
   display: flex;
   align-items: center;
@@ -2954,18 +3233,22 @@ watch(chartContainer, (el) => {
   border-bottom: 1px solid var(--line);
   font-size: 13px;
 }
+
 .sec .row:last-child {
   border-bottom: 0;
 }
+
 .sec .row .nm {
   display: flex;
   align-items: center;
   gap: 9px;
   color: var(--dim);
 }
+
 .shield {
   color: var(--cyan);
 }
+
 .sval {
   font-family: var(--mono);
   font-size: 11px;
@@ -2973,10 +3256,12 @@ watch(chartContainer, (el) => {
   padding: 2px 8px;
   border-radius: 5px;
 }
+
 .sval.yes {
   color: var(--up);
   background: rgba(46, 212, 122, 0.08);
 }
+
 .sval.none {
   color: var(--dim);
   background: rgba(255, 255, 255, 0.03);
@@ -2985,6 +3270,7 @@ watch(chartContainer, (el) => {
 .expo {
   margin-top: 14px;
 }
+
 .expo-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -2992,9 +3278,11 @@ watch(chartContainer, (el) => {
   background: var(--line);
   border-bottom: 1px solid var(--line);
 }
+
 .expo-stats .st {
   background: var(--panel);
 }
+
 .ratio-bar {
   height: 6px;
   border-radius: 4px;
@@ -3007,6 +3295,7 @@ table.trades {
   width: 100%;
   border-collapse: collapse;
 }
+
 table.trades th {
   font-family: var(--mono);
   font-size: 10px;
@@ -3018,9 +3307,11 @@ table.trades th {
   font-weight: 500;
   border-bottom: 1px solid var(--line);
 }
+
 table.trades th:first-child {
   text-align: left;
 }
+
 table.trades td {
   padding: 11px 16px;
   text-align: right;
@@ -3029,12 +3320,15 @@ table.trades td {
   border-bottom: 1px solid var(--line);
   color: var(--ink);
 }
+
 table.trades td:first-child {
   text-align: left;
 }
+
 table.trades tr:last-child td {
   border-bottom: 0;
 }
+
 table.trades tr:hover td {
   background: rgba(255, 255, 255, 0.02);
 }
@@ -3047,10 +3341,12 @@ table.trades tr:hover td {
   border-radius: 5px;
   letter-spacing: .05em;
 }
+
 .side.sell {
   color: var(--down);
   background: rgba(240, 97, 109, 0.08);
 }
+
 .side.buy {
   color: var(--up);
   background: rgba(46, 212, 122, 0.08);
@@ -3072,6 +3368,7 @@ table.trades tr:hover td {
   grid-column: 1 / -1;
   width: 100%;
 }
+
 .about h3 {
   font-family: var(--disp);
   font-weight: 600;
@@ -3079,6 +3376,7 @@ table.trades tr:hover td {
   margin: 0 0 8px;
   color: var(--ink);
 }
+
 .about p {
   margin: 0;
   color: var(--dim);
@@ -3091,6 +3389,7 @@ table.trades tr:hover td {
   .main-grid {
     grid-template-columns: 1fr;
   }
+
   .stats {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -3101,29 +3400,37 @@ table.trades tr:hover td {
     padding-left: 12px !important;
     padding-right: 12px !important;
   }
+
   .asset {
     padding: 14px !important;
   }
+
   .ahead {
     flex-direction: column !important;
     gap: 12px !important;
   }
+
   .token-ico {
     width: 44px !important;
     height: 44px !important;
   }
+
   .name-row h1 {
     font-size: 20px !important;
   }
+
   .stats {
     grid-template-columns: repeat(2, 1fr) !important;
   }
+
   .expo-stats {
     grid-template-columns: 1fr 1fr;
   }
+
   .health {
     grid-template-columns: 1fr;
   }
+
   .trust {
     margin-left: 0 !important;
     width: 100% !important;
@@ -3132,12 +3439,15 @@ table.trades tr:hover td {
     justify-content: space-between !important;
     padding: 10px 12px !important;
   }
+
   .trust .lbl {
     text-align: left !important;
   }
+
   .st {
     padding: 10px 12px !important;
   }
+
   .st .v {
     font-size: 14px !important;
   }
@@ -3147,17 +3457,21 @@ table.trades tr:hover td {
   width: 6px;
   height: 6px;
 }
+
 .overflow-y-auto::-webkit-scrollbar-track {
   background: rgba(17, 22, 32, 0.5);
   border-radius: 4px;
 }
+
 .overflow-y-auto::-webkit-scrollbar-thumb {
   background: rgba(40, 52, 73, 0.8);
   border-radius: 4px;
 }
+
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: rgba(56, 73, 102, 1);
 }
+
 .overflow-y-auto {
   scrollbar-width: thin;
   scrollbar-color: rgba(40, 52, 73, 0.8) rgba(17, 22, 32, 0.5);
