@@ -640,18 +640,31 @@ const chartSeriesData = {
 };
 
 const displayedPrimaryVolume = computed(() => {
-  if (selectedTimeFilter.value === '1H') return '$36.8M';
-  if (selectedTimeFilter.value === '7D') return '$5.94B';
-  if (selectedTimeFilter.value === '30D') return '$25.42B';
+  const rawDaily = parseFloat(dailyVolume.value.replace(/[^0-9.]/g, '')) || 890.8;
+  if (selectedTimeFilter.value === '1H') return `$${(rawDaily * 0.045).toFixed(1)}M`;
+  if (selectedTimeFilter.value === '7D') return `$${(rawDaily * 6.8 * 0.001).toFixed(2)}B`;
+  if (selectedTimeFilter.value === '30D') return `$${(rawDaily * 28.5 * 0.001).toFixed(2)}B`;
   return dailyVolume.value;
 });
 
 const ecoChartPaths = computed(() => {
-  let history = [...chartSeriesData[selectedTimeFilter.value]];
-  if (selectedTimeFilter.value === '24H') {
-    const currentVol = parseFloat(dailyVolume.value.replace(/[^0-9.]/g, '')) || 890.8;
-    history[history.length - 1] = currentVol;
+  const rawDaily = parseFloat(dailyVolume.value.replace(/[^0-9.]/g, '')) || 890.8;
+  
+  let targetLastVal = rawDaily;
+  if (selectedTimeFilter.value === '1H') {
+    targetLastVal = rawDaily * 0.045;
+  } else if (selectedTimeFilter.value === '7D') {
+    targetLastVal = rawDaily * 6.8 * 0.001;
+  } else if (selectedTimeFilter.value === '30D') {
+    targetLastVal = rawDaily * 28.5 * 0.001;
   }
+
+  const originalSeries = chartSeriesData[selectedTimeFilter.value];
+  const originalLastVal = originalSeries[originalSeries.length - 1];
+  const scaleFactor = targetLastVal / originalLastVal;
+  
+  const history = originalSeries.map(val => val * scaleFactor);
+
   if (!history || history.length < 2) {
     return { fill: '', line: '', lastX: 600, lastY: 80 };
   }
@@ -690,11 +703,22 @@ function handleChartMouseMove(event) {
   const mouseX = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
   const svgWidth = rect.width || 600;
   
-  let history = [...chartSeriesData[selectedTimeFilter.value]];
-  if (selectedTimeFilter.value === '24H') {
-    const currentVol = parseFloat(dailyVolume.value.replace(/[^0-9.]/g, '')) || 890.8;
-    history[history.length - 1] = currentVol;
+  const rawDaily = parseFloat(dailyVolume.value.replace(/[^0-9.]/g, '')) || 890.8;
+  
+  let targetLastVal = rawDaily;
+  if (selectedTimeFilter.value === '1H') {
+    targetLastVal = rawDaily * 0.045;
+  } else if (selectedTimeFilter.value === '7D') {
+    targetLastVal = rawDaily * 6.8 * 0.001;
+  } else if (selectedTimeFilter.value === '30D') {
+    targetLastVal = rawDaily * 28.5 * 0.001;
   }
+
+  const originalSeries = chartSeriesData[selectedTimeFilter.value];
+  const originalLastVal = originalSeries[originalSeries.length - 1];
+  const scaleFactor = targetLastVal / originalLastVal;
+  
+  const history = originalSeries.map(val => val * scaleFactor);
   if (!history || history.length < 2) return;
   
   const min = Math.min(...history);
