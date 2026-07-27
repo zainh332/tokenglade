@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\TokenController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +19,10 @@ use App\Http\Controllers\AdminAuthController;
 Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
 Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
 Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+
+// Short link and OG Card routes
+Route::get('/t/{issuer}', [TokenController::class, 'renderCrawlerMeta']);
+Route::get('/t/{issuer}/card.png', [TokenController::class, 'generateCard']);
 
 // Protected Admin SPA Routes
 Route::middleware('admin')->get('/admin/{any?}', function () {

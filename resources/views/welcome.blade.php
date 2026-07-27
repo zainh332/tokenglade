@@ -3,6 +3,32 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        @if(isset($meta))
+            <title>{{ $meta['title'] }}</title>
+            <meta name="description" content="{{ $meta['description'] }}">
+
+            <!-- Open Graph / Facebook -->
+            <meta property="og:type" content="website">
+            <meta property="og:url" content="{{ $meta['url'] }}">
+            <meta property="og:title" content="{{ $meta['title'] }}">
+            <meta property="og:description" content="{{ $meta['description'] }}">
+            <meta property="og:image" content="{{ $meta['image'] }}">
+
+            <!-- Twitter -->
+            <meta name="twitter:card" content="summary_large_image">
+            <meta name="twitter:url" content="{{ $meta['url'] }}">
+            <meta name="twitter:title" content="{{ $meta['title'] }}">
+            <meta name="twitter:description" content="{{ $meta['description'] }}">
+            <meta name="twitter:image" content="{{ $meta['image'] }}">
+
+            <meta property="twitter:card" content="summary_large_image">
+            <meta property="twitter:url" content="{{ $meta['url'] }}">
+            <meta property="twitter:title" content="{{ $meta['title'] }}">
+            <meta property="twitter:description" content="{{ $meta['description'] }}">
+            <meta property="twitter:image" content="{{ $meta['image'] }}">
+        @else
+            <title>TokenGlade | Mint, Discover & Trade Stellar Tokens</title>
+        @endif
         @if(config('app.env') === 'staging')
             <meta name="robots" content="noindex, nofollow">
         @endif

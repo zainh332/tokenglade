@@ -2211,4 +2211,207 @@ EOT;
             'token_creation_fee' => $this->token_creation_fee,
         ]);
     }
+
+    public function renderCrawlerMeta($issuer, StellarTokenService $service)
+    {
+        $issuer = strtoupper($issuer);
+        $token = StellarToken::where('issuer_public_key', $issuer)->first();
+        if (!$token) {
+            return view('welcome');
+        }
+
+        $assets = Cache::remember("issuer_assets_{$issuer}", 3600, function () use ($service, $issuer) {
+            return $service->getAssetsByIssuer($issuer);
+        });
+
+        if (empty($assets)) {
+            return view('welcome');
+        }
+
+        $code = $assets[0]['asset_code'];
+
+        $insight = Cache::remember("token_insight_v2_{$issuer}_{$code}", 15, function () use ($service, $issuer, $code, $assets) {
+            return $service->getTokenInsight($issuer, $code, $assets[0]);
+        });
+
+        $usdPrice = number_format($insight['usd_price'] ?? 0, 4);
+        $xlmPrice = number_format($insight['xlm_price'] ?? 0, 4);
+        $changeVal = $insight['price_change_24h'] ?? 0.0;
+        $change = ($changeVal >= 0 ? '+' : '') . number_format($changeVal, 2);
+        
+        $market = StellarMarketToken::where('asset_code', $code)
+            ->where('asset_issuer', $issuer)
+            ->first();
+        $liquidityVal = $market ? ($market->liquidity_tvl ?? 0) : 0;
+        $liquidity = number_format($liquidityVal, 2);
+        
+        $holders = number_format($insight['holders'] ?? 0, 0);
+        $rating = number_format($insight['rating']['average'] ?? 7.5, 1);
+
+        $cardUrl = url("/t/{$issuer}/card.png");
+        $tokenUrl = url("/t/{$issuer}");
+
+        return view('welcome', [
+            'meta' => [
+                'title' => "Check out \${$code} on TokenGlade 👀",
+                'description' => "💰 Price: \${$usdPrice} USD ({$xlmPrice} \$XLM) | 📊 24H Change: {$change}% | 💧 Liquidity: \${$liquidity} | 👥 Holders: {$holders} | 🛡️ Trust Score: {$rating}/10",
+                'image' => $cardUrl,
+                'url' => $tokenUrl,
+            ]
+        ]);
+    }
+
+    public function generateCard($issuer, StellarTokenService $service)
+    {
+        $issuer = strtoupper($issuer);
+        $token = StellarToken::where('issuer_public_key', $issuer)->first();
+        if (!$token) {
+            abort(404);
+        }
+
+        $assets = Cache::remember("issuer_assets_{$issuer}", 3600, function () use ($service, $issuer) {
+            return $service->getAssetsByIssuer($issuer);
+        });
+
+        if (empty($assets)) {
+            abort(404);
+        }
+
+        $code = $assets[0]['asset_code'];
+
+        $insight = Cache::remember("token_insight_v2_{$issuer}_{$code}", 15, function () use ($service, $issuer, $code, $assets) {
+            return $service->getTokenInsight($issuer, $code, $assets[0]);
+        });
+
+        $usdPrice = number_format($insight['usd_price'] ?? 0, 4);
+        $xlmPrice = number_format($insight['xlm_price'] ?? 0, 4);
+        $changeVal = $insight['price_change_24h'] ?? 0.0;
+        $change = ($changeVal >= 0 ? '+' : '') . number_format($changeVal, 2) . '%';
+        
+        $market = StellarMarketToken::where('asset_code', $code)
+            ->where('asset_issuer', $issuer)
+            ->first();
+        $liquidityVal = $market ? ($market->liquidity_tvl ?? 0) : 0;
+        $liquidity = number_format($liquidityVal, 2);
+
+        $holders = number_format($insight['holders'] ?? 0, 0);
+        $rating = number_format($insight['rating']['average'] ?? 7.5, 1);
+
+        // 1. Create canvas
+        $img = imagecreatetruecolor(1200, 630);
+        imagealphablending($img, true);
+        imagesavealpha($img, true);
+
+        // 2. Define colors
+        $darkBg = imagecolorallocate($img, 7, 10, 19); // #070A13 matching background
+        imagefill($img, 0, 0, $darkBg);
+
+        // Draw deep space background details (diagonal background glow/orbs)
+        // Draw purple glow
+        for ($r = 300; $r > 0; $r -= 5) {
+            $alpha = (int)(127 - (127 * (1 - ($r / 300) * ($r / 300))));
+            $alpha = max(0, min(127, $alpha));
+            $color = imagecolorallocatealpha($img, 147, 51, 234, (int)($alpha * 0.85));
+            imagefilledellipse($img, 100, 100, $r * 2, $r * 2, $color);
+        }
+
+        // Draw cyan glow bottom right
+        for ($r = 400; $r > 0; $r -= 5) {
+            $alpha = (int)(127 - (127 * (1 - ($r / 400) * ($r / 400))));
+            $alpha = max(0, min(127, $alpha));
+            $color = imagecolorallocatealpha($img, 6, 182, 212, (int)($alpha * 0.8));
+            imagefilledellipse($img, 1100, 530, $r * 2, $r * 2, $color);
+        }
+
+        // 3. Draw outer premium card frame border
+        $borderColor = imagecolorallocatealpha($img, 51, 65, 85, 30);
+        for ($i = 0; $i < 3; $i++) {
+            imagerectangle($img, 40 + $i, 40 + $i, 1160 - $i, 590 - $i, $borderColor);
+        }
+
+        $white = imagecolorallocate($img, 255, 255, 255);
+        $slate = imagecolorallocate($img, 148, 163, 184); // #94a3b8
+        $cyanColor = imagecolorallocate($img, 34, 211, 238); // #22d3ee
+        $purpleColor = imagecolorallocate($img, 192, 132, 252); // #c084fc
+        $emeraldColor = imagecolorallocate($img, 52, 211, 153); // #34d399
+        $roseColor = imagecolorallocate($img, 248, 113, 113); // #f87171
+
+        // Let's check for font path
+        $fontPath = null;
+        $possibleFonts = [
+            'C:\Windows\Fonts\arial.ttf',
+            'C:\Windows\Fonts\Arial.ttf',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+            '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+            '/usr/share/fonts/ttf-dejavu/DejaVuSans-Bold.ttf',
+        ];
+        foreach ($possibleFonts as $f) {
+            if (file_exists($f)) {
+                $fontPath = $f;
+                break;
+            }
+        }
+
+        if ($fontPath) {
+            imagettftext($img, 20, 0, 90, 110, $purpleColor, $fontPath, "TOKENGLADE  •  TOKEN INSIGHT");
+            imagettftext($img, 56, 0, 90, 220, $white, $fontPath, "$" . $code);
+            $nameStr = ($token->name) ?: "Stellar Asset";
+            imagettftext($img, 22, 0, 90, 270, $slate, $fontPath, $nameStr);
+
+            // Separator
+            $lineColor = imagecolorallocatealpha($img, 51, 65, 85, 80);
+            imageline($img, 90, 310, 1110, 310, $lineColor);
+
+            // Row 1
+            imagettftext($img, 14, 0, 90, 370, $slate, $fontPath, "PRICE (USD)");
+            imagettftext($img, 28, 0, 90, 420, $white, $fontPath, "$" . $usdPrice);
+
+            imagettftext($img, 14, 0, 450, 370, $slate, $fontPath, "PRICE (XLM)");
+            imagettftext($img, 28, 0, 450, 420, $cyanColor, $fontPath, $xlmPrice . " XLM");
+
+            imagettftext($img, 14, 0, 810, 370, $slate, $fontPath, "24H CHANGE");
+            $changeColor = $changeVal >= 0 ? $emeraldColor : $roseColor;
+            imagettftext($img, 28, 0, 810, 420, $changeColor, $fontPath, $change);
+
+            // Row 2
+            imagettftext($img, 14, 0, 90, 490, $slate, $fontPath, "LIQUIDITY");
+            imagettftext($img, 28, 0, 90, 540, $white, $fontPath, "$" . $liquidity);
+
+            imagettftext($img, 14, 0, 450, 490, $slate, $fontPath, "HOLDERS");
+            imagettftext($img, 28, 0, 450, 540, $white, $fontPath, $holders);
+
+            imagettftext($img, 14, 0, 810, 490, $slate, $fontPath, "TRUST SCORE");
+            imagettftext($img, 28, 0, 810, 540, $purpleColor, $fontPath, $rating . " / 10");
+        } else {
+            imagestring($img, 5, 90, 90, "TOKENGLADE - TOKEN INSIGHT", $purpleColor);
+            imagestring($img, 5, 90, 160, "$" . $code . " (" . (($token->name) ?: "Stellar Asset") . ")", $white);
+            imageline($img, 90, 240, 1110, 240, $slate);
+
+            imagestring($img, 4, 90, 280, "PRICE (USD)", $slate);
+            imagestring($img, 5, 90, 310, "$" . $usdPrice, $white);
+
+            imagestring($img, 4, 450, 280, "PRICE (XLM)", $slate);
+            imagestring($img, 5, 450, 310, $xlmPrice . " XLM", $cyanColor);
+
+            imagestring($img, 4, 810, 280, "24H CHANGE", $slate);
+            $changeColor = $changeVal >= 0 ? $emeraldColor : $roseColor;
+            imagestring($img, 5, 810, 310, $change, $changeColor);
+
+            imagestring($img, 4, 90, 420, "LIQUIDITY", $slate);
+            imagestring($img, 5, 90, 450, "$" . $liquidity, $white);
+
+            imagestring($img, 4, 450, 420, "HOLDERS", $slate);
+            imagestring($img, 5, 450, 450, $holders, $white);
+
+            imagestring($img, 4, 810, 420, "TRUST SCORE", $slate);
+            imagestring($img, 5, 810, 450, $rating . " / 10", $purpleColor);
+        }
+
+        header('Content-Type: image/png');
+        header('Cache-Control: public, max-age=600');
+        imagepng($img);
+        imagedestroy($img);
+        exit;
+    }
 }
