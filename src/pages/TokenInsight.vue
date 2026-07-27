@@ -561,14 +561,12 @@
               </div>
 
               <div class="ohlc font-mono select-all">
-                <span>O<b>{{ formatCandleValue(activeCandle.open) }}</b></span>
-                <span>H<b class="up">{{ formatCandleValue(activeCandle.high) }}</b></span>
-                <span>L<b class="down">{{ formatCandleValue(activeCandle.low) }}</b></span>
-                <span>C<b>{{ formatCandleValue(activeCandle.close) }}</b></span>
-                <span>Chg<b :class="activeCandle.change >= 0 ? 'up' : 'down'">{{ activeCandle.change >= 0 ? '+' : ''
-                    }}{{
-                      activeCandle.change?.toFixed(2) }}%</b></span>
-                <span>Vol<b>{{ formatNumber(activeCandle.volume) }}</b></span>
+                <span>O<b id="ohlc-open">—</b></span>
+                <span>H<b id="ohlc-high" class="up">—</b></span>
+                <span>L<b id="ohlc-low" class="down">—</b></span>
+                <span>C<b id="ohlc-close">—</b></span>
+                <span>Chg<b id="ohlc-change">—</b></span>
+                <span>Vol<b id="ohlc-volume">—</b></span>
               </div>
 
               <!-- Interactive Chart Container -->
@@ -2370,6 +2368,18 @@ async function initChart() {
         fixLeftEdge: false,
         fixRightEdge: false,
       },
+      handleScale: {
+        axisPressedMouseMove: {
+          time: true,
+          price: true,
+        },
+      },
+      handleScroll: {
+        pressedMouseMove: true,
+        horzTouchDrag: true,
+        vertTouchDrag: true,
+        mouseWheel: true,
+      },
     });
 
     chartInstance.subscribeCrosshairMove(param => {
@@ -2535,14 +2545,23 @@ function renderChartData() {
 function updateActiveCandle(candle) {
   if (!candle) return;
   const change = candle.open > 0 ? ((candle.close - candle.open) / candle.open) * 100 : 0;
-  activeCandle.value = {
-    open: candle.open,
-    high: candle.high,
-    low: candle.low,
-    close: candle.close,
-    change: change,
-    volume: candle.volume
-  };
+  
+  const elOpen = document.getElementById('ohlc-open');
+  const elHigh = document.getElementById('ohlc-high');
+  const elLow = document.getElementById('ohlc-low');
+  const elClose = document.getElementById('ohlc-close');
+  const elChange = document.getElementById('ohlc-change');
+  const elVolume = document.getElementById('ohlc-volume');
+
+  if (elOpen) elOpen.textContent = formatCandleValue(candle.open);
+  if (elHigh) elHigh.textContent = formatCandleValue(candle.high);
+  if (elLow) elLow.textContent = formatCandleValue(candle.low);
+  if (elClose) elClose.textContent = formatCandleValue(candle.close);
+  if (elVolume) elVolume.textContent = formatNumber(candle.volume);
+  if (elChange) {
+    elChange.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+    elChange.className = change >= 0 ? 'up' : 'down';
+  }
 }
 
 function formatCandleValue(val) {
@@ -2571,14 +2590,6 @@ watch(selectedChartType, () => {
   renderChartData();
 });
 
-watch(chartContainer, (el) => {
-  if (el) {
-    nextTick(() => {
-      initChart();
-      fetchChartData();
-    });
-  }
-}, { immediate: true });
 </script>
 
 <style scoped>

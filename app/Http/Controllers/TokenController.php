@@ -1935,17 +1935,24 @@ EOT;
 
         $now = time();
         $needsUpdate = false;
+        $asyncUpdate = false;
 
         if (!$latest) {
             $needsUpdate = true;
         } else {
-            $age = $now - $latest->timestamp;
-            if ($timeframe === '4h' && $age > 14400) {
-                $needsUpdate = true;
-            } elseif ($timeframe === '1d' && $age > 86400) {
-                $needsUpdate = true;
-            } elseif ($timeframe === '1w' && $age > 604800) {
-                $needsUpdate = true;
+            // Check if DB cache has expired (more than 5 minutes since last save)
+            $ageSinceLastFetch = $now - $latest->updated_at->timestamp;
+            if ($ageSinceLastFetch > 300) {
+                $asyncUpdate = true;
+            } else {
+                $age = $now - $latest->timestamp;
+                if ($timeframe === '4h' && $age > 14400) {
+                    $asyncUpdate = true;
+                } elseif ($timeframe === '1d' && $age > 86400) {
+                    $asyncUpdate = true;
+                } elseif ($timeframe === '1w' && $age > 604800) {
+                    $asyncUpdate = true;
+                }
             }
         }
 
@@ -1955,6 +1962,15 @@ EOT;
             } catch (\Throwable $e) {
                 \Log::error("Failed to update OHLC data: " . $e->getMessage());
             }
+        } elseif ($asyncUpdate) {
+            // Update in background after the response is sent to client
+            app()->terminating(function () use ($service, $code, $issuer, $timeframe) {
+                try {
+                    $service->updateOhlcData($code, $issuer, $timeframe);
+                } catch (\Throwable $e) {
+                    \Log::error("Failed to update OHLC data in background: " . $e->getMessage());
+                }
+            });
         }
 
         $data = \App\Models\StellarOhlcData::where([
