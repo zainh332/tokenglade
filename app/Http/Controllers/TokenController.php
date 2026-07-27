@@ -2216,13 +2216,14 @@ EOT;
     {
         $issuer = strtoupper($issuer);
         $token = StellarToken::where('issuer_public_key', $issuer)->first();
-        if (!$token) {
-            return view('welcome');
-        }
 
-        $assets = Cache::remember("issuer_assets_{$issuer}", 3600, function () use ($service, $issuer) {
-            return $service->getAssetsByIssuer($issuer);
-        });
+        try {
+            $assets = Cache::remember("issuer_assets_{$issuer}", 3600, function () use ($service, $issuer) {
+                return $service->getAssetsByIssuer($issuer);
+            });
+        } catch (\Exception $e) {
+            $assets = [];
+        }
 
         if (empty($assets)) {
             return view('welcome');
@@ -2230,9 +2231,13 @@ EOT;
 
         $code = $assets[0]['asset_code'];
 
-        $insight = Cache::remember("token_insight_v2_{$issuer}_{$code}", 15, function () use ($service, $issuer, $code, $assets) {
-            return $service->getTokenInsight($issuer, $code, $assets[0]);
-        });
+        try {
+            $insight = Cache::remember("token_insight_v2_{$issuer}_{$code}", 15, function () use ($service, $issuer, $code, $assets) {
+                return $service->getTokenInsight($issuer, $code, $assets[0]);
+            });
+        } catch (\Exception $e) {
+            $insight = [];
+        }
 
         $usdPrice = number_format($insight['usd_price'] ?? 0, 4);
         $xlmPrice = number_format($insight['xlm_price'] ?? 0, 4);
@@ -2242,7 +2247,7 @@ EOT;
         $market = StellarMarketToken::where('asset_code', $code)
             ->where('asset_issuer', $issuer)
             ->first();
-        $liquidityVal = $market ? ($market->liquidity_tvl ?? 0) : 0;
+        $liquidityVal = $market ? ($market->liquidity_tvl ?? 0) : ($insight['liquidity_tvl'] ?? 0);
         $liquidity = number_format($liquidityVal, 2);
         
         $holders = number_format($insight['holders'] ?? 0, 0);
@@ -2265,13 +2270,14 @@ EOT;
     {
         $issuer = strtoupper($issuer);
         $token = StellarToken::where('issuer_public_key', $issuer)->first();
-        if (!$token) {
-            abort(404);
-        }
 
-        $assets = Cache::remember("issuer_assets_{$issuer}", 3600, function () use ($service, $issuer) {
-            return $service->getAssetsByIssuer($issuer);
-        });
+        try {
+            $assets = Cache::remember("issuer_assets_{$issuer}", 3600, function () use ($service, $issuer) {
+                return $service->getAssetsByIssuer($issuer);
+            });
+        } catch (\Exception $e) {
+            $assets = [];
+        }
 
         if (empty($assets)) {
             abort(404);
@@ -2279,9 +2285,13 @@ EOT;
 
         $code = $assets[0]['asset_code'];
 
-        $insight = Cache::remember("token_insight_v2_{$issuer}_{$code}", 15, function () use ($service, $issuer, $code, $assets) {
-            return $service->getTokenInsight($issuer, $code, $assets[0]);
-        });
+        try {
+            $insight = Cache::remember("token_insight_v2_{$issuer}_{$code}", 15, function () use ($service, $issuer, $code, $assets) {
+                return $service->getTokenInsight($issuer, $code, $assets[0]);
+            });
+        } catch (\Exception $e) {
+            $insight = [];
+        }
 
         $usdPrice = number_format($insight['usd_price'] ?? 0, 4);
         $xlmPrice = number_format($insight['xlm_price'] ?? 0, 4);
@@ -2291,7 +2301,7 @@ EOT;
         $market = StellarMarketToken::where('asset_code', $code)
             ->where('asset_issuer', $issuer)
             ->first();
-        $liquidityVal = $market ? ($market->liquidity_tvl ?? 0) : 0;
+        $liquidityVal = $market ? ($market->liquidity_tvl ?? 0) : ($insight['liquidity_tvl'] ?? 0);
         $liquidity = number_format($liquidityVal, 2);
 
         $holders = number_format($insight['holders'] ?? 0, 0);
@@ -2356,7 +2366,7 @@ EOT;
         if ($fontPath) {
             imagettftext($img, 20, 0, 90, 110, $purpleColor, $fontPath, "TOKENGLADE  •  TOKEN INSIGHT");
             imagettftext($img, 56, 0, 90, 220, $white, $fontPath, "$" . $code);
-            $nameStr = ($token->name) ?: "Stellar Asset";
+            $nameStr = ($token && $token->name) ? $token->name : ($insight['name'] ?? "Stellar Asset");
             imagettftext($img, 22, 0, 90, 270, $slate, $fontPath, $nameStr);
 
             // Separator
@@ -2385,7 +2395,8 @@ EOT;
             imagettftext($img, 28, 0, 810, 540, $purpleColor, $fontPath, $rating . " / 10");
         } else {
             imagestring($img, 5, 90, 90, "TOKENGLADE - TOKEN INSIGHT", $purpleColor);
-            imagestring($img, 5, 90, 160, "$" . $code . " (" . (($token->name) ?: "Stellar Asset") . ")", $white);
+            $fallbackLabel = ($token && $token->name) ? $token->name : ($insight['name'] ?? "Stellar Asset");
+            imagestring($img, 5, 90, 160, "$" . $code . " (" . $fallbackLabel . ")", $white);
             imageline($img, 90, 240, 1110, 240, $slate);
 
             imagestring($img, 4, 90, 280, "PRICE (USD)", $slate);
