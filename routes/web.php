@@ -21,8 +21,8 @@ Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.
 Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
 // Short link and OG Card routes
-Route::get('/t/{issuer}', [TokenController::class, 'renderCrawlerMeta']);
 Route::get('/t/{issuer}/card.png', [TokenController::class, 'generateCard']);
+Route::get('/t/{issuer}', [TokenController::class, 'renderCrawlerMeta']);
 
 // Protected Admin SPA Routes
 Route::middleware('admin')->get('/admin/{any?}', function () {
