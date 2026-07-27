@@ -61,9 +61,12 @@ class AdminController extends Controller
      */
     public function tokens(Request $request)
     {
-        $tokens = StellarToken::orderBy('created_at', 'desc')->paginate(15);
+        $tokens = StellarToken::with('creationFeeTransaction')
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
 
         $items = collect($tokens->items())->map(function ($token) {
+            $feeTx = $token->creationFeeTransaction;
             return [
                 'id' => $token->id,
                 'code' => $token->asset_code,
@@ -71,6 +74,8 @@ class AdminController extends Controller
                 'supply' => (float) $token->total_supply,
                 'creator' => $token->user_wallet_address,
                 'created_at' => $token->created_at ? $token->created_at->toIso8601String() : null,
+                'fee_tx_hash' => $feeTx ? $feeTx->tx_hash : null,
+                'fee_tx_status' => $feeTx ? (int) $feeTx->status : null,
             ];
         });
 

@@ -105,6 +105,7 @@
               <th @click="sortBy('created_at')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
                 Minted Date <span v-if="sortKey === 'created_at'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
               </th>
+              <th class="py-4 px-6">Creation Fee</th>
               <th class="py-4 px-6 text-right">Actions</th>
             </tr>
           </thead>
@@ -119,6 +120,32 @@
               <td class="py-4 px-6 font-mono text-xs text-gray-400 select-all" :title="token.issuer">{{ shortAddr(token.issuer) }}</td>
               <td class="py-4 px-6 font-mono text-xs text-gray-400 select-all" :title="token.creator">{{ shortAddr(token.creator) }}</td>
               <td class="py-4 px-6">{{ formatDate(token.created_at) }}</td>
+              <td class="py-4 px-6">
+                <div class="flex items-center gap-2">
+                  <span 
+                    v-if="token.fee_tx_status === 1" 
+                    class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  >
+                    Paid
+                  </span>
+                  <span 
+                    v-else 
+                    class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                  >
+                    Unpaid
+                  </span>
+                  
+                  <a 
+                    v-if="token.fee_tx_hash" 
+                    :href="'https://stellar.expert/explorer/' + (stellarNetwork === 'public' ? 'public' : 'testnet') + '/tx/' + token.fee_tx_hash" 
+                    target="_blank" 
+                    class="text-xs text-cyan-400 hover:text-cyan-300 underline font-mono flex items-center gap-1"
+                    title="View transaction on Stellar.Expert"
+                  >
+                    {{ token.fee_tx_hash.slice(0, 6) }}...{{ token.fee_tx_hash.slice(-6) }} ↗
+                  </a>
+                </div>
+              </td>
               <td class="py-4 px-6 text-right">
                 <button 
                   @click="confirmDeleteToken(token)" 
@@ -129,12 +156,12 @@
               </td>
             </tr>
             <tr v-if="!items.length && !loading">
-              <td colspan="6" class="py-12 text-center text-gray-500">
+              <td colspan="7" class="py-12 text-center text-gray-500">
                 No no-code minted assets found in database.
               </td>
             </tr>
             <tr v-if="loading">
-              <td colspan="6" class="py-12 text-center">
+              <td colspan="7" class="py-12 text-center">
                 <span class="w-6 h-6 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin inline-block"></span>
               </td>
             </tr>
@@ -177,6 +204,7 @@ const tokenCreationFee = ref(20);
 const issuerWalletAmount = ref(1.2);
 const feePercentageForLpPercent = ref(70);
 const savingSettings = ref(false);
+const stellarNetwork = ref('public');
 
 async function loadSettings() {
   try {
@@ -316,8 +344,18 @@ async function confirmDeleteToken(token) {
   }
 }
 
+async function loadNetwork() {
+  try {
+    const { data } = await axios.get('/api/env');
+    stellarNetwork.value = data?.stellar_env || 'public';
+  } catch (err) {
+    console.error('Failed to load network environment:', err);
+  }
+}
+
 onMounted(() => {
   loadData();
   loadSettings();
+  loadNetwork();
 });
 </script>

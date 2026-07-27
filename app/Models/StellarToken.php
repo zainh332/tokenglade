@@ -27,4 +27,11 @@ class StellarToken extends Model
             ->where('transaction_type_id', 4)
             ->latest();
     }
+
+    public function creationFeeTransaction()
+    {
+        return $this->hasOne(StellarTransactions::class)
+            ->where('transaction_type_id', 1)
+            ->latest();
+    }
 }

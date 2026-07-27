@@ -8,7 +8,7 @@
     "src": "resources/css/app.css"
   },
   "src/admin-main.js": {
-    "file": "assets/admin-main-f2e3f393.js",
+    "file": "assets/admin-main-e407200d.js",
     "imports": [
       "_hearing-75214282.js"
     ],
