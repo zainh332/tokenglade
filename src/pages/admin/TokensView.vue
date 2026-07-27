@@ -49,7 +49,7 @@
 
         <!-- 3. LP Allocation Percentage -->
         <div class="space-y-2">
-          <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide">LP Reward Allocation</label>
+          <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide">TKG/XLM LP Reward Allocation</label>
           <div class="relative">
             <input 
               v-model="feePercentageForLpPercent" 
