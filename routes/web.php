@@ -26,5 +26,9 @@ Route::middleware('admin')->get('/admin/{any?}', function () {
 
 // Fallback to core SPA welcome layout
 Route::get('/{any}', function () {
+    $userAgent = request()->header('User-Agent', '');
+    if (preg_match('/Twitterbot|facebookexternalhit|LinkedInBot/i', $userAgent)) {
+        return response('<html><head><title>TokenGlade</title></head><body></body></html>');
+    }
     return view('welcome');
 })->where('any', '.*');
