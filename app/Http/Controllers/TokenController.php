@@ -75,9 +75,21 @@ class TokenController extends Controller
         }
 
         $this->assetCode = env('ASSET_CODE');
-        $this->token_creation_fee = (float) env('TOKEN_CREATION_FEE');
-        $this->issuer_wallet_amount = 1.2; //XLM
-        $this->feePercentageForLP = 0.7;
+        
+        $this->token_creation_fee = (float) \Illuminate\Support\Facades\Cache::remember('setting_token_creation_fee', 60, function () {
+            $setting = \App\Models\Setting::where('key', 'token_creation_fee')->first();
+            return $setting ? (float) $setting->value : (float) env('TOKEN_CREATION_FEE', 50);
+        });
+
+        $this->issuer_wallet_amount = (float) \Illuminate\Support\Facades\Cache::remember('setting_issuer_wallet_amount', 60, function () {
+            $setting = \App\Models\Setting::where('key', 'issuer_wallet_amount')->first();
+            return $setting ? (float) $setting->value : 1.2;
+        });
+
+        $this->feePercentageForLP = (float) \Illuminate\Support\Facades\Cache::remember('setting_fee_percentage_for_lp', 60, function () {
+            $setting = \App\Models\Setting::where('key', 'fee_percentage_for_lp')->first();
+            return $setting ? (float) $setting->value : 0.7;
+        });
     }
 
     public function generate_token(Request $request)

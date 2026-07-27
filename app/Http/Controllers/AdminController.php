@@ -186,11 +186,17 @@ class AdminController extends Controller
     public function getSettings(Request $request)
     {
         $lpWeeklyReward = \App\Models\Setting::where('key', 'lp_weekly_reward_amount')->first();
+        $tokenCreationFee = \App\Models\Setting::where('key', 'token_creation_fee')->first();
+        $issuerWalletAmount = \App\Models\Setting::where('key', 'issuer_wallet_amount')->first();
+        $feePercentageForLp = \App\Models\Setting::where('key', 'fee_percentage_for_lp')->first();
 
         return response()->json([
             'status' => 'success',
             'settings' => [
                 'lp_weekly_reward_amount' => $lpWeeklyReward ? (float) $lpWeeklyReward->value : 16000.0,
+                'token_creation_fee' => $tokenCreationFee ? (float) $tokenCreationFee->value : (float) env('TOKEN_CREATION_FEE', 20.0),
+                'issuer_wallet_amount' => $issuerWalletAmount ? (float) $issuerWalletAmount->value : 1.2,
+                'fee_percentage_for_lp' => $feePercentageForLp ? (float) $feePercentageForLp->value : 0.7,
             ]
         ]);
     }
@@ -201,13 +207,42 @@ class AdminController extends Controller
     public function updateSettings(Request $request)
     {
         $request->validate([
-            'lp_weekly_reward_amount' => 'required|numeric|min:0',
+            'lp_weekly_reward_amount' => 'nullable|numeric|min:0',
+            'token_creation_fee' => 'nullable|numeric|min:0',
+            'issuer_wallet_amount' => 'nullable|numeric|min:0',
+            'fee_percentage_for_lp' => 'nullable|numeric|min:0|max:1',
         ]);
 
-        \App\Models\Setting::updateOrCreate(
-            ['key' => 'lp_weekly_reward_amount'],
-            ['value' => $request->lp_weekly_reward_amount]
-        );
+        if ($request->has('lp_weekly_reward_amount')) {
+            \App\Models\Setting::updateOrCreate(
+                ['key' => 'lp_weekly_reward_amount'],
+                ['value' => $request->lp_weekly_reward_amount]
+            );
+        }
+
+        if ($request->has('token_creation_fee')) {
+            \App\Models\Setting::updateOrCreate(
+                ['key' => 'token_creation_fee'],
+                ['value' => $request->token_creation_fee]
+            );
+            \Illuminate\Support\Facades\Cache::forget('setting_token_creation_fee');
+        }
+
+        if ($request->has('issuer_wallet_amount')) {
+            \App\Models\Setting::updateOrCreate(
+                ['key' => 'issuer_wallet_amount'],
+                ['value' => $request->issuer_wallet_amount]
+            );
+            \Illuminate\Support\Facades\Cache::forget('setting_issuer_wallet_amount');
+        }
+
+        if ($request->has('fee_percentage_for_lp')) {
+            \App\Models\Setting::updateOrCreate(
+                ['key' => 'fee_percentage_for_lp'],
+                ['value' => $request->fee_percentage_for_lp]
+            );
+            \Illuminate\Support\Facades\Cache::forget('setting_fee_percentage_for_lp');
+        }
 
         return response()->json([
             'status' => 'success',

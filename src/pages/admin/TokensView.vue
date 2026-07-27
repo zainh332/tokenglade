@@ -8,6 +8,75 @@
       </div>
     </div>
 
+    <!-- Token Minting & Creation Fees Configuration Card -->
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl text-left">
+      <div class="mb-4 border-b border-gray-800 pb-3">
+        <h4 class="text-sm font-bold text-gray-100">Token Minting Fee Configuration</h4>
+        <p class="text-xs text-gray-500 mt-1">Configure the XLM fees and LP percentage allocation for minting new assets.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+        <!-- 1. Token Creation Fee -->
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide">Token Creation Fee</label>
+          <div class="relative">
+            <input 
+              v-model="tokenCreationFee" 
+              type="number" 
+              min="0" 
+              step="any"
+              placeholder="e.g. 20"
+              class="bg-gray-950 border border-gray-800 rounded-xl px-4 py-2.5 text-sm font-mono text-cyan-400 focus:outline-none focus:border-purple-500 transition w-full"
+            />
+            <span class="absolute right-4 top-2.5 text-xs text-gray-500 font-bold">XLM</span>
+          </div>
+        </div>
+
+        <!-- 2. Issuer Wallet Funding Amount -->
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide">Issuer Wallet Reserve</label>
+          <div class="relative">
+            <input 
+              v-model="issuerWalletAmount" 
+              type="number" 
+              min="0" 
+              step="any"
+              placeholder="e.g. 1.2"
+              class="bg-gray-950 border border-gray-800 rounded-xl px-4 py-2.5 text-sm font-mono text-yellow-400 focus:outline-none focus:border-purple-500 transition w-full"
+            />
+            <span class="absolute right-4 top-2.5 text-xs text-gray-500 font-bold">XLM</span>
+          </div>
+        </div>
+
+        <!-- 3. LP Allocation Percentage -->
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide">LP Reward Allocation</label>
+          <div class="relative">
+            <input 
+              v-model="feePercentageForLpPercent" 
+              type="number" 
+              min="0" 
+              max="100" 
+              step="any"
+              placeholder="e.g. 70"
+              class="bg-gray-950 border border-gray-800 rounded-xl px-4 py-2.5 text-sm font-mono text-purple-400 focus:outline-none focus:border-purple-500 transition w-full"
+            />
+            <span class="absolute right-4 top-2.5 text-xs text-gray-500 font-bold">%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 flex justify-end">
+        <button 
+          @click="saveSettings" 
+          :disabled="savingSettings"
+          class="text-xs px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-purple-500 hover:opacity-95 text-white font-bold rounded-xl transition flex items-center gap-2"
+        >
+          <span v-if="savingSettings" class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block"></span>
+          {{ savingSettings ? 'Saving...' : 'Save Configuration' }}
+        </button>
+      </div>
+    </div>
+
     <!-- Data Table Card -->
     <div class="bg-gray-900 border border-gray-800 rounded-3xl overflow-hidden shadow-xl">
       <div class="p-6 border-b border-gray-800 flex items-center justify-between">
@@ -89,10 +158,57 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 const items = ref([]);
 const sortKey = ref('');
 const sortOrder = ref('asc');
+
+const tokenCreationFee = ref(20);
+const issuerWalletAmount = ref(1.2);
+const feePercentageForLpPercent = ref(70);
+const savingSettings = ref(false);
+
+async function loadSettings() {
+  try {
+    const { data } = await axios.get('/api/admin/settings');
+    if (data.status === 'success') {
+      tokenCreationFee.value = data.settings.token_creation_fee;
+      issuerWalletAmount.value = data.settings.issuer_wallet_amount;
+      feePercentageForLpPercent.value = Math.round(data.settings.fee_percentage_for_lp * 100);
+    }
+  } catch (err) {
+    console.error('Failed to load minting settings:', err);
+  }
+}
+
+async function saveSettings() {
+  savingSettings.value = true;
+  try {
+    const { data } = await axios.post('/api/admin/settings', {
+      token_creation_fee: tokenCreationFee.value,
+      issuer_wallet_amount: issuerWalletAmount.value,
+      fee_percentage_for_lp: feePercentageForLpPercent.value * 0.01
+    });
+
+    if (data.status === 'success') {
+      Swal.fire({
+        icon: 'success',
+        title: 'Saved',
+        text: data.message || 'Token creation fee configuration saved.'
+      });
+    }
+  } catch (err) {
+    console.error('Failed to save settings:', err);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: err.response?.data?.message || 'Failed to save settings.'
+    });
+  } finally {
+    savingSettings.value = false;
+  }
+}
 
 function sortBy(key) {
   if (sortKey.value === key) {
@@ -157,5 +273,6 @@ function shortAddr(addr) {
 
 onMounted(() => {
   loadData();
+  loadSettings();
 });
 </script>
