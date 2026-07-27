@@ -103,6 +103,14 @@ const routes = [
             description: ""
         },
     },
+    {
+        path: "/t/:issuer",
+        component: TokenInsight,
+        meta: {
+            title: "Token Insights",
+            description: ""
+        },
+    },
 ];
 
 

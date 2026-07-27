@@ -505,6 +505,11 @@
                 <span v-if="establishingTrustline" class="animate-pulse">Establishing...</span>
                 <span v-else>Establish Trustline</span>
               </button>
+              <button @click="shareModalOpen = true"
+                class="btn dark select-none inline-flex items-center gap-1.5 hover:border-purple-500/50 transition text-purple-400">
+                <Share2 class="w-4 h-4 text-purple-400" />
+                <span>Share Token</span>
+              </button>
             </div>
             <div class="flex items-center gap-2.5 w-full sm:w-auto mt-2 sm:mt-0 justify-center sm:justify-start">
               <a v-if="token.website" :href="token.website" target="_blank" title="Website" aria-label="Website"
@@ -1333,6 +1338,15 @@
       :payment-assets="verificationPaymentAssets" :selected-asset="selectedVerificationAsset"
       @select-asset="selectedVerificationAsset = $event" @close="verificationModal = false"
       @connect-wallet="ConnectWalletModals = true" @pay="contactVerification" />
+    <ShareTokenModal 
+      v-model="shareModalOpen" 
+      :token="token" 
+      :usd-price="token.usd_price || 0" 
+      :xlm-price="token.xlm_price || 0" 
+      :price-change="token.price_change_24h || 0"
+      :liquidity="token.liquidity_overview?.total_tvl || token.liquidity_tvl || 0"
+      :holders="token.holders || 0"
+    />
     <Footer />
   </div>
 </template>
@@ -1346,7 +1360,8 @@ import verified from "@/assets/verify.png";
 import { getCookie, signXdrWithWallet, updateLoader } from "../utils/utils.js";
 import Swal from 'sweetalert2';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
-import VerificationModal from '@/components/VerificationModal.vue'
+import VerificationModal from '@/components/VerificationModal.vue';
+import ShareTokenModal from '@/components/ShareTokenModal.vue';
 import Header from "@/components/Header.vue"
 import Footer from "@/components/Footer.vue"
 
@@ -1375,7 +1390,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Lock,
-  Info
+  Info,
+  Share2
 } from "lucide-vue-next";
 
 const loading = ref(true)
@@ -1517,6 +1533,7 @@ const isWalletConnected = ref(false)
 const walletKey = ref('')
 const ConnectWalletModals = ref(false)
 const verificationModal = ref(false)
+const shareModalOpen = ref(false)
 const verificationLoading = ref(false)
 const selectedTimeframe = ref('1D')
 const selectedChartType = ref('candlestick')
@@ -2314,10 +2331,11 @@ onUnmounted(() => {
 })
 
 watch(
-  () => route.query,
-  (query) => {
-    if (query.issuer) {
-      issuerInput.value = query.issuer
+  [() => route.query, () => route.params],
+  ([query, params]) => {
+    const issuer = query.issuer || params.issuer;
+    if (issuer) {
+      issuerInput.value = issuer
       fetchToken()
       startLiveTradesPolling()
     } else {
