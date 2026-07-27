@@ -199,7 +199,7 @@
                   <!-- Notice -->
                   <div class="col-span-1 md:col-span-2">
                     <div class="rounded-xl border border-amber-500/20 bg-amber-500/5 px-3.5 py-2.5 text-xs text-amber-400 font-mono leading-relaxed">
-                      ⚠ Please ensure your wallet has at least <span class="font-bold">50 XLM</span> before
+                      ⚠ Please ensure your wallet has at least <span class="font-bold">{{ tokenCreationFee }} XLM</span> before
                       proceeding.
                       The created token will be sent to your connected wallet.
                     </div>
@@ -358,10 +358,22 @@ const isWalletConnected = ref(false);
 const walletKey = ref('');
 const ConnectWalletModals = ref(false);
 const logoPreview = ref('');
+const tokenCreationFee = ref(50);
 const props = defineProps({ open: Boolean, distributorWallet: String, network: { type: String, default: 'public' } })
 
 const network = ref('public')
 const isTestnet = 'public'
+
+const loadCreationFee = async () => {
+  try {
+    const { data } = await axios.get('/api/token/creation-fee');
+    if (data.status === 'success') {
+      tokenCreationFee.value = data.token_creation_fee;
+    }
+  } catch (err) {
+    console.error('Failed to load token creation fee:', err);
+  }
+};
 
 const syncWalletState = () => {
   const pk = getCookie('public_key') || localStorage.getItem('public_key') || localStorage.getItem('wallet_key') || '';
@@ -372,6 +384,7 @@ const syncWalletState = () => {
 watch(() => props.open, (isOpen) => {
   if (isOpen) {
     syncWalletState();
+    loadCreationFee();
   }
 });
 
@@ -708,6 +721,7 @@ const handleWalletChanged = (event) => {
 
 onMounted(() => {
   syncWalletState();
+  loadCreationFee();
   window.addEventListener('tokenglade-wallet-changed', handleWalletChanged);
 });
 

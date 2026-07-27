@@ -2187,4 +2187,12 @@ EOT;
             ], 500);
         }
     }
+
+    public function getCreationFee()
+    {
+        return response()->json([
+            'status' => 'success',
+            'token_creation_fee' => $this->token_creation_fee,
+        ]);
+    }
 }

@@ -65,6 +65,7 @@ Route::middleware('admin')->prefix('admin')->group(function () {
 
 Route::prefix('token')->group(function () {
     Route::get('search', 'TokenController@search')->name('token.search');
+    Route::get('creation-fee', 'TokenController@getCreationFee')->name('token.creationFee');
     Route::post('check-verification', 'TokenController@checkVerification')->name('token.checkVerification');
     Route::get('show', 'TokenController@show')->name('token.show');
     Route::get('holders', 'TokenController@holders')->name('token.holders');
