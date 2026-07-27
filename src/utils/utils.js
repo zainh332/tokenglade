@@ -1,5 +1,6 @@
 /* UTILITY SCRIPTS */
 import { getPublicKey, signTransaction } from "@stellar/freighter-api";
+import { signTransaction as lobstrSignTx } from '@lobstrco/signer-extension-api';
 import axios from "axios";
 import Swal from 'sweetalert2';
 // import { MAX_SIZE_EXCEEDED } from "./constant";
@@ -178,11 +179,12 @@ export async function signXdrWithWallet(wallet, xdr, isTestnet) {
     '2': 'rabet',
     '3': 'albedo',
     '4': 'xbull',
+    '5': 'lobstr',
   };
 
   let key = walletMap[rawKey] || rawKey;
 
-  if (!['freighter', 'rabet', 'albedo', 'xbull'].includes(key)) {
+  if (!['freighter', 'rabet', 'albedo', 'xbull', 'lobstr'].includes(key)) {
     const storedType = (localStorage.getItem('wallet_type') || getCookie('wallet_type_id') || '').toString().trim().toLowerCase();
     key = walletMap[storedType] || storedType || 'freighter';
   }
@@ -232,6 +234,16 @@ export async function signXdrWithWallet(wallet, xdr, isTestnet) {
       const out2 = await xbull.signXDR(xdr);
       if (typeof out2 !== "string") throw new Error("xBull returned no signed XDR");
       return out2;
+    }
+
+    case "lobstr": {
+      if (typeof lobstrSignTx === 'function') {
+        return await lobstrSignTx(xdr);
+      }
+      if (typeof window !== "undefined" && window.lobstrSignerExtensionApi?.signTransaction) {
+        return await window.lobstrSignerExtensionApi.signTransaction(xdr);
+      }
+      throw new Error("LOBSTR extension not found or not available.");
     }
 
     default:
@@ -320,10 +332,13 @@ export async function signXdrWithActiveWallet(xdr, isTestnet = false) {
             return out2;
         }
         case "lobstr": {
+            if (typeof lobstrSignTx === 'function') {
+                return await lobstrSignTx(xdr);
+            }
             if (typeof window !== "undefined" && window.lobstrSignerExtensionApi?.signTransaction) {
                 return await window.lobstrSignerExtensionApi.signTransaction(xdr);
             }
-            throw new Error("LOBSTR signer is not available in this browser.");
+            throw new Error("LOBSTR extension not found or not available.");
         }
         default:
             throw new Error("Unsupported wallet for signing");

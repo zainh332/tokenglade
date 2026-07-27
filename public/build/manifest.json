@@ -1,6 +1,6 @@
 {
-  "_hearing-75214282.js": {
-    "file": "assets/hearing-75214282.js"
+  "_hearing-bb8eb8cb.js": {
+    "file": "assets/hearing-bb8eb8cb.js"
   },
   "resources/css/app.css": {
     "file": "assets/app-2a1349e3.css",
@@ -8,9 +8,9 @@
     "src": "resources/css/app.css"
   },
   "src/admin-main.js": {
-    "file": "assets/admin-main-e407200d.js",
+    "file": "assets/admin-main-03272f8d.js",
     "imports": [
-      "_hearing-75214282.js"
+      "_hearing-bb8eb8cb.js"
     ],
     "isEntry": true,
     "src": "src/admin-main.js"
@@ -99,9 +99,9 @@
     "css": [
       "assets/main-31f09305.css"
     ],
-    "file": "assets/main-389473ae.js",
+    "file": "assets/main-3afaf4a9.js",
     "imports": [
-      "_hearing-75214282.js"
+      "_hearing-bb8eb8cb.js"
     ],
     "isEntry": true,
     "src": "src/main.js"
