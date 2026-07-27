@@ -105,6 +105,7 @@
               <th @click="sortBy('created_at')" class="py-4 px-6 cursor-pointer select-none hover:text-white transition">
                 Minted Date <span v-if="sortKey === 'created_at'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
               </th>
+              <th class="py-4 px-6 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-850 text-sm text-gray-300">
@@ -118,14 +119,22 @@
               <td class="py-4 px-6 font-mono text-xs text-gray-400 select-all" :title="token.issuer">{{ shortAddr(token.issuer) }}</td>
               <td class="py-4 px-6 font-mono text-xs text-gray-400 select-all" :title="token.creator">{{ shortAddr(token.creator) }}</td>
               <td class="py-4 px-6">{{ formatDate(token.created_at) }}</td>
+              <td class="py-4 px-6 text-right">
+                <button 
+                  @click="confirmDeleteToken(token)" 
+                  class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 hover:border-rose-500/30 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ml-auto"
+                >
+                  Delete
+                </button>
+              </td>
             </tr>
             <tr v-if="!items.length && !loading">
-              <td colspan="5" class="py-12 text-center text-gray-500">
+              <td colspan="6" class="py-12 text-center text-gray-500">
                 No no-code minted assets found in database.
               </td>
             </tr>
             <tr v-if="loading">
-              <td colspan="5" class="py-12 text-center">
+              <td colspan="6" class="py-12 text-center">
                 <span class="w-6 h-6 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin inline-block"></span>
               </td>
             </tr>
@@ -269,6 +278,42 @@ function formatDate(isoStr) {
 function shortAddr(addr) {
   if (!addr) return '—';
   return addr.length > 12 ? `${addr.slice(0, 8)}...${addr.slice(-8)}` : addr;
+}
+
+async function confirmDeleteToken(token) {
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: `This will permanently delete the token ${token.code} and all associated platform records from the database. This action cannot be undone.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#374151',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      const { data } = await axios.delete(`/api/admin/tokens/${token.id}`);
+      if (data.status === 'success') {
+        Swal.fire({
+          icon: 'success',
+          title: 'Deleted!',
+          text: data.message || 'Token deleted successfully.',
+          timer: 1500,
+          showConfirmButton: false
+        });
+        loadData(currentPage.value);
+      }
+    } catch (err) {
+      console.error('Failed to delete token:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Delete Failed',
+        text: err.response?.data?.message || 'An error occurred while deleting the token.'
+      });
+    }
+  }
 }
 
 onMounted(() => {

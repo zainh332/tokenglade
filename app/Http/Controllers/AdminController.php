@@ -358,4 +358,36 @@ class AdminController extends Controller
             'message' => 'Verification fee deleted successfully.'
         ]);
     }
+
+    /**
+     * Delete a minted token and its associated platform records.
+     */
+    public function deleteToken($id)
+    {
+        $token = \App\Models\StellarToken::findOrFail($id);
+
+        // 1. Delete associated transactions
+        \App\Models\StellarTransactions::where('stellar_token_id', $token->id)->delete();
+
+        // 2. Delete associated token details
+        \App\Models\Token::where('stellar_token_id', $token->id)->delete();
+
+        // 3. Delete from StellarMarketToken table if it exists
+        \App\Models\StellarMarketToken::where('asset_code', $token->asset_code)
+            ->where('asset_issuer', $token->issuer_public_key)
+            ->delete();
+
+        // 4. Delete from StellarOhlcData table if it exists
+        \App\Models\StellarOhlcData::where('asset_code', $token->asset_code)
+            ->where('asset_issuer', $token->issuer_public_key)
+            ->delete();
+
+        // 5. Delete the token itself
+        $token->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Token and all associated records deleted successfully.'
+        ]);
+    }
 }
