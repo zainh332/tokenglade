@@ -1353,7 +1353,7 @@
       :token="token" 
       :usd-price="token.usd_price || 0" 
       :xlm-price="token.xlm_price || 0" 
-      :price-change="token.price_change_24h || 0"
+      :price-change="historicalStats?.price_change_pct || 0"
       :liquidity="token.liquidity_overview?.total_tvl || token.liquidity_tvl || 0"
       :holders="token.holders || 0"
     />

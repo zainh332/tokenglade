@@ -2295,7 +2295,31 @@ EOT;
 
         $usdPrice = number_format($insight['usd_price'] ?? 0, 4);
         $xlmPrice = number_format($insight['xlm_price'] ?? 0, 4);
-        $changeVal = $insight['price_change_24h'] ?? 0.0;
+
+        // Calculate 24h price change dynamically from snapshots
+        $latestSnapshot = \App\Models\TokenStatSnapshot::where('asset_code', $code)
+            ->where('asset_issuer', $issuer)
+            ->latest()
+            ->first();
+
+        $pastSnapshot = \App\Models\TokenStatSnapshot::where('asset_code', $code)
+            ->where('asset_issuer', $issuer)
+            ->where('created_at', '<=', now()->subHours(24))
+            ->latest()
+            ->first();
+
+        if (!$pastSnapshot) {
+            $pastSnapshot = \App\Models\TokenStatSnapshot::where('asset_code', $code)
+                ->where('asset_issuer', $issuer)
+                ->where('id', '!=', $latestSnapshot->id ?? 0)
+                ->oldest()
+                ->first();
+        }
+
+        $changeVal = ($latestSnapshot && $pastSnapshot && $pastSnapshot->price_usd > 0)
+            ? round((($latestSnapshot->price_usd - $pastSnapshot->price_usd) / $pastSnapshot->price_usd) * 100, 2)
+            : 0.0;
+
         $change = ($changeVal >= 0 ? '+' : '') . number_format($changeVal, 2) . '%';
         
         $market = StellarMarketToken::where('asset_code', $code)
@@ -2440,16 +2464,36 @@ EOT;
             $this->drawFilledRoundedRectangle($img, 225, 165, 297, 237, 12, $logoBoxBg);
             $this->drawRoundedRectangleBorder($img, 225, 165, 297, 237, 12, 1, $logoBoxBorder);
 
-            // Load logo image dynamically
+            // Load logo image dynamically (use local path if it is stored in public storage to avoid loopback issues)
             $logoImg = null;
             if (!empty($insight['image'])) {
                 try {
-                    $logoData = Http::timeout(3)->get($insight['image'])->body();
+                    $logoUrl = $insight['image'];
+                    $isLocal = false;
+                    $localPath = null;
+                    
+                    $parsedUrl = parse_url($logoUrl);
+                    $path = $parsedUrl['path'] ?? '';
+                    
+                    if (str_contains($path, '/storage/')) {
+                        $subPath = substr($path, strpos($path, '/storage/') + 9);
+                        $localPath = public_path('storage/' . $subPath);
+                        if (file_exists($localPath)) {
+                            $isLocal = true;
+                        }
+                    }
+
+                    if ($isLocal && $localPath) {
+                        $logoData = file_get_contents($localPath);
+                    } else {
+                        $logoData = Http::timeout(3)->get($logoUrl)->body();
+                    }
+
                     if ($logoData) {
                         $logoImg = imagecreatefromstring($logoData);
                     }
                 } catch (\Throwable $e) {
-                    // Ignore and fallback to letter placeholder
+                    Log::error("Failed to load logo on share card: " . $e->getMessage());
                 }
             }
 
