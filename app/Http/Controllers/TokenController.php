@@ -2307,38 +2307,26 @@ EOT;
         $holders = number_format($insight['holders'] ?? 0, 0);
         $rating = number_format($insight['rating']['average'] ?? 7.5, 1);
 
+        $isDbVerified = false;
+        if ($token) {
+            $isDbVerified = Token::where('stellar_token_id', $token->id)
+                ->where('token_verify', 1)
+                ->exists();
+        }
+
+        $verificationProject = VerifiedProject::where('identifier', $issuer)
+            ->where('blockchain_id', 1)
+            ->latest()
+            ->first();
+
+        $isVerified = $isDbVerified || ($verificationProject && $verificationProject->status == 1);
+
         // 1. Create canvas
         $img = imagecreatetruecolor(1200, 630);
         imagealphablending($img, true);
         imagesavealpha($img, true);
 
         // 2. Define colors
-        $darkBg = imagecolorallocate($img, 7, 10, 19); // #070A13 matching background
-        imagefill($img, 0, 0, $darkBg);
-
-        // Draw deep space background details (diagonal background glow/orbs)
-        // Draw purple glow
-        for ($r = 300; $r > 0; $r -= 5) {
-            $alpha = (int)(127 - (127 * (1 - ($r / 300) * ($r / 300))));
-            $alpha = max(0, min(127, $alpha));
-            $color = imagecolorallocatealpha($img, 147, 51, 234, (int)($alpha * 0.85));
-            imagefilledellipse($img, 100, 100, $r * 2, $r * 2, $color);
-        }
-
-        // Draw cyan glow bottom right
-        for ($r = 400; $r > 0; $r -= 5) {
-            $alpha = (int)(127 - (127 * (1 - ($r / 400) * ($r / 400))));
-            $alpha = max(0, min(127, $alpha));
-            $color = imagecolorallocatealpha($img, 6, 182, 212, (int)($alpha * 0.8));
-            imagefilledellipse($img, 1100, 530, $r * 2, $r * 2, $color);
-        }
-
-        // 3. Draw outer premium card frame border
-        $borderColor = imagecolorallocatealpha($img, 51, 65, 85, 30);
-        for ($i = 0; $i < 3; $i++) {
-            imagerectangle($img, 40 + $i, 40 + $i, 1160 - $i, 590 - $i, $borderColor);
-        }
-
         $white = imagecolorallocate($img, 255, 255, 255);
         $slate = imagecolorallocate($img, 148, 163, 184); // #94a3b8
         $cyanColor = imagecolorallocate($img, 34, 211, 238); // #22d3ee
@@ -2346,9 +2334,71 @@ EOT;
         $emeraldColor = imagecolorallocate($img, 52, 211, 153); // #34d399
         $roseColor = imagecolorallocate($img, 248, 113, 113); // #f87171
 
-        // Let's check for font path
+        // Background Gradient
+        for ($y = 0; $y < 630; $y++) {
+            $ratio = $y / 630;
+            // Interpolate from deep navy (#0B0F19 -> 11, 15, 25) to darker navy (#05070A -> 5, 7, 10)
+            $r = 11 + (5 - 11) * $ratio;
+            $g = 15 + (7 - 15) * $ratio;
+            $b = 25 + (10 - 25) * $ratio;
+            $col = imagecolorallocate($img, (int)$r, (int)$g, (int)$b);
+            imageline($img, 0, $y, 1199, $y, $col);
+        }
+
+        // Purple glowing orb (top-left)
+        for ($r = 300; $r > 0; $r -= 6) {
+            $alpha = (int)(127 - (127 * (1 - ($r / 300) * ($r / 300))));
+            $alpha = max(0, min(127, $alpha));
+            $color = imagecolorallocatealpha($img, 147, 51, 234, (int)($alpha * 0.9));
+            imagefilledellipse($img, 150, 100, $r * 2, $r * 2, $color);
+        }
+
+        // Cyan glowing orb (bottom-right)
+        for ($r = 400; $r > 0; $r -= 6) {
+            $alpha = (int)(127 - (127 * (1 - ($r / 400) * ($r / 400))));
+            $alpha = max(0, min(127, $alpha));
+            $color = imagecolorallocatealpha($img, 6, 182, 212, (int)($alpha * 0.95));
+            imagefilledellipse($img, 1100, 530, $r * 2, $r * 2, $color);
+        }
+
+        // Card Container geometry
+        $cardX1 = 170;
+        $cardX2 = 1030;
+        $cardY1 = 65;
+        $cardY2 = 565;
+
+        // Card Background (#0f172a / RGB: 15, 23, 42)
+        $cardBg = imagecolorallocate($img, 15, 23, 42);
+        $cardBorder = imagecolorallocate($img, 30, 41, 59); // slate-800
+        $this->drawFilledRoundedRectangle($img, $cardX1, $cardY1, $cardX2, $cardY2, 24, $cardBg);
+        $this->drawRoundedRectangleBorder($img, $cardX1, $cardY1, $cardX2, $cardY2, 24, 2, $cardBorder);
+
+        // Top Gradient Line on the card
+        $w = $cardX2 - $cardX1;
+        for ($x = 0; $x < $w; $x++) {
+            $ratio = $x / $w;
+            if ($ratio < 0.5) {
+                // Purple (168, 85, 247) to Cyan (6, 182, 212)
+                $subRatio = $ratio / 0.5;
+                $r = 168 + (6 - 168) * $subRatio;
+                $g = 85 + (182 - 85) * $subRatio;
+                $b = 247 + (212 - 247) * $subRatio;
+            } else {
+                // Cyan (6, 182, 212) to Emerald (16, 185, 129)
+                $subRatio = ($ratio - 0.5) / 0.5;
+                $r = 6 + (16 - 6) * $subRatio;
+                $g = 182 + (185 - 182) * $subRatio;
+                $b = 212 + (129 - 212) * $subRatio;
+            }
+            $col = imagecolorallocate($img, (int)$r, (int)$g, (int)$b);
+            imageline($img, $cardX1 + $x, $cardY1 + 2, $cardX1 + $x, $cardY1 + 7, $col);
+        }
+
+        // Font Path
         $fontPath = null;
         $possibleFonts = [
+            'C:\Windows\Fonts\segoeui.ttf',
+            'C:\Windows\Fonts\SegoeUI.ttf',
             'C:\Windows\Fonts\arial.ttf',
             'C:\Windows\Fonts\Arial.ttf',
             '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
@@ -2363,66 +2413,210 @@ EOT;
             }
         }
 
+        // Inner Stats Display Container geometry
+        $innerX1 = $cardX1 + 30; // 200
+        $innerX2 = $cardX2 - 30; // 1000
+        $innerY1 = $cardY1 + 75; // 140
+        $innerY2 = $cardY2 - 30; // 535
+
+        $innerBg = imagecolorallocate($img, 9, 13, 22); // #090d16
+        $innerBorderColor = imagecolorallocate($img, 30, 41, 59); // slate-800
+        $this->drawFilledRoundedRectangle($img, $innerX1, $innerY1, $innerX2, $innerY2, 16, $innerBg);
+        $this->drawRoundedRectangleBorder($img, $innerX1, $innerY1, $innerX2, $innerY2, 16, 2, $innerBorderColor);
+
         if ($fontPath) {
-            imagettftext($img, 20, 0, 90, 110, $purpleColor, $fontPath, "TOKENGLADE  •  TOKEN INSIGHT");
-            imagettftext($img, 56, 0, 90, 220, $white, $fontPath, "$" . $code);
-            $nameStr = ($token && $token->name) ? $token->name : ($insight['name'] ?? "Stellar Asset");
-            imagettftext($img, 22, 0, 90, 270, $slate, $fontPath, $nameStr);
+            // Modal Title
+            imagettftext($img, 15, 0, $cardX1 + 30, $cardY1 + 45, $white, $fontPath, "Share Token");
 
-            // Separator
-            $lineColor = imagecolorallocatealpha($img, 51, 65, 85, 80);
-            imageline($img, 90, 310, 1110, 310, $lineColor);
+            // Close button ('X' style)
+            $closeColor = imagecolorallocate($img, 100, 116, 139); // slate-500
+            imagearc($img, $cardX2 - 45, $cardY1 + 38, 28, 28, 0, 360, $closeColor);
+            imageline($img, $cardX2 - 50, $cardY1 + 33, $cardX2 - 40, $cardY1 + 43, $closeColor);
+            imageline($img, $cardX2 - 40, $cardY1 + 33, $cardX2 - 50, $cardY1 + 43, $closeColor);
 
-            // Row 1
-            imagettftext($img, 14, 0, 90, 370, $slate, $fontPath, "PRICE (USD)");
-            imagettftext($img, 28, 0, 90, 420, $white, $fontPath, "$" . $usdPrice);
+            // Token logo box (#101827)
+            $logoBoxBg = imagecolorallocate($img, 16, 24, 39);
+            $logoBoxBorder = imagecolorallocatealpha($img, 139, 92, 246, 100);
+            $this->drawFilledRoundedRectangle($img, 225, 165, 297, 237, 12, $logoBoxBg);
+            $this->drawRoundedRectangleBorder($img, 225, 165, 297, 237, 12, 1, $logoBoxBorder);
 
-            imagettftext($img, 14, 0, 450, 370, $slate, $fontPath, "PRICE (XLM)");
-            imagettftext($img, 28, 0, 450, 420, $cyanColor, $fontPath, $xlmPrice . " XLM");
+            // Load logo image dynamically
+            $logoImg = null;
+            if (!empty($insight['image'])) {
+                try {
+                    $logoData = Http::timeout(3)->get($insight['image'])->body();
+                    if ($logoData) {
+                        $logoImg = imagecreatefromstring($logoData);
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore and fallback to letter placeholder
+                }
+            }
 
-            imagettftext($img, 14, 0, 810, 370, $slate, $fontPath, "24H CHANGE");
+            if ($logoImg) {
+                $scaledLogo = imagecreatetruecolor(56, 56);
+                imagealphablending($scaledLogo, false);
+                imagesavealpha($scaledLogo, true);
+                
+                // transparent bg for scaled logo
+                $transparent = imagecolorallocatealpha($scaledLogo, 0, 0, 0, 127);
+                imagefill($scaledLogo, 0, 0, $transparent);
+                
+                $origW = imagesx($logoImg);
+                $origH = imagesy($logoImg);
+                imagecopyresampled($scaledLogo, $logoImg, 0, 0, 0, 0, 56, 56, $origW, $origH);
+                imagecopy($img, $scaledLogo, 233, 173, 0, 0, 56, 56);
+                
+                imagedestroy($scaledLogo);
+                imagedestroy($logoImg);
+            } else {
+                // Letter Placeholder
+                $letterPlaceholder = strtoupper(substr($code, 0, 2));
+                imagettftext($img, 20, 0, 238, 210, $white, $fontPath, $letterPlaceholder);
+            }
+
+            // Asset code
+            imagettftext($img, 24, 0, 320, 198, $white, $fontPath, strtoupper($code));
+
+            // Verified Badge next to asset code
+            $codeBox = imagettfbbox(24, 0, $fontPath, strtoupper($code));
+            $codeWidth = $codeBox[2] - $codeBox[0];
+            $badgeX1 = 320 + $codeWidth + 15;
+
+            if ($isVerified) {
+                $badgeBg = imagecolorallocatealpha($img, 5, 150, 105, 110);
+                $badgeBorder = imagecolorallocate($img, 16, 185, 129);
+                $badgeTextCol = imagecolorallocate($img, 52, 211, 153);
+                $this->drawFilledRoundedRectangle($img, $badgeX1, 172, $badgeX1 + 75, 200, 6, $badgeBg);
+                $this->drawRoundedRectangleBorder($img, $badgeX1, 172, $badgeX1 + 75, 200, 6, 1, $badgeBorder);
+                imagettftext($img, 10, 0, $badgeX1 + 14, 191, $badgeTextCol, $fontPath, "Verified");
+            }
+
+            // Token name
+            $nameStr = ($token && $token->name) ? $token->name : ($insight['name'] ?? "Stellar Project");
+            if (strlen($nameStr) > 35) {
+                $nameStr = substr($nameStr, 0, 32) . "...";
+            }
+            imagettftext($img, 14, 0, 320, 226, $slate, $fontPath, $nameStr);
+
+            // Divider Line
+            $lineColor = imagecolorallocate($img, 30, 41, 59); // slate-800
+            imageline($img, $innerX1 + 25, 260, $innerX2 - 25, 260, $lineColor);
+
+            // Grid Positions
+            $col1X = $innerX1 + 45; // 245
+            $col2X = $innerX1 + 310; // 510
+            $col3X = $innerX1 + 575; // 775
+
+            $row1LabelY = 300;
+            $row1ValY = 350;
+            $row2LabelY = 410;
+            $row2ValY = 460;
+
+            // Row 1 Column 1: PRICE (USD)
+            imagettftext($img, 11, 0, $col1X, $row1LabelY, $slate, $fontPath, "PRICE (USD)");
+            imagettftext($img, 22, 0, $col1X, $row1ValY, $white, $fontPath, "≈ $" . $usdPrice);
+
+            // Row 1 Column 2: PRICE (XLM)
+            imagettftext($img, 11, 0, $col2X, $row1LabelY, $slate, $fontPath, "PRICE (XLM)");
+            imagettftext($img, 22, 0, $col2X, $row1ValY, $cyanColor, $fontPath, $xlmPrice . " XLM");
+
+            // Row 1 Column 3: 24H CHANGE
+            imagettftext($img, 11, 0, $col3X, $row1LabelY, $slate, $fontPath, "24H CHANGE");
             $changeColor = $changeVal >= 0 ? $emeraldColor : $roseColor;
-            imagettftext($img, 28, 0, 810, 420, $changeColor, $fontPath, $change);
+            $changeSign = $changeVal >= 0 ? "▲ +" : "▼ ";
+            imagettftext($img, 22, 0, $col3X, $row1ValY, $changeColor, $fontPath, $changeSign . abs($changeVal) . "%");
 
-            // Row 2
-            imagettftext($img, 14, 0, 90, 490, $slate, $fontPath, "LIQUIDITY");
-            imagettftext($img, 28, 0, 90, 540, $white, $fontPath, "$" . $liquidity);
+            // Row 2 Column 1: LIQUIDITY
+            imagettftext($img, 11, 0, $col1X, $row2LabelY, $slate, $fontPath, "LIQUIDITY");
+            imagettftext($img, 22, 0, $col1X, $row2ValY, $white, $fontPath, "$" . $liquidity);
 
-            imagettftext($img, 14, 0, 450, 490, $slate, $fontPath, "HOLDERS");
-            imagettftext($img, 28, 0, 450, 540, $white, $fontPath, $holders);
+            // Row 2 Column 2: HOLDERS
+            imagettftext($img, 11, 0, $col2X, $row2LabelY, $slate, $fontPath, "HOLDERS");
+            imagettftext($img, 22, 0, $col2X, $row2ValY, $white, $fontPath, $holders);
 
-            imagettftext($img, 14, 0, 810, 490, $slate, $fontPath, "TRUST SCORE");
-            imagettftext($img, 28, 0, 810, 540, $purpleColor, $fontPath, $rating . " / 10");
+            // Row 2 Column 3: TRUST SCORE
+            imagettftext($img, 11, 0, $col3X, $row2LabelY, $slate, $fontPath, "TRUST SCORE");
+            imagettftext($img, 22, 0, $col3X, $row2ValY, $purpleColor, $fontPath, $rating . " / 10");
+
         } else {
-            imagestring($img, 5, 90, 90, "TOKENGLADE - TOKEN INSIGHT", $purpleColor);
+            // Fallback (if no TTF fonts found on the system)
+            imagestring($img, 5, $cardX1 + 30, $cardY1 + 30, "TOKENGLADE - TOKEN SHARE", $purpleColor);
             $fallbackLabel = ($token && $token->name) ? $token->name : ($insight['name'] ?? "Stellar Asset");
-            imagestring($img, 5, 90, 160, "$" . $code . " (" . $fallbackLabel . ")", $white);
-            imageline($img, 90, 240, 1110, 240, $slate);
+            imagestring($img, 5, $cardX1 + 30, $cardY1 + 90, "$" . $code . " (" . $fallbackLabel . ")", $white);
+            imageline($img, $cardX1 + 30, $cardY1 + 130, $cardX2 - 30, $cardY1 + 130, $slate);
 
-            imagestring($img, 4, 90, 280, "PRICE (USD)", $slate);
-            imagestring($img, 5, 90, 310, "$" . $usdPrice, $white);
+            imagestring($img, 4, $cardX1 + 30, $cardY1 + 160, "PRICE (USD)", $slate);
+            imagestring($img, 5, $cardX1 + 30, $cardY1 + 190, "$" . $usdPrice, $white);
 
-            imagestring($img, 4, 450, 280, "PRICE (XLM)", $slate);
-            imagestring($img, 5, 450, 310, $xlmPrice . " XLM", $cyanColor);
+            imagestring($img, 4, $cardX1 + 330, $cardY1 + 160, "PRICE (XLM)", $slate);
+            imagestring($img, 5, $cardX1 + 330, $cardY1 + 190, $xlmPrice . " XLM", $cyanColor);
 
-            imagestring($img, 4, 810, 280, "24H CHANGE", $slate);
+            imagestring($img, 4, $cardX1 + 630, $cardY1 + 160, "24H CHANGE", $slate);
             $changeColor = $changeVal >= 0 ? $emeraldColor : $roseColor;
-            imagestring($img, 5, 810, 310, $change, $changeColor);
+            imagestring($img, 5, $cardX1 + 630, $cardY1 + 190, $change, $changeColor);
 
-            imagestring($img, 4, 90, 420, "LIQUIDITY", $slate);
-            imagestring($img, 5, 90, 450, "$" . $liquidity, $white);
+            imagestring($img, 4, $cardX1 + 30, $cardY1 + 250, "LIQUIDITY", $slate);
+            imagestring($img, 5, $cardX1 + 30, $cardY1 + 280, "$" . $liquidity, $white);
 
-            imagestring($img, 4, 450, 420, "HOLDERS", $slate);
-            imagestring($img, 5, 450, 450, $holders, $white);
+            imagestring($img, 4, $cardX1 + 330, $cardY1 + 250, "HOLDERS", $slate);
+            imagestring($img, 5, $cardX1 + 330, $cardY1 + 280, $holders, $white);
 
-            imagestring($img, 4, 810, 420, "TRUST SCORE", $slate);
-            imagestring($img, 5, 810, 450, $rating . " / 10", $purpleColor);
+            imagestring($img, 4, $cardX1 + 630, $cardY1 + 250, "TRUST SCORE", $slate);
+            imagestring($img, 5, $cardX1 + 630, $cardY1 + 280, $rating . " / 10", $purpleColor);
         }
 
-        header('Content-Type: image/png');
-        header('Cache-Control: public, max-age=600');
+        if (!headers_sent() && php_sapi_name() !== 'cli') {
+            header('Content-Type: image/png');
+            header('Cache-Control: public, max-age=600');
+        }
         imagepng($img);
         imagedestroy($img);
-        exit;
+        if (php_sapi_name() !== 'cli') {
+            exit;
+        }
+    }
+
+    private function drawFilledRoundedRectangle($img, $x1, $y1, $x2, $y2, $radius, $color)
+    {
+        if ($radius <= 0) {
+            imagefilledrectangle($img, $x1, $y1, $x2, $y2, $color);
+            return;
+        }
+
+        imagefilledellipse($img, $x1 + $radius, $y1 + $radius, $radius * 2, $radius * 2, $color);
+        imagefilledellipse($img, $x2 - $radius, $y1 + $radius, $radius * 2, $radius * 2, $color);
+        imagefilledellipse($img, $x1 + $radius, $y2 - $radius, $radius * 2, $radius * 2, $color);
+        imagefilledellipse($img, $x2 - $radius, $y2 - $radius, $radius * 2, $radius * 2, $color);
+
+        imagefilledrectangle($img, $x1 + $radius, $y1, $x2 - $radius, $y2, $color);
+        imagefilledrectangle($img, $x1, $y1 + $radius, $x2, $y2 - $radius, $color);
+    }
+
+    private function drawRoundedRectangleBorder($img, $x1, $y1, $x2, $y2, $radius, $thickness, $color)
+    {
+        if ($radius <= 0) {
+            for ($i = 0; $i < $thickness; $i++) {
+                imagerectangle($img, $x1 + $i, $y1 + $i, $x2 - $i, $y2 - $i, $color);
+            }
+            return;
+        }
+
+        for ($i = 0; $i < $thickness; $i++) {
+            $ox1 = $x1 + $i; $oy1 = $y1 + $i;
+            $ox2 = $x2 - $i; $oy2 = $y2 - $i;
+            $r = $radius - $i;
+            if ($r < 0) $r = 0;
+
+            imagearc($img, $ox1 + $r, $oy1 + $r, $r * 2, $r * 2, 180, 270, $color);
+            imagearc($img, $ox2 - $r, $oy1 + $r, $r * 2, $r * 2, 270, 360, $color);
+            imagearc($img, $ox2 - $r, $oy2 - $r, $r * 2, $r * 2, 0, 90, $color);
+            imagearc($img, $ox1 + $r, $oy2 - $r, $r * 2, $r * 2, 90, 180, $color);
+
+            imageline($img, $ox1 + $r, $oy1, $ox2 - $r, $oy1, $color);
+            imageline($img, $ox2, $oy1 + $r, $ox2, $oy2 - $r, $color);
+            imageline($img, $ox1 + $r, $oy2, $ox2 - $r, $oy2, $color);
+            imageline($img, $ox1, $oy1 + $r, $ox1, $oy2 - $r, $color);
+        }
     }
 }
