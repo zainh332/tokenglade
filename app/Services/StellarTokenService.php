@@ -474,8 +474,15 @@ class StellarTokenService
         return $records;
     }
 
-    protected function fetchTomlMetadata(array $asset): array
+    protected function fetchTomlMetadata(?array $asset): array
     {
+        if (!$asset) {
+            return [
+                'project' => [],
+                'token'   => [],
+            ];
+        }
+
         $tomlUrl = $asset['_links']['toml']['href'] ?? null;
 
         if (!$tomlUrl) {
