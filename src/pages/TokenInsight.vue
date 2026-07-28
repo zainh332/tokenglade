@@ -515,11 +515,13 @@
                 <span v-if="establishingTrustline" class="animate-pulse">Establishing...</span>
                 <span v-else>Establish Trustline</span>
               </button>
+              <!--
               <button @click="shareModalOpen = true"
                 class="btn dark select-none inline-flex items-center gap-1.5 hover:border-purple-500/50 transition text-purple-400">
                 <Share2 class="w-4 h-4 text-purple-400" />
                 <span>Share Token</span>
               </button>
+              -->
             </div>
             <div class="flex items-center gap-2.5 w-full sm:w-auto mt-2 sm:mt-0 justify-center sm:justify-start">
               <a v-if="token.website" :href="token.website" target="_blank" title="Website" aria-label="Website"
