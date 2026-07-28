@@ -2322,10 +2322,20 @@ EOT;
 
         $change = ($changeVal >= 0 ? '+' : '') . number_format($changeVal, 2) . '%';
         
-        $market = StellarMarketToken::where('asset_code', $code)
-            ->where('asset_issuer', $issuer)
-            ->first();
-        $liquidityVal = $market ? ($market->liquidity_tvl ?? 0) : ($insight['liquidity_tvl'] ?? 0);
+        // Try to get liquidity from the latest snapshot in the database, or calculate it on the fly
+        $liquidityVal = 0.0;
+        if ($latestSnapshot) {
+            $liquidityVal = (float) $latestSnapshot->liquidity_usd;
+        } else {
+            try {
+                $xlmUsdPrice = $service->getXlmUsdPrice();
+                $usdPrice = (float) ($insight['usd_price'] ?? 0);
+                $liquidityInfo = $service->getLiquidityPoolsInfo($code, $issuer, $xlmUsdPrice, $usdPrice);
+                $liquidityVal = (float) ($liquidityInfo['total_tvl'] ?? 0.0);
+            } catch (\Throwable $e) {
+                $liquidityVal = 0.0;
+            }
+        }
         $liquidity = number_format($liquidityVal, 2);
 
         $holders = number_format($insight['holders'] ?? 0, 0);
@@ -2421,6 +2431,8 @@ EOT;
         // Font Path
         $fontPath = null;
         $possibleFonts = [
+            storage_path('fonts/DejaVuSans-Bold.ttf'),
+            storage_path('fonts/DejaVuSans.ttf'),
             'C:\Windows\Fonts\segoeui.ttf',
             'C:\Windows\Fonts\SegoeUI.ttf',
             'C:\Windows\Fonts\arial.ttf',
