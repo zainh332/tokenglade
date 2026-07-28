@@ -238,6 +238,8 @@ function formatXlmPrice(val) {
 
 function formatNumber(val) {
   if (!val) return '0';
-  return Number(val).toLocaleString(undefined);
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 0
+  }).format(val);
 }
 </script>
