@@ -71,17 +71,22 @@ class TakeTokenSnapshots extends Command
             } catch (\Throwable $e) {
                 Log::error("Failed to fetch full stats for token {$code}: " . $e->getMessage());
 
-                // Fallback to database values with 0s if API call fails
+                // Fallback to previous snapshot values if API call fails
+                $lastSnapshot = TokenStatSnapshot::where('asset_code', $code)
+                    ->where('asset_issuer', $issuer)
+                    ->latest()
+                    ->first();
+
                 TokenStatSnapshot::create([
                     'asset_code'         => $code,
                     'asset_issuer'       => $issuer,
-                    'holders'            => $token->current_holders ?? 0,
-                    'trustlines'         => 0,
-                    'pools_count'        => 0,
-                    'liquidity_usd'      => 0,
-                    'market_cap_usd'     => 0,
-                    'price_usd'          => $token->current_price_usd ?? 0,
-                    'circulating_supply' => 0,
+                    'holders'            => $lastSnapshot->holders ?? $token->current_holders ?? 0,
+                    'trustlines'         => $lastSnapshot->trustlines ?? 0,
+                    'pools_count'        => $lastSnapshot->pools_count ?? 0,
+                    'liquidity_usd'      => $lastSnapshot->liquidity_usd ?? 0.0,
+                    'market_cap_usd'     => $lastSnapshot->market_cap_usd ?? 0.0,
+                    'price_usd'          => $lastSnapshot->price_usd ?? $token->current_price_usd ?? 0.0,
+                    'circulating_supply' => $lastSnapshot->circulating_supply ?? 0.0,
                 ]);
             }
 
