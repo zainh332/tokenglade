@@ -2610,4 +2610,19 @@ EOT;
             imageline($img, $ox1, $oy1 + $r, $ox1, $oy2 - $r, $color);
         }
     }
+
+    public function largeActivity(string $code, string $issuer)
+    {
+        $events = \App\Models\TokenLargeEvent::where('asset_code', $code)
+            ->where('asset_issuer', $issuer)
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($event) {
+                $event->time_ago = \Carbon\Carbon::parse($event->created_at)->diffForHumans();
+                return $event;
+            });
+
+        return response()->json($events);
+    }
 }

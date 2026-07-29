@@ -1264,26 +1264,52 @@
               </div>
             </div>
 
-            <!-- Voting -->
-            <div class="card">
+            <!-- Whale Activity Card -->
+            <div class="card select-text">
               <div class="card-hd">
-                <h3>Ecosystem Voting</h3><span class="tag">Community</span>
+                <h3>Whale Activity</h3><span class="tag">Live Tracker</span>
               </div>
-              <div class="vote select-none">
-                <div @click="submitVote('trusted')" class="vopt t">
-                  <div class="ic"></div>
-                  <div class="l">Trusted</div>
-                  <div class="n">{{ votes.trusted }}</div>
+              <div class="p-4 space-y-3.5 bg-[#0E131C] border-t border-slate-800/60">
+                <div v-if="largeEventsLoading" class="text-xs text-slate-500 animate-pulse py-2 text-center">
+                  Loading activity...
                 </div>
-                <div @click="submitVote('suspicious')" class="vopt s">
-                  <div class="ic"></div>
-                  <div class="l">Suspicious</div>
-                  <div class="n">{{ votes.suspicious }}</div>
+                <div v-else-if="largeEvents.length === 0" class="text-xs text-slate-500 py-4 text-center">
+                  No whale activity found.
                 </div>
-                <div @click="submitVote('scam')" class="vopt x">
-                  <div class="ic"></div>
-                  <div class="l">Scam</div>
-                  <div class="n">{{ votes.scam }}</div>
+                <div v-else class="space-y-4">
+                  <div v-for="event in largeEvents" :key="event.id" class="flex flex-col gap-1 pb-3 border-b border-slate-800/30 last:border-b-0 last:pb-0">
+                    <div class="flex items-center justify-between text-xs">
+                      <div class="flex items-center gap-1.5 font-medium">
+                        <span v-if="event.event_type === 'BUY'" class="text-emerald-400">
+                          Bought <strong class="text-white font-mono">{{ formatNumberWithCommas(event.token_amount) }}</strong> {{ token.asset_code }}
+                        </span>
+                        <span v-else-if="event.event_type === 'SELL'" class="text-rose-400">
+                          Sold <strong class="text-white font-mono">{{ formatNumberWithCommas(event.token_amount) }}</strong> {{ token.asset_code }}
+                        </span>
+                        <span v-else-if="event.event_type === 'LP_ADD'" class="text-cyan-400">
+                          Added Liquidity <strong class="text-white font-mono" v-if="parseFloat(event.token_amount) > 0">({{ formatNumberWithCommas(event.token_amount) }} {{ token.asset_code }})</strong>
+                        </span>
+                        <span v-else-if="event.event_type === 'LP_REMOVE'" class="text-amber-500">
+                          Removed Liquidity
+                        </span>
+                      </div>
+                      
+                      <!-- Transaction Link -->
+                      <a :href="`https://stellar.expert/explorer/public/tx/${event.transaction_hash}`" 
+                         target="_blank" 
+                         class="text-[10px] text-slate-500 hover:text-cyan-400 transition-colors font-mono"
+                         title="View Tx on Stellar.Expert">
+                        tx ↗
+                      </a>
+                    </div>
+                    
+                    <div class="flex items-center justify-between text-[11px] text-slate-400">
+                      <span class="font-mono">
+                        ≈ {{ formatNumberWithCommas(event.xlm_value) }} XLM
+                      </span>
+                      <span class="text-slate-500 font-mono text-[10px]">{{ event.time_ago }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1336,6 +1362,30 @@
                   <span class="sval" :class="token.auth_required ? 'none' : 'yes'" style="font-size:10px">{{
                     token.auth_required
                     ? 'REQUIRED' : 'NONE' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Voting -->
+            <div class="card">
+              <div class="card-hd">
+                <h3>Ecosystem Voting</h3><span class="tag">Community</span>
+              </div>
+              <div class="vote select-none">
+                <div @click="submitVote('trusted')" class="vopt t">
+                  <div class="ic"></div>
+                  <div class="l">Trusted</div>
+                  <div class="n">{{ votes.trusted }}</div>
+                </div>
+                <div @click="submitVote('suspicious')" class="vopt s">
+                  <div class="ic"></div>
+                  <div class="l">Suspicious</div>
+                  <div class="n">{{ votes.suspicious }}</div>
+                </div>
+                <div @click="submitVote('scam')" class="vopt x">
+                  <div class="ic"></div>
+                  <div class="l">Scam</div>
+                  <div class="n">{{ votes.scam }}</div>
                 </div>
               </div>
             </div>
@@ -1412,6 +1462,8 @@ const activeTab = ref('overview')
 const showAllTrades = ref(false)
 const holdersLoading = ref(true)
 const liquidityLoading = ref(true)
+const largeEvents = ref([])
+const largeEventsLoading = ref(true)
 
 const refreshLiveTrades = async () => {
   if (!issuerInput.value) return;
@@ -2128,6 +2180,7 @@ async function fetchToken() {
     fetchLiquidity()
     fetchHistoricalStats()
     fetchOrderBook()
+    fetchLargeEvents()
   } catch (error) {
     console.error("Error fetching token data:", error)
     notFound.value = true
@@ -2156,6 +2209,34 @@ function switchTab(tab) {
     fetchHolders()
   } else if (tab === 'liquidity' && (!token.liquidity_overview || !token.liquidity_overview.pools || token.liquidity_overview.pools.length === 0) && !liquidityLoading.value) {
     fetchLiquidity()
+  }
+}
+
+const formatNumberWithCommas = (val) => {
+  if (val === undefined || val === null || isNaN(val)) return '0'
+  const parsed = parseFloat(val)
+  if (parsed === 0) return '0'
+  return new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: parsed % 1 === 0 ? 0 : 2
+  }).format(parsed)
+}
+
+async function fetchLargeEvents() {
+  const code = token.asset_code || route.params.code
+  const issuer = token.issuer || route.params.issuer || issuerInput.value
+  
+  if (!code || !issuer) return
+  
+  largeEventsLoading.value = true
+  try {
+    const res = await axios.get(`/api/token/${code}/${issuer}/large-activity`)
+    if (Array.isArray(res.data)) {
+      largeEvents.value = res.data
+    }
+  } catch (err) {
+    console.error("Failed to fetch large market activity:", err)
+  } finally {
+    largeEventsLoading.value = false
   }
 }
 

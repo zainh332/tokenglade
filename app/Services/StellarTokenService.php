@@ -278,6 +278,24 @@ class StellarTokenService
         ];
     }
 
+    public function getPoolIdForAsset(string $code, string $issuer): ?string
+    {
+        $cacheKey = "lp_pool_id_{$code}_{$issuer}";
+        return Cache::remember($cacheKey, 86400, function () use ($code, $issuer) {
+            try {
+                $response = Http::timeout(5)->get($this->horizon . '/liquidity_pools', [
+                    'assets' => "{$code}:{$issuer},native",
+                ]);
+                if ($response->ok()) {
+                    return $response->json('_embedded.records.0.id');
+                }
+            } catch (\Throwable $e) {
+                Log::warning("Failed to fetch pool ID for {$code}: " . $e->getMessage());
+            }
+            return null;
+        });
+    }
+
     private function getRecentTransactions(string $issuer, string $code): array
     {
         $assetType = $this->getAssetType($code);
@@ -288,14 +306,134 @@ class StellarTokenService
             'base_asset_issuer' => $issuer,
             'counter_asset_type' => 'native',
             'order'             => 'desc',
-            'limit'             => 30,
+            'limit'             => 200,
         ]);
 
         if (!$response->ok()) {
             return [];
         }
 
-        return collect($response->json()['_embedded']['records'])
+        $records = $response->json('_embedded.records') ?? [];
+
+        // --- INGEST LARGE DEX TRADES ---
+        try {
+            foreach ($records as $trade) {
+                $xlmValue = (float) ($trade['counter_amount'] ?? 0.0);
+                if ($xlmValue >= 10000.0) {
+                    $opId = explode('-', $trade['id'])[0];
+                    $cacheKey = "processed_op_{$opId}";
+                    if (!Cache::has($cacheKey)) {
+                        $opResponse = Http::timeout(5)->get($this->horizon . "/operations/{$opId}");
+                        if ($opResponse->ok()) {
+                            $txHash = $opResponse->json('transaction_hash');
+                            $ledger = (int) ($opId >> 32);
+
+                            $exists = \App\Models\TokenLargeEvent::where('transaction_hash', $txHash)->exists();
+                            if (!$exists) {
+                                $isBase = (($trade['base_asset_code'] ?? null) === $code && ($trade['base_asset_issuer'] ?? null) === $issuer);
+                                $isLiquidityPool = ($trade['trade_type'] === 'liquidity_pool');
+
+                                if ($isBase) {
+                                    if ($isLiquidityPool) {
+                                        $side = $trade['base_is_seller'] ? 'sell' : 'buy';
+                                    } else {
+                                        $side = $trade['base_is_seller'] ? 'buy' : 'sell';
+                                    }
+                                    $amount = (float) $trade['base_amount'];
+                                } else {
+                                    if ($isLiquidityPool) {
+                                        $side = $trade['base_is_seller'] ? 'buy' : 'sell';
+                                    } else {
+                                        $side = $trade['base_is_seller'] ? 'sell' : 'buy';
+                                    }
+                                    $amount = (float) $trade['counter_amount'];
+                                }
+
+                                $xlmUsdPrice = $this->getXlmUsdPrice();
+                                $usdValue = $xlmValue * $xlmUsdPrice;
+
+                                \App\Models\TokenLargeEvent::create([
+                                    'asset_code'       => $code,
+                                    'asset_issuer'     => $issuer,
+                                    'transaction_hash' => $txHash,
+                                    'wallet_address'   => $trade['counter_account'] ?? $opResponse->json('source_account') ?? '',
+                                    'event_type'       => strtoupper($side),
+                                    'token_amount'     => $amount,
+                                    'xlm_value'        => $xlmValue,
+                                    'usd_value'        => $usdValue,
+                                    'ledger'           => $ledger,
+                                    'created_at'       => \Carbon\Carbon::parse($trade['ledger_close_time']),
+                                ]);
+                            }
+                            Cache::put($cacheKey, true, 86400 * 7); // Cache for 7 days
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error("Failed to process large trades: " . $e->getMessage());
+        }
+
+        // --- INGEST LARGE LP EVENTS ---
+        try {
+            $poolId = $this->getPoolIdForAsset($code, $issuer);
+            if ($poolId) {
+                $opsResponse = Http::timeout(5)->get($this->horizon . "/liquidity_pools/{$poolId}/operations", [
+                    'order' => 'desc',
+                    'limit' => 15,
+                ]);
+
+                if ($opsResponse->ok()) {
+                    $ops = $opsResponse->json('_embedded.records') ?? [];
+                    foreach ($ops as $op) {
+                        $type = $op['type'] ?? '';
+                        if ($type === 'liquidity_pool_deposit' || $type === 'liquidity_pool_withdraw') {
+                            $reserves = ($type === 'liquidity_pool_deposit') ? ($op['reserves_max'] ?? []) : ($op['reserves_received'] ?? []);
+                            $tokenAmount = 0.0;
+                            $xlmAmount = 0.0;
+
+                            foreach ($reserves as $res) {
+                                if ($res['asset'] === 'native') {
+                                    $xlmAmount = (float) $res['amount'];
+                                } else {
+                                    $tokenAmount = (float) $res['amount'];
+                                }
+                            }
+
+                            if ($xlmAmount >= 10000.0) {
+                                $txHash = $op['transaction_hash'];
+                                $exists = \App\Models\TokenLargeEvent::where('transaction_hash', $txHash)->exists();
+                                if (!$exists) {
+                                    $opId = $op['id'];
+                                    $ledger = (int) ($opId >> 32);
+                                    $eventType = ($type === 'liquidity_pool_deposit') ? 'LP_ADD' : 'LP_REMOVE';
+
+                                    $xlmUsdPrice = $this->getXlmUsdPrice();
+                                    $usdValue = $xlmAmount * $xlmUsdPrice;
+
+                                    \App\Models\TokenLargeEvent::create([
+                                        'asset_code'       => $code,
+                                        'asset_issuer'     => $issuer,
+                                        'transaction_hash' => $txHash,
+                                        'wallet_address'   => $op['source_account'] ?? '',
+                                        'event_type'       => $eventType,
+                                        'token_amount'     => $tokenAmount,
+                                        'xlm_value'        => $xlmAmount,
+                                        'usd_value'        => $usdValue,
+                                        'ledger'           => $ledger,
+                                        'created_at'       => \Carbon\Carbon::parse($op['created_at']),
+                                    ]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error("Failed to process large LP events: " . $e->getMessage());
+        }
+
+        return collect($records)
             ->map(function ($trade) use ($code, $issuer) {
                 $isBase = (($trade['base_asset_code'] ?? null) === $code && ($trade['base_asset_issuer'] ?? null) === $issuer);
                 $isLiquidityPool = ($trade['trade_type'] === 'liquidity_pool');
@@ -403,7 +541,7 @@ class StellarTokenService
     //     $totalSupply = (float) ($asset['balances']['authorized'] ?? 0);
 
     //     $top10Percentage = $totalSupply > 0
-    //         ? ($top10->sum('balance') / $totalSupply) * 100
+    //         ? ($top10->sum('balance') / $totalSupply) * 10000
     //         : 0;
 
     //     return [
@@ -602,7 +740,7 @@ class StellarTokenService
         }
 
         foreach ($records as $record) {
-            $timestamp = (int) ($record['timestamp'] / 1000); // ms to sec
+            $timestamp = (int) ($record['timestamp'] / 100000); // ms to sec
             
             \App\Models\StellarOhlcData::updateOrCreate([
                 'asset_code' => $code,
@@ -630,10 +768,10 @@ class StellarTokenService
 
         foreach ($hourlyRecords as $record) {
             $timestampMs = (int) $record['timestamp'];
-            $timestampSec = $timestampMs / 1000;
+            $timestampSec = $timestampMs / 100000;
             
             $boundaryStartSec = $timestampSec - ($timestampSec % 14400);
-            $boundaryStartMs = $boundaryStartSec * 1000;
+            $boundaryStartMs = $boundaryStartSec * 100000;
 
             if ($current4hCandle === null || $current4hCandle['timestamp'] !== $boundaryStartMs) {
                 if ($current4hCandle !== null) {
@@ -786,7 +924,7 @@ class StellarTokenService
             
             $poolId = $record['id'];
             $volume = $poolVolumes[$poolId] ?? 0.0;
-            $apr = $tvl > 0 ? (($volume * 0.003 * 365) / $tvl) * 100 : 0;
+            $apr = $tvl > 0 ? (($volume * 0.003 * 365) / $tvl) * 10000 : 0;
             
             $pools[] = [
                 'id' => $record['id'],
@@ -1066,8 +1204,8 @@ class StellarTokenService
         // 2. Fallback to Horizon trade aggregations (e.g. for custom/local assets)
         $totalVolumeXlm = 0.0;
         try {
-            $nowMs = time() * 1000;
-            $startMs = $nowMs - 24 * 3600 * 1000;
+            $nowMs = time() * 100000;
+            $startMs = $nowMs - 24 * 3600 * 100000;
             $aggResponse = Http::timeout(5)->get($this->horizon . '/trade_aggregations', [
                 'base_asset_type'    => $assetType,
                 'base_asset_code'    => $code,
