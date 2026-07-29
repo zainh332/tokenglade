@@ -1160,7 +1160,20 @@ async function fetchMarketHighlights() {
 
 async function fetchAssetStats() {
   try {
-    const res = await fetch('https://api.stellar.expert/explorer/public/asset/XLM');
+    const url = new URL('https://api.stellar.expert/explorer/public/asset/XLM');
+    url.searchParams.set('_', Math.floor(Date.now() / 300000).toString());
+    const res = await fetch(url.toString(), {
+      method: 'GET',
+      cache: 'no-store',
+      headers: {
+        Accept: 'application/json'
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error(`Stellar Expert request failed: ${res.status} ${res.statusText}`);
+    }
+
     const data = await res.json();
     if (data) {
       const supply = parseFloat(data.supply) / 10000000;
