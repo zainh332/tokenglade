@@ -83,7 +83,7 @@ Route::prefix('token')->group(function () {
     Route::post('establish-trustline-xdr', 'TokenController@createTrustlineXdr')->name('token.createTrustlineXdr');
     Route::post('submit-trustline-xdr', 'TokenController@submitTrustlineXdr')->name('token.submitTrustlineXdr');
     Route::get('download-toml', 'TokenController@downloadToml')->name('token.downloadToml');
-    Route::get('{code}/{issuer}/large-activity', 'TokenController@largeActivity')->name('token.largeActivity');
+    Route::get('{code}/{issuer}/whale-activity', 'TokenController@whaleActivity')->name('token.whaleActivity');
 });
 
 

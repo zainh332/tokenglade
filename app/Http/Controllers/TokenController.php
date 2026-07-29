@@ -2647,10 +2647,11 @@ EOT;
         }
     }
 
-    public function largeActivity(string $code, string $issuer)
+    public function whaleActivity(string $code, string $issuer)
     {
-        $events = \App\Models\TokenLargeEvent::where('asset_code', $code)
+        $events = \App\Models\TokenWhaleEvent::where('asset_code', $code)
             ->where('asset_issuer', $issuer)
+            ->where('created_at', '>=', now()->subHours(24))
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get()

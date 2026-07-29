@@ -5,13 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class TokenLargeEvent extends Model
+class TokenWhaleEvent extends Model
 {
     use HasFactory;
 
-    protected $table = 'token_large_events';
-
-    public $timestamps = false;
+    protected $table = 'token_whale_events';
 
     protected $fillable = [
         'asset_code',
@@ -21,8 +19,13 @@ class TokenLargeEvent extends Model
         'event_type',
         'token_amount',
         'xlm_value',
-        'usd_value',
         'ledger',
         'created_at',
+    ];
+
+    protected $casts = [
+        'token_amount' => 'float',
+        'xlm_value' => 'float',
+        'ledger' => 'integer',
     ];
 }

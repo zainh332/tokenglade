@@ -2229,7 +2229,7 @@ async function fetchLargeEvents() {
   
   largeEventsLoading.value = true
   try {
-    const res = await axios.get(`/api/token/${code}/${issuer}/large-activity`)
+    const res = await axios.get(`/api/token/${code}/${issuer}/whale-activity`)
     if (Array.isArray(res.data)) {
       largeEvents.value = res.data
     }
