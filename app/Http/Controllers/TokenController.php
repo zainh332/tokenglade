@@ -2059,14 +2059,32 @@ EOT;
         $stats = Cache::remember("token_stats_{$timeframe}_{$code}_{$issuer}", 300, function () use ($code, $issuer, $hours, $timeframe) {
             $latest = \App\Models\TokenStatSnapshot::where('asset_code', $code)
                 ->where('asset_issuer', $issuer)
+                ->where('trustlines', '>', 0)
                 ->latest()
                 ->first();
 
+            if (!$latest) {
+                $latest = \App\Models\TokenStatSnapshot::where('asset_code', $code)
+                    ->where('asset_issuer', $issuer)
+                    ->latest()
+                    ->first();
+            }
+
             $past = \App\Models\TokenStatSnapshot::where('asset_code', $code)
                 ->where('asset_issuer', $issuer)
+                ->where('trustlines', '>', 0)
                 ->where('created_at', '<=', now()->subHours($hours))
                 ->latest()
                 ->first();
+
+            if (!$past) {
+                $past = \App\Models\TokenStatSnapshot::where('asset_code', $code)
+                    ->where('asset_issuer', $issuer)
+                    ->where('trustlines', '>', 0)
+                    ->where('id', '!=', $latest->id ?? 0)
+                    ->oldest()
+                    ->first();
+            }
 
             if (!$past) {
                 $past = \App\Models\TokenStatSnapshot::where('asset_code', $code)
@@ -2299,14 +2317,32 @@ EOT;
         // Calculate 24h price change dynamically from snapshots
         $latestSnapshot = \App\Models\TokenStatSnapshot::where('asset_code', $code)
             ->where('asset_issuer', $issuer)
+            ->where('trustlines', '>', 0)
             ->latest()
             ->first();
 
+        if (!$latestSnapshot) {
+            $latestSnapshot = \App\Models\TokenStatSnapshot::where('asset_code', $code)
+                ->where('asset_issuer', $issuer)
+                ->latest()
+                ->first();
+        }
+
         $pastSnapshot = \App\Models\TokenStatSnapshot::where('asset_code', $code)
             ->where('asset_issuer', $issuer)
+            ->where('trustlines', '>', 0)
             ->where('created_at', '<=', now()->subHours(24))
             ->latest()
             ->first();
+
+        if (!$pastSnapshot) {
+            $pastSnapshot = \App\Models\TokenStatSnapshot::where('asset_code', $code)
+                ->where('asset_issuer', $issuer)
+                ->where('trustlines', '>', 0)
+                ->where('id', '!=', $latestSnapshot->id ?? 0)
+                ->oldest()
+                ->first();
+        }
 
         if (!$pastSnapshot) {
             $pastSnapshot = \App\Models\TokenStatSnapshot::where('asset_code', $code)
