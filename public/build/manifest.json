@@ -1,6 +1,6 @@
 {
-  "_hearing-bb8eb8cb.js": {
-    "file": "assets/hearing-bb8eb8cb.js"
+  "_hearing-279e9262.js": {
+    "file": "assets/hearing-279e9262.js"
   },
   "resources/css/app.css": {
     "file": "assets/app-2558e334.css",
@@ -8,9 +8,9 @@
     "src": "resources/css/app.css"
   },
   "src/admin-main.js": {
-    "file": "assets/admin-main-03272f8d.js",
+    "file": "assets/admin-main-c8e27f8e.js",
     "imports": [
-      "_hearing-bb8eb8cb.js"
+      "_hearing-279e9262.js"
     ],
     "isEntry": true,
     "src": "src/admin-main.js"
@@ -76,7 +76,7 @@
     "src": "src/assets/wallet.jpg"
   },
   "src/main.css": {
-    "file": "assets/main-4d445868.css",
+    "file": "assets/main-65a479b6.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -97,11 +97,11 @@
       "assets/stop-abbef106.png"
     ],
     "css": [
-      "assets/main-4d445868.css"
+      "assets/main-65a479b6.css"
     ],
-    "file": "assets/main-2e9c6577.js",
+    "file": "assets/main-2a48f987.js",
     "imports": [
-      "_hearing-bb8eb8cb.js"
+      "_hearing-279e9262.js"
     ],
     "isEntry": true,
     "src": "src/main.js"

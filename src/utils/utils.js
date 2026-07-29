@@ -435,7 +435,6 @@ export async function getNetwork() {
   } catch (error) {
     console.error('[getNetwork] Fetch failed:', error);
   }
-  console.log('Detected Stellar network =', network);
   return network;
 }
 

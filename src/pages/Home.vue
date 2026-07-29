@@ -982,7 +982,7 @@ async function fetchFeaturedProjects() {
 async function fetchTrendingPools() {
   loadingPoolsList.value = true;
   try {
-    const res = await fetch('https://api.stellar.expert/explorer/public/liquidity-pool?limit=50');
+    const res = await fetch('/api/token/stellar-proxy?endpoint=explorer/public/liquidity-pool&limit=50');
     const data = await res.json();
     const records = data._embedded?.records || data;
     if (Array.isArray(records)) {
@@ -1034,7 +1034,7 @@ async function fetchTrendingPools() {
 async function fetchTrendingTokens() {
   loadingTrendingTokens.value = true;
   try {
-    const res = await fetch('https://api.stellar.expert/explorer/public/asset?sort=rating&limit=80');
+    const res = await fetch('/api/token/stellar-proxy?endpoint=explorer/public/asset&sort=rating&limit=80');
     const data = await res.json();
     const records = data._embedded?.records || data;
     if (Array.isArray(records)) {
@@ -1160,7 +1160,8 @@ async function fetchMarketHighlights() {
 
 async function fetchAssetStats() {
   try {
-    const url = new URL('https://api.stellar.expert/explorer/public/asset/XLM');
+    const url = new URL('/api/token/stellar-proxy', window.location.origin);
+    url.searchParams.set('endpoint', 'explorer/public/asset/XLM');
     url.searchParams.set('_', Math.floor(Date.now() / 300000).toString());
     const res = await fetch(url.toString(), {
       method: 'GET',

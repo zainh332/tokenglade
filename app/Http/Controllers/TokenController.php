@@ -2646,4 +2646,28 @@ EOT;
             imageline($img, $ox1, $oy1 + $r, $ox1, $oy2 - $r, $color);
         }
     }
+
+    public function stellarProxy(\Illuminate\Http\Request $request)
+    {
+        $endpoint = $request->query('endpoint');
+        if (!$endpoint) {
+            return response()->json(['error' => 'Missing endpoint parameter'], 400);
+        }
+
+        // Restrict endpoint to prevent SSRF
+        if (!preg_match('/^explorer\/public\//', $endpoint)) {
+            return response()->json(['error' => 'Invalid endpoint'], 400);
+        }
+
+        // Forward query parameters except endpoint
+        $queryParams = $request->except('endpoint');
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::get("https://api.stellar.expert/{$endpoint}", $queryParams);
+            return response($response->body(), $response->status())
+                ->header('Content-Type', $response->header('Content-Type'));
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'Failed to fetch from Stellar.Expert proxy: ' . $e->getMessage()], 500);
+        }
+    }
 }
