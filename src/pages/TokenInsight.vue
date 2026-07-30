@@ -138,6 +138,26 @@
               <div class="h-16 bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
             </div>
 
+            <!-- Whale Activity Card Skeleton -->
+            <div class="card p-4 space-y-4">
+              <div class="flex justify-between items-center">
+                <div class="h-5 bg-[#1D2531]/60 rounded w-32"></div>
+                <div class="h-4 bg-[#1D2531]/40 rounded w-16"></div>
+              </div>
+              <div class="space-y-3.5 bg-[#0E131C]/40 p-4 rounded-xl border border-[#1D2531]/40">
+                <div v-for="i in 3" :key="i" class="space-y-2 pb-3 border-b border-[#1D2531]/20 last:border-b-0 last:pb-0">
+                  <div class="flex justify-between">
+                    <div class="h-3 bg-[#1D2531]/60 rounded w-36"></div>
+                    <div class="h-3 bg-[#1D2531]/40 rounded w-8"></div>
+                  </div>
+                  <div class="flex justify-between">
+                    <div class="h-3.5 bg-[#1D2531]/40 rounded w-20"></div>
+                    <div class="h-2.5 bg-[#1D2531]/40 rounded w-12"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Voting Card Skeleton -->
             <div class="card p-4 space-y-4">
               <div class="h-5 bg-[#1D2531]/60 rounded w-36"></div>
