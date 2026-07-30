@@ -118,7 +118,7 @@ class TrackWhaleActivity extends Command
             'base_asset_issuer' => $issuer,
             'order'             => 'asc',
             'cursor'            => $cursor,
-            'limit'             => 100,
+            'limit'             => 200,
         ]);
 
         if (!$response->ok()) {
@@ -210,7 +210,7 @@ class TrackWhaleActivity extends Command
         // Fetch pools associated with this asset
         $poolsRes = Http::get("{$horizonUrl}/liquidity_pools", [
             'reserves' => $targetAssetString,
-            'limit'    => 10,
+            'limit'    => 200,
         ]);
 
         if (!$poolsRes->ok()) {
@@ -218,6 +218,22 @@ class TrackWhaleActivity extends Command
         }
 
         $pools = $poolsRes->json('_embedded.records') ?? [];
+
+        // Sort pools by reserve values descending to prioritize main pools
+        usort($pools, function ($a, $b) {
+            $aRes = 0;
+            foreach ($a['reserves'] as $r) {
+                $aRes += (float) ($r['amount'] ?? 0);
+            }
+            $bRes = 0;
+            foreach ($b['reserves'] as $r) {
+                $bRes += (float) ($r['amount'] ?? 0);
+            }
+            return $bRes <=> $aRes;
+        });
+
+        // Only process top 15 pools by size (smaller ones cannot have whale events anyway)
+        $pools = array_slice($pools, 0, 15);
         $savedCount = 0;
 
         foreach ($pools as $pool) {
@@ -247,7 +263,7 @@ class TrackWhaleActivity extends Command
             $response = Http::get("{$horizonUrl}/liquidity_pools/{$poolId}/operations", [
                 'order'  => 'asc',
                 'cursor' => $cursor,
-                'limit'  => 50,
+                'limit'  => 200,
             ]);
 
             if (!$response->ok()) {
