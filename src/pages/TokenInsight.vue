@@ -1689,8 +1689,8 @@ const bullishSignals = computed(() => {
   if (buySellVolume.value.buyPercent > 50) {
     list.push(`Buy pressure dominant (${buySellVolume.value.buyPercent}% buy volume)`)
   }
-  if (list.length === 0) {
-    list.push('Holder sentiment is stable')
+  if (largeEvents.value && largeEvents.value.some(e => e.event_type === 'BUY' || e.event_type === 'LP_ADD')) {
+    list.push('Large whale buy or liquidity addition detected recently')
   }
   return list
 })
@@ -1709,6 +1709,9 @@ const bearishSignals = computed(() => {
   }
   if (!token.issuer_locked) {
     list.push(`Issuer key unlocked (potential mint inflation risk)`)
+  }
+  if (largeEvents.value && largeEvents.value.some(e => e.event_type === 'SELL' || e.event_type === 'LP_REMOVE')) {
+    list.push('Large whale sell or liquidity removal detected recently')
   }
   if (list.length === 0) {
     list.push('No critical bearish indicators flagged')

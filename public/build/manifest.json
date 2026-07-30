@@ -76,7 +76,7 @@
     "src": "src/assets/wallet.jpg"
   },
   "src/main.css": {
-    "file": "assets/main-533aff5a.css",
+    "file": "assets/main-0b1532c4.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -97,9 +97,9 @@
       "assets/stop-abbef106.png"
     ],
     "css": [
-      "assets/main-533aff5a.css"
+      "assets/main-0b1532c4.css"
     ],
-    "file": "assets/main-d3c9dd4f.js",
+    "file": "assets/main-2960a3a0.js",
     "imports": [
       "_hearing-279e9262.js"
     ],
