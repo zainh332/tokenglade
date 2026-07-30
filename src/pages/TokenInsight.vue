@@ -1692,6 +1692,12 @@ const bullishSignals = computed(() => {
   if (largeEvents.value && largeEvents.value.some(e => e.event_type === 'BUY' || e.event_type === 'LP_ADD')) {
     list.push('Large whale buy or liquidity addition detected recently')
   }
+  if (historicalStats.value?.volume_change_pct > 10) {
+    list.push(`Trading volume is up (+${historicalStats.value.volume_change_pct}% recently)`)
+  }
+  if (list.length === 0) {
+    list.push('No critical bullish indicators flagged')
+  }
   return list
 })
 
@@ -1712,6 +1718,9 @@ const bearishSignals = computed(() => {
   }
   if (largeEvents.value && largeEvents.value.some(e => e.event_type === 'SELL' || e.event_type === 'LP_REMOVE')) {
     list.push('Large whale sell or liquidity removal detected recently')
+  }
+  if (historicalStats.value?.volume_change_pct <= -10) {
+    list.push(`Trading volume is down (${historicalStats.value.volume_change_pct}% recently)`)
   }
   if (list.length === 0) {
     list.push('No critical bearish indicators flagged')
