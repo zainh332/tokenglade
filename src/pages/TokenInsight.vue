@@ -1680,17 +1680,14 @@ const totalAskValue = computed(() => {
 
 const bullishSignals = computed(() => {
   const list = []
-  if (historicalStats.value?.price_change_pct > 0) {
+  if (historicalStats.value?.price_change_pct > 10) {
     list.push(`Price momentum is positive (+${historicalStats.value.price_change_pct}% recently)`)
   }
-  if (historicalStats.value?.trustlines_change > 0) {
+  if (historicalStats.value?.trustlines_change > 10) {
     list.push(`Added +${historicalStats.value.trustlines_change} trustlines in current track`)
   }
   if (buySellVolume.value.buyPercent > 50) {
     list.push(`Buy pressure dominant (${buySellVolume.value.buyPercent}% buy volume)`)
-  }
-  if (token.issuer_locked) {
-    list.push(`Issuer key is permanently locked (no mint risk)`)
   }
   if (list.length === 0) {
     list.push('Holder sentiment is stable')
@@ -1704,7 +1701,7 @@ const bearishSignals = computed(() => {
   if (tvl < 500) {
     list.push(`Liquidity pool is shallow ($${formatNumber(tvl)} TVL), check slippage`)
   }
-  if (historicalStats.value?.price_change_pct < 0) {
+  if (historicalStats.value?.price_change_pct <= -10) {
     list.push(`Price is down (${historicalStats.value.price_change_pct}% change)`)
   }
   if (parseFloat(top10Percentage.value) > 50) {
