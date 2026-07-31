@@ -1287,19 +1287,21 @@
             <!-- Whale Activity Card -->
             <div class="card select-text">
               <div class="card-hd">
-                <h3>Whale Activity</h3><span class="tag">Live Tracker</span>
+                <h3>Whale Activity<span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5"
+                      title="Tracking trades ≥ 10,000 XLM">i</span></h3>
+                <span class="tag">Live Tracker</span>
               </div>
               <div class="p-4 space-y-3.5 bg-[#0E131C] border-t border-slate-800/60">
                 <div v-if="largeEventsLoading" class="text-xs text-slate-500 animate-pulse py-2 text-center">
                   Loading activity...
                 </div>
                 <div v-else-if="largeEvents.length === 0" class="text-xs text-slate-500 py-4 text-center">
-                  No whale activity found.
+                  No whale transactions detected in the last 24 hours.
                 </div>
                 <div v-else class="space-y-4">
                   <div v-for="event in largeEvents" :key="event.id" class="flex flex-col gap-1 pb-3 border-b border-slate-800/30 last:border-b-0 last:pb-0">
-                    <div class="flex items-center justify-between text-xs">
-                      <div class="flex items-center gap-1.5 font-medium">
+                    <div class="flex items-start justify-between gap-2 text-xs">
+                      <div class="flex flex-wrap items-center gap-1 font-medium min-w-0">
                         <span v-if="event.event_type === 'BUY'" class="text-emerald-400">
                           Bought <strong class="text-white font-mono">{{ formatNumberWithCommas(event.token_amount) }}</strong> {{ token.asset_code }}
                         </span>
@@ -1317,13 +1319,13 @@
                       <!-- Transaction Link -->
                       <a :href="`https://stellar.expert/explorer/public/tx/${event.transaction_hash}`" 
                          target="_blank" 
-                         class="text-[10px] text-slate-500 hover:text-cyan-400 transition-colors font-mono"
+                         class="text-[10px] text-slate-500 hover:text-cyan-400 transition-colors font-mono flex-shrink-0"
                          title="View Tx on Stellar.Expert">
                         tx ↗
                       </a>
                     </div>
                     
-                    <div class="flex items-center justify-between text-[11px] text-slate-400">
+                    <div class="flex items-center justify-between gap-2 text-[11px] text-slate-400 flex-wrap">
                       <span class="font-mono">
                         ≈ {{ formatNumberWithCommas(event.xlm_value) }} XLM
                       </span>
