@@ -60,16 +60,28 @@
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
-            <tr class="bg-gray-950/40 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-855">
-              <th class="py-4 px-6">Project Details</th>
+            <tr class="bg-gray-950/40 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-855 select-none">
+              <th @click="sortBy('name')" class="py-4 px-6 cursor-pointer hover:text-gray-300 transition">
+                Project Details <span class="text-[9px]" v-if="sortKey === 'name'">{{ sortAsc ? '▲' : '▼' }}</span>
+              </th>
               <th class="py-4 px-6">Issuer</th>
               <th class="py-4 px-6">Sender Wallet</th>
-              <th class="py-4 px-6">Payment Asset</th>
-              <th class="py-4 px-6">Amount</th>
+              <th @click="sortBy('payment_asset')" class="py-4 px-6 cursor-pointer hover:text-gray-300 transition">
+                Payment Asset <span class="text-[9px]" v-if="sortKey === 'payment_asset'">{{ sortAsc ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('payment_amount')" class="py-4 px-6 cursor-pointer hover:text-gray-300 transition">
+                Amount <span class="text-[9px]" v-if="sortKey === 'payment_amount'">{{ sortAsc ? '▲' : '▼' }}</span>
+              </th>
               <th class="py-4 px-6">Payment Tx Link</th>
-              <th class="py-4 px-6">Submitted At</th>
-              <th class="py-4 px-6">Updated At</th>
-              <th class="py-4 px-6">Status</th>
+              <th @click="sortBy('created_at')" class="py-4 px-6 cursor-pointer hover:text-gray-300 transition">
+                Submitted At <span class="text-[9px]" v-if="sortKey === 'created_at'">{{ sortAsc ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('updated_at')" class="py-4 px-6 cursor-pointer hover:text-gray-300 transition">
+                Updated At <span class="text-[9px]" v-if="sortKey === 'updated_at'">{{ sortAsc ? '▲' : '▼' }}</span>
+              </th>
+              <th @click="sortBy('status')" class="py-4 px-6 cursor-pointer hover:text-gray-300 transition">
+                Status <span class="text-[9px]" v-if="sortKey === 'status'">{{ sortAsc ? '▲' : '▼' }}</span>
+              </th>
               <th class="py-4 px-6 text-right">Actions</th>
             </tr>
           </thead>
@@ -232,6 +244,18 @@ const loading = ref(false);
 const filterStatus = ref('all');
 const searchQuery = ref('');
 
+const sortKey = ref('created_at');
+const sortAsc = ref(false);
+
+function sortBy(key) {
+  if (sortKey.value === key) {
+    sortAsc.value = !sortAsc.value;
+  } else {
+    sortKey.value = key;
+    sortAsc.value = true;
+  }
+}
+
 // Dialog logic states
 const activeClaimForAction = ref(null);
 const chosenAction = ref('');
@@ -315,7 +339,23 @@ const filteredItems = computed(() => {
       i.asset_code.toLowerCase().includes(q)
     );
   }
-  return list;
+
+  return [...list].sort((a, b) => {
+    let valA = a[sortKey.value];
+    let valB = b[sortKey.value];
+
+    if (valA === null || valA === undefined) return sortAsc.value ? -1 : 1;
+    if (valB === null || valB === undefined) return sortAsc.value ? 1 : -1;
+
+    if (sortKey.value === 'created_at' || sortKey.value === 'updated_at') {
+      valA = new Date(valA).getTime();
+      valB = new Date(valB).getTime();
+    }
+
+    if (valA < valB) return sortAsc.value ? -1 : 1;
+    if (valA > valB) return sortAsc.value ? 1 : -1;
+    return 0;
+  });
 });
 
 async function loadData() {

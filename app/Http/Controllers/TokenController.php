@@ -11,6 +11,10 @@ use App\Models\User;
 use App\Models\VerificationPaymentAsset;
 use App\Models\VerificationTransaction;
 use App\Models\VerifiedProject;
+use App\Models\ProjectProfile;
+use App\Models\ProjectOfficialLink;
+use App\Models\ProjectSocialLink;
+use App\Models\ProjectOfficialWallet;
 use App\Services\StellarTokenService;
 use App\Services\WalletService;
 use Exception;
@@ -1453,6 +1457,52 @@ EOT;
             $verificationProject &&
             $verificationProject->status == 2;
 
+        $logo = $insight['image'] ?? null;
+        $website = $insight['website'] ?? null;
+        $projectDetails = null;
+
+        if ($verificationProject) {
+            $projectDetails = $verificationProject->profile()
+                ->with(['officialLinks', 'socialLinks', 'officialWallets'])
+                ->first();
+
+            // Auto-backfill profile for legacy verified projects
+            if (!$projectDetails && $verificationProject->status == 1) {
+                try {
+                    $profile = ProjectProfile::create([
+                        'verified_project_id' => $verificationProject->id,
+                        'name'                => $verificationProject->name ?? $code,
+                        'category'            => 'Other',
+                    ]);
+
+                    ProjectOfficialLink::create([
+                        'project_profile_id' => $profile->id,
+                        'website'            => $verificationProject->website,
+                    ]);
+
+                    ProjectSocialLink::create([
+                        'project_profile_id' => $profile->id,
+                        'twitter'            => $verificationProject->twitter,
+                    ]);
+
+                    $projectDetails = $verificationProject->profile()
+                        ->with(['officialLinks', 'socialLinks', 'officialWallets'])
+                        ->first();
+                } catch (\Throwable $e) {
+                    Log::warning("Failed to auto-migrate legacy verified project profile: " . $e->getMessage());
+                }
+            }
+
+            if ($projectDetails) {
+                if ($projectDetails->logo_url) {
+                    $logo = $projectDetails->logo_url;
+                }
+                if ($projectDetails->officialLinks && $projectDetails->officialLinks->website) {
+                    $website = $projectDetails->officialLinks->website;
+                }
+            }
+        }
+
         $marketToken = StellarMarketToken::updateOrCreate(
             [
                 'asset_code' => $code,
@@ -1460,8 +1510,8 @@ EOT;
             ],
             [
                 'name' => $insight['name'] ?? $code,
-                'image' => $insight['image'] ?? null,
-                'website' => $insight['website'] ?? null,
+                'image' => $logo,
+                'website' => $website,
 
                 'is_verified' => $isVerified,
 
@@ -1489,6 +1539,9 @@ EOT;
 
         return response()->json([
             ...$insight,
+            'image' => $logo,
+            'website' => $website,
+            'project_details' => $projectDetails,
             'is_verified' => $isVerified,
             'is_verification_pending' => $isVerificationPending,
             'votes' => $votes
@@ -1645,10 +1698,25 @@ EOT;
         $validator = Validator::make($request->all(), [
             'identifier'   => ['required', 'string'],
             'asset_code'   => ['required', 'string'],
-            'name'         => ['nullable', 'string'],
-            'website'      => ['nullable', 'string'],
-            'twitter'      => ['nullable', 'string'],
-            'email'        => ['nullable', 'email'],
+            'name'         => ['required', 'string'],
+            'short_description' => ['nullable', 'string'],
+            'full_description' => ['nullable', 'string'],
+            'category'     => ['nullable', 'string'],
+            'launch_date'  => ['nullable', 'date'],
+            'logo'         => ['nullable', 'image', 'max:2048'],
+            'banner'       => ['nullable', 'image', 'max:4096'],
+            'website_link' => ['nullable', 'string'],
+            'documentation_link' => ['nullable', 'string'],
+            'whitepaper_link' => ['nullable', 'string'],
+            'github_link'  => ['nullable', 'string'],
+            'medium_link'  => ['nullable', 'string'],
+            'twitter_link' => ['nullable', 'string'],
+            'telegram_link' => ['nullable', 'string'],
+            'discord_link' => ['nullable', 'string'],
+            'linkedin_link' => ['nullable', 'string'],
+            'reddit_link'  => ['nullable', 'string'],
+            'youtube_link' => ['nullable', 'string'],
+            'wallets'      => ['nullable', 'string'],
             'public_key'   => ['required', 'string'],
             'verification_payment_asset_id' => [
                 'required',
@@ -1658,7 +1726,6 @@ EOT;
         ]);
 
         if ($validator->fails()) {
-
             return response()->json([
                 'status' => 'error',
                 'errors' => $validator->errors()
@@ -1671,11 +1738,7 @@ EOT;
             $request->verification_payment_asset_id
         );
 
-        if (
-            !$paymentAsset ||
-            !$paymentAsset->is_active
-        ) {
-
+        if (!$paymentAsset || !$paymentAsset->is_active) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Invalid payment asset.'
@@ -1683,31 +1746,55 @@ EOT;
         }
 
         try {
-
             $source = $this->sdk->requestAccount($public);
         } catch (HorizonRequestException $e) {
-
             if ($e->getStatusCode() == 404) {
-
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Wallet does not exist on Stellar network.'
                 ]);
             }
-
             return response()->json([
                 'status' => 'error',
                 'message' => 'Horizon error.'
             ]);
         }
 
+        // Process files
+        $logoUrl = null;
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('project_logos', 'public');
+            $logoUrl = asset('storage/' . $path);
+        }
+
+        $bannerUrl = null;
+        if ($request->hasFile('banner')) {
+            $path = $request->file('banner')->store('project_banners', 'public');
+            $bannerUrl = asset('storage/' . $path);
+        }
+
         DB::beginTransaction();
 
         try {
+            // Delete any existing unpaid draft verification requests for this token to keep DB clean
+            $existingDrafts = VerifiedProject::where('identifier', $request->identifier)
+                ->where('asset_code', $request->asset_code)
+                ->where('status', 0)
+                ->get();
+
+            foreach ($existingDrafts as $draft) {
+                if ($draft->profile) {
+                    $draft->profile->officialLinks()->delete();
+                    $draft->profile->socialLinks()->delete();
+                    $draft->profile->officialWallets()->delete();
+                    $draft->profile->delete();
+                }
+                VerificationTransaction::where('verified_project_id', $draft->id)->delete();
+                $draft->delete();
+            }
 
             $stellarAsset = $paymentAsset->asset_code === 'XLM'
                 ? Asset::native()
-
                 : Asset::createNonNativeAsset(
                     $paymentAsset->asset_code,
                     $paymentAsset->asset_issuer
@@ -1734,7 +1821,6 @@ EOT;
             $unsignedXdr = $transaction->toEnvelopeXdrBase64();
 
             if (!$unsignedXdr) {
-
                 throw new \Exception('Failed to generate transaction.');
             }
 
@@ -1743,12 +1829,56 @@ EOT;
                 'identifier'       => $request->identifier,
                 'asset_code'       => $request->asset_code,
                 'name'             => $request->name,
-                'website'          => $request->website,
-                'twitter'          => $request->twitter,
-                'email'            => $request->email,
+                'website'          => $request->website_link,
+                'twitter'          => $request->twitter_link,
                 'wallet_address'   => $public,
                 'status'           => 0,
             ]);
+
+            // Save project profile
+            $profile = ProjectProfile::create([
+                'verified_project_id' => $project->id,
+                'name'                => $request->name,
+                'short_description'   => $request->short_description,
+                'full_description'    => $request->full_description,
+                'category'            => $request->category,
+                'logo_url'            => $logoUrl,
+                'banner_url'          => $bannerUrl,
+                'launch_date'         => $request->launch_date,
+            ]);
+
+            // Save official links
+            ProjectOfficialLink::create([
+                'project_profile_id' => $profile->id,
+                'website'            => $request->website_link,
+                'documentation'      => $request->documentation_link,
+                'whitepaper'         => $request->whitepaper_link,
+                'github'             => $request->github_link,
+                'medium'             => $request->medium_link,
+            ]);
+
+            // Save social links
+            ProjectSocialLink::create([
+                'project_profile_id' => $profile->id,
+                'twitter'            => $request->twitter_link,
+                'telegram'           => $request->telegram_link,
+                'discord'            => $request->discord_link,
+                'linkedin'           => $request->linkedin_link,
+                'reddit'             => $request->reddit_link,
+                'youtube'            => $request->youtube_link,
+            ]);
+
+            // Save official wallets
+            $walletsData = json_decode($request->wallets, true) ?? [];
+            foreach ($walletsData as $wallet) {
+                if (!empty($wallet['wallet_address']) && !empty($wallet['label'])) {
+                    ProjectOfficialWallet::create([
+                        'project_profile_id' => $profile->id,
+                        'wallet_address'     => $wallet['wallet_address'],
+                        'label'              => $wallet['label'],
+                    ]);
+                }
+            }
 
             $verificationTransaction = VerificationTransaction::create([
                 'verified_project_id' => $project->id,
@@ -1768,9 +1898,7 @@ EOT;
                 'verification_transaction_id' => $verificationTransaction->id,
             ]);
         } catch (\Exception $e) {
-
             DB::rollBack();
-
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage()

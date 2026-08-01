@@ -5,13 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class VerifiedProject extends Model
+class ProjectSocialLink extends Model
 {
     use HasFactory;
-    protected $guarded=[];
+
+    protected $guarded = [];
 
     public function profile()
     {
-        return $this->hasOne(ProjectProfile::class, 'verified_project_id');
+        return $this->belongsTo(ProjectProfile::class, 'project_profile_id');
     }
 }

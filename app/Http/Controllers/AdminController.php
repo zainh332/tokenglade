@@ -395,4 +395,95 @@ class AdminController extends Controller
             'message' => 'Token and all associated records deleted successfully.'
         ]);
     }
+
+    /**
+     * Get list of project verification claims.
+     */
+    public function getVerifications(Request $request)
+    {
+        $claims = \App\Models\VerifiedProject::where('status', '>', 0)
+            ->with(['profile'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $data = $claims->map(function ($claim) {
+            $tx = \App\Models\VerificationTransaction::where('verified_project_id', $claim->id)
+                ->where('status', 2)
+                ->first();
+
+            $paymentAssetCode = 'XLM';
+            $paymentAssetAmount = 0;
+            $paymentTxHash = '';
+
+            if ($tx) {
+                $paymentTxHash = $tx->transaction_hash;
+                $paymentAssetAmount = (float) $tx->amount;
+                if ($tx->verification_payment_asset_id) {
+                    $asset = \App\Models\VerificationPaymentAsset::find($tx->verification_payment_asset_id);
+                    if ($asset) {
+                        $paymentAssetCode = $asset->asset_code;
+                    }
+                }
+            }
+
+            $statusStr = 'pending';
+            if ($claim->status == 1) {
+                $statusStr = 'approved';
+            } elseif ($claim->status == 3) {
+                $statusStr = 'rejected';
+            }
+
+            return [
+                'id' => $claim->id,
+                'name' => $claim->profile->name ?? $claim->name,
+                'asset_code' => $claim->asset_code,
+                'asset_issuer' => $claim->identifier,
+                'sender_wallet' => $claim->wallet_address,
+                'payment_asset' => $paymentAssetCode,
+                'payment_amount' => $paymentAssetAmount,
+                'payment_tx' => $paymentTxHash,
+                'logo_url' => $claim->profile->logo_url ?? null,
+                'status' => $statusStr,
+                'rejection_reason' => $claim->rejection_reason,
+                'created_at' => $claim->created_at ? $claim->created_at->toIso8601String() : null,
+                'updated_at' => $claim->updated_at ? $claim->updated_at->toIso8601String() : null,
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $data
+        ]);
+    }
+
+    /**
+     * Update status of project verification claim.
+     */
+    public function updateVerificationStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|string|in:approved,rejected',
+            'rejection_reason' => 'nullable|string'
+        ]);
+
+        $project = \App\Models\VerifiedProject::findOrFail($id);
+
+        $dbStatus = 2; // pending
+        if ($request->status === 'approved') {
+            $dbStatus = 1;
+            $project->verified_at = now();
+        } elseif ($request->status === 'rejected') {
+            $dbStatus = 3;
+            $project->rejected_at = now();
+            $project->rejection_reason = $request->rejection_reason;
+        }
+
+        $project->status = $dbStatus;
+        $project->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Status updated successfully.'
+        ]);
+    }
 }

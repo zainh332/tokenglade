@@ -226,8 +226,8 @@
                   <span v-if="isVerified" class="chip verified">✓ Verified</span>
                   <span v-else-if="isVerificationPending" class="chip"
                     style="color:var(--pink);border-color:rgba(240,24,156,0.25)">Pending</span>
-                  <span v-else @click="verificationModal = true"
-                    class="chip select-none cursor-pointer hover:bg-white/5 transition">Unverified</span>
+                  <button v-else @click="verificationModal = true"
+                    class="claim-btn select-none cursor-pointer transition">Claim Project</button>
                 </div>
 
                 <div class="issuer">
@@ -1420,6 +1420,7 @@
     <ConnectWalletModal v-model="ConnectWalletModals" :connected="isWalletConnected" :walletKey="walletKey" />
     <VerificationModal :open="verificationModal" :connected="isWalletConnected" :loading="verificationLoading"
       :payment-assets="verificationPaymentAssets" :selected-asset="selectedVerificationAsset"
+      :asset-code="token.asset_code || ''" :issuer-address="token.issuer || ''"
       @select-asset="selectedVerificationAsset = $event" @close="verificationModal = false"
       @connect-wallet="ConnectWalletModals = true" @pay="contactVerification" />
     <ShareTokenModal 
@@ -2356,7 +2357,7 @@ async function submitVote(voteType) {
   }
 }
 
-async function contactVerification() {
+async function contactVerification(formData) {
   try {
     verificationLoading.value = true
     const publicKey = getCookie('public_key')
@@ -2365,12 +2366,51 @@ async function contactVerification() {
       ConnectWalletModals.value = true
       return
     }
-    const res = await axios.post('/api/token/verification', {
-      identifier: token.issuer,
-      asset_code: token.asset_code,
-      public_key: publicKey,
-      verification_payment_asset_id: selectedVerificationAsset.value.id
+
+    const data = new FormData()
+    data.append('identifier', token.issuer)
+    data.append('asset_code', token.asset_code)
+    data.append('public_key', publicKey)
+    data.append('verification_payment_asset_id', selectedVerificationAsset.value.id)
+
+    // Form onboarding metadata
+    data.append('name', formData.name || '')
+    data.append('short_description', formData.short_description || '')
+    data.append('full_description', formData.full_description || '')
+    data.append('category', formData.category || '')
+    data.append('launch_date', formData.launch_date || '')
+    
+    if (formData.logo) {
+      data.append('logo', formData.logo)
+    }
+    if (formData.banner) {
+      data.append('banner', formData.banner)
+    }
+
+    // Links
+    data.append('website_link', formData.website_link || '')
+    data.append('documentation_link', formData.documentation_link || '')
+    data.append('whitepaper_link', formData.whitepaper_link || '')
+    data.append('github_link', formData.github_link || '')
+    data.append('medium_link', formData.medium_link || '')
+
+    // Socials
+    data.append('twitter_link', formData.twitter_link || '')
+    data.append('telegram_link', formData.telegram_link || '')
+    data.append('discord_link', formData.discord_link || '')
+    data.append('linkedin_link', formData.linkedin_link || '')
+    data.append('reddit_link', formData.reddit_link || '')
+    data.append('youtube_link', formData.youtube_link || '')
+
+    // JSON array of wallets
+    data.append('wallets', JSON.stringify(formData.wallets || []))
+
+    const res = await axios.post('/api/token/verification', data, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
     })
+
     if (res.data.status !== 'success') {
       verificationLoading.value = false
       Swal.fire({
@@ -2380,15 +2420,18 @@ async function contactVerification() {
       })
       return
     }
+
     const signedXdr = await signXdrWithWallet(
       localStorage.getItem("wallet_key"),
       res.data.xdr,
       'public'
     )
+
     await axios.post('/api/token/submit_verification_xdr', {
       signedXdr,
       verification_transaction_id: res.data.verification_transaction_id
     })
+
     Swal.fire({
       icon: 'success',
       title: 'Success',
@@ -2396,7 +2439,7 @@ async function contactVerification() {
     })
     verificationLoading.value = false
     verificationModal.value = false
-    fetchAssetDetails();
+    fetchToken()
   } catch (e) {
     verificationLoading.value = false
     console.error(e)
@@ -2736,6 +2779,29 @@ watch(selectedChartType, () => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+.claim-btn {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 11px;
+  border-radius: 7px;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.05);
+  color: #f59e0b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+}
+
+.claim-btn:hover {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: #f59e0b;
+  color: #fbbf24;
+}
 
 .asset-page-wrapper {
   --bg: #070A13;

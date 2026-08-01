@@ -874,6 +874,18 @@ class StellarTokenService
             if ($holdersResponse->ok()) {
                 $records = $holdersResponse->json('_embedded.records') ?? [];
                 
+                $verifiedProj = \App\Models\VerifiedProject::where('identifier', $issuer)
+                    ->where('blockchain_id', 1)
+                    ->where('status', 1)
+                    ->first();
+
+                $dbOfficialWallets = collect();
+                if ($verifiedProj && $verifiedProj->profile) {
+                    $dbOfficialWallets = $verifiedProj->profile->officialWallets()->get();
+                }
+
+                $processedAddresses = [];
+
                 $addresses = [];
                 foreach ($records as $record) {
                     $addr = $record['account'] ?? $record['address'] ?? null;
@@ -934,6 +946,8 @@ class StellarTokenService
 
                 foreach ($records as $record) {
                     $addr = $record['account'] ?? $record['address'] ?? null;
+                    if (!$addr) continue;
+
                     $rawBalance = $record['balance'] ?? 0;
                     $formattedBalance = bcdiv(
                         normalizeBcNumber($rawBalance),
@@ -942,6 +956,20 @@ class StellarTokenService
                     );
 
                     $dirInfo = $directoryMap[$addr] ?? [];
+
+                    // Check if configured in project_official_wallets table
+                    $dbWallet = $dbOfficialWallets->firstWhere('wallet_address', $addr);
+                    if ($dbWallet) {
+                        $processedAddresses[] = $addr;
+                        $projectHolders[] = [
+                            'address' => $addr,
+                            'balance' => (float) $formattedBalance,
+                            'name'    => $dbWallet->label,
+                            'domain'  => $tokenDomain,
+                            'tags'    => ['treasury', 'project'],
+                        ];
+                        continue;
+                    }
 
                     $walletData = [
                         'address' => $addr,
@@ -993,6 +1021,38 @@ class StellarTokenService
                         $projectHolders[] = $walletData;
                     } else {
                         $individualHolders[] = $walletData;
+                    }
+                }
+
+                // Fetch balance for configured database wallets not present in Stellar Expert's top 35 list
+                foreach ($dbOfficialWallets as $dbWallet) {
+                    if (!in_array($dbWallet->wallet_address, $processedAddresses)) {
+                        $balance = 0.0;
+                        try {
+                            $accInfo = Http::timeout(1.5)->get($this->horizon . "/accounts/{$dbWallet->wallet_address}");
+                            if ($accInfo->ok()) {
+                                $balances = $accInfo->json('balances') ?? [];
+                                foreach ($balances as $bal) {
+                                    $bAssetCode = $bal['asset_code'] ?? 'XLM';
+                                    $bAssetIssuer = $bal['asset_issuer'] ?? '';
+                                    if ($code === 'XLM' && $bal['asset_type'] === 'native') {
+                                        $balance = (float) $bal['balance'];
+                                        break;
+                                    } elseif (strtoupper($bAssetCode) === strtoupper($code) && strtoupper($bAssetIssuer) === strtoupper($issuer)) {
+                                        $balance = (float) $bal['balance'];
+                                        break;
+                                    }
+                                }
+                            }
+                        } catch (\Throwable $e) {}
+
+                        $projectHolders[] = [
+                            'address' => $dbWallet->wallet_address,
+                            'balance' => $balance,
+                            'name'    => $dbWallet->label,
+                            'domain'  => $tokenDomain,
+                            'tags'    => ['treasury', 'project'],
+                        ];
                     }
                 }
             }

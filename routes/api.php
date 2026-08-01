@@ -62,6 +62,8 @@ Route::middleware('admin')->prefix('admin')->group(function () {
     Route::get('verification-fees', 'AdminController@getVerificationFees');
     Route::post('verification-fees', 'AdminController@saveVerificationFee');
     Route::delete('verification-fees/{id}', 'AdminController@deleteVerificationFee');
+    Route::get('verifications', 'AdminController@getVerifications');
+    Route::post('verifications/{id}/status', 'AdminController@updateVerificationStatus');
 });
 
 Route::prefix('token')->group(function () {
