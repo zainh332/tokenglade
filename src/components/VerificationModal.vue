@@ -44,25 +44,25 @@
                   </div>
                 </div>
 
-                <!-- Stepper Progress Bar -->
-                <div class="mt-6 mb-8 select-none">
+                 <!-- Stepper Progress Bar -->
+                <div v-if="currentStep > 1" class="mt-6 mb-8 select-none">
                   <div class="flex items-center justify-between relative">
                     <div class="absolute left-0 right-0 top-1/2 h-0.5 bg-slate-800 -translate-y-1/2 z-0"></div>
                     <div class="absolute left-0 top-1/2 h-0.5 bg-gradient-to-r from-purple-500 to-cyan-500 -translate-y-1/2 z-0 transition-all duration-300"
-                      :style="{ width: `${((currentStep - 1) / 6) * 100}%` }"></div>
+                      :style="{ width: `${((currentStep - 2) / 5) * 100}%` }"></div>
 
-                    <button v-for="step in 7" :key="step" @click="goToStep(step)"
-                      :disabled="step > maxReachedStep"
+                    <button v-for="step in 6" :key="step" @click="goToStep(step + 1)"
+                      :disabled="(step + 1) > maxReachedStep"
                       class="relative z-10 w-8 h-8 rounded-full border flex items-center justify-center font-mono text-xs font-bold transition-all duration-300"
                       :class="[
-                        step === currentStep 
+                        (step + 1) === currentStep 
                           ? 'border-cyan-400 bg-cyan-950 text-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.3)]'
-                          : step < currentStep 
+                          : (step + 1) < currentStep 
                             ? 'border-purple-500 bg-purple-950 text-purple-400' 
                             : 'border-slate-800 bg-slate-900 text-slate-500 disabled:opacity-40 disabled:cursor-not-allowed'
                       ]"
                     >
-                      <span v-if="step < currentStep">✓</span>
+                      <span v-if="(step + 1) < currentStep">✓</span>
                       <span v-else>{{ step }}</span>
                     </button>
                   </div>
@@ -71,8 +71,51 @@
                 <!-- Step Contents -->
                 <div class="space-y-5 min-h-[300px]">
 
-                  <!-- Step 1: Project Information -->
-                  <div v-if="currentStep === 1" class="space-y-4">
+                  <!-- Step 1: Welcome Intro Screen -->
+                  <div v-if="currentStep === 1" class="space-y-6 py-12">
+                    <div class="space-y-2">
+                      <h3 class="text-lg font-black text-white tracking-wide">
+                        Project Verification
+                      </h3>
+                      <p class="text-xs text-slate-400 leading-relaxed">
+                        Verify ownership to manage your official project profile
+                      </p>
+                    </div>
+
+                    <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-5 space-y-3.5">
+                      <span class="block text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider">After approval you'll be able to:</span>
+                      
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-medium text-slate-300">
+                        <div class="flex items-center gap-2">
+                          <span class="text-cyan-400 font-bold select-none">✓</span>
+                          <span>Display official treasury wallets</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-cyan-400 font-bold select-none">✓</span>
+                          <span>Verify your project</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-cyan-400 font-bold select-none">✓</span>
+                          <span>Manage your About page</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-cyan-400 font-bold select-none">✓</span>
+                          <span>Add social links</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-cyan-400 font-bold select-none">✓</span>
+                          <span>Upload your logo & banner</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-cyan-400 font-bold select-none">✓</span>
+                          <span>Become eligible for Featured Projects</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Step 2: Project Information -->
+                  <div v-if="currentStep === 2" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Token Symbol</label>
@@ -96,9 +139,9 @@
                       <div>
                         <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Category</label>
                         <select v-model="form.category"
-                          class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all">
-                          <option value="">Select Category</option>
-                          <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+                          class="w-full rounded-xl border border-slate-800 bg-[#182235] px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all">
+                          <option value="" class="bg-[#111620] text-slate-400">Select Category</option>
+                          <option v-for="cat in categories" :key="cat" :value="cat" class="bg-[#111620] text-white">{{ cat }}</option>
                         </select>
                       </div>
                       <div>
@@ -109,26 +152,40 @@
                     </div>
 
                     <div>
-                      <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Short Description <span class="text-rose-500">*</span></label>
+                      <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Short Description <span class="text-rose-500">*</span></label>
+                        <span class="text-[10px] font-mono text-slate-500">{{ form.short_description?.length || 0 }}/250</span>
+                      </div>
                       <input type="text" v-model="form.short_description" placeholder="A brief project pitch (max 250 chars)" maxlength="250"
                         class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
                     </div>
 
                     <div>
-                      <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Official Email</label>
-                      <input type="email" v-model="form.official_email" placeholder="e.g. contact@lumoscore.com"
-                        class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
+                      <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Official Email <span class="text-rose-500">*</span></label>
+                        <span v-if="form.official_email.trim() && !isEmailValid" class="text-[10px] font-mono text-rose-400">Invalid email format</span>
+                      </div>
+                      <input type="email" v-model="form.official_email" placeholder="e.g. contact@tokenglade.com"
+                        class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                        :class="[
+                          form.official_email.trim() && !isEmailValid 
+                            ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500' 
+                            : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                        ]" />
                     </div>
 
                     <div>
-                      <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Full Description</label>
-                      <textarea v-model="form.full_description" rows="4" placeholder="Detailed project overview, mission, roadmap, etc."
+                      <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Full Description</label>
+                        <span class="text-[10px] font-mono text-slate-500">{{ form.full_description?.length || 0 }}/2000</span>
+                      </div>
+                      <textarea v-model="form.full_description" rows="4" placeholder="Detailed project overview, mission, roadmap, etc." maxlength="2000"
                         class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all resize-none"></textarea>
                     </div>
                   </div>
 
-                  <!-- Step 2: Branding -->
-                  <div v-if="currentStep === 2" class="space-y-6">
+                  <!-- Step 3: Branding -->
+                  <div v-if="currentStep === 3" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <!-- Project Logo -->
                       <div class="space-y-3">
@@ -170,8 +227,8 @@
                     </div>
                   </div>
 
-                  <!-- Step 3: Official Links -->
-                  <div v-if="currentStep === 3" class="space-y-4">
+                  <!-- Step 4: Official Links -->
+                  <div v-if="currentStep === 4" class="space-y-4">
                     <div>
                       <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Website URL <span class="text-rose-500">*</span></label>
                       <input type="text" v-model="form.website_link" placeholder="https://example.com"
@@ -203,8 +260,8 @@
                     </div>
                   </div>
 
-                  <!-- Step 4: Social Links -->
-                  <div v-if="currentStep === 4" class="space-y-4">
+                  <!-- Step 5: Social Links -->
+                  <div v-if="currentStep === 5" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">X (Twitter)</label>
@@ -245,9 +302,9 @@
                     </div>
                   </div>
 
-                  <!-- Step 5: Official Wallets -->
-                  <div v-if="currentStep === 5" class="space-y-4">
-                    <div class="flex items-center justify-between">
+                  <!-- Step 6: Official Wallets -->
+                  <div v-if="currentStep === 6" class="space-y-4">
+                    <div class="space-y-3">
                       <p class="text-xs text-slate-400 leading-relaxed">
                         Add official project addresses to list labels (e.g. Treasury, Team, Staking) on the explorer.
                       </p>
@@ -262,8 +319,8 @@
                         class="flex flex-col sm:flex-row items-center gap-3 p-3 bg-slate-900/40 border border-slate-800/80 rounded-xl">
                         <div class="w-full sm:w-1/3">
                           <select v-model="w.label"
-                            class="w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-white text-xs focus:outline-none">
-                            <option v-for="l in walletLabels" :key="l" :value="l">{{ l }}</option>
+                            class="w-full rounded-lg border border-slate-800 bg-[#182235] px-3 py-2 text-white text-xs focus:outline-none">
+                            <option v-for="l in walletLabels" :key="l" :value="l" class="bg-[#111620] text-white">{{ l }}</option>
                           </select>
                         </div>
                         <div class="w-full sm:flex-1">
@@ -283,119 +340,6 @@
                       <div v-if="form.wallets.length === 0" class="text-xs text-slate-500 py-8 text-center border border-dashed border-slate-800 rounded-xl">
                         No official wallets added yet. Click "+ Add Wallet" to configure official project addresses.
                       </div>
-                    </div>
-                  </div>
-
-                  <!-- Step 6: Verify Project Ownership (Website-based Domain Check) -->
-                  <div v-if="currentStep === 6" class="space-y-4 font-sans">
-                    <!-- Loading state -->
-                    <div v-if="generatingChallenge" class="flex flex-col items-center justify-center py-12 space-y-4">
-                      <span class="w-8 h-8 border-4 border-cyan-500/30 border-t-cyan-400 rounded-full animate-spin"></span>
-                      <span class="text-xs font-mono text-slate-400">Fetching official Stellar domain details...</span>
-                    </div>
-
-                    <!-- Fetch error state -->
-                    <div v-else-if="challengeError" class="p-5 bg-rose-950/20 border border-rose-500/35 rounded-2xl space-y-3">
-                      <h4 class="text-sm font-bold text-rose-400">Ownership Challenge Failed</h4>
-                      <p class="text-xs text-rose-300/80 leading-relaxed">{{ challengeError }}</p>
-                    </div>
-
-                    <!-- Challenge details & actions -->
-                    <div v-else-if="isChallengeGenerated" class="space-y-4">
-                      
-                      <!-- Success State Message -->
-                      <div v-if="isDomainVerified" class="p-5 bg-emerald-950/30 border border-emerald-500/30 rounded-2xl text-center space-y-3.5">
-                        <div class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-900/30 text-emerald-400">
-                          ✓
-                        </div>
-                        <div class="space-y-1">
-                          <h4 class="text-sm font-bold text-white">Project ownership confirmed</h4>
-                          <p class="text-xs text-slate-300 leading-relaxed">
-                            TokenGlade successfully verified control of <strong class="text-cyan-400 font-mono">{{ officialDomain }}</strong>. Your project information and submitted wallets are now awaiting review.
-                          </p>
-                        </div>
-                        <button @click="nextStep"
-                          class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-xs font-bold text-[#08131a] rounded-xl transition-all">
-                          Continue to Review
-                        </button>
-                      </div>
-
-                      <div v-else class="space-y-4">
-                        <div class="p-4 bg-[#182235]/40 border border-slate-800/80 rounded-2xl space-y-3">
-                          <p class="text-xs text-slate-300 leading-relaxed">
-                            To prove that you represent this project, upload the verification file to the official domain connected to this Stellar asset.
-                          </p>
-                          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1 text-xs">
-                            <div>
-                              <span class="block text-[10px] font-mono text-slate-500 uppercase font-bold mb-1">Detected Domain:</span>
-                              <strong class="text-white font-mono block truncate">{{ officialDomain }}</strong>
-                            </div>
-                            <div>
-                              <span class="block text-[10px] font-mono text-slate-500 uppercase font-bold mb-1">Target Verification File:</span>
-                              <strong class="text-cyan-400 font-mono block truncate">tokenglade-verification.txt</strong>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- Instructions -->
-                        <div class="space-y-2 text-xs">
-                          <p class="font-bold text-slate-200">Instructions:</p>
-                          <ol class="list-decimal list-inside space-y-2 text-slate-400 pl-1 leading-relaxed">
-                            <li>Download the verification file using the button below.</li>
-                            <li>Open your website hosting, server, cPanel, Plesk, GitHub Pages, Netlify, Vercel, or other hosting provider.</li>
-                            <li>Open the website's public root directory.</li>
-                            <li>Create a folder named <code class="bg-[#182235] px-1.5 py-0.5 rounded font-mono text-slate-300">.well-known</code> if it does not already exist.</li>
-                            <li>Upload <strong class="text-slate-300">tokenglade-verification.txt</strong> inside that folder.</li>
-                            <li>Confirm that the file opens publicly at the displayed verification URL.</li>
-                            <li>Return to TokenGlade and click <strong>Verify Project Ownership</strong>.</li>
-                          </ol>
-                        </div>
-
-                        <!-- File download & Copy buttons -->
-                        <div class="flex flex-col sm:flex-row gap-3 pt-2">
-                          <button @click="downloadVerificationFile"
-                            class="flex-1 px-4 py-3 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-cyan-400 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2">
-                            📥 Download File
-                          </button>
-                          <button @click="copyFileContent"
-                            class="flex-1 px-4 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2">
-                            <span>{{ copiedContent ? '✓ Copied Contents' : '📋 Copy File Contents' }}</span>
-                          </button>
-                        </div>
-
-                        <!-- Copy URL path -->
-                        <div class="flex items-center gap-2 bg-slate-900/60 border border-slate-800/80 rounded-xl px-3.5 py-2.5 text-xs">
-                          <span class="text-slate-500 font-mono truncate select-all flex-1">{{ verificationFileUrl }}</span>
-                          <button @click="copyFilePath" class="text-[10px] font-bold text-cyan-400 hover:text-cyan-300 transition-all ml-2 flex-shrink-0">
-                            {{ copiedPath ? 'Copied URL!' : 'Copy Path' }}
-                          </button>
-                          <a :href="verificationFileUrl" target="_blank" class="text-[10px] font-bold text-slate-400 hover:text-white transition-all flex-shrink-0 ml-1.5">
-                            Open URL
-                          </a>
-                        </div>
-
-                        <!-- Error Message if Verification Failed -->
-                        <div v-if="domainVerificationError" class="p-3.5 bg-rose-950/20 border border-rose-500/20 rounded-xl text-xs text-rose-400 flex items-start gap-2.5">
-                          <span class="text-sm">⚠</span>
-                          <div class="flex-1">
-                            <span class="font-bold block mb-0.5">Verification failed:</span>
-                            <span class="leading-relaxed">{{ domainVerificationError }}</span>
-                          </div>
-                        </div>
-
-                        <!-- Action Button to Trigger Verification -->
-                        <button @click="handleVerifyDomain" :disabled="verifyingDomain"
-                          class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 text-xs font-extrabold uppercase tracking-widest text-[#08131a] rounded-xl transition-all flex items-center justify-center gap-2">
-                          <span v-if="verifyingDomain" class="w-4 h-4 border-2 border-[#08131a]/30 border-t-[#08131a] rounded-full animate-spin"></span>
-                          <span>Verify Project Ownership</span>
-                        </button>
-
-                        <div class="text-[10px] text-slate-500 space-y-1.5 leading-normal bg-slate-900/30 p-3 rounded-xl border border-slate-900">
-                          <p>ℹ This file is separate from stellar.toml and will not affect your existing Stellar configuration. You may remove it after TokenGlade approves the project.</p>
-                          <p>⏰ This verification link expires in 48 hours.</p>
-                        </div>
-                      </div>
-
                     </div>
                   </div>
 
@@ -466,7 +410,8 @@
 
                   <button v-if="currentStep < 7" @click="nextStep" :disabled="!isStepValid"
                     class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-xs font-bold text-[#08131a] rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-                    Next
+                    <span v-if="currentStep === 1">Continue &rarr;</span>
+                    <span v-else>Next</span>
                   </button>
 
                   <button v-else-if="!connected" @click="$emit('connect-wallet')"
@@ -544,13 +489,13 @@ const currentStep = ref(1)
 const maxReachedStep = ref(1)
 
 const stepTitles = [
+  'Welcome to Project Onboarding',
   'Step 1 – Project Information',
   'Step 2 – Branding & Identity',
   'Step 3 – Official Links',
   'Step 4 – Social Community Channels',
   'Step 5 – Official Wallets config',
-  'Step 6 – Verify Project Ownership',
-  'Step 7 – Complete Verification Request'
+  'Step 6 – Complete Verification Request'
 ]
 
 const categories = ref([])
@@ -644,117 +589,30 @@ const removeWallet = (index) => {
   form.wallets.splice(index, 1)
 }
 
-// Domain Verification States
-const isChallengeGenerated = ref(false)
-const generatingChallenge = ref(false)
-const challengeError = ref('')
-const requestId = ref(null)
-const claimId = ref('')
-const plainTextToken = ref('')
-const officialDomain = ref('')
-const verificationFileUrl = ref('')
-const isDomainVerified = ref(false)
-const verifyingDomain = ref(false)
-const domainVerificationError = ref('')
-
-const copiedPath = ref(false)
-const copiedContent = ref(false)
-
-async function generateVerificationChallenge() {
-  generatingChallenge.value = true
-  challengeError.value = ''
-  try {
-    const publicKey = getCookie('public_key') || localStorage.getItem('public_key');
-    const res = await axios.post('/api/token/project-verification/challenge', {
-      identifier: props.issuerAddress,
-      asset_code: props.assetCode,
-      public_key: publicKey
-    })
-    
-    if (res.data.status === 'success') {
-      requestId.value = res.data.request_id
-      claimId.value = res.data.claim_id
-      plainTextToken.value = res.data.plain_text_token
-      officialDomain.value = res.data.official_domain
-      verificationFileUrl.value = res.data.verification_file_url
-      isChallengeGenerated.value = true
-    } else {
-      challengeError.value = res.data.message || 'Failed to generate ownership challenge.'
-    }
-  } catch (err) {
-    console.error(err)
-    challengeError.value = err.response?.data?.message || 'Failed to connect to verification server.'
-  } finally {
-    generatingChallenge.value = false
-  }
-}
-
-async function handleVerifyDomain() {
-  if (!requestId.value) return
-  verifyingDomain.value = true
-  domainVerificationError.value = ''
-  try {
-    const res = await axios.post(`/api/token/project-verification/${requestId.value}/verify-domain`)
-    if (res.data.status === 'success') {
-      isDomainVerified.value = true
-    } else {
-      domainVerificationError.value = res.data.message || 'Verification failed.'
-    }
-  } catch (err) {
-    console.error(err)
-    domainVerificationError.value = err.response?.data?.message || 'Failed to complete domain check.'
-  } finally {
-    verifyingDomain.value = false
-  }
-}
-
-function downloadVerificationFile() {
-  const content = `tokenglade_claim_id=${claimId.value}\ntokenglade_verification_token=${plainTextToken.value}\nasset_code=${props.assetCode}\nasset_issuer=${props.issuerAddress}`;
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'tokenglade-verification.txt';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
-
-function copyFilePath() {
-  navigator.clipboard.writeText(verificationFileUrl.value)
-  copiedPath.value = true
-  setTimeout(() => copiedPath.value = false, 1500)
-}
-
-function copyFileContent() {
-  const content = `tokenglade_claim_id=${claimId.value}\ntokenglade_verification_token=${plainTextToken.value}\nasset_code=${props.assetCode}\nasset_issuer=${props.issuerAddress}`;
-  navigator.clipboard.writeText(content)
-  copiedContent.value = true
-  setTimeout(() => copiedContent.value = false, 1500)
-}
-
-// Watch Step changes to auto-trigger domain challenge generation
-watch(currentStep, async (newStep) => {
-  if (newStep === 6 && !isChallengeGenerated.value) {
-    await generateVerificationChallenge();
-  }
+const isEmailValid = computed(() => {
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailPattern.test(form.official_email.trim())
 })
 
 // Dynamic Step Validator
 const isStepValid = computed(() => {
   if (currentStep.value === 1) {
-    return form.name.trim().length > 0 && form.short_description.trim().length > 0 && form.short_description.length <= 250
+    return true
   }
   if (currentStep.value === 2) {
-    return form.logo !== null
+    return form.name.trim().length > 0 &&
+           form.short_description.trim().length > 0 &&
+           form.short_description.length <= 250 &&
+           form.official_email.trim().length > 0 &&
+           isEmailValid.value &&
+           (!form.full_description || form.full_description.length <= 2000)
   }
   if (currentStep.value === 3) {
+    return form.logo !== null
+  }
+  if (currentStep.value === 4) {
     const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i;
     return form.website_link.trim().length > 0 && urlPattern.test(form.website_link.trim())
-  }
-  if (currentStep.value === 6) {
-    return isDomainVerified.value
   }
   return true
 })
@@ -816,19 +674,6 @@ watch(() => props.open, (isOpen) => {
     form.wallets = []
     logoPreview.value = null
     bannerPreview.value = null
-    
-    // Domain Verification fields reset
-    isChallengeGenerated.value = false
-    generatingChallenge.value = false
-    challengeError.value = ''
-    requestId.value = null
-    claimId.value = ''
-    plainTextToken.value = ''
-    officialDomain.value = ''
-    verificationFileUrl.value = ''
-    isDomainVerified.value = false
-    verifyingDomain.value = false
-    domainVerificationError.value = ''
   }
 })
 
