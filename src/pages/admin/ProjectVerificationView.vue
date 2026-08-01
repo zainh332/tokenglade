@@ -161,16 +161,21 @@
               </td>
               <!-- Actions -->
               <td class="py-4 px-6 text-right">
-                <select 
-                  v-if="claim.status === 'pending'"
-                  @change="triggerAction(claim, $event)"
-                  class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-purple-500 cursor-pointer"
-                >
-                  <option value="" disabled selected>Select Action</option>
-                  <option value="approved">Approve</option>
-                  <option value="rejected">Reject</option>
-                </select>
-                <span v-else class="text-xs text-gray-550 italic font-semibold">Processed</span>
+                <div class="flex items-center justify-end gap-2">
+                  <button @click="openDetails(claim)" class="px-2.5 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-600 text-xs font-semibold text-white rounded-xl transition flex-shrink-0">
+                    Details
+                  </button>
+                  <select 
+                    v-if="claim.status === 'pending'"
+                    @change="triggerAction(claim, $event)"
+                    class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-purple-500 cursor-pointer flex-shrink-0"
+                  >
+                    <option value="" disabled selected>Action</option>
+                    <option value="approved">Approve</option>
+                    <option value="rejected">Reject</option>
+                  </select>
+                  <span v-else class="text-xs text-gray-550 italic font-semibold flex-shrink-0">Processed</span>
+                </div>
               </td>
             </tr>
             <tr v-if="!filteredItems.length && !loading">
@@ -185,6 +190,231 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Details & Edit Modal Overlay -->
+    <div v-if="activeDetailClaim" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+      <div class="bg-gray-900 border border-gray-800 rounded-[28px] w-full max-w-2xl shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
+        
+        <!-- Header / Banner preview -->
+        <div class="relative h-32 bg-gray-950 border-b border-gray-800/80 flex-shrink-0">
+          <img v-if="activeDetailClaim.banner_url" :src="activeDetailClaim.banner_url" class="w-full h-full object-cover" />
+          <div v-else class="w-full h-full bg-gradient-to-r from-purple-950/40 to-cyan-950/40 flex items-center justify-center">
+            <span class="text-xs text-gray-600 font-mono">No banner image submitted</span>
+          </div>
+          <!-- Logo absolute overlap -->
+          <div class="absolute -bottom-6 left-6 w-16 h-16 rounded-2xl bg-gray-950 border-2 border-gray-800 overflow-hidden flex items-center justify-center shadow-lg">
+            <img v-if="activeDetailClaim.logo_url" :src="activeDetailClaim.logo_url" class="w-full h-full object-contain p-1" />
+            <span v-else class="text-xs font-black text-cyan-400">{{ activeDetailClaim.asset_code?.slice(0, 2).toUpperCase() }}</span>
+          </div>
+        </div>
+
+        <div class="px-6 pt-8 pb-4 flex-shrink-0 border-b border-gray-800/80">
+          <div class="flex items-start justify-between">
+            <div>
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <span>{{ activeDetailClaim.name }}</span>
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                  {{ activeDetailClaim.asset_code }}
+                </span>
+              </h3>
+              <p class="text-[10px] font-mono text-gray-500 mt-1 select-all">{{ activeDetailClaim.asset_issuer }}</p>
+            </div>
+            <div>
+              <button 
+                @click="isEditing = !isEditing"
+                class="px-4 py-1.5 rounded-xl text-xs font-bold transition border"
+                :class="isEditing ? 'border-amber-500/30 bg-amber-950/20 text-amber-400' : 'border-gray-800 bg-gray-850 text-gray-300 hover:bg-gray-800'"
+              >
+                {{ isEditing ? 'Cancel Edit' : 'Edit Details' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scrollable Details/Form container -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+
+          <div v-if="editError" class="p-3.5 bg-rose-950/20 border border-rose-500/20 rounded-2xl text-xs text-rose-400 font-mono">
+            {{ editError }}
+          </div>
+
+          <!-- Edit Mode Form -->
+          <div v-if="isEditing" class="space-y-4 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[10px] font-mono font-bold text-gray-500 uppercase mb-1.5">Project Name</label>
+                <input type="text" v-model="editForm.name" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-mono font-bold text-gray-500 uppercase mb-1.5">Category</label>
+                <input type="text" v-model="editForm.category" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[10px] font-mono font-bold text-gray-500 uppercase mb-1.5">Launch Date</label>
+                <input type="text" v-model="editForm.launch_date" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-mono font-bold text-gray-500 uppercase mb-1.5">Logo URL</label>
+                <input type="text" v-model="editForm.logo_url" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white font-mono text-[10px] focus:outline-none focus:border-purple-500" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[10px] font-mono font-bold text-gray-500 uppercase mb-1.5">Banner URL</label>
+                <input type="text" v-model="editForm.banner_url" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white font-mono text-[10px] focus:outline-none focus:border-purple-500" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-mono font-bold text-gray-500 uppercase mb-1.5">Official Email</label>
+                <input type="email" v-model="editForm.official_email" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-mono font-bold text-gray-500 uppercase mb-1.5">Short Description</label>
+              <input type="text" v-model="editForm.short_description" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-mono font-bold text-gray-500 uppercase mb-1.5">Full Description</label>
+              <textarea v-model="editForm.full_description" rows="3" class="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-white focus:outline-none focus:border-purple-500 resize-none"></textarea>
+            </div>
+
+            <!-- Links -->
+            <div class="border-t border-gray-800/80 pt-4 space-y-3">
+              <h4 class="font-bold text-gray-400 uppercase tracking-wider text-[10px]">Official Links</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input type="text" v-model="editForm.website_link" placeholder="Website Link" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+                <input type="text" v-model="editForm.documentation_link" placeholder="Documentation Link" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+                <input type="text" v-model="editForm.whitepaper_link" placeholder="Whitepaper Link" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+                <input type="text" v-model="editForm.github_link" placeholder="GitHub Repository" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+                <input type="text" v-model="editForm.medium_link" placeholder="Medium / Blog" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+              </div>
+            </div>
+
+            <!-- Socials -->
+            <div class="border-t border-gray-800/80 pt-4 space-y-3">
+              <h4 class="font-bold text-gray-400 uppercase tracking-wider text-[10px]">Social Channels</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input type="text" v-model="editForm.twitter_link" placeholder="Twitter (X) Link" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+                <input type="text" v-model="editForm.telegram_link" placeholder="Telegram Community" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+                <input type="text" v-model="editForm.discord_link" placeholder="Discord Link" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+                <input type="text" v-model="editForm.linkedin_link" placeholder="LinkedIn Page" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+                <input type="text" v-model="editForm.reddit_link" placeholder="Reddit Subreddit" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+                <input type="text" v-model="editForm.youtube_link" placeholder="YouTube Channel" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+              </div>
+            </div>
+
+            <!-- Wallets Edit -->
+            <div class="border-t border-gray-800/80 pt-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-gray-400 uppercase tracking-wider text-[10px]">Official Wallets</h4>
+                <button @click="addEditWallet" type="button" class="px-2.5 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-cyan-400 rounded-lg font-bold text-[10px] transition">
+                  + Add Wallet
+                </button>
+              </div>
+              <div class="space-y-2">
+                <div v-for="(w, idx) in editForm.wallets" :key="idx" class="flex gap-2 items-center">
+                  <input type="text" v-model="w.label" placeholder="Label" class="w-1/4 bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+                  <input type="text" v-model="w.wallet_address" placeholder="Stellar Wallet Address" class="flex-1 bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white font-mono text-[10px] focus:outline-none focus:border-purple-500" />
+                  <button @click="removeEditWallet(idx)" type="button" class="px-3 py-1.5 text-rose-500 border border-gray-850 hover:bg-rose-500/10 rounded-xl transition">✕</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Read-only Details View -->
+          <div v-else class="space-y-5 text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <span class="block text-[10px] font-mono font-bold text-gray-500 uppercase tracking-wider mb-0.5">Category</span>
+                <span class="text-white font-semibold">{{ activeDetailClaim.category || '—' }}</span>
+              </div>
+              <div>
+                <span class="block text-[10px] font-mono font-bold text-gray-500 uppercase tracking-wider mb-0.5">Launch Date</span>
+                <span class="text-white font-semibold">{{ activeDetailClaim.launch_date || '—' }}</span>
+              </div>
+            </div>
+
+            <div>
+              <span class="block text-[10px] font-mono font-bold text-gray-500 uppercase tracking-wider mb-0.5">Official Email</span>
+              <span class="text-white font-semibold font-mono">{{ activeDetailClaim.official_email || '—' }}</span>
+            </div>
+
+            <div>
+              <span class="block text-[10px] font-mono font-bold text-gray-500 uppercase tracking-wider mb-0.5">Short Description</span>
+              <p class="text-gray-300 leading-relaxed">{{ activeDetailClaim.short_description || '—' }}</p>
+            </div>
+
+            <div>
+              <span class="block text-[10px] font-mono font-bold text-gray-500 uppercase tracking-wider mb-0.5">Full Description</span>
+              <p class="text-gray-300 leading-relaxed whitespace-pre-wrap">{{ activeDetailClaim.full_description || '—' }}</p>
+            </div>
+
+            <!-- Links list -->
+            <div class="border-t border-gray-800/80 pt-4 space-y-2">
+              <span class="block text-[10px] font-mono font-bold text-gray-500 uppercase tracking-wider">Submitted Links</span>
+              <div class="flex flex-wrap gap-2.5 pt-1">
+                <a v-if="activeDetailClaim.website_link" :href="activeDetailClaim.website_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-cyan-400 hover:text-cyan-300 transition">Website</a>
+                <a v-if="activeDetailClaim.documentation_link" :href="activeDetailClaim.documentation_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-cyan-400 hover:text-cyan-300 transition">Documentation</a>
+                <a v-if="activeDetailClaim.whitepaper_link" :href="activeDetailClaim.whitepaper_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-cyan-400 hover:text-cyan-300 transition">Whitepaper</a>
+                <a v-if="activeDetailClaim.github_link" :href="activeDetailClaim.github_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-cyan-400 hover:text-cyan-300 transition">GitHub</a>
+                <a v-if="activeDetailClaim.medium_link" :href="activeDetailClaim.medium_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-cyan-400 hover:text-cyan-300 transition">Medium/Blog</a>
+              </div>
+            </div>
+
+            <!-- Socials -->
+            <div class="border-t border-gray-800/80 pt-4 space-y-2">
+              <span class="block text-[10px] font-mono font-bold text-gray-500 uppercase tracking-wider">Social Channels</span>
+              <div class="flex flex-wrap gap-2.5 pt-1">
+                <a v-if="activeDetailClaim.twitter_link" :href="activeDetailClaim.twitter_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-purple-400 hover:text-purple-300 transition">X (Twitter)</a>
+                <a v-if="activeDetailClaim.telegram_link" :href="activeDetailClaim.telegram_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-purple-400 hover:text-purple-300 transition">Telegram</a>
+                <a v-if="activeDetailClaim.discord_link" :href="activeDetailClaim.discord_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-purple-400 hover:text-purple-300 transition">Discord</a>
+                <a v-if="activeDetailClaim.linkedin_link" :href="activeDetailClaim.linkedin_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-purple-400 hover:text-purple-300 transition">LinkedIn</a>
+                <a v-if="activeDetailClaim.reddit_link" :href="activeDetailClaim.reddit_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-purple-400 hover:text-purple-300 transition">Reddit</a>
+                <a v-if="activeDetailClaim.youtube_link" :href="activeDetailClaim.youtube_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-purple-400 hover:text-purple-300 transition">YouTube</a>
+              </div>
+            </div>
+
+            <!-- Official Wallets -->
+            <div class="border-t border-gray-800/80 pt-4 space-y-2">
+              <span class="block text-[10px] font-mono font-bold text-gray-500 uppercase tracking-wider mb-2">Official Wallets</span>
+              <div class="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
+                <div v-for="w in activeDetailClaim.wallets" :key="w.id" class="flex items-center justify-between p-2.5 bg-gray-950/50 border border-gray-800 rounded-xl">
+                  <span class="font-bold text-xs text-white uppercase tracking-wide bg-gray-900 border border-gray-800 px-2 py-0.5 rounded-md">{{ w.label }}</span>
+                  <span class="font-mono text-xs text-gray-400 select-all">{{ w.wallet_address }}</span>
+                </div>
+                <div v-if="!activeDetailClaim.wallets || activeDetailClaim.wallets.length === 0" class="text-xs text-gray-500 italic py-2 text-center border border-dashed border-gray-800 rounded-xl">
+                  No official wallets configured.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer actions -->
+        <div class="px-6 py-4 bg-gray-950/50 border-t border-gray-800/80 flex justify-end gap-3 flex-shrink-0">
+          <button 
+            @click="activeDetailClaim = null" 
+            class="px-5 py-2 rounded-xl text-xs font-bold text-gray-400 border border-gray-805 hover:bg-gray-850 transition"
+          >
+            Close
+          </button>
+          <button 
+            v-if="isEditing"
+            @click="saveDetails" 
+            :disabled="savingEdit"
+            class="px-5 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-xs font-bold text-white rounded-xl transition shadow-lg shadow-purple-500/10"
+          >
+            {{ savingEdit ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+
       </div>
     </div>
 
@@ -260,6 +490,96 @@ function sortBy(key) {
 const activeClaimForAction = ref(null);
 const chosenAction = ref('');
 const rejectionReason = ref('');
+
+// Details & Editing refs
+const activeDetailClaim = ref(null);
+const isEditing = ref(false);
+const savingEdit = ref(false);
+const editError = ref('');
+const editForm = ref({
+  name: '',
+  official_email: '',
+  short_description: '',
+  full_description: '',
+  category: '',
+  launch_date: '',
+  logo_url: '',
+  banner_url: '',
+  website_link: '',
+  documentation_link: '',
+  whitepaper_link: '',
+  github_link: '',
+  medium_link: '',
+  twitter_link: '',
+  telegram_link: '',
+  discord_link: '',
+  linkedin_link: '',
+  reddit_link: '',
+  youtube_link: '',
+  wallets: []
+});
+
+function openDetails(claim) {
+  activeDetailClaim.value = claim;
+  isEditing.value = false;
+  editError.value = '';
+  editForm.value = {
+    name: claim.name || '',
+    official_email: claim.official_email || '',
+    short_description: claim.short_description || '',
+    full_description: claim.full_description || '',
+    category: claim.category || '',
+    launch_date: claim.launch_date || '',
+    logo_url: claim.logo_url || '',
+    banner_url: claim.banner_url || '',
+    website_link: claim.website_link || '',
+    documentation_link: claim.documentation_link || '',
+    whitepaper_link: claim.whitepaper_link || '',
+    github_link: claim.github_link || '',
+    medium_link: claim.medium_link || '',
+    twitter_link: claim.twitter_link || '',
+    telegram_link: claim.telegram_link || '',
+    discord_link: claim.discord_link || '',
+    linkedin_link: claim.linkedin_link || '',
+    reddit_link: claim.reddit_link || '',
+    youtube_link: claim.youtube_link || '',
+    wallets: claim.wallets ? JSON.parse(JSON.stringify(claim.wallets)) : []
+  };
+}
+
+function addEditWallet() {
+  editForm.value.wallets.push({ wallet_address: '', label: 'Treasury' });
+}
+
+function removeEditWallet(idx) {
+  editForm.value.wallets.splice(idx, 1);
+}
+
+async function saveDetails() {
+  savingEdit.value = true;
+  editError.value = '';
+  try {
+    const res = await axios.post(`/api/admin/verifications/${activeDetailClaim.value.id}/edit`, editForm.value);
+    if (res.data.status === 'success') {
+      const idx = items.value.findIndex(i => i.id === activeDetailClaim.value.id);
+      if (idx !== -1) {
+        items.value[idx] = {
+          ...items.value[idx],
+          ...editForm.value
+        };
+        activeDetailClaim.value = items.value[idx];
+      }
+      isEditing.value = false;
+    } else {
+      editError.value = res.data.message || 'Failed to update details.';
+    }
+  } catch (err) {
+    console.error(err);
+    editError.value = err.response?.data?.message || 'Connection error while saving.';
+  } finally {
+    savingEdit.value = false;
+  }
+}
 
 // Dynamic counts
 const totalCount = computed(() => items.value.length);

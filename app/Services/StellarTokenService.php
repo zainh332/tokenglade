@@ -880,8 +880,13 @@ class StellarTokenService
                     ->first();
 
                 $dbOfficialWallets = collect();
-                if ($verifiedProj && $verifiedProj->profile) {
-                    $dbOfficialWallets = $verifiedProj->profile->officialWallets()->get();
+                if ($verifiedProj) {
+                    if ($verifiedProj->profile) {
+                        $dbOfficialWallets = \App\Models\ProjectOfficialWallet::where('project_profile_id', $verifiedProj->profile->id)->get();
+                    }
+                    if ($dbOfficialWallets->isEmpty()) {
+                        $dbOfficialWallets = \App\Models\ProjectOfficialWallet::where('project_profile_id', $verifiedProj->id)->get();
+                    }
                 }
 
                 $processedAddresses = [];
@@ -987,32 +992,34 @@ class StellarTokenService
                     }
 
                     $isPlatform = false;
-                    if (str_starts_with($addr, 'C')) {
-                        $isPlatform = true;
-                        if (empty($walletData['name'])) {
-                            $walletData['name'] = 'Smart Contract Reserve';
-                        }
-                    } elseif (isset($this->knownProjectWallets[$addr])) {
-                        $isPlatform = true;
-                    } elseif ($isIssuer) {
-                        $isPlatform = true;
-                    } else {
-                        $hasProjectTag = in_array('custodian', $tags) || in_array('treasury', $tags) || in_array('issuer', $tags);
-                        
-                        if (!$hasProjectTag && !empty($dirInfo['name'])) {
-                            $nameLower = strtolower($dirInfo['name']);
-                            if (str_contains($nameLower, 'rewards') || str_contains($nameLower, 'treasury') || str_contains($nameLower, 'pool') || str_contains($nameLower, 'custodian') || str_contains($nameLower, 'escrow')) {
-                                $hasProjectTag = true;
+                    if (!$verifiedProj) {
+                        if (str_starts_with($addr, 'C')) {
+                            $isPlatform = true;
+                            if (empty($walletData['name'])) {
+                                $walletData['name'] = 'Smart Contract Reserve';
                             }
-                        }
-                        
-                        if ($hasProjectTag) {
-                            if ($holderDomain && $tokenDomain) {
-                                if ($holderDomain === $tokenDomain) {
+                        } elseif (isset($this->knownProjectWallets[$addr])) {
+                            $isPlatform = true;
+                        } elseif ($isIssuer) {
+                            $isPlatform = true;
+                        } else {
+                            $hasProjectTag = in_array('custodian', $tags) || in_array('treasury', $tags) || in_array('issuer', $tags);
+                            
+                            if (!$hasProjectTag && !empty($dirInfo['name'])) {
+                                $nameLower = strtolower($dirInfo['name']);
+                                if (str_contains($nameLower, 'rewards') || str_contains($nameLower, 'treasury') || str_contains($nameLower, 'pool') || str_contains($nameLower, 'custodian') || str_contains($nameLower, 'escrow')) {
+                                    $hasProjectTag = true;
+                                }
+                            }
+                            
+                            if ($hasProjectTag) {
+                                if ($holderDomain && $tokenDomain) {
+                                    if ($holderDomain === $tokenDomain) {
+                                        $isPlatform = true;
+                                    }
+                                } else {
                                     $isPlatform = true;
                                 }
-                            } else {
-                                $isPlatform = true;
                             }
                         }
                     }

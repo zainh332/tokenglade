@@ -49,9 +49,9 @@
                   <div class="flex items-center justify-between relative">
                     <div class="absolute left-0 right-0 top-1/2 h-0.5 bg-slate-800 -translate-y-1/2 z-0"></div>
                     <div class="absolute left-0 top-1/2 h-0.5 bg-gradient-to-r from-purple-500 to-cyan-500 -translate-y-1/2 z-0 transition-all duration-300"
-                      :style="{ width: `${((currentStep - 1) / 5) * 100}%` }"></div>
+                      :style="{ width: `${((currentStep - 1) / 6) * 100}%` }"></div>
 
-                    <button v-for="step in 6" :key="step" @click="goToStep(step)"
+                    <button v-for="step in 7" :key="step" @click="goToStep(step)"
                       :disabled="step > maxReachedStep"
                       class="relative z-10 w-8 h-8 rounded-full border flex items-center justify-center font-mono text-xs font-bold transition-all duration-300"
                       :class="[
@@ -109,8 +109,14 @@
                     </div>
 
                     <div>
-                      <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Short Description</label>
-                      <input type="text" v-model="form.short_description" placeholder="A brief one-sentence pitch (max 120 chars)" maxlength="120"
+                      <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Short Description <span class="text-rose-500">*</span></label>
+                      <input type="text" v-model="form.short_description" placeholder="A brief project pitch (max 250 chars)" maxlength="250"
+                        class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
+                    </div>
+
+                    <div>
+                      <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Official Email</label>
+                      <input type="email" v-model="form.official_email" placeholder="e.g. contact@lumoscore.com"
                         class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
                     </div>
 
@@ -126,7 +132,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <!-- Project Logo -->
                       <div class="space-y-3">
-                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Project Logo</label>
+                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Project Logo <span class="text-rose-500">*</span></label>
                         <div class="flex items-center gap-4">
                           <div class="w-16 h-16 rounded-2xl border border-slate-800 bg-slate-900/50 flex items-center justify-center overflow-hidden flex-shrink-0">
                             <img v-if="logoPreview" :src="logoPreview" class="w-full h-full object-cover" />
@@ -167,7 +173,7 @@
                   <!-- Step 3: Official Links -->
                   <div v-if="currentStep === 3" class="space-y-4">
                     <div>
-                      <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Website URL</label>
+                      <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Website URL <span class="text-rose-500">*</span></label>
                       <input type="text" v-model="form.website_link" placeholder="https://example.com"
                         class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
                     </div>
@@ -280,8 +286,121 @@
                     </div>
                   </div>
 
-                  <!-- Step 6: Verification Payment -->
-                  <div v-if="currentStep === 6" class="space-y-6">
+                  <!-- Step 6: Verify Project Ownership (Website-based Domain Check) -->
+                  <div v-if="currentStep === 6" class="space-y-4 font-sans">
+                    <!-- Loading state -->
+                    <div v-if="generatingChallenge" class="flex flex-col items-center justify-center py-12 space-y-4">
+                      <span class="w-8 h-8 border-4 border-cyan-500/30 border-t-cyan-400 rounded-full animate-spin"></span>
+                      <span class="text-xs font-mono text-slate-400">Fetching official Stellar domain details...</span>
+                    </div>
+
+                    <!-- Fetch error state -->
+                    <div v-else-if="challengeError" class="p-5 bg-rose-950/20 border border-rose-500/35 rounded-2xl space-y-3">
+                      <h4 class="text-sm font-bold text-rose-400">Ownership Challenge Failed</h4>
+                      <p class="text-xs text-rose-300/80 leading-relaxed">{{ challengeError }}</p>
+                    </div>
+
+                    <!-- Challenge details & actions -->
+                    <div v-else-if="isChallengeGenerated" class="space-y-4">
+                      
+                      <!-- Success State Message -->
+                      <div v-if="isDomainVerified" class="p-5 bg-emerald-950/30 border border-emerald-500/30 rounded-2xl text-center space-y-3.5">
+                        <div class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-900/30 text-emerald-400">
+                          ✓
+                        </div>
+                        <div class="space-y-1">
+                          <h4 class="text-sm font-bold text-white">Project ownership confirmed</h4>
+                          <p class="text-xs text-slate-300 leading-relaxed">
+                            TokenGlade successfully verified control of <strong class="text-cyan-400 font-mono">{{ officialDomain }}</strong>. Your project information and submitted wallets are now awaiting review.
+                          </p>
+                        </div>
+                        <button @click="nextStep"
+                          class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-xs font-bold text-[#08131a] rounded-xl transition-all">
+                          Continue to Review
+                        </button>
+                      </div>
+
+                      <div v-else class="space-y-4">
+                        <div class="p-4 bg-[#182235]/40 border border-slate-800/80 rounded-2xl space-y-3">
+                          <p class="text-xs text-slate-300 leading-relaxed">
+                            To prove that you represent this project, upload the verification file to the official domain connected to this Stellar asset.
+                          </p>
+                          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1 text-xs">
+                            <div>
+                              <span class="block text-[10px] font-mono text-slate-500 uppercase font-bold mb-1">Detected Domain:</span>
+                              <strong class="text-white font-mono block truncate">{{ officialDomain }}</strong>
+                            </div>
+                            <div>
+                              <span class="block text-[10px] font-mono text-slate-500 uppercase font-bold mb-1">Target Verification File:</span>
+                              <strong class="text-cyan-400 font-mono block truncate">tokenglade-verification.txt</strong>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Instructions -->
+                        <div class="space-y-2 text-xs">
+                          <p class="font-bold text-slate-200">Instructions:</p>
+                          <ol class="list-decimal list-inside space-y-2 text-slate-400 pl-1 leading-relaxed">
+                            <li>Download the verification file using the button below.</li>
+                            <li>Open your website hosting, server, cPanel, Plesk, GitHub Pages, Netlify, Vercel, or other hosting provider.</li>
+                            <li>Open the website's public root directory.</li>
+                            <li>Create a folder named <code class="bg-[#182235] px-1.5 py-0.5 rounded font-mono text-slate-300">.well-known</code> if it does not already exist.</li>
+                            <li>Upload <strong class="text-slate-300">tokenglade-verification.txt</strong> inside that folder.</li>
+                            <li>Confirm that the file opens publicly at the displayed verification URL.</li>
+                            <li>Return to TokenGlade and click <strong>Verify Project Ownership</strong>.</li>
+                          </ol>
+                        </div>
+
+                        <!-- File download & Copy buttons -->
+                        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                          <button @click="downloadVerificationFile"
+                            class="flex-1 px-4 py-3 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-cyan-400 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2">
+                            📥 Download File
+                          </button>
+                          <button @click="copyFileContent"
+                            class="flex-1 px-4 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2">
+                            <span>{{ copiedContent ? '✓ Copied Contents' : '📋 Copy File Contents' }}</span>
+                          </button>
+                        </div>
+
+                        <!-- Copy URL path -->
+                        <div class="flex items-center gap-2 bg-slate-900/60 border border-slate-800/80 rounded-xl px-3.5 py-2.5 text-xs">
+                          <span class="text-slate-500 font-mono truncate select-all flex-1">{{ verificationFileUrl }}</span>
+                          <button @click="copyFilePath" class="text-[10px] font-bold text-cyan-400 hover:text-cyan-300 transition-all ml-2 flex-shrink-0">
+                            {{ copiedPath ? 'Copied URL!' : 'Copy Path' }}
+                          </button>
+                          <a :href="verificationFileUrl" target="_blank" class="text-[10px] font-bold text-slate-400 hover:text-white transition-all flex-shrink-0 ml-1.5">
+                            Open URL
+                          </a>
+                        </div>
+
+                        <!-- Error Message if Verification Failed -->
+                        <div v-if="domainVerificationError" class="p-3.5 bg-rose-950/20 border border-rose-500/20 rounded-xl text-xs text-rose-400 flex items-start gap-2.5">
+                          <span class="text-sm">⚠</span>
+                          <div class="flex-1">
+                            <span class="font-bold block mb-0.5">Verification failed:</span>
+                            <span class="leading-relaxed">{{ domainVerificationError }}</span>
+                          </div>
+                        </div>
+
+                        <!-- Action Button to Trigger Verification -->
+                        <button @click="handleVerifyDomain" :disabled="verifyingDomain"
+                          class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 text-xs font-extrabold uppercase tracking-widest text-[#08131a] rounded-xl transition-all flex items-center justify-center gap-2">
+                          <span v-if="verifyingDomain" class="w-4 h-4 border-2 border-[#08131a]/30 border-t-[#08131a] rounded-full animate-spin"></span>
+                          <span>Verify Project Ownership</span>
+                        </button>
+
+                        <div class="text-[10px] text-slate-500 space-y-1.5 leading-normal bg-slate-900/30 p-3 rounded-xl border border-slate-900">
+                          <p>ℹ This file is separate from stellar.toml and will not affect your existing Stellar configuration. You may remove it after TokenGlade approves the project.</p>
+                          <p>⏰ This verification link expires in 48 hours.</p>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <!-- Step 7: Verification Payment -->
+                  <div v-if="currentStep === 7" class="space-y-6">
                     <!-- Benefits List -->
                     <div class="p-4 bg-cyan-950/20 border border-cyan-500/20 rounded-2xl">
                       <h4 class="text-xs font-bold uppercase tracking-wider text-cyan-400 font-mono mb-3">Your Verified Project receives:</h4>
@@ -345,7 +464,7 @@
                     Back
                   </button>
 
-                  <button v-if="currentStep < 6" @click="nextStep" :disabled="!isStepValid"
+                  <button v-if="currentStep < 7" @click="nextStep" :disabled="!isStepValid"
                     class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-xs font-bold text-[#08131a] rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                     Next
                   </button>
@@ -373,6 +492,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
+import axios from 'axios'
 import {
   Dialog,
   DialogPanel,
@@ -429,7 +549,8 @@ const stepTitles = [
   'Step 3 – Official Links',
   'Step 4 – Social Community Channels',
   'Step 5 – Official Wallets config',
-  'Step 6 – Complete Verification Request'
+  'Step 6 – Verify Project Ownership',
+  'Step 7 – Complete Verification Request'
 ]
 
 const categories = [
@@ -465,6 +586,7 @@ const form = reactive({
   name: '',
   category: '',
   launch_date: '',
+  official_email: '',
   short_description: '',
   full_description: '',
   logo: null,
@@ -523,16 +645,123 @@ const removeWallet = (index) => {
   form.wallets.splice(index, 1)
 }
 
+// Domain Verification States
+const isChallengeGenerated = ref(false)
+const generatingChallenge = ref(false)
+const challengeError = ref('')
+const requestId = ref(null)
+const claimId = ref('')
+const plainTextToken = ref('')
+const officialDomain = ref('')
+const verificationFileUrl = ref('')
+const isDomainVerified = ref(false)
+const verifyingDomain = ref(false)
+const domainVerificationError = ref('')
+
+const copiedPath = ref(false)
+const copiedContent = ref(false)
+
+async function generateVerificationChallenge() {
+  generatingChallenge.value = true
+  challengeError.value = ''
+  try {
+    const publicKey = getCookie('public_key') || localStorage.getItem('public_key');
+    const res = await axios.post('/api/token/project-verification/challenge', {
+      identifier: props.issuerAddress,
+      asset_code: props.assetCode,
+      public_key: publicKey
+    })
+    
+    if (res.data.status === 'success') {
+      requestId.value = res.data.request_id
+      claimId.value = res.data.claim_id
+      plainTextToken.value = res.data.plain_text_token
+      officialDomain.value = res.data.official_domain
+      verificationFileUrl.value = res.data.verification_file_url
+      isChallengeGenerated.value = true
+    } else {
+      challengeError.value = res.data.message || 'Failed to generate ownership challenge.'
+    }
+  } catch (err) {
+    console.error(err)
+    challengeError.value = err.response?.data?.message || 'Failed to connect to verification server.'
+  } finally {
+    generatingChallenge.value = false
+  }
+}
+
+async function handleVerifyDomain() {
+  if (!requestId.value) return
+  verifyingDomain.value = true
+  domainVerificationError.value = ''
+  try {
+    const res = await axios.post(`/api/token/project-verification/${requestId.value}/verify-domain`)
+    if (res.data.status === 'success') {
+      isDomainVerified.value = true
+    } else {
+      domainVerificationError.value = res.data.message || 'Verification failed.'
+    }
+  } catch (err) {
+    console.error(err)
+    domainVerificationError.value = err.response?.data?.message || 'Failed to complete domain check.'
+  } finally {
+    verifyingDomain.value = false
+  }
+}
+
+function downloadVerificationFile() {
+  const content = `tokenglade_claim_id=${claimId.value}\ntokenglade_verification_token=${plainTextToken.value}\nasset_code=${props.assetCode}\nasset_issuer=${props.issuerAddress}`;
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'tokenglade-verification.txt';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function copyFilePath() {
+  navigator.clipboard.writeText(verificationFileUrl.value)
+  copiedPath.value = true
+  setTimeout(() => copiedPath.value = false, 1500)
+}
+
+function copyFileContent() {
+  const content = `tokenglade_claim_id=${claimId.value}\ntokenglade_verification_token=${plainTextToken.value}\nasset_code=${props.assetCode}\nasset_issuer=${props.issuerAddress}`;
+  navigator.clipboard.writeText(content)
+  copiedContent.value = true
+  setTimeout(() => copiedContent.value = false, 1500)
+}
+
+// Watch Step changes to auto-trigger domain challenge generation
+watch(currentStep, async (newStep) => {
+  if (newStep === 6 && !isChallengeGenerated.value) {
+    await generateVerificationChallenge();
+  }
+})
+
 // Dynamic Step Validator
 const isStepValid = computed(() => {
   if (currentStep.value === 1) {
-    return form.name.trim().length > 0
+    return form.name.trim().length > 0 && form.short_description.trim().length > 0 && form.short_description.length <= 250
+  }
+  if (currentStep.value === 2) {
+    return form.logo !== null
+  }
+  if (currentStep.value === 3) {
+    const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i;
+    return form.website_link.trim().length > 0 && urlPattern.test(form.website_link.trim())
+  }
+  if (currentStep.value === 6) {
+    return isDomainVerified.value
   }
   return true
 })
 
 const nextStep = () => {
-  if (currentStep.value < 6 && isStepValid.value) {
+  if (currentStep.value < 7 && isStepValid.value) {
     currentStep.value++
     if (currentStep.value > maxReachedStep.value) {
       maxReachedStep.value = currentStep.value
@@ -559,7 +788,6 @@ const handleClose = () => {
 }
 
 const handleVerificationSubmit = () => {
-  // Emit form state and files back to TokenInsight page for final startVerification API request
   emit('pay', { ...form })
 }
 
@@ -589,6 +817,19 @@ watch(() => props.open, (isOpen) => {
     form.wallets = []
     logoPreview.value = null
     bannerPreview.value = null
+    
+    // Domain Verification fields reset
+    isChallengeGenerated.value = false
+    generatingChallenge.value = false
+    challengeError.value = ''
+    requestId.value = null
+    claimId.value = ''
+    plainTextToken.value = ''
+    officialDomain.value = ''
+    verificationFileUrl.value = ''
+    isDomainVerified.value = false
+    verifyingDomain.value = false
+    domainVerificationError.value = ''
   }
 })
 
@@ -607,6 +848,12 @@ function formatAmount(amount) {
       maximumFractionDigits: 2
     }
   )
+}
+
+function getCookie(name) {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
 }
 </script>
 

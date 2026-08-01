@@ -433,20 +433,61 @@ class AdminController extends Controller
                 $statusStr = 'rejected';
             }
 
+            $profile = $claim->profile;
+            $links = $profile ? $profile->officialLinks : null;
+            $socials = $profile ? $profile->socialLinks : null;
+            
+            $wallets = collect();
+            if ($profile) {
+                $wallets = \App\Models\ProjectOfficialWallet::where('project_profile_id', $profile->id)->get();
+            }
+            if ($wallets->isEmpty()) {
+                $wallets = \App\Models\ProjectOfficialWallet::where('project_profile_id', $claim->id)->get();
+            }
+
             return [
                 'id' => $claim->id,
-                'name' => $claim->profile->name ?? $claim->name,
+                'name' => $profile->name ?? $claim->name,
                 'asset_code' => $claim->asset_code,
                 'asset_issuer' => $claim->identifier,
                 'sender_wallet' => $claim->wallet_address,
                 'payment_asset' => $paymentAssetCode,
                 'payment_amount' => $paymentAssetAmount,
                 'payment_tx' => $paymentTxHash,
-                'logo_url' => $claim->profile->logo_url ?? null,
+                'logo_url' => $profile->logo_url ?? null,
+                'banner_url' => $profile->banner_url ?? null,
                 'status' => $statusStr,
                 'rejection_reason' => $claim->rejection_reason,
                 'created_at' => $claim->created_at ? $claim->created_at->toIso8601String() : null,
                 'updated_at' => $claim->updated_at ? $claim->updated_at->toIso8601String() : null,
+                
+                // Detailed Onboarding inputs
+                'short_description' => $profile->short_description ?? '',
+                'full_description' => $profile->full_description ?? '',
+                'category' => $profile->category ?? '',
+                'launch_date' => $profile->launch_date ?? '',
+                
+                'website_link' => $links->website ?? '',
+                'documentation_link' => $links->documentation ?? '',
+                'whitepaper_link' => $links->whitepaper ?? '',
+                'github_link' => $links->github ?? '',
+                'medium_link' => $links->medium ?? '',
+                'official_email' => $claim->email ?? '',
+                
+                'twitter_link' => $socials->twitter ?? '',
+                'telegram_link' => $socials->telegram ?? '',
+                'discord_link' => $socials->discord ?? '',
+                'linkedin_link' => $socials->linkedin ?? '',
+                'reddit_link' => $socials->reddit ?? '',
+                'youtube_link' => $socials->youtube ?? '',
+                
+                'wallets' => $wallets->map(function ($w) {
+                    return [
+                        'id' => $w->id,
+                        'wallet_address' => $w->wallet_address,
+                        'label' => $w->label,
+                    ];
+                })->toArray(),
             ];
         });
 
@@ -484,6 +525,110 @@ class AdminController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Status updated successfully.'
+        ]);
+    }
+
+    /**
+     * Edit the submitted verification details of a project claim.
+     */
+    public function editVerificationDetails(Request $request, $id)
+    {
+        $project = \App\Models\VerifiedProject::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string',
+            'category' => 'nullable|string',
+            'launch_date' => 'nullable|string',
+            'short_description' => 'nullable|string',
+            'full_description' => 'nullable|string',
+            
+            'website_link' => 'nullable|string',
+            'documentation_link' => 'nullable|string',
+            'whitepaper_link' => 'nullable|string',
+            'github_link' => 'nullable|string',
+            'medium_link' => 'nullable|string',
+            
+            'twitter_link' => 'nullable|string',
+            'telegram_link' => 'nullable|string',
+            'discord_link' => 'nullable|string',
+            'linkedin_link' => 'nullable|string',
+            'reddit_link' => 'nullable|string',
+            'youtube_link' => 'nullable|string',
+            
+            'official_email' => 'nullable|email',
+            
+            'wallets' => 'nullable|array',
+            'wallets.*.wallet_address' => 'required|string',
+            'wallets.*.label' => 'required|string',
+        ]);
+
+        $project->name = $request->name;
+        $project->email = $request->official_email;
+        $project->save();
+
+        $profile = $project->profile;
+        if (!$profile) {
+            $profile = \App\Models\ProjectProfile::create([
+                'verified_project_id' => $project->id,
+                'name' => $request->name,
+            ]);
+        }
+
+        if ($request->filled('logo_url')) {
+            $profile->logo_url = $request->logo_url;
+        }
+
+        if ($request->filled('banner_url')) {
+            $profile->banner_url = $request->banner_url;
+        }
+
+        $profile->update([
+            'name' => $request->name,
+            'short_description' => $request->short_description,
+            'full_description' => $request->full_description,
+            'category' => $request->category,
+            'launch_date' => $request->launch_date,
+        ]);
+
+        // Links
+        $links = $profile->officialLinks;
+        if (!$links) {
+            $links = new \App\Models\ProjectOfficialLink(['project_profile_id' => $profile->id]);
+        }
+        $links->website = $request->website_link;
+        $links->documentation = $request->documentation_link;
+        $links->whitepaper = $request->whitepaper_link;
+        $links->github = $request->github_link;
+        $links->medium = $request->medium_link;
+        $links->save();
+
+        // Socials
+        $socials = $profile->socialLinks;
+        if (!$socials) {
+            $socials = new \App\Models\ProjectSocialLink(['project_profile_id' => $profile->id]);
+        }
+        $socials->twitter = $request->twitter_link;
+        $socials->telegram = $request->telegram_link;
+        $socials->discord = $request->discord_link;
+        $socials->linkedin = $request->linkedin_link;
+        $socials->reddit = $request->reddit_link;
+        $socials->youtube = $request->youtube_link;
+        $socials->save();
+
+        // Wallets
+        $profile->officialWallets()->delete();
+        $walletsData = $request->wallets ?? [];
+        foreach ($walletsData as $w) {
+            \App\Models\ProjectOfficialWallet::create([
+                'project_profile_id' => $profile->id,
+                'wallet_address' => $w['wallet_address'],
+                'label' => $w['label'],
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Project details updated successfully.'
         ]);
     }
 }

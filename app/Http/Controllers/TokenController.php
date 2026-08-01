@@ -1699,13 +1699,14 @@ EOT;
             'identifier'   => ['required', 'string'],
             'asset_code'   => ['required', 'string'],
             'name'         => ['required', 'string'],
-            'short_description' => ['nullable', 'string'],
+            'short_description' => ['required', 'string', 'max:250'],
             'full_description' => ['nullable', 'string'],
             'category'     => ['nullable', 'string'],
             'launch_date'  => ['nullable', 'date'],
-            'logo'         => ['nullable', 'image', 'max:2048'],
+            'official_email' => ['nullable', 'email'],
+            'logo'         => ['required', 'image', 'max:2048'],
             'banner'       => ['nullable', 'image', 'max:4096'],
-            'website_link' => ['nullable', 'string'],
+            'website_link' => ['required', 'url'],
             'documentation_link' => ['nullable', 'string'],
             'whitepaper_link' => ['nullable', 'string'],
             'github_link'  => ['nullable', 'string'],
@@ -1760,6 +1761,20 @@ EOT;
             ]);
         }
 
+        // Find existing draft that has completed domain verification
+        $project = VerifiedProject::where('identifier', $request->identifier)
+            ->where('asset_code', $request->asset_code)
+            ->where('verification_status', 'domain_verified')
+            ->where('status', 0)
+            ->first();
+
+        if (!$project) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Please verify project ownership first.'
+            ], 422);
+        }
+
         // Process files
         $logoUrl = null;
         if ($request->hasFile('logo')) {
@@ -1776,13 +1791,14 @@ EOT;
         DB::beginTransaction();
 
         try {
-            // Delete any existing unpaid draft verification requests for this token to keep DB clean
-            $existingDrafts = VerifiedProject::where('identifier', $request->identifier)
+            // Delete other unpaid drafts to avoid database clutter
+            $otherDrafts = VerifiedProject::where('identifier', $request->identifier)
                 ->where('asset_code', $request->asset_code)
                 ->where('status', 0)
+                ->where('id', '!=', $project->id)
                 ->get();
 
-            foreach ($existingDrafts as $draft) {
+            foreach ($otherDrafts as $draft) {
                 if ($draft->profile) {
                     $draft->profile->officialLinks()->delete();
                     $draft->profile->socialLinks()->delete();
@@ -1824,51 +1840,55 @@ EOT;
                 throw new \Exception('Failed to generate transaction.');
             }
 
-            $project = VerifiedProject::create([
-                'blockchain_id'    => 1,
-                'identifier'       => $request->identifier,
-                'asset_code'       => $request->asset_code,
+            $project->update([
                 'name'             => $request->name,
                 'website'          => $request->website_link,
                 'twitter'          => $request->twitter_link,
                 'wallet_address'   => $public,
-                'status'           => 0,
+                'email'            => $request->official_email,
             ]);
 
             // Save project profile
-            $profile = ProjectProfile::create([
-                'verified_project_id' => $project->id,
-                'name'                => $request->name,
-                'short_description'   => $request->short_description,
-                'full_description'    => $request->full_description,
-                'category'            => $request->category,
-                'logo_url'            => $logoUrl,
-                'banner_url'          => $bannerUrl,
-                'launch_date'         => $request->launch_date,
-            ]);
+            $profile = ProjectProfile::updateOrCreate(
+                ['verified_project_id' => $project->id],
+                [
+                    'name'                => $request->name,
+                    'short_description'   => $request->short_description,
+                    'full_description'    => $request->full_description,
+                    'category'            => $request->category,
+                    'logo_url'            => $logoUrl ?? ($project->profile->logo_url ?? null),
+                    'banner_url'          => $bannerUrl ?? ($project->profile->banner_url ?? null),
+                    'launch_date'         => $request->launch_date,
+                ]
+            );
 
             // Save official links
-            ProjectOfficialLink::create([
-                'project_profile_id' => $profile->id,
-                'website'            => $request->website_link,
-                'documentation'      => $request->documentation_link,
-                'whitepaper'         => $request->whitepaper_link,
-                'github'             => $request->github_link,
-                'medium'             => $request->medium_link,
-            ]);
+            ProjectOfficialLink::updateOrCreate(
+                ['project_profile_id' => $profile->id],
+                [
+                    'website'            => $request->website_link,
+                    'documentation'      => $request->documentation_link,
+                    'whitepaper'         => $request->whitepaper_link,
+                    'github'             => $request->github_link,
+                    'medium'             => $request->medium_link,
+                ]
+            );
 
             // Save social links
-            ProjectSocialLink::create([
-                'project_profile_id' => $profile->id,
-                'twitter'            => $request->twitter_link,
-                'telegram'           => $request->telegram_link,
-                'discord'            => $request->discord_link,
-                'linkedin'           => $request->linkedin_link,
-                'reddit'             => $request->reddit_link,
-                'youtube'            => $request->youtube_link,
-            ]);
+            ProjectSocialLink::updateOrCreate(
+                ['project_profile_id' => $profile->id],
+                [
+                    'twitter'            => $request->twitter_link,
+                    'telegram'           => $request->telegram_link,
+                    'discord'            => $request->discord_link,
+                    'linkedin'           => $request->linkedin_link,
+                    'reddit'             => $request->reddit_link,
+                    'youtube'            => $request->youtube_link,
+                ]
+            );
 
             // Save official wallets
+            $profile->officialWallets()->delete();
             $walletsData = json_decode($request->wallets, true) ?? [];
             foreach ($walletsData as $wallet) {
                 if (!empty($wallet['wallet_address']) && !empty($wallet['label'])) {
@@ -2813,5 +2833,243 @@ EOT;
             });
 
         return response()->json($events);
+    }
+
+    /**
+     * Generate an ownership verification challenge for the project domain.
+     */
+    public function generateChallenge(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'identifier' => ['required', 'string'],
+            'asset_code' => ['required', 'string'],
+            'public_key' => ['required', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Fetch home_domain from Horizon
+        $horizon = $this->isTestnet ? 'https://horizon-testnet.stellar.org' : 'https://horizon.stellar.org';
+        $horizonResponse = \Illuminate\Support\Facades\Http::get($horizon . "/accounts/{$request->identifier}");
+        if (!$horizonResponse->ok()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve asset issuer details from Stellar network.'
+            ]);
+        }
+
+        $homeDomain = $horizonResponse->json('home_domain');
+        if (empty($homeDomain)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No official Stellar home domain was detected for this asset. Please submit the project for manual review.'
+            ]);
+        }
+
+        // Normalize domain
+        $normalized = trim(strtolower($homeDomain));
+        if (str_starts_with($normalized, 'http://')) {
+            $normalized = substr($normalized, 7);
+        } elseif (str_starts_with($normalized, 'https://')) {
+            $normalized = substr($normalized, 8);
+        }
+        if (str_starts_with($normalized, 'www.')) {
+            $normalized = substr($normalized, 4);
+        }
+        $parts = explode('/', $normalized);
+        $officialDomain = $parts[0];
+
+        // Generate challenge details
+        $claimId = 'claim_' . bin2hex(random_bytes(16));
+        $plainTextToken = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $plainTextToken);
+        $expiresAt = now()->addHours(48);
+
+        // Save to verified_projects draft
+        $project = VerifiedProject::where('identifier', $request->identifier)
+            ->where('asset_code', $request->asset_code)
+            ->whereIn('status', [0])
+            ->first();
+
+        if (!$project) {
+            $project = VerifiedProject::create([
+                'blockchain_id' => 1,
+                'identifier' => $request->identifier,
+                'asset_code' => $request->asset_code,
+                'wallet_address' => $request->public_key,
+                'status' => 0, // draft
+            ]);
+        }
+
+        $project->official_domain = $officialDomain;
+        $project->claim_id = $claimId;
+        $project->verification_token_hash = $tokenHash;
+        $project->verification_file_url = "https://{$officialDomain}/.well-known/tokenglade-verification.txt";
+        $project->verification_status = 'pending_domain_verification';
+        $project->token_expires_at = $expiresAt;
+        $project->save();
+
+        return response()->json([
+            'status' => 'success',
+            'request_id' => $project->id,
+            'claim_id' => $claimId,
+            'plain_text_token' => $plainTextToken,
+            'official_domain' => $officialDomain,
+            'verification_file_url' => "https://{$officialDomain}/.well-known/tokenglade-verification.txt"
+        ]);
+    }
+
+    /**
+     * Verify the domain file contents.
+     */
+    public function verifyDomain(Request $request, $requestId)
+    {
+        // 1. Rate limiting
+        $cacheKey = "verify_domain_throttle_" . $requestId;
+        $attempts = \Illuminate\Support\Facades\Cache::get($cacheKey, 0);
+        if ($attempts >= 5) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Too many verification attempts. Please wait 5 minutes.'
+            ], 429);
+        }
+        \Illuminate\Support\Facades\Cache::put($cacheKey, $attempts + 1, 300); // 5 minutes block
+
+        $project = VerifiedProject::findOrFail($requestId);
+
+        // 2. Expiry check
+        if (now()->greaterThan($project->token_expires_at)) {
+            $project->verification_status = 'expired';
+            $project->save();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Token expired. Please generate a new verification challenge.'
+            ]);
+        }
+
+        $officialDomain = $project->official_domain;
+        if (empty($officialDomain)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Official domain missing from verification request.'
+            ]);
+        }
+
+        // 3. DNS SSRF pre-check
+        $ip = gethostbyname($officialDomain);
+        if (!$ip || $ip === $officialDomain) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Website could not be reached. Domain resolution failed.'
+            ]);
+        }
+
+        $isValidIp = filter_var(
+            $ip,
+            FILTER_VALIDATE_IP,
+            FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+        );
+
+        if (!$isValidIp || $ip === '127.0.0.1' || $ip === '0.0.0.0' || str_starts_with($ip, '169.254')) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Security block: Resolved address points to an internal or private network.'
+            ]);
+        }
+
+        $url = "https://{$officialDomain}/.well-known/tokenglade-verification.txt";
+
+        // 4. Fetch the verification file contents
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(10)
+                ->withOptions([
+                    'allow_redirects' => [
+                        'max' => 3,
+                        'strict' => true,
+                        'protocols' => ['https']
+                    ]
+                ])
+                ->get($url);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Website could not be reached. Connection timed out or refused.'
+            ]);
+        }
+
+        if (!$response->ok()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Verification file not found. Ensure it is accessible at ' . $url
+            ]);
+        }
+
+        $body = $response->body();
+        if (strlen($body) > 20480) { // 20 KB limit
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Verification file size exceeds limit (20 KB).'
+            ]);
+        }
+
+        // 5. Parse and validate content keys
+        $lines = explode("\n", $body);
+        $parsed = [];
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (empty($line) || !str_contains($line, '=')) continue;
+            $parts = explode('=', $line, 2);
+            $parsed[trim($parts[0])] = trim($parts[1]);
+        }
+
+        $claimId = $parsed['tokenglade_claim_id'] ?? null;
+        $token = $parsed['tokenglade_verification_token'] ?? null;
+        $assetCode = $parsed['asset_code'] ?? null;
+        $assetIssuer = $parsed['asset_issuer'] ?? null;
+
+        if (!$claimId || !$token || !$assetCode || !$assetIssuer) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid verification file format or missing required fields.'
+            ]);
+        }
+
+        if ($claimId !== $project->claim_id) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Claim ID mismatch.'
+            ]);
+        }
+
+        if (strtoupper($assetCode) !== strtoupper($project->asset_code) || strtoupper($assetIssuer) !== strtoupper($project->identifier)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Asset information mismatch.'
+            ]);
+        }
+
+        if (!hash_equals($project->verification_token_hash, hash('sha256', $token))) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid verification token.'
+            ]);
+        }
+
+        // Verification successful
+        $project->verification_status = 'domain_verified';
+        $project->verified_at = now();
+        $project->last_check_at = now();
+        $project->rejection_reason = null;
+        $project->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Project ownership confirmed'
+        ]);
     }
 }

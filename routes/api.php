@@ -64,6 +64,7 @@ Route::middleware('admin')->prefix('admin')->group(function () {
     Route::delete('verification-fees/{id}', 'AdminController@deleteVerificationFee');
     Route::get('verifications', 'AdminController@getVerifications');
     Route::post('verifications/{id}/status', 'AdminController@updateVerificationStatus');
+    Route::post('verifications/{id}/edit', 'AdminController@editVerificationDetails');
 });
 
 Route::prefix('token')->group(function () {
@@ -82,6 +83,8 @@ Route::prefix('token')->group(function () {
     )->name('token.verificationPaymentAssets');
     Route::post('verification', 'TokenController@startVerification')->name('token.verification');
     Route::post('submit_verification_xdr', 'TokenController@submitVerificationXdr')->name('token.submitVerificationXdr');
+    Route::post('project-verification/challenge', 'TokenController@generateChallenge')->name('token.generateChallenge');
+    Route::post('project-verification/{requestId}/verify-domain', 'TokenController@verifyDomain')->name('token.verifyDomain');
     Route::post('establish-trustline-xdr', 'TokenController@createTrustlineXdr')->name('token.createTrustlineXdr');
     Route::post('submit-trustline-xdr', 'TokenController@submitTrustlineXdr')->name('token.submitTrustlineXdr');
     Route::get('download-toml', 'TokenController@downloadToml')->name('token.downloadToml');

@@ -2379,6 +2379,7 @@ async function contactVerification(formData) {
     data.append('full_description', formData.full_description || '')
     data.append('category', formData.category || '')
     data.append('launch_date', formData.launch_date || '')
+    data.append('official_email', formData.official_email || '')
     
     if (formData.logo) {
       data.append('logo', formData.logo)
