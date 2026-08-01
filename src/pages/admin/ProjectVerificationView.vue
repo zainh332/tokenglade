@@ -249,7 +249,10 @@
               </div>
               <div>
                 <label class="block text-[10px] font-mono font-bold text-gray-500 uppercase mb-1.5">Category</label>
-                <input type="text" v-model="editForm.category" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+                <select v-model="editForm.category" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500">
+                  <option value="">Select Category</option>
+                  <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+                </select>
               </div>
             </div>
 
@@ -320,7 +323,10 @@
               </div>
               <div class="space-y-2">
                 <div v-for="(w, idx) in editForm.wallets" :key="idx" class="flex gap-2 items-center">
-                  <input type="text" v-model="w.label" placeholder="Label" class="w-1/4 bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+                  <select v-model="w.label" class="w-1/4 bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500">
+                    <option value="">Select Label</option>
+                    <option v-for="lbl in walletLabels" :key="lbl" :value="lbl">{{ lbl }}</option>
+                  </select>
                   <input type="text" v-model="w.wallet_address" placeholder="Stellar Wallet Address" class="flex-1 bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white font-mono text-[10px] focus:outline-none focus:border-purple-500" />
                   <button @click="removeEditWallet(idx)" type="button" class="px-3 py-1.5 text-rose-500 border border-gray-850 hover:bg-rose-500/10 rounded-xl transition">✕</button>
                 </div>
@@ -471,6 +477,29 @@ import axios from 'axios';
 
 const items = ref([]);
 const loading = ref(false);
+
+const categories = ref([]);
+const walletLabels = ref([]);
+
+async function fetchDynamicMetadata() {
+  try {
+    const catRes = await axios.get('/api/global/project_categories');
+    if (catRes.data.status === 'success' && catRes.data.data) {
+      categories.value = catRes.data.data;
+    }
+  } catch (err) {
+    console.warn('Failed to load categories', err);
+  }
+
+  try {
+    const labelRes = await axios.get('/api/global/wallet_labels');
+    if (labelRes.data.status === 'success' && labelRes.data.data) {
+      walletLabels.value = labelRes.data.data;
+    }
+  } catch (err) {
+    console.warn('Failed to load wallet labels', err);
+  }
+}
 const filterStatus = ref('all');
 const searchQuery = ref('');
 
@@ -768,5 +797,5 @@ function shortHash(hash) {
 
 onMounted(() => {
   loadData();
-});
-</script>
+  fetchDynamicMetadata();
+});</script>

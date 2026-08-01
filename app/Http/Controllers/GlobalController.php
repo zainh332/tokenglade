@@ -919,5 +919,21 @@ class GlobalController extends Controller
         // Otherwise return a generic rejected message
         return 'Stellar network rejected the transaction. Please make sure your wallet is funded and has enough XLM for reserves.';
     }
+
+    public function project_categories()
+    {
+        return response()->json([
+            'status' => 'success',
+            'data' => \App\Models\ProjectCategory::orderBy('name', 'asc')->pluck('name')->toArray()
+        ]);
+    }
+
+    public function wallet_labels()
+    {
+        return response()->json([
+            'status' => 'success',
+            'data' => \App\Models\WalletLabel::orderBy('name', 'asc')->pluck('name')->toArray()
+        ]);
+    }
 }
 

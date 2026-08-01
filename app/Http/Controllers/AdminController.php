@@ -441,8 +441,14 @@ class AdminController extends Controller
             if ($profile) {
                 $wallets = \App\Models\ProjectOfficialWallet::where('project_profile_id', $profile->id)->get();
             }
-            if ($wallets->isEmpty()) {
-                $wallets = \App\Models\ProjectOfficialWallet::where('project_profile_id', $claim->id)->get();
+            if ($wallets->isEmpty() && !$profile) {
+                $candidateWallets = \App\Models\ProjectOfficialWallet::where('project_profile_id', $claim->id)->get();
+                if ($candidateWallets->isNotEmpty()) {
+                    $profileExists = \App\Models\ProjectProfile::where('id', $claim->id)->exists();
+                    if (!$profileExists) {
+                        $wallets = $candidateWallets;
+                    }
+                }
             }
 
             return [
@@ -630,5 +636,79 @@ class AdminController extends Controller
             'status' => 'success',
             'message' => 'Project details updated successfully.'
         ]);
+    }
+
+    // Project Category CRUD Actions
+    public function getCategories()
+    {
+        return response()->json([
+            'status' => 'success',
+            'data' => \App\Models\ProjectCategory::orderBy('name', 'asc')->get()
+        ]);
+    }
+
+    public function storeCategory(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|unique:project_categories,name'
+        ]);
+
+        $cat = \App\Models\ProjectCategory::create(['name' => $request->name]);
+        return response()->json(['status' => 'success', 'data' => $cat]);
+    }
+
+    public function updateCategory(Request $request, $id)
+    {
+        $cat = \App\Models\ProjectCategory::findOrFail($id);
+        $request->validate([
+            'name' => 'required|string|unique:project_categories,name,' . $id
+        ]);
+
+        $cat->update(['name' => $request->name]);
+        return response()->json(['status' => 'success', 'data' => $cat]);
+    }
+
+    public function deleteCategory($id)
+    {
+        $cat = \App\Models\ProjectCategory::findOrFail($id);
+        $cat->delete();
+        return response()->json(['status' => 'success', 'message' => 'Category deleted.']);
+    }
+
+    // Wallet Label CRUD Actions
+    public function getWalletLabels()
+    {
+        return response()->json([
+            'status' => 'success',
+            'data' => \App\Models\WalletLabel::orderBy('name', 'asc')->get()
+        ]);
+    }
+
+    public function storeWalletLabel(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|unique:wallet_labels,name'
+        ]);
+
+        $label = \App\Models\WalletLabel::create(['name' => $request->name]);
+        return response()->json(['status' => 'success', 'data' => $label]);
+    }
+
+    public function updateWalletLabel(Request $request, $id)
+    {
+        $label = \App\Models\WalletLabel::findOrFail($id);
+        $request->validate([
+            'name' => 'required|string|unique:wallet_labels,name,' . $id
+        ]);
+
+        $label->update(['name' => $request->name]);
+        return response()->json(['status' => 'success', 'data' => $label]);
+    }
+
+    public function deleteWalletLabel($id)
+    {
+        $label = \App\Models\WalletLabel::findOrFail($id);
+        $label->delete();
+        return response()->json(['status' => 'success', 'message' => 'Wallet label deleted.']);
     }
 }

@@ -7,6 +7,7 @@ import LpParticipantsView from "./pages/admin/LpParticipantsView.vue";
 import LpHistoryView from "./pages/admin/LpHistoryView.vue";
 import VerificationFeesView from "./pages/admin/VerificationFeesView.vue";
 import ProjectVerificationView from "./pages/admin/ProjectVerificationView.vue";
+import MetadataCrudView from "./pages/admin/MetadataCrudView.vue";
 
 const routes = [
     {
@@ -51,6 +52,11 @@ const routes = [
                 path: "project-verification",
                 component: ProjectVerificationView,
                 meta: { title: "Admin — Project Verification Claims" }
+            },
+            {
+                path: "metadata-management",
+                component: MetadataCrudView,
+                meta: { title: "Admin — Project Metadata CRUD" }
             }
         ]
     }

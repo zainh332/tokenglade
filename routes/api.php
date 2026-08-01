@@ -36,6 +36,8 @@ Route::prefix('global')->group(function () {
     Route::get('lp/reserves', 'GlobalController@lp_reserves')->name('global.lpReserves');
     Route::post('lp/deposit', 'GlobalController@lp_deposit')->name('global.lpDeposit');
     Route::post('lp/submit', 'GlobalController@lp_submit')->name('global.lpSubmit');
+    Route::get('project_categories', 'GlobalController@project_categories')->name('global.projectCategories');
+    Route::get('wallet_labels', 'GlobalController@wallet_labels')->name('global.walletLabels');
 });
 
 // ==========================
@@ -65,6 +67,18 @@ Route::middleware('admin')->prefix('admin')->group(function () {
     Route::get('verifications', 'AdminController@getVerifications');
     Route::post('verifications/{id}/status', 'AdminController@updateVerificationStatus');
     Route::post('verifications/{id}/edit', 'AdminController@editVerificationDetails');
+
+    // Project Category CRUD
+    Route::get('categories', 'AdminController@getCategories');
+    Route::post('categories', 'AdminController@storeCategory');
+    Route::put('categories/{id}', 'AdminController@updateCategory');
+    Route::delete('categories/{id}', 'AdminController@deleteCategory');
+
+    // Wallet Label CRUD
+    Route::get('wallet-labels', 'AdminController@getWalletLabels');
+    Route::post('wallet-labels', 'AdminController@storeWalletLabel');
+    Route::put('wallet-labels/{id}', 'AdminController@updateWalletLabel');
+    Route::delete('wallet-labels/{id}', 'AdminController@deleteWalletLabel');
 });
 
 Route::prefix('token')->group(function () {

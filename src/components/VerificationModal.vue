@@ -491,7 +491,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import axios from 'axios'
 import {
   Dialog,
@@ -553,33 +553,32 @@ const stepTitles = [
   'Step 7 – Complete Verification Request'
 ]
 
-const categories = [
-  'DeFi',
-  'Payments',
-  'Infrastructure',
-  'Meme',
-  'Gaming',
-  'Stablecoin',
-  'AI',
-  'NFT',
-  'Community',
-  'Utility',
-  'Other'
-]
+const categories = ref([])
+const walletLabels = ref([])
 
-const walletLabels = [
-  'Treasury',
-  'Foundation',
-  'Team',
-  'Marketing',
-  'Liquidity',
-  'Liquidity Rewards',
-  'Staking',
-  'Community',
-  'DAO',
-  'Reserve',
-  'Other'
-]
+async function fetchDynamicMetadata() {
+  try {
+    const catRes = await axios.get('/api/global/project_categories')
+    if (catRes.data.status === 'success' && catRes.data.data) {
+      categories.value = catRes.data.data
+    }
+  } catch (err) {
+    console.warn('Failed to load dynamic project categories.', err)
+  }
+
+  try {
+    const labelRes = await axios.get('/api/global/wallet_labels')
+    if (labelRes.data.status === 'success' && labelRes.data.data) {
+      walletLabels.value = labelRes.data.data
+    }
+  } catch (err) {
+    console.warn('Failed to load dynamic wallet labels.', err)
+  }
+}
+
+onMounted(() => {
+  fetchDynamicMetadata()
+})
 
 // Form State
 const form = reactive({

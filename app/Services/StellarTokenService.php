@@ -884,8 +884,14 @@ class StellarTokenService
                     if ($verifiedProj->profile) {
                         $dbOfficialWallets = \App\Models\ProjectOfficialWallet::where('project_profile_id', $verifiedProj->profile->id)->get();
                     }
-                    if ($dbOfficialWallets->isEmpty()) {
-                        $dbOfficialWallets = \App\Models\ProjectOfficialWallet::where('project_profile_id', $verifiedProj->id)->get();
+                    if ($dbOfficialWallets->isEmpty() && !$verifiedProj->profile) {
+                        $candidateWallets = \App\Models\ProjectOfficialWallet::where('project_profile_id', $verifiedProj->id)->get();
+                        if ($candidateWallets->isNotEmpty()) {
+                            $profileExists = \App\Models\ProjectProfile::where('id', $verifiedProj->id)->exists();
+                            if (!$profileExists) {
+                                $dbOfficialWallets = $candidateWallets;
+                            }
+                        }
                     }
                 }
 
