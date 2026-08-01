@@ -1004,10 +1004,10 @@
                   </div>
                 </div>
 
-                <!-- Right Card: Project Custody & Treasury Wallets Table -->
+                <!-- Right Card: Official Project Wallets Table -->
                 <div class="card">
                   <div class="card-hd">
-                    <h3>Project Custody & Treasury Wallets</h3>
+                    <h3>Official Project Wallets</h3>
                   </div>
                   <div style="padding: 20px;">
                     <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
