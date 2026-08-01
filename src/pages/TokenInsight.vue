@@ -227,7 +227,7 @@
                   <span v-else-if="isVerificationPending" class="chip"
                     style="color:var(--pink);border-color:rgba(240,24,156,0.25)">Pending</span>
                   <button v-else @click="verificationModal = true"
-                    class="claim-btn select-none cursor-pointer transition">Claim Project</button>
+                    class="claim-btn select-none cursor-pointer transition">Claim & Verify Project</button>
                 </div>
 
                 <div class="issuer">
