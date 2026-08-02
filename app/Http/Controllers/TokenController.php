@@ -1483,7 +1483,7 @@ EOT;
         if ($verificationProject) {
             if ($verificationProject->status == 1) {
                 $projectDetails = $verificationProject->profile()
-                    ->with(['officialLinks', 'socialLinks', 'officialWallets'])
+                    ->with(['officialLinks', 'socialLinks', 'officialWallets', 'verifiedProject'])
                     ->first();
 
                 // Auto-backfill profile for legacy verified projects
@@ -1506,7 +1506,7 @@ EOT;
                         ]);
 
                         $projectDetails = $verificationProject->profile()
-                            ->with(['officialLinks', 'socialLinks', 'officialWallets'])
+                            ->with(['officialLinks', 'socialLinks', 'officialWallets', 'verifiedProject'])
                             ->first();
                     } catch (\Throwable $e) {
                         Log::warning("Failed to auto-migrate legacy verified project profile: " . $e->getMessage());

@@ -628,6 +628,7 @@
           <a href="#" @click.prevent="switchTab('overview')" :class="{ on: activeTab === 'overview' }">Overview</a>
           <a href="#" @click.prevent="switchTab('holders')" :class="{ on: activeTab === 'holders' }">Holders</a>
           <a href="#" @click.prevent="switchTab('liquidity')" :class="{ on: activeTab === 'liquidity' }">Liquidity</a>
+          <a href="#" @click.prevent="switchTab('about')" :class="{ on: activeTab === 'about' }">About</a>
         </nav>
 
         <!-- MAIN GRID -->
@@ -1243,6 +1244,212 @@
             </template>
           </div>
 
+          <!-- LEFT COLUMN: ABOUT -->
+          <div style="display:flex;flex-direction:column;gap:14px" v-if="activeTab === 'about'">
+            <!-- SECTION 1: ABOUT PROJECT -->
+            <div class="card">
+              <div class="card-hd">
+                <h3>About Project</h3>
+                <span class="tag">Profile</span>
+              </div>
+              <div style="padding: 20px;" class="space-y-6">
+                <!-- Description -->
+                <div>
+                  <h4 class="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider mb-2">Description</h4>
+                  <p class="text-sm text-slate-300 leading-relaxed whitespace-pre-line">
+                    {{ token.project_details?.full_description || token.project_details?.short_description || "This project has not yet provided an official description." }}
+                  </p>
+                </div>
+
+                <!-- Mission -->
+                <div v-if="token.project_details?.mission && token.project_details.mission.trim() !== ''">
+                  <h4 class="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider mb-2">Mission</h4>
+                  <p class="text-sm text-slate-300 leading-relaxed whitespace-pre-line">
+                    {{ token.project_details.mission }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 2: PROJECT INFORMATION -->
+            <div class="card">
+              <div class="card-hd">
+                <h3>Project Information</h3>
+                <span class="tag">Metadata</span>
+              </div>
+              <div style="padding: 20px;">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                  <!-- Category -->
+                  <div class="flex flex-col">
+                    <span class="text-[10px] font-mono font-bold text-slate-500 uppercase">Category</span>
+                    <span class="text-sm text-slate-200 mt-1 font-semibold">{{ token.project_details?.category || 'General' }}</span>
+                  </div>
+
+                  <!-- Project Type -->
+                  <div class="flex flex-col">
+                    <span class="text-[10px] font-mono font-bold text-slate-500 uppercase">Project Type</span>
+                    <span class="text-sm text-slate-200 mt-1 font-semibold">{{ token.project_details?.project_type || 'Stellar Asset' }}</span>
+                  </div>
+
+                  <!-- Launch Date -->
+                  <div class="flex flex-col">
+                    <span class="text-[10px] font-mono font-bold text-slate-500 uppercase">Launch Date</span>
+                    <span class="text-sm text-slate-200 mt-1 font-semibold font-mono">{{ formatDate(token.project_details?.launch_date) }}</span>
+                  </div>
+
+                  <!-- Website -->
+                  <div class="flex flex-col">
+                    <span class="text-[10px] font-mono font-bold text-slate-500 uppercase">Official Website</span>
+                    <a v-if="token.website" :href="token.website" target="_blank" class="text-sm text-cyan-400 hover:text-cyan-300 mt-1 font-semibold truncate hover:underline">
+                      {{ simplifyUrl(token.website) }}
+                    </a>
+                    <span v-else class="text-sm text-slate-400 mt-1 font-semibold">—</span>
+                  </div>
+
+                  <!-- Official Email -->
+                  <div class="flex flex-col" v-if="token.project_details?.verified_project?.email">
+                    <span class="text-[10px] font-mono font-bold text-slate-500 uppercase">Official Email</span>
+                    <a :href="'mailto:' + token.project_details.verified_project.email" class="text-sm text-cyan-400 hover:text-cyan-300 mt-1 font-semibold truncate hover:underline">
+                      {{ token.project_details.verified_project.email }}
+                    </a>
+                  </div>
+
+                  <!-- Verification Status -->
+                  <div class="flex flex-col">
+                    <span class="text-[10px] font-mono font-bold text-slate-500 uppercase">Verification Status</span>
+                    <span class="text-sm mt-1 font-bold inline-flex items-center gap-1.5" :class="isVerified ? 'text-emerald-400' : 'text-slate-400'">
+                      <span v-if="isVerified">✓ Verified Project</span>
+                      <span v-else>Unverified</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 3: OFFICIAL LINKS -->
+            <div class="card" v-if="hasOfficialLinks">
+              <div class="card-hd">
+                <h3>Official Links</h3>
+                <span class="tag">Resources</span>
+              </div>
+              <div style="padding: 20px;" class="flex flex-wrap gap-3">
+                <a v-if="token.website" :href="token.website" target="_blank" class="btn dark select-none inline-flex items-center gap-2 px-4 py-2 hover:border-cyan-500/50 transition">
+                  <Globe class="w-4 h-4 text-cyan-400" />
+                  <span>Website</span>
+                </a>
+                <a v-if="token.documentation" :href="token.documentation" target="_blank" class="btn dark select-none inline-flex items-center gap-2 px-4 py-2 hover:border-cyan-500/50 transition">
+                  <svg class="w-4 h-4 fill-none stroke-current stroke-2 text-cyan-400" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                  </svg>
+                  <span>Documentation</span>
+                </a>
+                <a v-if="token.whitepaper" :href="token.whitepaper" target="_blank" class="btn dark select-none inline-flex items-center gap-2 px-4 py-2 hover:border-cyan-500/50 transition">
+                  <svg class="w-4 h-4 fill-none stroke-current stroke-2 text-cyan-400" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                  </svg>
+                  <span>Whitepaper</span>
+                </a>
+                <a v-if="token.github" :href="token.github" target="_blank" class="btn dark select-none inline-flex items-center gap-2 px-4 py-2 hover:border-cyan-500/50 transition">
+                  <svg class="w-4 h-4 fill-current text-cyan-400" viewBox="0 0 24 24">
+                    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                  </svg>
+                  <span>GitHub</span>
+                </a>
+                <a v-if="token.medium" :href="token.medium" target="_blank" class="btn dark select-none inline-flex items-center gap-2 px-4 py-2 hover:border-cyan-500/50 transition">
+                  <svg class="w-4 h-4 fill-current text-cyan-400" viewBox="0 0 24 24">
+                    <path d="M13.54 12a6.8 6.8 0 0 1-6.77 6.82A6.8 6.8 0 0 1 0 11.82 6.8 6.8 0 0 1 6.77 5 6.8 6.8 0 0 1 13.54 12zm7.42 0c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42zm3.04 0c0 3.24-.31 5.86-.71 5.86s-.72-2.62-.72-5.86.32-5.86.72-5.86.71 2.62.71 5.86z" />
+                  </svg>
+                  <span>Medium / Blog</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- SECTION 4: COMMUNITY -->
+            <div class="card" v-if="hasCommunityLinks">
+              <div class="card-hd">
+                <h3>Official Community</h3>
+                <span class="tag">Channels</span>
+              </div>
+              <div style="padding: 20px;" class="flex flex-wrap gap-3">
+                <a v-if="token.twitter" :href="token.twitter" target="_blank" class="btn dark select-none inline-flex items-center gap-2 px-4 py-2 hover:border-cyan-500/50 transition">
+                  <svg class="w-3.5 h-3.5 fill-current text-cyan-400" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                  <span>Twitter / X</span>
+                </a>
+                <a v-if="token.telegram" :href="token.telegram" target="_blank" class="btn dark select-none inline-flex items-center gap-2 px-4 py-2 hover:border-cyan-500/50 transition">
+                  <svg class="w-4 h-4 fill-current text-cyan-400" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.67-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.37-.49 1.02-.75 3.99-1.73 6.66-2.87 8.01-3.43 3.81-1.58 4.6-1.86 5.12-1.87.11 0 .37.03.54.17.14.12.18.28.2.45-.02.07-.02.16-.04.25z" />
+                  </svg>
+                  <span>Telegram</span>
+                </a>
+                <a v-if="token.discord" :href="token.discord" target="_blank" class="btn dark select-none inline-flex items-center gap-2 px-4 py-2 hover:border-cyan-500/50 transition">
+                  <svg class="w-4 h-4 fill-current text-cyan-400" viewBox="0 0 24 24">
+                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.156 2.418z" />
+                  </svg>
+                  <span>Discord</span>
+                </a>
+                <a v-if="token.linkedin" :href="token.linkedin" target="_blank" class="btn dark select-none inline-flex items-center gap-2 px-4 py-2 hover:border-cyan-500/50 transition">
+                  <svg class="w-3.5 h-3.5 fill-current text-cyan-400" viewBox="0 0 24 24">
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                  </svg>
+                  <span>LinkedIn</span>
+                </a>
+                <a v-if="token.reddit" :href="token.reddit" target="_blank" class="btn dark select-none inline-flex items-center gap-2 px-4 py-2 hover:border-cyan-500/50 transition">
+                  <svg class="w-4 h-4 fill-current text-cyan-400" viewBox="0 0 24 24">
+                    <path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.85-1.64-6.29-1.72l1.24-3.91 3.43.8c.08.97.89 1.73 1.88 1.73 1.02 0 1.84-.83 1.84-1.84s-.83-1.84-1.84-1.84c-.87 0-1.61.6-1.78 1.4L13.8 2.92c-.12-.07-.26-.08-.39-.03l-4.1 1.27c-.24.08-.4.3-.4.56v.04l-1.24 3.91c-2.44.08-4.65.72-6.29 1.72-.56-.76-1.46-1.24-2.42-1.24-1.65 0-3 1.35-3 3 0 1.2.7 2.23 1.72 2.73-.08.35-.12.73-.12 1.1 0 3.72 4.19 6.75 9.34 6.75s9.34-3.03 9.34-6.75c0-.37-.04-.75-.12-1.1 1.02-.5 1.72-1.53 1.72-2.73zm-18 2.22c-.62 0-1.12-.5-1.12-1.12s.5-1.12 1.12-1.12 1.12.5 1.12 1.12-.5 1.12-1.12 1.12zm11.36 4.14c-.66.66-1.88.72-2.36.72-.48 0-1.7-.06-2.36-.72-.11-.11-.11-.3 0-.41.11-.11.3-.11.41 0 .5.5.1.4.52.55.51.52.51.52.51 0-.11-.11-.11-.3 0-.41zm.76-3.02c-.62 0-1.12-.5-1.12-1.12s.5-1.12 1.12-1.12 1.12.5 1.12 1.12-.5 1.12-1.12 1.12z" />
+                  </svg>
+                  <span>Reddit</span>
+                </a>
+                <a v-if="token.youtube" :href="token.youtube" target="_blank" class="btn dark select-none inline-flex items-center gap-2 px-4 py-2 hover:border-cyan-500/50 transition">
+                  <svg class="w-4 h-4 fill-current text-cyan-400" viewBox="0 0 24 24">
+                    <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.518 3.545 12 3.545 12 3.545s-7.518 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.87.508 9.388.508 9.388.508s7.518 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                  </svg>
+                  <span>YouTube</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- SECTION 5: SUPPORTED ECOSYSTEM (Optional) -->
+            <div class="card" v-if="hasEcosystemInfo">
+              <div class="card-hd">
+                <h3>Supported Ecosystem</h3>
+                <span class="tag">Network Integration</span>
+              </div>
+              <div style="padding: 20px;" class="space-y-6">
+                <!-- Wallets -->
+                <div v-if="token.project_details?.supported_wallets && token.project_details.supported_wallets.length">
+                  <span class="text-[10px] font-mono font-bold text-slate-500 uppercase block mb-2">Supported Wallets</span>
+                  <div class="flex flex-wrap gap-2">
+                    <span v-for="wallet in token.project_details.supported_wallets" :key="wallet" class="chip sym uppercase bg-[#0e131c] border border-slate-700/60 text-slate-300">
+                      {{ wallet }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- DEXs -->
+                <div v-if="token.project_details?.supported_dexs && token.project_details.supported_dexs.length">
+                  <span class="text-[10px] font-mono font-bold text-slate-500 uppercase block mb-2">Supported DEXs</span>
+                  <div class="flex flex-wrap gap-2">
+                    <span v-for="dex in token.project_details.supported_dexs" :key="dex" class="chip sym uppercase bg-[#0e131c] border border-slate-700/60 text-slate-300">
+                      {{ dex }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Use Cases -->
+                <div v-if="token.project_details?.primary_use_cases && token.project_details.primary_use_cases.length">
+                  <span class="text-[10px] font-mono font-bold text-slate-500 uppercase block mb-2">Primary Use Cases</span>
+                  <div class="flex flex-wrap gap-2">
+                    <span v-for="useCase in token.project_details.primary_use_cases" :key="useCase" class="chip sym uppercase bg-[#0e131c] border border-slate-700/60 text-slate-300">
+                      {{ useCase }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- RIGHT COLUMN: SIDEBAR WIDGETS -->
           <aside class="rail" v-if="activeTab === 'overview'">
             <!-- Market Insight -->
@@ -1465,6 +1672,93 @@
                   <div class="ic"></div>
                   <div class="l">Scam</div>
                   <div class="n">{{ votes.scam }}</div>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <!-- RIGHT COLUMN: ABOUT SIDEBAR -->
+          <aside class="rail" v-if="activeTab === 'about'">
+            <!-- SECTION 6: VERIFIED BY TOKENGLADE -->
+            <div class="card" v-if="isVerified">
+              <div class="card-hd">
+                <h3 class="flex items-center gap-1.5 text-emerald-400">
+                  <ShieldCheck class="w-4 h-4 text-emerald-400" />
+                  Verified by TokenGlade
+                </h3>
+              </div>
+              <div style="padding: 20px;" class="space-y-6">
+                <!-- Verification Checklist -->
+                <div class="space-y-2.5">
+                  <div class="flex items-center gap-2 text-xs font-mono font-semibold text-emerald-400">
+                    <span>✓</span> <span>Website ownership verified</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-xs font-mono font-semibold text-emerald-400">
+                    <span>✓</span> <span>Official profile managed by the project team</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-xs font-mono font-semibold text-emerald-400">
+                    <span>✓</span> <span>Project information verified</span>
+                  </div>
+                </div>
+
+                <!-- Date grid -->
+                <div class="space-y-3 pt-2">
+                  <div class="flex justify-between items-center text-xs">
+                    <span class="font-mono text-slate-500 uppercase">Verification Date</span>
+                    <span class="font-mono text-slate-300">{{ formatDate(token.project_details?.verified_project?.verified_at) }}</span>
+                  </div>
+                  <div class="flex justify-between items-center text-xs">
+                    <span class="font-mono text-slate-500 uppercase">Last Updated</span>
+                    <span class="font-mono text-slate-300">{{ formatDate(token.project_details?.updated_at || token.project_details?.verified_project?.updated_at) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- UNVERIFIED CLAIM BOX -->
+            <div class="card" v-else>
+              <div class="card-hd">
+                <h3 class="flex items-center gap-1.5 text-slate-300">
+                  <ShieldX class="w-4 h-4 text-slate-500" />
+                  Claim Your Project
+                </h3>
+              </div>
+              <div style="padding: 20px;" class="space-y-4">
+                <p class="text-xs font-medium text-slate-400 leading-relaxed">
+                  Become the official owner of this project on TokenGlade.
+                </p>
+                
+                <div class="space-y-2 text-xs font-semibold text-slate-300 leading-relaxed font-mono">
+                  <div class="flex items-start gap-1.5">
+                    <span class="text-cyan-400">•</span>
+                    <span>Manage your official project profile</span>
+                  </div>
+                  <div class="flex items-start gap-1.5">
+                    <span class="text-cyan-400">•</span>
+                    <span>Upload logo & banner</span>
+                  </div>
+                  <div class="flex items-start gap-1.5">
+                    <span class="text-cyan-400">•</span>
+                    <span>Update project information</span>
+                  </div>
+                  <div class="flex items-start gap-1.5">
+                    <span class="text-cyan-400">•</span>
+                    <span>Add official links</span>
+                  </div>
+                  <div class="flex items-start gap-1.5">
+                    <span class="text-cyan-400">•</span>
+                    <span>Add social links</span>
+                  </div>
+                  <div class="flex items-start gap-1.5">
+                    <span class="text-cyan-400">•</span>
+                    <span>Become eligible for Featured Projects</span>
+                  </div>
+                </div>
+
+                <div class="pt-2">
+                  <button @click="verificationModal = true" class="btn cyan w-full py-2.5 font-bold select-none text-center block transition hover:bg-cyan-600">
+                    Claim Project
+                  </button>
                 </div>
               </div>
             </div>
@@ -1949,10 +2243,46 @@ const votes = ref({
 const verificationPaymentAssets = ref([])
 const selectedVerificationAsset = ref(null)
 
-const isVerificationPending = computed(
-  () => token.is_verification_pending === true
-)
 const isVerified = computed(() => token.is_verified === true)
+const isVerificationPending = computed(() => token.is_verification_pending === true)
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return 'N/A'
+  try {
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return 'N/A'
+    return d.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  } catch (e) {
+    return 'N/A'
+  }
+}
+
+const simplifyUrl = (url) => {
+  if (!url) return ''
+  return url.replace(/^https?:\/\//i, '').replace(/^www\./i, '').split('/')[0]
+}
+
+const hasOfficialLinks = computed(() => {
+  return !!(token.website || token.documentation || token.whitepaper || token.github || token.medium)
+})
+
+const hasCommunityLinks = computed(() => {
+  return !!(token.twitter || token.telegram || token.discord || token.linkedin || token.reddit || token.youtube)
+})
+
+const hasEcosystemInfo = computed(() => {
+  const pd = token.project_details
+  if (!pd) return false
+  return !!(
+    (pd.supported_wallets && pd.supported_wallets.length > 0) ||
+    (pd.supported_dexs && pd.supported_dexs.length > 0) ||
+    (pd.primary_use_cases && pd.primary_use_cases.length > 0)
+  )
+})
 
 const scopulyTradeUrl = computed(() => {
   if (token.asset_code && token.issuer) {
