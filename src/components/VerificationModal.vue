@@ -1,6 +1,6 @@
 <template>
   <TransitionRoot as="template" :show="open">
-    <Dialog as="div" class="relative z-50" @close="handleClose">
+    <Dialog as="div" class="relative z-50" @close="() => {}">
       <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
         leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
         <div class="fixed inset-0 transition-opacity bg-slate-950/80 backdrop-blur-sm" />
@@ -78,7 +78,7 @@
                         Project Verification
                       </h3>
                       <p class="text-xs text-slate-400 leading-relaxed">
-                        Verify ownership to manage your official project profile
+                        Verify your project to manage your official profile
                       </p>
                     </div>
 
@@ -646,6 +646,7 @@ async function fetchDynamicMetadata() {
 
 onMounted(() => {
   fetchDynamicMetadata()
+  resetForm()
 })
 
 // Form State
@@ -835,34 +836,41 @@ const handleVerificationSubmit = () => {
   emit('pay', { ...form })
 }
 
+const resetForm = () => {
+  form.name = ''
+  form.category = ''
+  form.launch_date = ''
+  form.short_description = ''
+  form.full_description = ''
+  form.logo = null
+  form.banner = null
+  form.website_link = ''
+  form.documentation_link = ''
+  form.whitepaper_link = ''
+  form.github_link = ''
+  form.medium_link = ''
+  form.twitter_link = ''
+  form.telegram_link = ''
+  form.discord_link = ''
+  form.linkedin_link = ''
+  form.reddit_link = ''
+  form.youtube_link = ''
+  form.wallets = []
+  logoPreview.value = null
+  bannerPreview.value = null
+}
+
 // Watch modal state to reset form when opened/closed
 watch(() => props.open, (isOpen) => {
   if (isOpen) {
     currentStep.value = 1
     maxReachedStep.value = 1
     showErrors.value = false
-    form.name = ''
-    form.category = ''
-    form.launch_date = ''
-    form.short_description = ''
-    form.full_description = ''
-    form.logo = null
-    form.banner = null
-    form.website_link = ''
-    form.documentation_link = ''
-    form.whitepaper_link = ''
-    form.github_link = ''
-    form.medium_link = ''
-    form.twitter_link = ''
-    form.telegram_link = ''
-    form.discord_link = ''
-    form.linkedin_link = ''
-    form.reddit_link = ''
-    form.youtube_link = ''
-    form.wallets = []
-    logoPreview.value = null
-    bannerPreview.value = null
   }
+})
+
+watch(() => props.assetCode, () => {
+  resetForm()
 })
 
 // Utility functions
