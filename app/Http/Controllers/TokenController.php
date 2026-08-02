@@ -1761,18 +1761,20 @@ EOT;
             ]);
         }
 
-        // Find existing draft that has completed domain verification
+        // Find existing unpaid draft or create a new one
         $project = VerifiedProject::where('identifier', $request->identifier)
             ->where('asset_code', $request->asset_code)
-            ->where('verification_status', 'domain_verified')
             ->where('status', 0)
             ->first();
 
         if (!$project) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Please verify project ownership first.'
-            ], 422);
+            $project = VerifiedProject::create([
+                'blockchain_id' => 1,
+                'identifier'     => $request->identifier,
+                'asset_code'     => $request->asset_code,
+                'wallet_address' => $public,
+                'status'         => 0, // draft
+            ]);
         }
 
         // Process files
