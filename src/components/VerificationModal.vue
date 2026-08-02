@@ -130,16 +130,32 @@
                     </div>
 
                     <div>
-                      <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Project Name <span class="text-rose-500">*</span></label>
+                      <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Project Name <span class="text-rose-500">*</span></label>
+                        <span v-if="showErrors && !form.name.trim()" class="text-[10px] font-mono text-rose-400">Project Name is required</span>
+                      </div>
                       <input type="text" v-model="form.name" placeholder="e.g. Aqua Network"
-                        class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 focus:outline-none transition-all" />
+                        class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                        :class="[
+                          showErrors && !form.name.trim()
+                            ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500'
+                            : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                        ]" />
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Category</label>
+                        <div class="flex justify-between items-center mb-1.5">
+                          <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Category <span class="text-rose-500">*</span></label>
+                          <span v-if="showErrors && !form.category.trim()" class="text-[10px] font-mono text-rose-400">Category is required</span>
+                        </div>
                         <select v-model="form.category"
-                          class="w-full rounded-xl border border-slate-800 bg-[#182235] px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all">
+                          class="w-full rounded-xl border bg-[#182235] px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                          :class="[
+                            showErrors && !form.category.trim()
+                              ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500'
+                              : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                          ]">
                           <option value="" class="bg-[#111620] text-slate-400">Select Category</option>
                           <option v-for="cat in categories" :key="cat" :value="cat" class="bg-[#111620] text-white">{{ cat }}</option>
                         </select>
@@ -154,21 +170,30 @@
                     <div>
                       <div class="flex justify-between items-center mb-1.5">
                         <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Short Description <span class="text-rose-500">*</span></label>
-                        <span class="text-[10px] font-mono text-slate-500">{{ form.short_description?.length || 0 }}/250</span>
+                        <div class="flex items-center gap-2">
+                          <span v-if="showErrors && !form.short_description.trim()" class="text-[10px] font-mono text-rose-400">Short Description is required</span>
+                          <span class="text-[10px] font-mono text-slate-500">{{ form.short_description?.length || 0 }}/250</span>
+                        </div>
                       </div>
                       <input type="text" v-model="form.short_description" placeholder="A brief project pitch (max 250 chars)" maxlength="250"
-                        class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
+                        class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                        :class="[
+                          showErrors && !form.short_description.trim()
+                            ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500'
+                            : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                        ]" />
                     </div>
 
                     <div>
                       <div class="flex justify-between items-center mb-1.5">
                         <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Official Email <span class="text-rose-500">*</span></label>
-                        <span v-if="form.official_email.trim() && !isEmailValid" class="text-[10px] font-mono text-rose-400">Invalid email format</span>
+                        <span v-if="showErrors && !form.official_email.trim()" class="text-[10px] font-mono text-rose-400">Official Email is required</span>
+                        <span v-else-if="form.official_email.trim() && !isEmailValid" class="text-[10px] font-mono text-rose-400">Invalid email format</span>
                       </div>
                       <input type="email" v-model="form.official_email" placeholder="e.g. contact@tokenglade.com"
                         class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
                         :class="[
-                          form.official_email.trim() && !isEmailValid 
+                          (showErrors && !form.official_email.trim()) || (form.official_email.trim() && !isEmailValid)
                             ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500' 
                             : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
                         ]" />
@@ -189,9 +214,17 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <!-- Project Logo -->
                       <div class="space-y-3">
-                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Project Logo <span class="text-rose-500">*</span></label>
+                        <div class="flex justify-between items-center mb-1.5">
+                          <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Project Logo <span class="text-rose-500">*</span></label>
+                          <span v-if="showErrors && !form.logo" class="text-[10px] font-mono text-rose-400">Logo is required</span>
+                        </div>
                         <div class="flex items-center gap-4">
-                          <div class="w-16 h-16 rounded-2xl border border-slate-800 bg-slate-900/50 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          <div class="w-16 h-16 rounded-2xl border bg-slate-900/50 flex items-center justify-center overflow-hidden flex-shrink-0"
+                            :class="[
+                              showErrors && !form.logo 
+                                ? 'border-rose-500/50 bg-rose-950/10' 
+                                : 'border-slate-800'
+                            ]">
                             <img v-if="logoPreview" :src="logoPreview" class="w-full h-full object-cover" />
                             <span v-else class="text-xs text-slate-600 font-mono">1:1 Image</span>
                           </div>
@@ -230,33 +263,74 @@
                   <!-- Step 4: Official Links -->
                   <div v-if="currentStep === 4" class="space-y-4">
                     <div>
-                      <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Website URL <span class="text-rose-500">*</span></label>
+                      <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Website URL <span class="text-rose-500">*</span></label>
+                        <span v-if="showErrors && !form.website_link.trim()" class="text-[10px] font-mono text-rose-400">Website URL is required</span>
+                        <span v-else-if="form.website_link.trim() && !isWebsiteValid" class="text-[10px] font-mono text-rose-400">Website URL is incorrect</span>
+                      </div>
                       <input type="text" v-model="form.website_link" placeholder="https://example.com"
-                        class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
+                        class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                        :class="[
+                          (showErrors && !form.website_link.trim()) || (form.website_link.trim() && !isWebsiteValid)
+                            ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500' 
+                            : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                        ]" />
                     </div>
 
                     <div>
-                      <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Documentation Link</label>
+                      <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Documentation Link</label>
+                        <span v-if="form.documentation_link.trim() && !isDocLinkValid" class="text-[10px] font-mono text-rose-400">Invalid URL format</span>
+                      </div>
                       <input type="text" v-model="form.documentation_link" placeholder="https://docs.example.com"
-                        class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
+                        class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                        :class="[
+                          form.documentation_link.trim() && !isDocLinkValid 
+                            ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500' 
+                            : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                        ]" />
                     </div>
 
                     <div>
-                      <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Whitepaper Link</label>
+                      <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Whitepaper Link</label>
+                        <span v-if="form.whitepaper_link.trim() && !isWhitepaperLinkValid" class="text-[10px] font-mono text-rose-400">Invalid URL format</span>
+                      </div>
                       <input type="text" v-model="form.whitepaper_link" placeholder="https://example.com/whitepaper.pdf"
-                        class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
+                        class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                        :class="[
+                          form.whitepaper_link.trim() && !isWhitepaperLinkValid 
+                            ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500' 
+                            : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                        ]" />
                     </div>
 
                     <div>
-                      <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">GitHub Repository</label>
+                      <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase">GitHub Repository</label>
+                        <span v-if="form.github_link.trim() && !isGithubLinkValid" class="text-[10px] font-mono text-rose-400">Invalid URL format</span>
+                      </div>
                       <input type="text" v-model="form.github_link" placeholder="https://github.com/org/repo"
-                        class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
+                        class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                        :class="[
+                          form.github_link.trim() && !isGithubLinkValid 
+                            ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500' 
+                            : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                        ]" />
                     </div>
 
                     <div>
-                      <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Medium / Blog</label>
+                      <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Medium / Blog</label>
+                        <span v-if="form.medium_link.trim() && !isMediumLinkValid" class="text-[10px] font-mono text-rose-400">Invalid URL format</span>
+                      </div>
                       <input type="text" v-model="form.medium_link" placeholder="https://medium.com/@username"
-                        class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
+                        class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                        :class="[
+                          form.medium_link.trim() && !isMediumLinkValid 
+                            ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500' 
+                            : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                        ]" />
                     </div>
                   </div>
 
@@ -264,40 +338,88 @@
                   <div v-if="currentStep === 5" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">X (Twitter)</label>
+                        <div class="flex justify-between items-center mb-1.5">
+                          <label class="block text-xs font-mono font-bold text-slate-400 uppercase">X (Twitter)</label>
+                          <span v-if="form.twitter_link.trim() && !isTwitterLinkValid" class="text-[10px] font-mono text-rose-400">Invalid URL format</span>
+                        </div>
                         <input type="text" v-model="form.twitter_link" placeholder="https://x.com/username"
-                          class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
+                          class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                          :class="[
+                            form.twitter_link.trim() && !isTwitterLinkValid 
+                              ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500' 
+                              : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                          ]" />
                       </div>
                       <div>
-                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Telegram Community</label>
+                        <div class="flex justify-between items-center mb-1.5">
+                          <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Telegram Community</label>
+                          <span v-if="form.telegram_link.trim() && !isTelegramLinkValid" class="text-[10px] font-mono text-rose-400">Invalid URL format</span>
+                        </div>
                         <input type="text" v-model="form.telegram_link" placeholder="https://t.me/community"
-                          class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
+                          class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                          :class="[
+                            form.telegram_link.trim() && !isTelegramLinkValid 
+                              ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500' 
+                              : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                          ]" />
                       </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Discord Server</label>
+                        <div class="flex justify-between items-center mb-1.5">
+                          <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Discord Server</label>
+                          <span v-if="form.discord_link.trim() && !isDiscordLinkValid" class="text-[10px] font-mono text-rose-400">Invalid URL format</span>
+                        </div>
                         <input type="text" v-model="form.discord_link" placeholder="https://discord.gg/invite"
-                          class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
+                          class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                          :class="[
+                            form.discord_link.trim() && !isDiscordLinkValid 
+                              ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500' 
+                              : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                          ]" />
                       </div>
                       <div>
-                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">LinkedIn Profile</label>
+                        <div class="flex justify-between items-center mb-1.5">
+                          <label class="block text-xs font-mono font-bold text-slate-400 uppercase">LinkedIn Profile</label>
+                          <span v-if="form.linkedin_link.trim() && !isLinkedinLinkValid" class="text-[10px] font-mono text-rose-400">Invalid URL format</span>
+                        </div>
                         <input type="text" v-model="form.linkedin_link" placeholder="https://linkedin.com/company/name"
-                          class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
+                          class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                          :class="[
+                            form.linkedin_link.trim() && !isLinkedinLinkValid 
+                              ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500' 
+                              : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                          ]" />
                       </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">Reddit Subreddit</label>
+                        <div class="flex justify-between items-center mb-1.5">
+                          <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Reddit Subreddit</label>
+                          <span v-if="form.reddit_link.trim() && !isRedditLinkValid" class="text-[10px] font-mono text-rose-400">Invalid URL format</span>
+                        </div>
                         <input type="text" v-model="form.reddit_link" placeholder="https://reddit.com/r/subreddit"
-                          class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
+                          class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                          :class="[
+                            form.reddit_link.trim() && !isRedditLinkValid 
+                              ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500' 
+                              : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                          ]" />
                       </div>
                       <div>
-                        <label class="block text-xs font-mono font-bold text-slate-400 uppercase mb-1.5">YouTube Channel</label>
+                        <div class="flex justify-between items-center mb-1.5">
+                          <label class="block text-xs font-mono font-bold text-slate-400 uppercase">YouTube Channel</label>
+                          <span v-if="form.youtube_link.trim() && !isYoutubeLinkValid" class="text-[10px] font-mono text-rose-400">Invalid URL format</span>
+                        </div>
                         <input type="text" v-model="form.youtube_link" placeholder="https://youtube.com/c/channel"
-                          class="w-full rounded-xl border border-slate-800 bg-slate-900/30 px-4 py-2.5 text-white text-sm focus:border-cyan-500/50 focus:outline-none transition-all" />
+                          class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                          :class="[
+                            form.youtube_link.trim() && !isYoutubeLinkValid 
+                              ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500' 
+                              : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                          ]" />
                       </div>
                     </div>
                   </div>
@@ -408,7 +530,7 @@
                     Back
                   </button>
 
-                  <button v-if="currentStep < 7" @click="nextStep" :disabled="!isStepValid"
+                  <button v-if="currentStep < 7" @click="nextStep" :disabled="loading"
                     class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-xs font-bold text-[#08131a] rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                     <span v-if="currentStep === 1">Continue &rarr;</span>
                     <span v-else>Next</span>
@@ -487,6 +609,7 @@ const emit = defineEmits([
 // Stepper management
 const currentStep = ref(1)
 const maxReachedStep = ref(1)
+const showErrors = ref(false)
 
 const stepTitles = [
   'Welcome to Project Onboarding',
@@ -594,6 +717,50 @@ const isEmailValid = computed(() => {
   return emailPattern.test(form.official_email.trim())
 })
 
+const isValidDomainUrl = (url, allowedDomains) => {
+  if (!url || !url.trim()) return true
+  const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i;
+  if (!urlPattern.test(url.trim())) return false
+  
+  try {
+    let cleanUrl = url.trim();
+    if (!/^https?:\/\//i.test(cleanUrl)) {
+      cleanUrl = 'https://' + cleanUrl;
+    }
+    const hostname = new URL(cleanUrl).hostname.toLowerCase();
+    return allowedDomains.some(domain => hostname === domain || hostname.endsWith('.' + domain));
+  } catch (e) {
+    return false;
+  }
+}
+
+const isWebsiteValid = computed(() => {
+  const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i;
+  return urlPattern.test(form.website_link.trim())
+})
+
+const isDocLinkValid = computed(() => {
+  if (!form.documentation_link.trim()) return true
+  const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i;
+  return urlPattern.test(form.documentation_link.trim())
+})
+
+const isWhitepaperLinkValid = computed(() => {
+  if (!form.whitepaper_link.trim()) return true
+  const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i;
+  return urlPattern.test(form.whitepaper_link.trim())
+})
+
+const isGithubLinkValid = computed(() => isValidDomainUrl(form.github_link, ['github.com']))
+const isMediumLinkValid = computed(() => isValidDomainUrl(form.medium_link, ['medium.com']))
+
+const isTwitterLinkValid = computed(() => isValidDomainUrl(form.twitter_link, ['x.com', 'twitter.com']))
+const isTelegramLinkValid = computed(() => isValidDomainUrl(form.telegram_link, ['t.me', 'telegram.me', 'telegram.dog', 'telegram.org']))
+const isDiscordLinkValid = computed(() => isValidDomainUrl(form.discord_link, ['discord.gg', 'discord.com', 'discordapp.com']))
+const isLinkedinLinkValid = computed(() => isValidDomainUrl(form.linkedin_link, ['linkedin.com']))
+const isRedditLinkValid = computed(() => isValidDomainUrl(form.reddit_link, ['reddit.com']))
+const isYoutubeLinkValid = computed(() => isValidDomainUrl(form.youtube_link, ['youtube.com', 'youtu.be']))
+
 // Dynamic Step Validator
 const isStepValid = computed(() => {
   if (currentStep.value === 1) {
@@ -601,6 +768,7 @@ const isStepValid = computed(() => {
   }
   if (currentStep.value === 2) {
     return form.name.trim().length > 0 &&
+           form.category.trim().length > 0 &&
            form.short_description.trim().length > 0 &&
            form.short_description.length <= 250 &&
            form.official_email.trim().length > 0 &&
@@ -611,17 +779,34 @@ const isStepValid = computed(() => {
     return form.logo !== null
   }
   if (currentStep.value === 4) {
-    const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i;
-    return form.website_link.trim().length > 0 && urlPattern.test(form.website_link.trim())
+    return form.website_link.trim().length > 0 && 
+           isWebsiteValid.value &&
+           isDocLinkValid.value &&
+           isWhitepaperLinkValid.value &&
+           isGithubLinkValid.value &&
+           isMediumLinkValid.value
+  }
+  if (currentStep.value === 5) {
+    return isTwitterLinkValid.value &&
+           isTelegramLinkValid.value &&
+           isDiscordLinkValid.value &&
+           isLinkedinLinkValid.value &&
+           isRedditLinkValid.value &&
+           isYoutubeLinkValid.value
   }
   return true
 })
 
 const nextStep = () => {
-  if (currentStep.value < 7 && isStepValid.value) {
-    currentStep.value++
-    if (currentStep.value > maxReachedStep.value) {
-      maxReachedStep.value = currentStep.value
+  if (currentStep.value < 7) {
+    if (isStepValid.value) {
+      currentStep.value++
+      if (currentStep.value > maxReachedStep.value) {
+        maxReachedStep.value = currentStep.value
+      }
+      showErrors.value = false
+    } else {
+      showErrors.value = true
     }
   }
 }
@@ -629,12 +814,14 @@ const nextStep = () => {
 const prevStep = () => {
   if (currentStep.value > 1) {
     currentStep.value--
+    showErrors.value = false
   }
 }
 
 const goToStep = (step) => {
   if (step <= maxReachedStep.value) {
     currentStep.value = step
+    showErrors.value = false
   }
 }
 
@@ -653,6 +840,7 @@ watch(() => props.open, (isOpen) => {
   if (isOpen) {
     currentStep.value = 1
     maxReachedStep.value = 1
+    showErrors.value = false
     form.name = ''
     form.category = ''
     form.launch_date = ''

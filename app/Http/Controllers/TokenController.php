@@ -1701,7 +1701,7 @@ EOT;
             'name'         => ['required', 'string'],
             'short_description' => ['required', 'string', 'max:250'],
             'full_description' => ['nullable', 'string'],
-            'category'     => ['nullable', 'string'],
+            'category'     => ['required', 'string'],
             'launch_date'  => ['nullable', 'date'],
             'official_email' => ['nullable', 'email'],
             'logo'         => ['required', 'image', 'max:2048'],
