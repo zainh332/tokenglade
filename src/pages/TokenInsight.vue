@@ -2388,20 +2388,29 @@ async function contactVerification(formData) {
       data.append('banner', formData.banner)
     }
 
+    const ensureUrlHasProtocol = (url) => {
+      if (!url) return ''
+      let clean = url.trim()
+      if (clean && !/^https?:\/\//i.test(clean)) {
+        return 'https://' + clean
+      }
+      return clean
+    }
+
     // Links
-    data.append('website_link', formData.website_link || '')
-    data.append('documentation_link', formData.documentation_link || '')
-    data.append('whitepaper_link', formData.whitepaper_link || '')
-    data.append('github_link', formData.github_link || '')
-    data.append('medium_link', formData.medium_link || '')
+    data.append('website_link', ensureUrlHasProtocol(formData.website_link))
+    data.append('documentation_link', ensureUrlHasProtocol(formData.documentation_link))
+    data.append('whitepaper_link', ensureUrlHasProtocol(formData.whitepaper_link))
+    data.append('github_link', ensureUrlHasProtocol(formData.github_link))
+    data.append('medium_link', ensureUrlHasProtocol(formData.medium_link))
 
     // Socials
-    data.append('twitter_link', formData.twitter_link || '')
-    data.append('telegram_link', formData.telegram_link || '')
-    data.append('discord_link', formData.discord_link || '')
-    data.append('linkedin_link', formData.linkedin_link || '')
-    data.append('reddit_link', formData.reddit_link || '')
-    data.append('youtube_link', formData.youtube_link || '')
+    data.append('twitter_link', ensureUrlHasProtocol(formData.twitter_link))
+    data.append('telegram_link', ensureUrlHasProtocol(formData.telegram_link))
+    data.append('discord_link', ensureUrlHasProtocol(formData.discord_link))
+    data.append('linkedin_link', ensureUrlHasProtocol(formData.linkedin_link))
+    data.append('reddit_link', ensureUrlHasProtocol(formData.reddit_link))
+    data.append('youtube_link', ensureUrlHasProtocol(formData.youtube_link))
 
     // JSON array of wallets
     data.append('wallets', JSON.stringify(formData.wallets || []))
@@ -2487,14 +2496,26 @@ function getTokenInitials(code) {
   return code.substring(0, 2).toUpperCase()
 }
 
+const handleWalletChanged = (event) => {
+  if (event?.detail?.connected && event?.detail?.publicKey) {
+    walletKey.value = event.detail.publicKey
+    isWalletConnected.value = true
+  } else {
+    walletKey.value = getCookie('public_key') || ''
+    isWalletConnected.value = !!walletKey.value
+  }
+}
+
 onMounted(async () => {
   walletKey.value = getCookie('public_key') || ''
   isWalletConnected.value = !!walletKey.value
+  window.addEventListener('tokenglade-wallet-changed', handleWalletChanged)
   await fetchVerificationAssets()
   startLiveTradesPolling()
 })
 
 onUnmounted(() => {
+  window.removeEventListener('tokenglade-wallet-changed', handleWalletChanged)
   stopLiveTradesPolling()
 })
 
