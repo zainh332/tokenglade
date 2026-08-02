@@ -1459,7 +1459,26 @@ EOT;
 
         $logo = $insight['image'] ?? null;
         $website = $insight['website'] ?? null;
+        $documentation = $insight['documentation'] ?? null;
+        $whitepaper = $insight['whitepaper'] ?? null;
+        $github = $insight['github'] ?? null;
+        $medium = $insight['medium'] ?? null;
+        $twitter = $insight['twitter'] ?? null;
+        $telegram = $insight['telegram'] ?? null;
+        $discord = $insight['discord'] ?? null;
+        $linkedin = $insight['linkedin'] ?? null;
+        $reddit = $insight['reddit'] ?? null;
+        $youtube = $insight['youtube'] ?? null;
         $projectDetails = null;
+
+        $formatUrl = function ($url) {
+            if (!$url) return null;
+            $url = trim($url);
+            if ($url !== '' && !preg_match('/^https?:\/\//i', $url)) {
+                return 'https://' . $url;
+            }
+            return $url;
+        };
 
         if ($verificationProject) {
             if ($verificationProject->status == 1) {
@@ -1498,8 +1517,42 @@ EOT;
                     if ($projectDetails->logo_url) {
                         $logo = $projectDetails->logo_url;
                     }
-                    if ($projectDetails->officialLinks && $projectDetails->officialLinks->website) {
-                        $website = $projectDetails->officialLinks->website;
+                    if ($projectDetails->officialLinks) {
+                        if ($projectDetails->officialLinks->website) {
+                            $website = $formatUrl($projectDetails->officialLinks->website);
+                        }
+                        if ($projectDetails->officialLinks->documentation) {
+                            $documentation = $formatUrl($projectDetails->officialLinks->documentation);
+                        }
+                        if ($projectDetails->officialLinks->whitepaper) {
+                            $whitepaper = $formatUrl($projectDetails->officialLinks->whitepaper);
+                        }
+                        if ($projectDetails->officialLinks->github) {
+                            $github = $formatUrl($projectDetails->officialLinks->github);
+                        }
+                        if ($projectDetails->officialLinks->medium) {
+                            $medium = $formatUrl($projectDetails->officialLinks->medium);
+                        }
+                    }
+                    if ($projectDetails->socialLinks) {
+                        if ($projectDetails->socialLinks->twitter) {
+                            $twitter = $formatUrl($projectDetails->socialLinks->twitter);
+                        }
+                        if ($projectDetails->socialLinks->telegram) {
+                            $telegram = $formatUrl($projectDetails->socialLinks->telegram);
+                        }
+                        if ($projectDetails->socialLinks->discord) {
+                            $discord = $formatUrl($projectDetails->socialLinks->discord);
+                        }
+                        if ($projectDetails->socialLinks->linkedin) {
+                            $linkedin = $formatUrl($projectDetails->socialLinks->linkedin);
+                        }
+                        if ($projectDetails->socialLinks->reddit) {
+                            $reddit = $formatUrl($projectDetails->socialLinks->reddit);
+                        }
+                        if ($projectDetails->socialLinks->youtube) {
+                            $youtube = $formatUrl($projectDetails->socialLinks->youtube);
+                        }
                     }
                 }
             }
@@ -1543,6 +1596,16 @@ EOT;
             ...$insight,
             'image' => $logo,
             'website' => $website,
+            'documentation' => $documentation,
+            'whitepaper' => $whitepaper,
+            'github' => $github,
+            'medium' => $medium,
+            'twitter' => $twitter,
+            'telegram' => $telegram,
+            'discord' => $discord,
+            'linkedin' => $linkedin,
+            'reddit' => $reddit,
+            'youtube' => $youtube,
             'project_details' => $projectDetails,
             'is_verified' => $isVerified,
             'is_verification_pending' => $isVerificationPending,
