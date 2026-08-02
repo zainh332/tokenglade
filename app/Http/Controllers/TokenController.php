@@ -1462,43 +1462,45 @@ EOT;
         $projectDetails = null;
 
         if ($verificationProject) {
-            $projectDetails = $verificationProject->profile()
-                ->with(['officialLinks', 'socialLinks', 'officialWallets'])
-                ->first();
+            if ($verificationProject->status == 1) {
+                $projectDetails = $verificationProject->profile()
+                    ->with(['officialLinks', 'socialLinks', 'officialWallets'])
+                    ->first();
 
-            // Auto-backfill profile for legacy verified projects
-            if (!$projectDetails && $verificationProject->status == 1) {
-                try {
-                    $profile = ProjectProfile::create([
-                        'verified_project_id' => $verificationProject->id,
-                        'name'                => $verificationProject->name ?? $code,
-                        'category'            => 'Other',
-                    ]);
+                // Auto-backfill profile for legacy verified projects
+                if (!$projectDetails) {
+                    try {
+                        $profile = ProjectProfile::create([
+                            'verified_project_id' => $verificationProject->id,
+                            'name'                => $verificationProject->name ?? $code,
+                            'category'            => 'Other',
+                        ]);
 
-                    ProjectOfficialLink::create([
-                        'project_profile_id' => $profile->id,
-                        'website'            => $verificationProject->website,
-                    ]);
+                        ProjectOfficialLink::create([
+                            'project_profile_id' => $profile->id,
+                            'website'            => $verificationProject->website,
+                        ]);
 
-                    ProjectSocialLink::create([
-                        'project_profile_id' => $profile->id,
-                        'twitter'            => $verificationProject->twitter,
-                    ]);
+                        ProjectSocialLink::create([
+                            'project_profile_id' => $profile->id,
+                            'twitter'            => $verificationProject->twitter,
+                        ]);
 
-                    $projectDetails = $verificationProject->profile()
-                        ->with(['officialLinks', 'socialLinks', 'officialWallets'])
-                        ->first();
-                } catch (\Throwable $e) {
-                    Log::warning("Failed to auto-migrate legacy verified project profile: " . $e->getMessage());
+                        $projectDetails = $verificationProject->profile()
+                            ->with(['officialLinks', 'socialLinks', 'officialWallets'])
+                            ->first();
+                    } catch (\Throwable $e) {
+                        Log::warning("Failed to auto-migrate legacy verified project profile: " . $e->getMessage());
+                    }
                 }
-            }
 
-            if ($projectDetails) {
-                if ($projectDetails->logo_url) {
-                    $logo = $projectDetails->logo_url;
-                }
-                if ($projectDetails->officialLinks && $projectDetails->officialLinks->website) {
-                    $website = $projectDetails->officialLinks->website;
+                if ($projectDetails) {
+                    if ($projectDetails->logo_url) {
+                        $logo = $projectDetails->logo_url;
+                    }
+                    if ($projectDetails->officialLinks && $projectDetails->officialLinks->website) {
+                        $website = $projectDetails->officialLinks->website;
+                    }
                 }
             }
         }
