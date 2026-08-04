@@ -243,8 +243,8 @@
         </div>
       </section>
 
-      <!-- SECTION 1: Live Ecosystem Activity Feed, TOP POOLS, VERIFIED ASSETS -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-[14px] mt-[14px] grid3">
+      <!-- SECTION 1: Live Ecosystem Activity Feed, TOP POOLS -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-[14px] mt-[14px] grid3">
         <!-- Live Ecosystem Activity Feed -->
         <div class="card">
           <div class="card-hd">
@@ -303,120 +303,235 @@
             </div>
           </div>
         </div>
-
-        <!-- Featured Projects -->
-        <div class="card flex flex-col">
-          <div class="card-hd">
-            <h3>Featured Projects</h3>
-          </div>
-
-          <div v-if="loadingFeaturedProjects" class="p-4 space-y-2">
-            <div v-for="i in 5" :key="i"
-              class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl animate-pulse">
-              <div class="flex items-center gap-2">
-                <div class="w-6 h-6 rounded-full bg-slate-900 border border-slate-800/80 flex-shrink-0"></div>
-                <div class="space-y-1">
-                  <div class="h-3 w-20 bg-slate-900 rounded border border-slate-800/60"></div>
-                  <div class="h-2 w-10 bg-slate-900/80 rounded border border-slate-800/40"></div>
-                </div>
-              </div>
-              <div class="space-y-1 flex flex-col items-end">
-                <div class="h-3 w-14 bg-slate-900 rounded border border-slate-800/60"></div>
-                <div class="h-2 w-12 bg-slate-900/80 rounded border border-slate-800/40"></div>
-              </div>
-            </div>
-          </div>
-          <div v-else class="p-4 space-y-2">
-            <div v-for="project in featuredProjects" :key="project.symbol" @click="goToProject(project)"
-              class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl text-xs cursor-pointer hover:border-slate-800 transition">
-              <div class="flex items-center gap-2">
-                <img v-if="project.logo_url" :src="project.logo_url"
-                  class="w-6 h-6 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
-                <span v-else
-                  class="w-6 h-6 rounded-full bg-slate-900 flex items-center justify-center font-bold text-[9px] text-cyan-400">
-                  {{ project.symbol?.slice(0, 2) }}
-                </span>
-                <div>
-                  <div class="flex items-center gap-1">
-                    <span class="font-bold text-white block">{{ project.name }}</span>
-                    <!-- Blue Verified Icon -->
-                    <svg class="w-3.5 h-3.5 text-[#5e54ff] fill-current flex-shrink-0" viewBox="0 0 24 24">
-                      <path
-                        d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                    </svg>
-                  </div>
-                  <span class="text-[9px] text-slate-550 uppercase">{{ project.symbol }}</span>
-                </div>
-              </div>
-              <!-- Market Cap -->
-              <div class="text-right">
-                <div class="font-mono text-slate-300 font-bold" v-if="project.mcap">{{ formatVolume(project.mcap) }}
-                </div>
-                <div class="font-mono text-slate-500 font-bold" v-else>—</div>
-                <div class="text-[9px] text-slate-555 uppercase tracking-wider font-bold">Market Cap</div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
-      <!-- SECTION 3: LATEST TOKENS LAUNCHED ON TOKENGLADE -->
-      <div class="card p-6 space-y-6">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-900">
+      <!-- Featured Projects Section -->
+      <div class="card p-6 space-y-4">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-900">
           <div>
-            <h3 class="text-base font-black text-white tracking-tight">Latest Tokens Launched on TokenGlade</h3>
-            <p class="text-[10px] text-slate-500 mt-0.5 font-medium">Live creation monitoring</p>
+            <h3 class="text-sm font-black text-white tracking-wider uppercase">Featured Projects</h3>
+          </div>
+          <!-- Left/Right Scroll Buttons -->
+          <div class="flex items-center gap-1.5 select-none">
+            <button @click="scrollSlider('left')" class="p-1.5 bg-slate-950 border border-slate-900 rounded-lg hover:border-slate-800 text-slate-400 hover:text-white transition focus:outline-none">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button @click="scrollSlider('right')" class="p-1.5 bg-slate-950 border border-slate-900 rounded-lg hover:border-slate-800 text-slate-400 hover:text-white transition focus:outline-none">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
         </div>
 
-        <div v-if="loadingLatestCreatedTokens" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <div v-for="i in 6" :key="i" class="h-44 rounded-3xl bg-slate-950/40 border border-slate-900 animate-pulse">
+        <div v-if="loadingFeaturedProjects" class="flex overflow-x-auto gap-4 py-2 no-scrollbar">
+          <div v-for="i in 4" :key="i"
+            class="flex-shrink-0 w-[calc(25%-12px)] min-w-[280px] flex items-center justify-between p-4 bg-slate-950/40 border border-slate-900/60 rounded-2xl animate-pulse h-20">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-slate-900 border border-slate-800/80 flex-shrink-0"></div>
+              <div class="space-y-1">
+                <div class="h-3.5 w-16 bg-slate-900 rounded"></div>
+                <div class="h-2 w-10 bg-slate-900/80 rounded"></div>
+              </div>
+            </div>
+            <div class="h-3.5 w-14 bg-slate-900 rounded"></div>
           </div>
         </div>
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <div v-for="token in latestCreatedTokens.slice(0, 6)" :key="token.id" @click="goToProject(token)"
-            class="bg-slate-950/20 border border-slate-900 rounded-3xl p-5 hover:border-slate-800 transition flex flex-col justify-between h-44 cursor-pointer">
-
-            <!-- Top: Logo + Info -->
+        
+        <div v-else ref="featuredSliderRef" class="flex overflow-x-auto gap-4 py-2 scroll-smooth no-scrollbar">
+          <div v-for="project in displayedFeaturedProjects" :key="project.symbol" @click="goToProject(project)"
+            class="flex-shrink-0 w-[calc(25%-12px)] min-w-[280px] bg-slate-950/40 border border-slate-900/60 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-850 hover:bg-slate-900/40 transition cursor-pointer select-none space-y-3.5">
+            
+            <!-- Top Logo & Name -->
             <div class="flex items-center gap-3">
-              <span v-if="!token.logo_url"
-                class="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center font-bold text-xs text-cyan-400">
-                {{ token.asset_code?.slice(0, 2).toUpperCase() }}
+              <img v-if="project.logo_url" :src="project.logo_url"
+                class="w-8 h-8 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
+              <span v-else
+                class="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center font-bold text-[10px] text-cyan-400">
+                {{ project.symbol?.slice(0, 2) }}
               </span>
-              <img v-else :src="token.logo_url"
-                class="w-10 h-10 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
-              <div class="min-w-0">
+              <div>
                 <div class="flex items-center gap-1.5">
-                  <span class="font-bold text-white text-sm truncate max-w-[150px]" :title="token.name">{{ token.name
-                    }}</span>
-                  <!-- Blue Verified Icon -->
+                  <span class="font-bold text-white block text-sm">{{ project.name }}</span>
                   <svg class="w-3.5 h-3.5 text-[#5e54ff] fill-current flex-shrink-0" viewBox="0 0 24 24">
                     <path
                       d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                   </svg>
                 </div>
-                <span class="text-[10px] text-slate-500 font-mono font-semibold uppercase">{{ token.asset_code }}</span>
+                <span class="text-[9px] text-slate-500 uppercase font-mono font-semibold block mt-0.5">{{ project.symbol }}</span>
               </div>
             </div>
 
-            <!-- Middle: Supply & Chain -->
-            <div class="flex items-center justify-between text-xs mt-3">
+            <!-- Bottom Stats Grid -->
+            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-900/40">
+              <div class="flex flex-col">
+                <span class="text-[8px] text-slate-555 uppercase font-bold tracking-wider">M.Cap</span>
+                <span class="font-mono text-[10px] text-white font-bold mt-0.5">{{ project.mcap || '—' }}</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-[8px] text-slate-555 uppercase font-bold tracking-wider">Holders</span>
+                <span class="font-mono text-[10px] text-white font-bold mt-0.5">{{ project.holders || '—' }}</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-[8px] text-slate-555 uppercase font-bold tracking-wider">Price</span>
+                <span class="font-mono text-[10px] text-white font-bold mt-0.5" style="line-height: 1.25;">{{ project.price_xlm }}</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: DASHBOARD ROW (New Launches, Attention Board, Network Highlights) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-[14px]">
+        <!-- CARD 1: New Launches -->
+        <div class="card flex flex-col h-[340px]">
+          <div class="card-hd flex items-center justify-between pb-2 border-b border-slate-900/60">
+            <h3 class="flex items-center gap-1.5 text-white">
+              Latest Tokens Launched on TokenGlade
+            </h3>
+          </div>
+          <div class="flex-1 overflow-y-auto px-4 py-3 space-y-2.5 custom-scrollbar">
+            <div v-if="loadingLatestCreatedTokens" class="space-y-3">
+              <div v-for="i in 4" :key="i" class="flex items-center justify-between p-3 bg-slate-950/40 border border-slate-900/60 rounded-2xl animate-pulse h-16">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-full bg-slate-900 border border-slate-800/80"></div>
+                  <div class="space-y-1">
+                    <div class="h-3.5 w-16 bg-slate-900 rounded"></div>
+                    <div class="h-2 w-10 bg-slate-900/80 rounded"></div>
+                  </div>
+                </div>
+                <div class="h-3.5 w-12 bg-slate-900 rounded"></div>
+              </div>
+            </div>
+            <div v-else class="space-y-2">
+              <div v-for="token in latestCreatedTokens.slice(0, 5)" :key="token.id" @click="goToProject(token)"
+                class="bg-slate-950/40 border border-slate-900/60 rounded-xl p-3 text-xs cursor-pointer hover:border-slate-800 hover:bg-slate-900/40 transition flex flex-col space-y-1.5">
+                
+                <!-- Top Row: Logo, Name, Ticker, Verified Badge, Time Ago -->
+                <!-- Top Row: Logo, Name, Ticker, Verified Badge -->
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <img v-if="token.logo_url" :src="token.logo_url"
+                    class="w-7 h-7 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
+                  <span v-else
+                    class="w-7 h-7 rounded-full bg-slate-900 flex items-center justify-center font-bold text-[9px] text-cyan-400">
+                    {{ token.asset_code?.slice(0, 2).toUpperCase() }}
+                  </span>
+                  <div class="flex items-center gap-1.5 min-w-0">
+                    <span class="font-bold text-white truncate max-w-[150px]" :title="token.name">{{ token.name }}</span>
+                    <span class="text-[9px] text-slate-500 font-mono font-semibold uppercase">({{ token.asset_code }})</span>
+                    <!-- Verified Badge -->
+                    <svg v-if="token.is_verified || token.status === 1" class="w-3.5 h-3.5 text-[#5e54ff] fill-current flex-shrink-0" viewBox="0 0 24 24">
+                      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Bottom Row: Supply & Chain Info -->
+                <div class="flex items-center gap-4 text-[9px] text-slate-400 font-mono">
+                  <span>Supply: <span class="text-slate-300 font-bold">{{ formatNumber(token.supply || 1000000) }}</span></span>
+                  <span>•</span>
+                  <span>Chain: <span class="text-slate-300 font-bold">Stellar</span></span>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 2: Most Traded -->
+        <div class="card flex flex-col h-[340px]">
+          <div class="card-hd flex items-center justify-between pb-2 border-b border-slate-900/60">
+            <h3 class="flex items-center gap-1.5 text-white">
+              <span></span> Most Traded
+            </h3>
+            <span
+              class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase font-mono bg-slate-950/60 border border-violet-500/30 shadow-[0_0_12px_rgba(139,92,246,0.15)]">
+              <span
+                class="bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent">Volume</span>
+            </span>
+          </div>
+          <div v-if="loadingTopVolume" class="flex-1 overflow-y-auto px-4 py-3 space-y-2 custom-scrollbar">
+            <div v-for="i in 5" :key="i"
+              class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl animate-pulse">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-full bg-slate-900 border border-slate-800/60"></div>
+                <div class="h-3 w-16 bg-slate-900 rounded border border-slate-800/60"></div>
+              </div>
+              <div class="h-3.5 w-16 bg-slate-900 rounded border border-slate-800/60"></div>
+            </div>
+          </div>
+          <div v-else-if="topVolumeTokens.length === 0" class="flex-1 flex flex-col items-center justify-center text-slate-500 text-xs">
+            No volume data found
+          </div>
+          <div v-else class="flex-1 overflow-y-auto px-4 py-3 space-y-2 custom-scrollbar">
+            <div v-for="token in topVolumeTokens" :key="token.symbol" @click="goToProject(token)"
+              class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl text-xs cursor-pointer hover:border-slate-800 hover:bg-slate-900/40 transition">
+              <div class="flex items-center gap-2">
+                <img v-if="token.logo_url" :src="token.logo_url"
+                  class="w-6 h-6 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
+                <span v-else
+                  class="w-6 h-6 rounded-full bg-slate-900 flex items-center justify-center font-bold text-[9px] text-cyan-400">
+                  {{ token.symbol?.slice(0, 2).toUpperCase() }}
+                </span>
+                <span class="font-bold text-white block">{{ token.symbol }}</span>
+              </div>
+              <span class="text-[10px] font-bold text-emerald-400 font-mono">
+                {{ token.volumeText }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 3:  Network Highlights -->
+        <div class="card flex flex-col h-[340px]">
+          <div class="card-hd flex items-center justify-between pb-2 border-b border-slate-900/60">
+            <h3 class="flex items-center gap-1.5 text-white">
+              <span></span> Network Highlights
+            </h3>
+            <span
+              class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase font-mono bg-slate-950/60 border border-violet-500/30 shadow-[0_0_12px_rgba(139,92,246,0.15)]">
+              <span
+                class="bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent">Stats</span>
+            </span>
+          </div>
+          <div v-if="loadingNetworkHighlights" class="flex-1 overflow-y-auto px-4 py-3 space-y-2 custom-scrollbar">
+            <div v-for="i in 5" :key="i"
+              class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl animate-pulse">
               <div>
-                <div class="text-[9px] text-slate-500 uppercase font-bold tracking-wider">Supply</div>
-                <div class="font-mono text-white font-bold mt-0.5 text-xs">{{ formatNumber(token.supply || 1000000) }}
+                <div class="h-2.5 w-28 bg-slate-900 rounded border border-slate-800/60 mb-2"></div>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <div class="w-4 h-4 rounded-full bg-slate-900 border border-slate-800/60"></div>
+                  <div class="h-3 w-10 bg-slate-900 rounded border border-slate-800/60"></div>
                 </div>
               </div>
-              <div class="text-right">
-                <div class="text-[9px] text-slate-550 uppercase font-bold tracking-wider">Chain</div>
-                <div class="text-slate-400 font-bold mt-0.5 text-xs">Stellar</div>
-              </div>
+              <div class="h-6 w-20 bg-slate-900 rounded border border-slate-800/60"></div>
             </div>
-
-            <!-- Bottom: Explore Button -->
-            <button @click.stop="goToProject(token)"
-              class="mt-4 w-full py-2 text-center text-xs font-bold text-cyan-400 hover:text-white bg-slate-900/60 hover:bg-slate-900 border border-slate-850 hover:border-slate-800 rounded-2xl transition block focus:outline-none">
-              Explore →
-            </button>
+          </div>
+          <div v-else-if="networkHighlights.length === 0" class="flex-1 flex flex-col items-center justify-center text-slate-500 text-xs">
+            No highlights data found
+          </div>
+          <div v-else class="flex-1 overflow-y-auto px-4 py-3 space-y-2 custom-scrollbar">
+            <div v-for="highlight in networkHighlights" :key="highlight.label" @click="goToProject(highlight)"
+              class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl text-xs cursor-pointer hover:border-slate-800 hover:bg-slate-900/40 transition">
+              <div>
+                <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">{{ highlight.label }}</span>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <img v-if="highlight.logo_url" :src="highlight.logo_url"
+                    class="w-4 h-4 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
+                  <span v-else
+                    class="w-4 h-4 rounded-full bg-slate-900 flex items-center justify-center font-bold text-[8px] text-cyan-400">
+                    {{ highlight.symbol?.slice(0, 2).toUpperCase() }}
+                  </span>
+                  <span class="font-bold text-white">{{ highlight.symbol }}</span>
+                </div>
+              </div>
+              <span class="font-mono text-[10px] text-cyan-400 font-bold bg-[#070A13] border border-slate-900 px-2 py-1 rounded-lg">
+                {{ highlight.value }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -608,8 +723,82 @@ const searchContainerRef = ref(null);
 
 const poolsList = ref([]);
 const trendingTokens = ref([]);
+const allActiveTokens = ref([]);
 const featuredProjects = ref([]);
 const latestCreatedTokens = ref([]);
+const topVolumeRawTokens = ref([]);
+const loadingTopVolume = ref(true);
+const networkHighlights = ref([]);
+const loadingNetworkHighlights = ref(true);
+
+const featuredSliderRef = ref(null);
+
+function scrollSlider(direction) {
+  const container = featuredSliderRef.value;
+  if (!container) return;
+  const scrollAmount = container.clientWidth;
+  if (direction === 'left') {
+    container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+  } else {
+    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  }
+}
+
+const displayedFeaturedProjects = computed(() => {
+  const apiProjects = featuredProjects.value || [];
+  
+  // Sort TKG to the front of the list if it exists in the API response
+  const tkgIndex = apiProjects.findIndex(p => p.symbol === 'TKG');
+  let sortedProjects = [...apiProjects];
+  
+  if (tkgIndex > -1) {
+    const [tkg] = sortedProjects.splice(tkgIndex, 1);
+    sortedProjects.unshift(tkg);
+  }
+
+  return sortedProjects.map((p) => {
+    return {
+      ...p,
+      mcap: (p.mcap !== undefined && p.mcap !== null) ? formatVolume(p.mcap) : '—',
+      holders: (p.holders !== undefined && p.holders !== null) ? formatNumber(p.holders) : '—',
+      price_usd: (p.price_usd !== undefined && p.price_usd !== null) ? formatPrice(p.price_usd) : '—',
+      price_xlm: (p.price_xlm !== undefined && p.price_xlm !== null) ? formatXlmPrice(p.price_xlm) : '—',
+      isTkg: p.symbol === 'TKG'
+    };
+  });
+});
+
+
+const topVolumeTokens = computed(() => {
+  const tokens = topVolumeRawTokens.value || [];
+  const featuredSymbols = (featuredProjects.value || []).map(p => p.symbol);
+
+  // Filter out any featured project symbols to keep lists distinct
+  const filtered = tokens.filter(t => !featuredSymbols.includes(t.symbol));
+
+  // Sort descending by volumeUsd and pick top 5
+  const sorted = [...filtered].sort((a, b) => b.volumeUsd - a.volumeUsd);
+  const selected = sorted.slice(0, 5);
+
+  return selected.map((t) => {
+    const volumeXlm = t.volumeUsd / (xlmPrice.value || 0.17);
+    const volFormatted = volumeXlm >= 1000000 
+      ? `${(volumeXlm / 1000000).toFixed(2)}M` 
+      : (volumeXlm >= 1000 
+        ? `${(volumeXlm / 1000).toFixed(1)}K` 
+        : `${Math.round(volumeXlm).toLocaleString()}`);
+
+    return {
+      symbol: t.symbol,
+      name: t.name,
+      logo_url: t.logo_url,
+      issuer: t.issuer,
+      volumeText: `${volFormatted} XLM`
+    };
+  });
+});
+
+
 const gainersList = ref([]);
 const losersList = ref([]);
 const activityFeed = ref([]);
@@ -1031,6 +1220,43 @@ async function fetchTrendingPools() {
   }
 }
 
+async function fetchTopVolumeTokens() {
+  loadingTopVolume.value = true;
+  try {
+    const res = await fetch('/api/global/top_volume_tokens?limit=30');
+    const data = await res.json();
+    if (data.status === 'success' && Array.isArray(data.tokens)) {
+      topVolumeRawTokens.value = data.tokens.map(t => ({
+        symbol: t.symbol,
+        name: t.name,
+        issuer: t.issuer,
+        logo_url: t.logo_url,
+        price: t.price,
+        volumeUsd: t.volume_usd
+      }));
+    }
+  } catch (error) {
+    console.error("Error fetching Most Traded raw tokens:", error);
+  } finally {
+    loadingTopVolume.value = false;
+  }
+}
+
+async function fetchNetworkHighlights() {
+  loadingNetworkHighlights.value = true;
+  try {
+    const res = await fetch('/api/global/network_highlights');
+    const data = await res.json();
+    if (data.status === 'success' && Array.isArray(data.highlights)) {
+      networkHighlights.value = data.highlights;
+    }
+  } catch (error) {
+    console.error("Error fetching network highlights:", error);
+  } finally {
+    loadingNetworkHighlights.value = false;
+  }
+}
+
 async function fetchTrendingTokens() {
   loadingTrendingTokens.value = true;
   try {
@@ -1059,7 +1285,10 @@ async function fetchTrendingTokens() {
 
         const dailyVolume = r.volume7d ? Math.round(r.volume7d / 10000000 / 7) : 0;
         const dailyVolumeUsd = dailyVolume * price;
-        const liquidity = dailyVolume ? Math.round(dailyVolume * 5.5) : 0;
+        const liquidity = r.supply ? Math.round((r.supply / 10000000) * price) : 0;
+
+        const totalTrustlines = Array.isArray(r.trustlines) ? (r.trustlines[0] ?? 0) : (r.trustlines?.authorized ?? (r.trustlines?.total ?? 0));
+        const fundedTrustlines = Array.isArray(r.trustlines) ? (r.trustlines[2] ?? 0) : (r.trustlines?.funded ?? 0);
 
         return {
           name,
@@ -1070,11 +1299,15 @@ async function fetchTrendingTokens() {
           change: parseFloat(change.toFixed(2)),
           liquidity,
           volume: dailyVolume,
-          volumeUsd: dailyVolumeUsd
+          volumeUsd: dailyVolumeUsd,
+          holders: fundedTrustlines,
+          trustlines: totalTrustlines,
+          trades: r.trades ?? 0
         };
       }).filter(t => t !== null);
 
       if (mapped.length > 0) {
+        allActiveTokens.value = mapped;
         trendingTokens.value = mapped.slice(0, 6);
 
         const totalVolUsd = mapped.reduce((acc, t) => acc + (t.volumeUsd || 0), 0);
@@ -1375,6 +1608,12 @@ function formatPrice(val) {
   return `$${val.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 6 })}`;
 }
 
+function formatXlmPrice(val) {
+  if (!val) return '0.0000 XLM';
+  if (val >= 1) return `${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} XLM`;
+  return `${val.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 6 })} XLM`;
+}
+
 onMounted(() => {
   window.addEventListener('click', handleClickOutside);
   window.addEventListener("tokenglade-open-launch-token", handleOpenLaunchToken);
@@ -1396,6 +1635,8 @@ onMounted(() => {
   fetchFeaturedProjects();
   fetchTrendingPools();
   fetchTrendingTokens();
+  fetchTopVolumeTokens();
+  fetchNetworkHighlights();
   fetchMarketHighlights();
   fetchLiveActivity();
   fetchFeaturedPair();
@@ -2082,5 +2323,33 @@ onUnmounted(() => {
     padding: 8px 10px !important;
     font-size: 11px !important;
   }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(17, 22, 32, 0.5);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(40, 52, 73, 0.8);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 73, 102, 1);
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(40, 52, 73, 0.8) rgba(17, 22, 32, 0.5);
 }
 </style>

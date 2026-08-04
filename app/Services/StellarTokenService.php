@@ -1179,7 +1179,7 @@ class StellarTokenService
                 }
             }
         } catch (\Throwable $e) {
-            Log::error('trade_aggregations failed', ['msg' => $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::error('trade_aggregations failed', ['msg' => $e->getMessage()]);
         }
 
         $lpVolume24h = 0.0;
@@ -1231,7 +1231,7 @@ class StellarTokenService
                 }
             }
         } catch (\Throwable $e) {
-            Log::error('getAssetVolume24h trades failed', ['msg' => $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::error('getAssetVolume24h trades failed', ['msg' => $e->getMessage()]);
         }
 
         $totalVolumeUsd = $totalVolumeXlm * $xlmUsdPrice;
@@ -1246,5 +1246,197 @@ class StellarTokenService
             'total_volume_24h' => $totalVolumeUsd,
             'pool_volumes' => $poolVolumes,
         ];
+    }
+
+    public function getTopVolumeTokens(int $limit = 5): array
+    {
+        return Cache::remember('stellar_top_volume_tokens', 600, function () use ($limit) {
+            try {
+                $response = Http::timeout(5)->get('https://api.stellar.expert/explorer/public/asset', [
+                    'sort' => 'rating',
+                    'limit' => 80
+                ]);
+
+                if ($response->successful()) {
+                    $records = $response->json('_embedded.records') ?? [];
+                    
+                    // Sort records by volume7d first to get the top 15 candidates
+                    usort($records, function ($a, $b) {
+                        return ($b['volume7d'] ?? 0) <=> ($a['volume7d'] ?? 0);
+                    });
+                    
+                    $candidates = array_slice($records, 0, 15);
+                    $xlmUsdPrice = $this->getXlmUsdPrice();
+                    
+                    $tokens = [];
+                    foreach ($candidates as $r) {
+                        $asset = $r['asset'] ?? '';
+                        $parts = explode('-', $asset);
+                        $code = $parts[0] ?? '';
+                        $issuer = $parts[1] ?? '';
+                        
+                        $upperCode = strtoupper($code);
+                        if ($upperCode === 'XLM' || $upperCode === 'USDC' || $upperCode === 'YUSDC') {
+                            continue;
+                        }
+
+                        $price = isset($r['price']) ? (float)$r['price'] : 0.0;
+                        
+                        // Fetch correct volume using getAssetVolume24h
+                        $volData = $this->getAssetVolume24h($code, $issuer, $xlmUsdPrice, $price);
+                        $volumeUsd = $volData['total_volume_24h'] ?? 0.0;
+
+                        $dbToken = \App\Models\StellarToken::where('issuer_public_key', strtoupper($issuer))
+                            ->where('asset_code', strtoupper($code))
+                            ->first();
+
+                        $logoUrl = $dbToken?->logo ?: ($r['tomlInfo']['image'] ?? null);
+                        $name = $dbToken?->name ?: ($r['tomlInfo']['name'] ?? ($r['tomlInfo']['orgName'] ?? $code));
+
+                        $tokens[] = [
+                            'symbol' => $code,
+                            'name' => $name,
+                            'issuer' => $issuer,
+                            'logo_url' => $logoUrl,
+                            'price' => $price,
+                            'volume_usd' => $volumeUsd,
+                        ];
+                    }
+
+                    // Sort descending by volume_usd
+                    usort($tokens, function ($a, $b) {
+                        return $b['volume_usd'] <=> $a['volume_usd'];
+                    });
+
+                    return array_slice($tokens, 0, $limit);
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("getTopVolumeTokens fetch failed: " . $e->getMessage());
+            }
+
+            return [];
+        });
+    }
+
+    public function getNetworkHighlights(): array
+    {
+        return Cache::remember('stellar_network_highlights', 600, function () {
+            try {
+                $response = Http::timeout(5)->get('https://api.stellar.expert/explorer/public/asset', [
+                    'sort' => 'rating',
+                    'limit' => 80
+                ]);
+
+                if ($response->successful()) {
+                    $records = $response->json('_embedded.records') ?? [];
+                    $tokens = [];
+                    foreach ($records as $r) {
+                        $asset = $r['asset'] ?? '';
+                        $parts = explode('-', $asset);
+                        $code = $parts[0] ?? '';
+                        $issuer = $parts[1] ?? '';
+                        
+                        $upperCode = strtoupper($code);
+                        if ($upperCode === 'XLM' || $upperCode === 'USDC' || $upperCode === 'YUSDC') {
+                            continue;
+                        }
+
+                        $price = isset($r['price']) ? (float)$r['price'] : 0.0;
+                        $dailyVolume = isset($r['volume7d']) ? (float)$r['volume7d'] / 10000000 / 7 : 0.0;
+                        $volumeUsd = $dailyVolume * $price;
+                        $liquidity = isset($r['supply']) ? (float)($r['supply'] / 10000000 * $price) : 0.0;
+
+                        $dbToken = \App\Models\StellarToken::where('issuer_public_key', strtoupper($issuer))
+                            ->where('asset_code', strtoupper($code))
+                            ->first();
+
+                        $logoUrl = $dbToken?->logo ?: ($r['tomlInfo']['image'] ?? null);
+                        $name = $dbToken?->name ?: ($r['tomlInfo']['name'] ?? ($r['tomlInfo']['orgName'] ?? $code));
+
+                        $totalTrustlines = isset($r['trustlines'][0]) ? (int)$r['trustlines'][0] : 0;
+                        $fundedTrustlines = isset($r['trustlines'][2]) ? (int)$r['trustlines'][2] : 0;
+
+                        $tokens[] = [
+                            'symbol' => $code,
+                            'name' => $name,
+                            'issuer' => $issuer,
+                            'logo_url' => $logoUrl,
+                            'price' => $price,
+                            'volume_usd' => $volumeUsd,
+                            'liquidity' => $liquidity,
+                            'holders' => $fundedTrustlines,
+                            'trustlines' => $totalTrustlines,
+                            'trades' => isset($r['trades']) ? (int)$r['trades'] : 0,
+                        ];
+                    }
+
+                    if (empty($tokens)) {
+                        return [];
+                    }
+
+                    // 1. Largest Holder Growth
+                    usort($tokens, function ($a, $b) { return $b['holders'] <=> $a['holders']; });
+                    $t0 = $tokens[0];
+
+                    // 2. Largest Trustline Growth
+                    usort($tokens, function ($a, $b) { return $b['trustlines'] <=> $a['trustlines']; });
+                    $t1 = $tokens[0];
+
+                    // 3. Largest Liquidity Increase
+                    usort($tokens, function ($a, $b) { return $b['liquidity'] <=> $a['liquidity']; });
+                    $t2 = $tokens[0];
+
+                    // 4. Highest DEX Volume
+                    usort($tokens, function ($a, $b) { return $b['volume_usd'] <=> $a['volume_usd']; });
+                    $t3 = $tokens[0];
+
+                    // 5. Most Active Token
+                    usort($tokens, function ($a, $b) { return $b['trades'] <=> $a['trades']; });
+                    $t4 = $tokens[0];
+
+                    return [
+                        [
+                            'label' => 'Largest Holder Growth',
+                            'symbol' => $t0['symbol'],
+                            'issuer' => $t0['issuer'],
+                            'logo_url' => $t0['logo_url'],
+                            'value' => number_format($t0['holders']) . ' holders'
+                        ],
+                        [
+                            'label' => 'Largest Trustline Growth',
+                            'symbol' => $t1['symbol'],
+                            'issuer' => $t1['issuer'],
+                            'logo_url' => $t1['logo_url'],
+                            'value' => number_format($t1['trustlines']) . ' trustlines'
+                        ],
+                        [
+                            'label' => 'Largest Liquidity Increase',
+                            'symbol' => $t2['symbol'],
+                            'issuer' => $t2['issuer'],
+                            'logo_url' => $t2['logo_url'],
+                            'value' => '$' . number_format($t2['liquidity'], 0) . ' TVL'
+                        ],
+                        [
+                            'label' => 'Highest DEX Volume',
+                            'symbol' => $t3['symbol'],
+                            'issuer' => $t3['issuer'],
+                            'logo_url' => $t3['logo_url'],
+                            'value' => '$' . number_format($t3['volume_usd'], 0) . ' Vol'
+                        ],
+                        [
+                            'label' => 'Most Active Token',
+                            'symbol' => $t4['symbol'],
+                            'issuer' => $t4['issuer'],
+                            'logo_url' => $t4['logo_url'],
+                            'value' => number_format($t4['trades']) . ' trades'
+                        ]
+                    ];
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("getNetworkHighlights fetch failed: " . $e->getMessage());
+            }
+
+            return [];
+        });
     }
 }

@@ -213,8 +213,8 @@
             <div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
               <!-- Icon -->
               <div class="token-ico select-none flex-shrink-0">
-                <img v-if="token.image" :src="token.image" class="w-full h-full object-cover rounded-xl" />
-                <span v-else>{{ getTokenInitials(token.asset_code) }}</span>
+                <img v-if="token.image && !imageError" :src="token.image" @error="imageError = true" class="w-full h-full object-cover rounded-xl" />
+                <span v-else class="text-cyan-400 font-bold uppercase">{{ getTokenInitials(token.asset_code) }}</span>
               </div>
 
               <!-- Name and Issuer info -->
@@ -1831,6 +1831,7 @@ import {
 } from "lucide-vue-next";
 
 const loading = ref(true)
+const imageError = ref(false)
 const notFound = ref(false)
 const activeTab = ref('overview')
 const showAllTrades = ref(false)
@@ -2547,6 +2548,7 @@ function fallbackCopy(onSuccess) {
 async function fetchToken() {
   if (!issuerInput.value) return
   loading.value = true
+  imageError.value = false
   notFound.value = false
   holdersLoading.value = true
   liquidityLoading.value = true

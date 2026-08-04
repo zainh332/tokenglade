@@ -278,42 +278,71 @@ class GlobalController extends Controller
             $projects = \App\Models\VerifiedProject::where('status', 1)
                 ->get()
                 ->map(function ($p) {
-                    $supply = 0;
-                    $price = 0.0;
-                    $liq = 0;
-                    $desc = "Verified asset \"{$p->asset_code}\" on the Stellar network.";
-                    $logoUrl = null;
+                    $cacheKey = "verified_project_analytics_v4_" . $p->id;
+                    return \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($p) {
+                        $supply = 0;
+                        $price_xlm = 0.0;
+                        $price_usd = 0.0;
+                        $holders = 0;
+                        $desc = "Verified asset \"{$p->asset_code}\" on the Stellar network.";
+                        $logoUrl = null;
 
-                    try {
-                        // Fetch details from StellarExpert on backend (immune to CORS!)
-                        $response = \Illuminate\Support\Facades\Http::timeout(5)
-                            ->get("https://api.stellar.expert/explorer/public/asset/{$p->asset_code}-{$p->identifier}");
+                        try {
+                            $tokenService = app(\App\Services\StellarTokenService::class);
+                            $insight = $tokenService->getTokenInsight($p->identifier, $p->asset_code);
 
-                        if ($response->successful()) {
-                            $data = $response->json();
-                            $supply = isset($data['supply']) ? (float)$data['supply'] / 10000000 : 0;
-                            $price = isset($data['price']) ? (float)$data['price'] : 0.0;
-                            $liq = isset($data['liquidity']) ? (float)$data['liquidity'] / 10000000 : 0;
-                            $desc = $data['toml_info']['conditions'] ?? ($data['toml_info']['desc'] ?? $desc);
-                            $logoUrl = $data['toml_info']['image'] ?? null;
+                            $supply = $insight['total_supply'] ?? 0;
+                            $price_xlm = $insight['xlm_price'] ?? 0.0;
+                            $price_usd = $insight['usd_price'] ?? 0.0;
+                            $holders = $insight['holders'] ?? 0;
+                            $logoUrl = $insight['image'] ?? null;
+                            $desc = $insight['description'] ?? $desc;
+                        } catch (\Throwable $ex) {
+                            \Illuminate\Support\Facades\Log::warning("TokenInsight fetch failed for {$p->asset_code} inside verified_projects: " . $ex->getMessage());
+                            
+                            // Fallback to basic StellarExpert parse if token insight fails
+                            try {
+                                $response = \Illuminate\Support\Facades\Http::timeout(3)
+                                    ->get("https://api.stellar.expert/explorer/public/asset/{$p->asset_code}-{$p->identifier}");
+
+                                if ($response->successful()) {
+                                    $data = $response->json();
+                                    $price_usd = isset($data['price']) ? (float)$data['price'] : 0.0;
+                                    $supply = isset($data['supply']) ? (float)$data['supply'] / 10000000 : 0;
+                                    $logoUrl = $data['toml_info']['image'] ?? null;
+                                    $desc = $data['toml_info']['conditions'] ?? ($data['toml_info']['desc'] ?? $desc);
+
+                                    $tokenService = app(\App\Services\StellarTokenService::class);
+                                    $xlmUsdPrice = $tokenService->getXlmUsdPrice();
+                                    $price_xlm = $xlmUsdPrice > 0 ? ($price_usd / $xlmUsdPrice) : 0.0;
+                                    
+                                    if (isset($data['trustlines']['authorized'])) {
+                                        $holders = (int)$data['trustlines']['authorized'];
+                                    } elseif (isset($data['trustlines'])) {
+                                        $holders = (int)$data['trustlines'];
+                                    }
+                                }
+                            } catch (\Throwable $seEx) {}
                         }
-                    } catch (\Throwable $seEx) {
-                        \Illuminate\Support\Facades\Log::warning("StellarExpert fetch failed for {$p->asset_code}", ['msg' => $seEx->getMessage()]);
-                    }
 
-                    return [
-                        'id' => $p->id,
-                        'name' => $p->name ?? $p->asset_code,
-                        'symbol' => $p->asset_code,
-                        'issuer' => $p->identifier,
-                        'desc' => $desc,
-                        'mcap' => round($supply * $price),
-                        'supply' => round($supply),
-                        'liq' => round($liq),
-                        'logo_url' => $logoUrl,
-                        'website' => $p->website,
-                        'twitter' => $p->twitter,
-                    ];
+                        $mcap = round($supply * $price_usd);
+
+                        return [
+                            'id' => $p->id,
+                            'name' => $p->name ?? $p->asset_code,
+                            'symbol' => $p->asset_code,
+                            'issuer' => $p->identifier,
+                            'desc' => $desc,
+                            'mcap' => round($mcap),
+                            'supply' => round($supply),
+                            'price_xlm' => $price_xlm,
+                            'price_usd' => $price_usd,
+                            'holders' => $holders,
+                            'logo_url' => $logoUrl,
+                            'website' => $p->website,
+                            'twitter' => $p->twitter,
+                        ];
+                    });
                 });
 
             return response()->json([
@@ -325,6 +354,45 @@ class GlobalController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to fetch verified projects.',
+            ], 500);
+        }
+    }
+
+    public function top_volume_tokens(Request $request)
+    {
+        try {
+            $limit = (int) $request->query('limit', 5);
+            $tokenService = app(\App\Services\StellarTokenService::class);
+            $tokens = $tokenService->getTopVolumeTokens($limit);
+            
+            return response()->json([
+                'status' => 'success',
+                'tokens' => $tokens
+            ]);
+        } catch (\Throwable $e) {
+            Log::error("top_volume_tokens failed", ['msg' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to resolve top volume tokens.'
+            ], 500);
+        }
+    }
+
+    public function network_highlights(Request $request)
+    {
+        try {
+            $tokenService = app(\App\Services\StellarTokenService::class);
+            $highlights = $tokenService->getNetworkHighlights();
+            
+            return response()->json([
+                'status' => 'success',
+                'highlights' => $highlights
+            ]);
+        } catch (\Throwable $e) {
+            Log::error("network_highlights failed", ['msg' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to resolve network highlights.'
             ], 500);
         }
     }
