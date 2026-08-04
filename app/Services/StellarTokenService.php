@@ -12,32 +12,7 @@ class StellarTokenService
 {
     protected string $horizon = 'https://horizon.stellar.org';
 
-    protected array $knownProjectWallets = [
-        'GD6VHARSVOPDRQUITPOF6IPIB47RUJ4X4YZ5Q3B2D6AUNESDIUEO5XHV' => [
-            'name' => 'Staking Treasury',
-            'tags' => ['custodian', 'treasury', 'staking']
-        ],
-        'GB3HIAGFQSF5EUPL5JWA5K5YJWY5LXTEAJP7ZMZIMR3XBQWSK3MZIUGR' => [
-            'name' => 'Team Wallet',
-            'tags' => ['treasury', 'team']
-        ],
-        'GD5ZQ7XA4FKJOXPAEU2BGUPRUJ4IDZZX7BNURFNHG4TO5M7OQYPXF6NU' => [
-            'name' => 'Reserve Wallet',
-            'tags' => ['treasury', 'reserve']
-        ],
-        'GCHBC63WM2IGFODFBO6IDOD46OA4QD7NRD6457N2QMP63YWEPESWVCZF' => [
-            'name' => 'Airdrop & Rewards',
-            'tags' => ['custodian', 'rewards', 'airdrop']
-        ],
-        'GD534Y4JUU4CUUPKCSMO36QU5X3XKIBQAT4ZS4YLGVN62SBZIOWXBD4C' => [
-            'name' => 'Public Trading Hold',
-            'tags' => ['treasury', 'hold']
-        ],
-        'GC2E7736MDO5BACXRG2AQYNVN6LEE2ZG6G3JIWDU7EAZWMSD3RQ5IWKZ' => [
-            'name' => 'LP Weekly Rewards',
-            'tags' => ['custodian', 'rewards']
-        ],
-    ];
+
 
     public function getTokenInsight(string $issuer, string $code, ?array $horizonAsset = null): array
     {
@@ -922,12 +897,7 @@ class StellarTokenService
                         }
                     } catch (\Throwable $e) {}
                 }
-                
-                foreach ($addresses as $addr) {
-                    if (isset($this->knownProjectWallets[$addr])) {
-                        $directoryMap[$addr] = $this->knownProjectWallets[$addr];
-                    }
-                }
+
 
                 foreach ($addresses as $addr) {
                     if (!isset($directoryMap[$addr])) {
@@ -1004,8 +974,6 @@ class StellarTokenService
                             if (empty($walletData['name'])) {
                                 $walletData['name'] = 'Smart Contract Reserve';
                             }
-                        } elseif (isset($this->knownProjectWallets[$addr])) {
-                            $isPlatform = true;
                         } elseif ($isIssuer) {
                             $isPlatform = true;
                         } else {
