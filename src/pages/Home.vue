@@ -231,11 +231,11 @@
                       <span class="tk"><b>{{ t.name }}</b><small>{{ t.symbol }}</small></span>
                     </div>
                   </td>
-                  <td class="font-mono">{{ formatPrice(t.price) }}</td>
+                  <td class="font-mono">{{ formatXlmPrice(t.price) }}</td>
                   <td :class="t.change >= 0 ? 'up' : 'down'" class="font-mono">
                     {{ t.change >= 0 ? '+' : '' }}{{ t.change }}%
                   </td>
-                  <td class="dim font-mono">{{ formatVolume(t.volumeUsd) }}</td>
+                  <td class="dim font-mono">{{ formatXlmVolume(t.volumeXlm) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -628,6 +628,7 @@ import axios from 'axios'
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { getCookie, getNetwork } from "../utils/utils.js";
+import { fetchXlmPrice } from "../utils/api.js";
 
 const isWalletConnected = ref(false);
 const walletKey = ref('');
@@ -1257,8 +1258,50 @@ async function fetchNetworkHighlights() {
   }
 }
 
+async function getXlmPriceFromProxy() {
+  const price = await fetchXlmPrice();
+  xlmPrice.value = price;
+  return price;
+}
+
+async function backfillMoverDetails(tokenObj) {
+  if (!tokenObj.issuer) return;
+  try {
+    const res = await fetch(`/api/token/show?issuer=${tokenObj.issuer}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data) {
+        let updatedPrice = tokenObj.price;
+        if (data.xlm_price) {
+          updatedPrice = data.xlm_price;
+        } else if (data.usd_price) {
+          updatedPrice = data.usd_price / (xlmPrice.value || 0.1878);
+        }
+        
+        const usdVol = data.volume_24h !== undefined && data.volume_24h !== null
+          ? data.volume_24h
+          : data.liquidity_overview?.lp_volume_24h;
+          
+        let updatedVolXlm = tokenObj.volumeXlm;
+        if (usdVol !== undefined && usdVol !== null) {
+          updatedVolXlm = usdVol / (xlmPrice.value || 0.1878);
+        }
+
+        tokenObj.price = updatedPrice;
+        tokenObj.volumeXlm = updatedVolXlm;
+        if (usdVol !== undefined && usdVol !== null) {
+          tokenObj.volumeUsd = usdVol;
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Error backfilling mover detail:", e);
+  }
+}
+
 async function fetchTrendingTokens() {
   loadingTrendingTokens.value = true;
+  await getXlmPriceFromProxy();
   try {
     const res = await fetch('/api/token/stellar-proxy?endpoint=explorer/public/asset&sort=rating&limit=80');
     const data = await res.json();
@@ -1290,16 +1333,21 @@ async function fetchTrendingTokens() {
         const totalTrustlines = Array.isArray(r.trustlines) ? (r.trustlines[0] ?? 0) : (r.trustlines?.authorized ?? (r.trustlines?.total ?? 0));
         const fundedTrustlines = Array.isArray(r.trustlines) ? (r.trustlines[2] ?? 0) : (r.trustlines?.funded ?? 0);
 
+        const xlmVal = xlmPrice.value;
+        const priceInXlm = price / xlmVal;
+        const dailyVolumeXlm = dailyVolumeUsd / xlmVal;
+
         return {
           name,
           symbol: code,
           issuer: issuer,
           logo_url: r.tomlInfo?.image,
-          price,
+          price: priceInXlm,
           change: parseFloat(change.toFixed(2)),
           liquidity,
           volume: dailyVolume,
           volumeUsd: dailyVolumeUsd,
+          volumeXlm: dailyVolumeXlm,
           holders: fundedTrustlines,
           trustlines: totalTrustlines,
           trades: r.trades ?? 0
@@ -1317,6 +1365,20 @@ async function fetchTrendingTokens() {
         const activeTokens = mapped.filter(t => t.change !== 0);
         gainersList.value = [...activeTokens].sort((a, b) => b.change - a.change).slice(0, 6);
         losersList.value = [...activeTokens].sort((a, b) => a.change - b.change).slice(0, 6);
+
+        // Backfill accurate details for actually displayed unique movers
+        const displayedList = [...trendingTokens.value, ...gainersList.value, ...losersList.value];
+        const uniqueMovers = [];
+        const seen = new Set();
+        for (const t of displayedList) {
+          if (t.issuer && !seen.has(t.issuer)) {
+            seen.add(t.issuer);
+            uniqueMovers.push(t);
+          }
+        }
+        uniqueMovers.forEach(t => {
+          backfillMoverDetails(t);
+        });
       }
     }
   } catch (error) {
@@ -1612,6 +1674,13 @@ function formatXlmPrice(val) {
   if (!val) return '0.0000 XLM';
   if (val >= 1) return `${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} XLM`;
   return `${val.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 6 })} XLM`;
+}
+
+function formatXlmVolume(val) {
+  if (!val) return '0 XLM';
+  if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M XLM`;
+  if (val >= 1000) return `${(val / 1000).toFixed(1)}K XLM`;
+  return `${Math.round(val)} XLM`;
 }
 
 onMounted(() => {

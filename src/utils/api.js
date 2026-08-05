@@ -120,4 +120,18 @@ export const getAirdropVerifyId = async (airdropId) => {
     catch(e) {return false}   
 }
 
+export const fetchXlmPrice = async () => {
+    try {
+        const res = await fetch('/api/token/stellar-proxy?endpoint=explorer/public/asset/XLM');
+        if (res.ok) {
+            const data = await res.json();
+            if (data && data.price) {
+                return data.price;
+            }
+        }
+    } catch (e) {
+        console.error("Failed to fetch XLM price:", e);
+    }
+    return 0.1878;
+}
  

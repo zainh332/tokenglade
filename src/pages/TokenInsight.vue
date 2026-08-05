@@ -1723,6 +1723,7 @@ import axios from "axios"
 import { createChart, CrosshairMode, CandlestickSeries, LineSeries, AreaSeries, HistogramSeries } from "lightweight-charts"
 import verified from "@/assets/verify.png";
 import { getCookie, signXdrWithWallet, updateLoader } from "../utils/utils.js";
+import { fetchXlmPrice } from "../utils/api.js";
 import Swal from 'sweetalert2';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
 import VerificationModal from '@/components/VerificationModal.vue';
@@ -1760,6 +1761,7 @@ import {
 } from "lucide-vue-next";
 
 const loading = ref(true)
+const globalXlmPrice = ref(0.1878)
 const imageError = ref(false)
 const notFound = ref(false)
 const activeTab = ref('overview')
@@ -1913,7 +1915,7 @@ const xlmPriceInUsd = computed(() => {
   if (token.usd_price && token.xlm_price && token.xlm_price > 0) {
     return token.usd_price / token.xlm_price;
   }
-  return 0.1878; // standard fallback rate
+  return globalXlmPrice.value || 0.1878; // standard fallback rate
 })
 
 const orderBook = reactive({
@@ -2828,6 +2830,11 @@ onMounted(async () => {
   walletKey.value = getCookie('public_key') || ''
   isWalletConnected.value = !!walletKey.value
   window.addEventListener('tokenglade-wallet-changed', handleWalletChanged)
+  
+  fetchXlmPrice().then(price => {
+    globalXlmPrice.value = price;
+  });
+
   await fetchVerificationAssets()
   startLiveTradesPolling()
 })
@@ -3084,11 +3091,9 @@ function formatCandleValue(val) {
 
 function formatXlmPrice(num) {
   if (num && parseFloat(num) > 0) return parseFloat(num).toFixed(5);
-  if (token.usd_price && token.xlm_usd_price && token.xlm_usd_price > 0) {
-    return (token.usd_price / token.xlm_usd_price).toFixed(5);
-  }
   if (token.usd_price) {
-    return (token.usd_price / 0.1878).toFixed(5);
+    const rate = globalXlmPrice.value || 0.1878;
+    return (token.usd_price / rate).toFixed(5);
   }
   return "0.0000";
 }
