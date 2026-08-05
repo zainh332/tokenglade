@@ -354,7 +354,7 @@ class TokenController extends Controller
                     $token_created->created_token_transfer_status = 1;
                     $token_created->save();
 
-                    Token::where('stellar_token_id', $token_created->id)->update(['token_verify' => 1]);
+                    Token::where('stellar_token_id', $token_created->id)->update(['token_verify' => 0]);
 
                     $hasCustomWebsite = !empty($token_created->website_url);
 
@@ -1197,7 +1197,7 @@ EOT;
                             'asset_code' => $code,
                             'asset_issuer' => $st->issuer_public_key,
                             'name' => $st->name,
-                            'is_verified' => true,
+                            'is_verified' => false,
                         ];
                     }
                 }
