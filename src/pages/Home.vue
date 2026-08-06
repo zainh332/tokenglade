@@ -1376,9 +1376,7 @@ async function fetchTrendingTokens() {
             uniqueMovers.push(t);
           }
         }
-        uniqueMovers.forEach(t => {
-          backfillMoverDetails(t);
-        });
+        await Promise.all(uniqueMovers.map(t => backfillMoverDetails(t)));
       }
     }
   } catch (error) {
