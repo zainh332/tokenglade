@@ -257,13 +257,16 @@
           </div>
           <div class="flow overflow-hidden relative">
             <transition-group name="list" tag="div">
-              <div v-for="act in activityFeed.slice(0, 8)" :key="act.id" class="row">
+              <div v-for="act in activityFeed.slice(0, 8)" :key="act.id" 
+                class="row transition duration-150" 
+                :class="act.txHash ? 'cursor-pointer hover:bg-slate-900/40' : 'cursor-default'"
+                @click="openTx(act)">
                 <span class="badge" :class="{
                   'b-lp': act.type === 'LIQUIDITY',
                   'b-swap': act.type === 'SWAP',
                   'b-mint': act.type === 'MINT' || act.type === 'REWARD'
                 }">{{ act.type === 'LIQUIDITY' ? 'LP+' : act.type }}</span>
-                <span class="amt truncate max-w-[200px]" :title="act.message">{{ act.message }}</span>
+                <span class="amt truncate max-w-[420px]" :title="act.message">{{ act.message }}</span>
                 <span class="ago">{{ act.time }}</span>
               </div>
             </transition-group>
@@ -1136,6 +1139,12 @@ function goToProject(project) {
 function shortenAddress(str) {
   if (!str) return '';
   return str.length > 10 ? `${str.slice(0, 4)}...${str.slice(-4)}` : str;
+}
+
+function openTx(act) {
+  if (act && act.txHash) {
+    window.open(`https://stellar.expert/explorer/public/tx/${act.txHash}`, '_blank');
+  }
 }
 
 async function fetchLatestTokens() {
