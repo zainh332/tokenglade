@@ -1288,7 +1288,7 @@ class StellarTokenService
 
     public function getNetworkHighlights(): array
     {
-        return Cache::remember('stellar_network_highlights', 600, function () {
+        return Cache::remember('stellar_network_highlights', 60, function () {
             try {
                 $response = Http::timeout(5)->get('https://api.stellar.expert/explorer/public/asset', [
                     'sort' => 'rating',
@@ -1342,25 +1342,14 @@ class StellarTokenService
                         return [];
                     }
 
-                    // 1. Largest Holder Growth
-                    usort($tokens, function ($a, $b) { return $b['holders'] <=> $a['holders']; });
-                    $t0 = $tokens[0];
-
-                    // 2. Largest Trustline Growth
-                    usort($tokens, function ($a, $b) { return $b['trustlines'] <=> $a['trustlines']; });
-                    $t1 = $tokens[0];
-
-                    // 3. Largest Liquidity Increase
-                    usort($tokens, function ($a, $b) { return $b['liquidity'] <=> $a['liquidity']; });
-                    $t2 = $tokens[0];
-
-                    // 4. Highest DEX Volume
-                    usort($tokens, function ($a, $b) { return $b['volume_usd'] <=> $a['volume_usd']; });
-                    $t3 = $tokens[0];
-
-                    // 5. Most Active Token
-                    usort($tokens, function ($a, $b) { return $b['trades'] <=> $a['trades']; });
-                    $t4 = $tokens[0];
+                    // Select 5 random active assets from the top 20 rated tokens to ensure variety in the highlights card
+                    $pool = array_slice($tokens, 0, 20);
+                    shuffle($pool);
+                    $t0 = $pool[0] ?? $tokens[0];
+                    $t1 = $pool[1] ?? $tokens[0];
+                    $t2 = $pool[2] ?? $tokens[0];
+                    $t3 = $pool[3] ?? $tokens[0];
+                    $t4 = $pool[4] ?? $tokens[0];
 
                     return [
                         [
