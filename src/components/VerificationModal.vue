@@ -422,6 +422,51 @@
                           ]" />
                       </div>
                     </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <div class="flex justify-between items-center mb-1.5">
+                          <label class="block text-xs font-mono font-bold text-slate-400 uppercase">TikTok</label>
+                          <span v-if="form.tiktok_link.trim() && !isTiktokLinkValid" class="text-[10px] font-mono text-rose-400">Invalid URL format</span>
+                        </div>
+                        <input type="text" v-model="form.tiktok_link" placeholder="https://tiktok.com/@username"
+                          class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                          :class="[
+                            form.tiktok_link.trim() && !isTiktokLinkValid 
+                              ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500' 
+                              : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                          ]" />
+                      </div>
+                      <div>
+                        <div class="flex justify-between items-center mb-1.5">
+                          <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Instagram</label>
+                          <span v-if="form.instagram_link.trim() && !isInstagramLinkValid" class="text-[10px] font-mono text-rose-400">Invalid URL format</span>
+                        </div>
+                        <input type="text" v-model="form.instagram_link" placeholder="https://instagram.com/username"
+                          class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                          :class="[
+                            form.instagram_link.trim() && !isInstagramLinkValid 
+                              ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500' 
+                              : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                          ]" />
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <div class="flex justify-between items-center mb-1.5">
+                          <label class="block text-xs font-mono font-bold text-slate-400 uppercase">Facebook</label>
+                          <span v-if="form.facebook_link.trim() && !isFacebookLinkValid" class="text-[10px] font-mono text-rose-400">Invalid URL format</span>
+                        </div>
+                        <input type="text" v-model="form.facebook_link" placeholder="https://facebook.com/page"
+                          class="w-full rounded-xl border px-4 py-2.5 text-white text-sm focus:outline-none transition-all"
+                          :class="[
+                            form.facebook_link.trim() && !isFacebookLinkValid 
+                              ? 'border-rose-500/50 bg-rose-950/10 focus:border-rose-500' 
+                              : 'border-slate-800 bg-slate-900/30 focus:border-cyan-500/50'
+                          ]" />
+                      </div>
+                    </div>
                   </div>
 
                   <!-- Step 6: Official Wallets -->
@@ -670,6 +715,9 @@ const form = reactive({
   linkedin_link: '',
   reddit_link: '',
   youtube_link: '',
+  tiktok_link: '',
+  instagram_link: '',
+  facebook_link: '',
   wallets: []
 })
 
@@ -761,6 +809,9 @@ const isDiscordLinkValid = computed(() => isValidDomainUrl(form.discord_link, ['
 const isLinkedinLinkValid = computed(() => isValidDomainUrl(form.linkedin_link, ['linkedin.com']))
 const isRedditLinkValid = computed(() => isValidDomainUrl(form.reddit_link, ['reddit.com']))
 const isYoutubeLinkValid = computed(() => isValidDomainUrl(form.youtube_link, ['youtube.com', 'youtu.be']))
+const isTiktokLinkValid = computed(() => isValidDomainUrl(form.tiktok_link, ['tiktok.com']))
+const isInstagramLinkValid = computed(() => isValidDomainUrl(form.instagram_link, ['instagram.com']))
+const isFacebookLinkValid = computed(() => isValidDomainUrl(form.facebook_link, ['facebook.com']))
 
 // Dynamic Step Validator
 const isStepValid = computed(() => {
@@ -793,7 +844,10 @@ const isStepValid = computed(() => {
            isDiscordLinkValid.value &&
            isLinkedinLinkValid.value &&
            isRedditLinkValid.value &&
-           isYoutubeLinkValid.value
+           isYoutubeLinkValid.value &&
+           isTiktokLinkValid.value &&
+           isInstagramLinkValid.value &&
+           isFacebookLinkValid.value
   }
   return true
 })
@@ -855,6 +909,9 @@ const resetForm = () => {
   form.linkedin_link = ''
   form.reddit_link = ''
   form.youtube_link = ''
+  form.tiktok_link = ''
+  form.instagram_link = ''
+  form.facebook_link = ''
   form.wallets = []
   logoPreview.value = null
   bannerPreview.value = null

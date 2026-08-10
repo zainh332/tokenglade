@@ -486,6 +486,9 @@ class AdminController extends Controller
                 'linkedin_link' => $socials->linkedin ?? '',
                 'reddit_link' => $socials->reddit ?? '',
                 'youtube_link' => $socials->youtube ?? '',
+                'tiktok_link' => $socials->tiktok ?? '',
+                'instagram_link' => $socials->instagram ?? '',
+                'facebook_link' => $socials->facebook ?? '',
                 
                 'wallets' => $wallets->map(function ($w) {
                     return [
@@ -560,12 +563,18 @@ class AdminController extends Controller
             'linkedin_link' => 'nullable|string',
             'reddit_link' => 'nullable|string',
             'youtube_link' => 'nullable|string',
+            'tiktok_link' => 'nullable|string',
+            'instagram_link' => 'nullable|string',
+            'facebook_link' => 'nullable|string',
             
             'official_email' => 'nullable|email',
             
             'wallets' => 'nullable|array',
             'wallets.*.wallet_address' => 'required|string',
             'wallets.*.label' => 'required|string',
+            
+            'logo' => 'nullable|file|image|max:2048',
+            'banner' => 'nullable|file|image|max:5120',
         ]);
 
         $project->name = $request->name;
@@ -580,11 +589,17 @@ class AdminController extends Controller
             ]);
         }
 
-        if ($request->filled('logo_url')) {
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('project_logos', 'public');
+            $profile->logo_url = asset('storage/' . $path);
+        } elseif ($request->filled('logo_url')) {
             $profile->logo_url = $request->logo_url;
         }
 
-        if ($request->filled('banner_url')) {
+        if ($request->hasFile('banner')) {
+            $path = $request->file('banner')->store('project_banners', 'public');
+            $profile->banner_url = asset('storage/' . $path);
+        } elseif ($request->filled('banner_url')) {
             $profile->banner_url = $request->banner_url;
         }
 
@@ -619,6 +634,9 @@ class AdminController extends Controller
         $socials->linkedin = $request->linkedin_link;
         $socials->reddit = $request->reddit_link;
         $socials->youtube = $request->youtube_link;
+        $socials->tiktok = $request->tiktok_link;
+        $socials->instagram = $request->instagram_link;
+        $socials->facebook = $request->facebook_link;
         $socials->save();
 
         // Wallets
@@ -634,7 +652,9 @@ class AdminController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Project details updated successfully.'
+            'message' => 'Project details updated successfully.',
+            'logo_url' => $profile->logo_url,
+            'banner_url' => $profile->banner_url,
         ]);
     }
 

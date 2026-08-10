@@ -259,18 +259,24 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-[10px] font-mono font-bold text-gray-500 uppercase mb-1.5">Launch Date</label>
-                <input type="text" v-model="editForm.launch_date" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+                <input type="date" v-model="editForm.launch_date" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
               </div>
               <div>
-                <label class="block text-[10px] font-mono font-bold text-gray-500 uppercase mb-1.5">Logo URL</label>
-                <input type="text" v-model="editForm.logo_url" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white font-mono text-[10px] focus:outline-none focus:border-purple-500" />
+                <label class="block text-[10px] font-mono font-bold text-gray-500 uppercase mb-1.5">Logo</label>
+                <div class="flex flex-col gap-1.5">
+                  <input type="text" v-model="editForm.logo_url" placeholder="Or paste Logo URL" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white font-mono text-[10px] focus:outline-none focus:border-purple-500" />
+                  <input type="file" @change="onLogoFileChange" accept="image/*" class="text-[10px] text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-gray-800 file:text-white hover:file:bg-gray-700 cursor-pointer" />
+                </div>
               </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-[10px] font-mono font-bold text-gray-500 uppercase mb-1.5">Banner URL</label>
-                <input type="text" v-model="editForm.banner_url" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white font-mono text-[10px] focus:outline-none focus:border-purple-500" />
+                <label class="block text-[10px] font-mono font-bold text-gray-500 uppercase mb-1.5">Banner</label>
+                <div class="flex flex-col gap-1.5">
+                  <input type="text" v-model="editForm.banner_url" placeholder="Or paste Banner URL" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white font-mono text-[10px] focus:outline-none focus:border-purple-500" />
+                  <input type="file" @change="onBannerFileChange" accept="image/*" class="text-[10px] text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-gray-800 file:text-white hover:file:bg-gray-700 cursor-pointer" />
+                </div>
               </div>
               <div>
                 <label class="block text-[10px] font-mono font-bold text-gray-500 uppercase mb-1.5">Official Email</label>
@@ -310,6 +316,9 @@
                 <input type="text" v-model="editForm.linkedin_link" placeholder="LinkedIn Page" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
                 <input type="text" v-model="editForm.reddit_link" placeholder="Reddit Subreddit" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
                 <input type="text" v-model="editForm.youtube_link" placeholder="YouTube Channel" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+                <input type="text" v-model="editForm.tiktok_link" placeholder="TikTok Link" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+                <input type="text" v-model="editForm.instagram_link" placeholder="Instagram Link" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
+                <input type="text" v-model="editForm.facebook_link" placeholder="Facebook Link" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500" />
               </div>
             </div>
 
@@ -384,6 +393,9 @@
                 <a v-if="activeDetailClaim.linkedin_link" :href="activeDetailClaim.linkedin_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-purple-400 hover:text-purple-300 transition">LinkedIn</a>
                 <a v-if="activeDetailClaim.reddit_link" :href="activeDetailClaim.reddit_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-purple-400 hover:text-purple-300 transition">Reddit</a>
                 <a v-if="activeDetailClaim.youtube_link" :href="activeDetailClaim.youtube_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-purple-400 hover:text-purple-300 transition">YouTube</a>
+                <a v-if="activeDetailClaim.tiktok_link" :href="activeDetailClaim.tiktok_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-purple-400 hover:text-purple-300 transition">TikTok</a>
+                <a v-if="activeDetailClaim.instagram_link" :href="activeDetailClaim.instagram_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-purple-400 hover:text-purple-300 transition">Instagram</a>
+                <a v-if="activeDetailClaim.facebook_link" :href="activeDetailClaim.facebook_link" target="_blank" class="px-3 py-1.5 rounded-xl border border-gray-800 hover:border-gray-700 bg-gray-950/40 text-xs text-purple-400 hover:text-purple-300 transition">Facebook</a>
               </div>
             </div>
 
@@ -545,13 +557,37 @@ const editForm = ref({
   linkedin_link: '',
   reddit_link: '',
   youtube_link: '',
+  tiktok_link: '',
+  instagram_link: '',
+  facebook_link: '',
   wallets: []
 });
+
+const logoFile = ref(null);
+const bannerFile = ref(null);
+
+function onLogoFileChange(e) {
+  const file = e.target.files[0];
+  if (file) {
+    logoFile.value = file;
+    editForm.value.logo_url = URL.createObjectURL(file);
+  }
+}
+
+function onBannerFileChange(e) {
+  const file = e.target.files[0];
+  if (file) {
+    bannerFile.value = file;
+    editForm.value.banner_url = URL.createObjectURL(file);
+  }
+}
 
 function openDetails(claim) {
   activeDetailClaim.value = claim;
   isEditing.value = false;
   editError.value = '';
+  logoFile.value = null;
+  bannerFile.value = null;
   editForm.value = {
     name: claim.name || '',
     official_email: claim.official_email || '',
@@ -572,6 +608,9 @@ function openDetails(claim) {
     linkedin_link: claim.linkedin_link || '',
     reddit_link: claim.reddit_link || '',
     youtube_link: claim.youtube_link || '',
+    tiktok_link: claim.tiktok_link || '',
+    instagram_link: claim.instagram_link || '',
+    facebook_link: claim.facebook_link || '',
     wallets: claim.wallets ? JSON.parse(JSON.stringify(claim.wallets)) : []
   };
 }
@@ -588,13 +627,38 @@ async function saveDetails() {
   savingEdit.value = true;
   editError.value = '';
   try {
-    const res = await axios.post(`/api/admin/verifications/${activeDetailClaim.value.id}/edit`, editForm.value);
+    const formData = new FormData();
+    Object.keys(editForm.value).forEach(key => {
+      if (key !== 'wallets' && key !== 'logo' && key !== 'banner') {
+        formData.append(key, editForm.value[key] || '');
+      }
+    });
+
+    editForm.value.wallets.forEach((w, idx) => {
+      formData.append(`wallets[${idx}][wallet_address]`, w.wallet_address);
+      formData.append(`wallets[${idx}][label]`, w.label);
+    });
+
+    if (logoFile.value) {
+      formData.append('logo', logoFile.value);
+    }
+    if (bannerFile.value) {
+      formData.append('banner', bannerFile.value);
+    }
+
+    const res = await axios.post(`/api/admin/verifications/${activeDetailClaim.value.id}/edit`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
     if (res.data.status === 'success') {
       const idx = items.value.findIndex(i => i.id === activeDetailClaim.value.id);
       if (idx !== -1) {
         items.value[idx] = {
           ...items.value[idx],
-          ...editForm.value
+          ...editForm.value,
+          logo_url: res.data.logo_url || editForm.value.logo_url,
+          banner_url: res.data.banner_url || editForm.value.banner_url
         };
         activeDetailClaim.value = items.value[idx];
       }

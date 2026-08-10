@@ -55,4 +55,19 @@ class ProjectSocialLink extends Model
     {
         $this->attributes['youtube'] = $this->formatUrlWithProtocol($value);
     }
+
+    public function setTiktokAttribute($value)
+    {
+        $this->attributes['tiktok'] = $this->formatUrlWithProtocol($value);
+    }
+
+    public function setInstagramAttribute($value)
+    {
+        $this->attributes['instagram'] = $this->formatUrlWithProtocol($value);
+    }
+
+    public function setFacebookAttribute($value)
+    {
+        $this->attributes['facebook'] = $this->formatUrlWithProtocol($value);
+    }
 }

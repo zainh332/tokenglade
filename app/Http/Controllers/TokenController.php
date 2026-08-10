@@ -1469,6 +1469,9 @@ EOT;
         $linkedin = $insight['linkedin'] ?? null;
         $reddit = $insight['reddit'] ?? null;
         $youtube = $insight['youtube'] ?? null;
+        $tiktok = $insight['tiktok'] ?? null;
+        $instagram = $insight['instagram'] ?? null;
+        $facebook = $insight['facebook'] ?? null;
         $projectDetails = null;
 
         $formatUrl = function ($url) {
@@ -1553,6 +1556,15 @@ EOT;
                         if ($projectDetails->socialLinks->youtube) {
                             $youtube = $formatUrl($projectDetails->socialLinks->youtube);
                         }
+                        if ($projectDetails->socialLinks->tiktok) {
+                            $tiktok = $formatUrl($projectDetails->socialLinks->tiktok);
+                        }
+                        if ($projectDetails->socialLinks->instagram) {
+                            $instagram = $formatUrl($projectDetails->socialLinks->instagram);
+                        }
+                        if ($projectDetails->socialLinks->facebook) {
+                            $facebook = $formatUrl($projectDetails->socialLinks->facebook);
+                        }
                     }
                 }
             }
@@ -1606,6 +1618,9 @@ EOT;
             'linkedin' => $linkedin,
             'reddit' => $reddit,
             'youtube' => $youtube,
+            'tiktok' => $tiktok,
+            'instagram' => $instagram,
+            'facebook' => $facebook,
             'project_details' => $projectDetails,
             'is_verified' => $isVerified,
             'is_verification_pending' => $isVerificationPending,
@@ -1782,6 +1797,9 @@ EOT;
             'linkedin_link' => ['nullable', 'string'],
             'reddit_link'  => ['nullable', 'string'],
             'youtube_link' => ['nullable', 'string'],
+            'tiktok_link'  => ['nullable', 'string'],
+            'instagram_link' => ['nullable', 'string'],
+            'facebook_link' => ['nullable', 'string'],
             'wallets'      => ['nullable', 'string'],
             'public_key'   => ['required', 'string'],
             'verification_payment_asset_id' => [
@@ -1951,6 +1969,9 @@ EOT;
                     'linkedin'           => $request->linkedin_link,
                     'reddit'             => $request->reddit_link,
                     'youtube'            => $request->youtube_link,
+                    'tiktok'             => $request->tiktok_link,
+                    'instagram'          => $request->instagram_link,
+                    'facebook'           => $request->facebook_link,
                 ]
             );
 
