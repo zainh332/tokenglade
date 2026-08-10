@@ -1288,7 +1288,7 @@ class StellarTokenService
 
     public function getNetworkHighlights(): array
     {
-        return Cache::remember('stellar_network_highlights', 60, function () {
+        $tokens = Cache::remember('stellar_network_tokens_raw', 60, function () {
             try {
                 $response = Http::timeout(5)->get('https://api.stellar.expert/explorer/public/asset', [
                     'sort' => 'rating',
@@ -1337,57 +1337,7 @@ class StellarTokenService
                             'trades' => isset($r['trades']) ? (int)$r['trades'] : 0,
                         ];
                     }
-
-                    if (empty($tokens)) {
-                        return [];
-                    }
-
-                    // Select 5 random active assets from the top 20 rated tokens to ensure variety in the highlights card
-                    $pool = array_slice($tokens, 0, 20);
-                    shuffle($pool);
-                    $t0 = $pool[0] ?? $tokens[0];
-                    $t1 = $pool[1] ?? $tokens[0];
-                    $t2 = $pool[2] ?? $tokens[0];
-                    $t3 = $pool[3] ?? $tokens[0];
-                    $t4 = $pool[4] ?? $tokens[0];
-
-                    return [
-                        [
-                            'label' => 'Largest Holder Growth',
-                            'symbol' => $t0['symbol'],
-                            'issuer' => $t0['issuer'],
-                            'logo_url' => $t0['logo_url'],
-                            'value' => number_format($t0['holders']) . ' holders'
-                        ],
-                        [
-                            'label' => 'Largest Trustline Growth',
-                            'symbol' => $t1['symbol'],
-                            'issuer' => $t1['issuer'],
-                            'logo_url' => $t1['logo_url'],
-                            'value' => number_format($t1['trustlines']) . ' trustlines'
-                        ],
-                        [
-                            'label' => 'Largest Liquidity Increase',
-                            'symbol' => $t2['symbol'],
-                            'issuer' => $t2['issuer'],
-                            'logo_url' => $t2['logo_url'],
-                            'value' => '$' . number_format($t2['liquidity'], 0) . ' TVL'
-                        ],
-                        [
-                            'label' => 'Highest DEX Volume',
-                            'symbol' => $t3['symbol'],
-                            'issuer' => $t3['issuer'],
-                            'logo_url' => $t3['logo_url'],
-                            'value' => '$' . number_format($t3['volume_usd'], 0) . ' Vol'
-                        ],
-                        [
-                            'label' => 'Most Active Token',
-                            'symbol' => $t4['symbol'],
-                            'issuer' => $t4['issuer'],
-                            'logo_url' => $t4['logo_url'],
-                            'value' => number_format($t4['trades']) . ' trades'
-                        ]
-                    ];
+                    return $tokens;
                 }
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning("getNetworkHighlights fetch failed: " . $e->getMessage());
@@ -1395,5 +1345,56 @@ class StellarTokenService
 
             return [];
         });
+
+        if (empty($tokens)) {
+            return [];
+        }
+
+        // Select 5 random active assets from the top 20 rated tokens to ensure variety in the highlights card
+        $pool = array_slice($tokens, 0, 20);
+        shuffle($pool);
+        $t0 = $pool[0] ?? $tokens[0];
+        $t1 = $pool[1] ?? $tokens[0];
+        $t2 = $pool[2] ?? $tokens[0];
+        $t3 = $pool[3] ?? $tokens[0];
+        $t4 = $pool[4] ?? $tokens[0];
+
+        return [
+            [
+                'label' => 'Largest Holder Growth',
+                'symbol' => $t0['symbol'],
+                'issuer' => $t0['issuer'],
+                'logo_url' => $t0['logo_url'],
+                'value' => number_format($t0['holders']) . ' holders'
+            ],
+            [
+                'label' => 'Largest Trustline Growth',
+                'symbol' => $t1['symbol'],
+                'issuer' => $t1['issuer'],
+                'logo_url' => $t1['logo_url'],
+                'value' => number_format($t1['trustlines']) . ' trustlines'
+            ],
+            [
+                'label' => 'Largest Liquidity Increase',
+                'symbol' => $t2['symbol'],
+                'issuer' => $t2['issuer'],
+                'logo_url' => $t2['logo_url'],
+                'value' => '$' . number_format($t2['liquidity'], 0) . ' TVL'
+            ],
+            [
+                'label' => 'Highest DEX Volume',
+                'symbol' => $t3['symbol'],
+                'issuer' => $t3['issuer'],
+                'logo_url' => $t3['logo_url'],
+                'value' => '$' . number_format($t3['volume_usd'], 0) . ' Vol'
+            ],
+            [
+                'label' => 'Most Active Token',
+                'symbol' => $t4['symbol'],
+                'issuer' => $t4['issuer'],
+                'logo_url' => $t4['logo_url'],
+                'value' => number_format($t4['trades']) . ' trades'
+            ]
+        ];
     }
 }
