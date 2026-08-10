@@ -219,7 +219,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="t in displayedMovers" :key="t.symbol" @click="goToProject(t)" class="cursor-pointer hover:bg-slate-900/60 transition">
+                <tr v-for="t in displayedMovers" :key="t.symbol" @click="goToProject(t, $event)" class="cursor-pointer hover:bg-slate-900/60 transition">
                   <td>
                     <div class="sym">
                       <img v-if="t.logo_url" :src="t.logo_url"
@@ -344,8 +344,9 @@
         </div>
         
         <div v-else ref="featuredSliderRef" class="flex overflow-x-auto gap-4 py-2 scroll-smooth no-scrollbar">
-          <div v-for="project in displayedFeaturedProjects" :key="project.symbol" @click="goToProject(project)"
-            class="flex-shrink-0 w-[calc(25%-12px)] min-w-[280px] bg-slate-950/40 border border-slate-900/60 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-850 hover:bg-slate-900/40 transition cursor-pointer select-none space-y-3.5">
+          <router-link v-for="project in displayedFeaturedProjects" :key="project.symbol"
+            :to="{ path: '/token-insight', query: { asset_code: project.symbol, issuer: project.issuer } }"
+            class="flex-shrink-0 w-[calc(25%-12px)] min-w-[280px] bg-slate-950/40 border border-slate-900/60 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-850 hover:bg-slate-900/40 transition cursor-pointer select-none space-y-3.5 no-underline">
             
             <!-- Top Logo & Name -->
             <div class="flex items-center gap-3">
@@ -383,7 +384,7 @@
               </div>
             </div>
 
-          </div>
+          </router-link>
         </div>
       </div>
 
@@ -410,8 +411,9 @@
               </div>
             </div>
             <div v-else class="space-y-2">
-              <div v-for="token in latestCreatedTokens.slice(0, 5)" :key="token.id" @click="goToProject(token)"
-                class="bg-slate-950/40 border border-slate-900/60 rounded-xl p-3 text-xs cursor-pointer hover:border-slate-800 hover:bg-slate-900/40 transition flex flex-col space-y-1.5">
+              <router-link v-for="token in latestCreatedTokens.slice(0, 5)" :key="token.id"
+                :to="{ path: '/token-insight', query: { asset_code: token.asset_code, issuer: token.issuer_public_key || token.asset_issuer || token.issuer } }"
+                class="bg-slate-950/40 border border-slate-900/60 rounded-xl p-3 text-xs cursor-pointer hover:border-slate-800 hover:bg-slate-900/40 transition flex flex-col space-y-1.5 no-underline">
                 
                 <!-- Top Row: Logo, Name, Ticker, Verified Badge, Time Ago -->
                 <!-- Top Row: Logo, Name, Ticker, Verified Badge -->
@@ -439,7 +441,7 @@
                   <span>Chain: <span class="text-slate-300 font-bold">Stellar</span></span>
                 </div>
 
-              </div>
+              </router-link>
             </div>
           </div>
         </div>
@@ -470,8 +472,9 @@
             No volume data found
           </div>
           <div v-else class="flex-1 overflow-y-auto px-4 py-3 space-y-2 custom-scrollbar">
-            <div v-for="token in topVolumeTokens" :key="token.symbol" @click="goToProject(token)"
-              class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl text-xs cursor-pointer hover:border-slate-800 hover:bg-slate-900/40 transition">
+            <router-link v-for="token in topVolumeTokens" :key="token.symbol"
+              :to="{ path: '/token-insight', query: { asset_code: token.symbol, issuer: token.issuer } }"
+              class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl text-xs cursor-pointer hover:border-slate-800 hover:bg-slate-900/40 transition no-underline">
               <div class="flex items-center gap-2">
                 <img v-if="token.logo_url" :src="token.logo_url"
                   class="w-6 h-6 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
@@ -484,7 +487,7 @@
               <span class="text-[10px] font-bold text-emerald-400 font-mono">
                 {{ token.volumeText }}
               </span>
-            </div>
+            </router-link>
           </div>
         </div>
 
@@ -517,8 +520,9 @@
             No highlights data found
           </div>
           <div v-else class="flex-1 overflow-y-auto px-4 py-3 space-y-2 custom-scrollbar">
-            <div v-for="highlight in networkHighlights" :key="highlight.label" @click="goToProject(highlight)"
-              class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl text-xs cursor-pointer hover:border-slate-800 hover:bg-slate-900/40 transition">
+            <router-link v-for="highlight in networkHighlights" :key="highlight.label"
+              :to="{ path: '/token-insight', query: { asset_code: highlight.symbol, issuer: highlight.issuer } }"
+              class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl text-xs cursor-pointer hover:border-slate-800 hover:bg-slate-900/40 transition no-underline">
               <div>
                 <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">{{ highlight.label }}</span>
                 <div class="flex items-center gap-1.5 mt-0.5">
@@ -534,7 +538,7 @@
               <span class="font-mono text-[10px] text-cyan-400 font-bold bg-[#070A13] border border-slate-900 px-2 py-1 rounded-lg">
                 {{ highlight.value }}
               </span>
-            </div>
+            </router-link>
           </div>
         </div>
       </div>
@@ -1113,26 +1117,34 @@ function selectAsset(asset) {
   assets.value = []
 }
 
-function goToProject(project) {
+function goToProject(project, event) {
   if (!project) return;
   const code = project.symbol || project.asset_code || project.created_token_symbol;
   const issuer = project.issuer || project.asset_issuer || project.identifier || project.issuer_public_key;
 
   if (code && issuer) {
-    router.push({
-      path: "/token-insight",
-      query: {
-        asset_code: code,
-        issuer: issuer
-      }
-    });
+    if (event && (event.ctrlKey || event.metaKey || event.button === 1)) {
+      window.open(`/token-insight?asset_code=${code}&issuer=${issuer}`, '_blank');
+    } else {
+      router.push({
+        path: "/token-insight",
+        query: {
+          asset_code: code,
+          issuer: issuer
+        }
+      });
+    }
   } else if (code) {
-    router.push({
-      path: "/token-insight",
-      query: {
-        asset_code: code
-      }
-    });
+    if (event && (event.ctrlKey || event.metaKey || event.button === 1)) {
+      window.open(`/token-insight?asset_code=${code}`, '_blank');
+    } else {
+      router.push({
+        path: "/token-insight",
+        query: {
+          asset_code: code
+        }
+      });
+    }
   }
 }
 
