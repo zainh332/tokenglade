@@ -1163,6 +1163,7 @@ async function fetchLatestTokens() {
   loadingLatestCreatedTokens.value = true;
   try {
     const response = await axios.get('/api/global/generated_tokens', {
+      params: { t: Date.now() },
       headers: { 'X-CSRF-TOKEN': csrfToken }
     });
     if (response.data && response.data.status === "success" && Array.isArray(response.data.tokens)) {
@@ -1179,6 +1180,7 @@ async function fetchFeaturedProjects() {
   loadingFeaturedProjects.value = true;
   try {
     const response = await axios.get('/api/global/verified_projects', {
+      params: { t: Date.now() },
       headers: { 'X-CSRF-TOKEN': csrfToken }
     });
     if (response.data && response.data.status === "success" && Array.isArray(response.data.projects)) {
@@ -1194,7 +1196,7 @@ async function fetchFeaturedProjects() {
 async function fetchTrendingPools() {
   loadingPoolsList.value = true;
   try {
-    const res = await fetch('/api/token/stellar-proxy?endpoint=explorer/public/liquidity-pool&limit=50');
+    const res = await fetch('/api/token/stellar-proxy?endpoint=explorer/public/liquidity-pool&limit=50&t=' + Date.now(), { cache: 'no-store' });
     const data = await res.json();
     const records = data._embedded?.records || data;
     if (Array.isArray(records)) {
@@ -1246,7 +1248,7 @@ async function fetchTrendingPools() {
 async function fetchTopVolumeTokens() {
   loadingTopVolume.value = true;
   try {
-    const res = await fetch('/api/global/top_volume_tokens?limit=30');
+    const res = await fetch('/api/global/top_volume_tokens?limit=30&t=' + Date.now(), { cache: 'no-store' });
     const data = await res.json();
     if (data.status === 'success' && Array.isArray(data.tokens)) {
       topVolumeRawTokens.value = data.tokens.map(t => ({
@@ -1268,7 +1270,7 @@ async function fetchTopVolumeTokens() {
 async function fetchNetworkHighlights() {
   loadingNetworkHighlights.value = true;
   try {
-    const res = await fetch('/api/global/network_highlights');
+    const res = await fetch('/api/global/network_highlights?t=' + Date.now(), { cache: 'no-store' });
     const data = await res.json();
     if (data.status === 'success' && Array.isArray(data.highlights)) {
       networkHighlights.value = data.highlights;
@@ -1325,7 +1327,7 @@ async function fetchTrendingTokens() {
   loadingTrendingTokens.value = true;
   await getXlmPriceFromProxy();
   try {
-    const res = await fetch('/api/token/stellar-proxy?endpoint=explorer/public/asset&sort=rating&limit=80');
+    const res = await fetch('/api/token/stellar-proxy?endpoint=explorer/public/asset&sort=rating&limit=80&t=' + Date.now(), { cache: 'no-store' });
     const data = await res.json();
     const records = data._embedded?.records || data;
     if (Array.isArray(records)) {
