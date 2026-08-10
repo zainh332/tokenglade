@@ -1641,9 +1641,6 @@
                     <span>✓</span> <span>Website ownership verified</span>
                   </div>
                   <div class="flex items-center gap-2 text-xs font-mono font-semibold text-emerald-400">
-                    <span>✓</span> <span>Official profile managed by the project team</span>
-                  </div>
-                  <div class="flex items-center gap-2 text-xs font-mono font-semibold text-emerald-400">
                     <span>✓</span> <span>Project information verified</span>
                   </div>
                 </div>
