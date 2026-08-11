@@ -194,6 +194,7 @@ class AdminController extends Controller
         $tokenCreationFee = \App\Models\Setting::where('key', 'token_creation_fee')->first();
         $issuerWalletAmount = \App\Models\Setting::where('key', 'issuer_wallet_amount')->first();
         $feePercentageForLp = \App\Models\Setting::where('key', 'fee_percentage_for_lp')->first();
+        $whaleActivityThreshold = \App\Models\Setting::where('key', 'whale_activity_threshold_xlm')->first();
 
         return response()->json([
             'status' => 'success',
@@ -202,6 +203,7 @@ class AdminController extends Controller
                 'token_creation_fee' => $tokenCreationFee ? (float) $tokenCreationFee->value : (float) env('TOKEN_CREATION_FEE', 20.0),
                 'issuer_wallet_amount' => $issuerWalletAmount ? (float) $issuerWalletAmount->value : 1.2,
                 'fee_percentage_for_lp' => $feePercentageForLp ? (float) $feePercentageForLp->value : 0.7,
+                'whale_activity_threshold_xlm' => $whaleActivityThreshold ? (float) $whaleActivityThreshold->value : 100.0,
             ]
         ]);
     }
@@ -216,6 +218,7 @@ class AdminController extends Controller
             'token_creation_fee' => 'nullable|numeric|min:0',
             'issuer_wallet_amount' => 'nullable|numeric|min:0',
             'fee_percentage_for_lp' => 'nullable|numeric|min:0|max:1',
+            'whale_activity_threshold_xlm' => 'nullable|numeric|min:0',
         ]);
 
         if ($request->has('lp_weekly_reward_amount')) {
@@ -247,6 +250,13 @@ class AdminController extends Controller
                 ['value' => $request->fee_percentage_for_lp]
             );
             \Illuminate\Support\Facades\Cache::forget('setting_fee_percentage_for_lp');
+        }
+
+        if ($request->has('whale_activity_threshold_xlm')) {
+            \App\Models\Setting::updateOrCreate(
+                ['key' => 'whale_activity_threshold_xlm'],
+                ['value' => $request->whale_activity_threshold_xlm]
+            );
         }
 
         return response()->json([

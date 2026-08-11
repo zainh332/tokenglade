@@ -1496,7 +1496,7 @@
             <div class="card select-text">
               <div class="card-hd">
                 <h3>Whale Activity<span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5"
-                      title="Tracking trades ≥ 10,000 XLM">i</span></h3>
+                      :title="'Tracking trades \u2265 ' + formatNumberWithCommas(token.whale_activity_threshold_xlm || 100) + ' XLM'">i</span></h3>
                 <span class="tag">Live Tracker</span>
               </div>
               <div class="p-4 space-y-3.5 bg-[#0E131C] border-t border-slate-800/60">
@@ -2137,6 +2137,7 @@ const token = reactive({
   name: "",
   asset_code: "",
   is_minted_on_tokenglade: false,
+  whale_activity_threshold_xlm: 100,
   liquidity_pools: "",
   issuer: "",
   image: null,

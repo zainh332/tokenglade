@@ -1604,6 +1604,9 @@ EOT;
                 ->count(),
         ];
 
+        $whaleActivityThreshold = \App\Models\Setting::where('key', 'whale_activity_threshold_xlm')->first();
+        $whaleActivityThresholdVal = $whaleActivityThreshold ? (float) $whaleActivityThreshold->value : 100.0;
+
         return response()->json([
             ...$insight,
             'image' => $logo,
@@ -1624,7 +1627,8 @@ EOT;
             'project_details' => $projectDetails,
             'is_verified' => $isVerified,
             'is_verification_pending' => $isVerificationPending,
-            'votes' => $votes
+            'votes' => $votes,
+            'whale_activity_threshold_xlm' => $whaleActivityThresholdVal,
         ]);
     }
 

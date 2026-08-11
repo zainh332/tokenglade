@@ -14,7 +14,7 @@
         <h4 class="text-sm font-bold text-gray-100">Token Minting Fee Configuration</h4>
         <p class="text-xs text-gray-500 mt-1">Configure the XLM fees and LP percentage allocation for minting new assets.</p>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
         <!-- 1. Token Creation Fee -->
         <div class="space-y-2">
           <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide">Token Creation Fee</label>
@@ -61,6 +61,22 @@
               class="bg-gray-950 border border-gray-800 rounded-xl px-4 py-2.5 text-sm font-mono text-purple-400 focus:outline-none focus:border-purple-500 transition w-full"
             />
             <span class="absolute right-4 top-2.5 text-xs text-gray-500 font-bold">%</span>
+          </div>
+        </div>
+
+        <!-- 4. Whale Activity Threshold -->
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide">Whale Activity Threshold</label>
+          <div class="relative">
+            <input 
+              v-model="whaleActivityThresholdXlm" 
+              type="number" 
+              min="0" 
+              step="any"
+              placeholder="e.g. 100"
+              class="bg-gray-950 border border-gray-800 rounded-xl px-4 py-2.5 text-sm font-mono text-cyan-400 focus:outline-none focus:border-purple-500 transition w-full"
+            />
+            <span class="absolute right-4 top-2.5 text-xs text-gray-500 font-bold">XLM</span>
           </div>
         </div>
       </div>
@@ -203,6 +219,7 @@ const sortOrder = ref('asc');
 const tokenCreationFee = ref(20);
 const issuerWalletAmount = ref(1.2);
 const feePercentageForLpPercent = ref(70);
+const whaleActivityThresholdXlm = ref(100);
 const savingSettings = ref(false);
 const stellarNetwork = ref('public');
 
@@ -213,6 +230,7 @@ async function loadSettings() {
       tokenCreationFee.value = data.settings.token_creation_fee;
       issuerWalletAmount.value = data.settings.issuer_wallet_amount;
       feePercentageForLpPercent.value = Math.round(data.settings.fee_percentage_for_lp * 100);
+      whaleActivityThresholdXlm.value = data.settings.whale_activity_threshold_xlm;
     }
   } catch (err) {
     console.error('Failed to load minting settings:', err);
@@ -225,7 +243,8 @@ async function saveSettings() {
     const { data } = await axios.post('/api/admin/settings', {
       token_creation_fee: tokenCreationFee.value,
       issuer_wallet_amount: issuerWalletAmount.value,
-      fee_percentage_for_lp: feePercentageForLpPercent.value * 0.01
+      fee_percentage_for_lp: feePercentageForLpPercent.value * 0.01,
+      whale_activity_threshold_xlm: whaleActivityThresholdXlm.value
     });
 
     if (data.status === 'success') {

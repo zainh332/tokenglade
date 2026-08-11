@@ -93,11 +93,12 @@ class TrackWhaleActivity extends Command
         // If no cursor exists, fetch the latest trade to initialize it
         if (!$cursor) {
             $initRes = Http::retry(3, 200)->get("{$horizonUrl}/trades", [
-                'base_asset_type'   => $assetType,
-                'base_asset_code'   => $code,
-                'base_asset_issuer' => $issuer,
-                'order'             => 'desc',
-                'limit'             => 1,
+                'base_asset_type'    => $assetType,
+                'base_asset_code'    => $code,
+                'base_asset_issuer'  => $issuer,
+                'counter_asset_type' => 'native',
+                'order'              => 'desc',
+                'limit'              => 1,
             ]);
 
             if ($initRes->ok()) {
@@ -113,12 +114,13 @@ class TrackWhaleActivity extends Command
 
         // Fetch trades after the cursor
         $response = Http::retry(3, 200)->get("{$horizonUrl}/trades", [
-            'base_asset_type'   => $assetType,
-            'base_asset_code'   => $code,
-            'base_asset_issuer' => $issuer,
-            'order'             => 'asc',
-            'cursor'            => $cursor,
-            'limit'             => 200,
+            'base_asset_type'    => $assetType,
+            'base_asset_code'    => $code,
+            'base_asset_issuer'  => $issuer,
+            'counter_asset_type' => 'native',
+            'order'              => 'asc',
+            'cursor'             => $cursor,
+            'limit'              => 200,
         ]);
 
         if (!$response->ok()) {
@@ -242,31 +244,36 @@ class TrackWhaleActivity extends Command
             $cursorSetting = Setting::where('key', $cursorKey)->first();
             $cursor = $cursorSetting ? $cursorSetting->value : null;
 
-            // If no cursor exists, fetch latest LP operation to initialize it
-            if (!$cursor) {
-                $initRes = Http::retry(3, 200)->get("{$horizonUrl}/liquidity_pools/{$poolId}/operations", [
-                    'order' => 'desc',
-                    'limit' => 1,
+            try {
+                // If no cursor exists, fetch latest LP operation to initialize it
+                if (!$cursor) {
+                    $initRes = Http::retry(3, 200)->get("{$horizonUrl}/liquidity_pools/{$poolId}/operations", [
+                        'order' => 'desc',
+                        'limit' => 1,
+                    ]);
+
+                    if ($initRes->ok()) {
+                        $records = $initRes->json('_embedded.records');
+                        if (!empty($records)) {
+                            $cursor = $records[0]['paging_token'];
+                            Setting::updateOrCreate(['key' => $cursorKey], ['value' => $cursor]);
+                        }
+                    }
+                    continue;
+                }
+
+                // Fetch operations for the pool since cursor
+                $response = Http::retry(3, 200)->get("{$horizonUrl}/liquidity_pools/{$poolId}/operations", [
+                    'order'  => 'asc',
+                    'cursor' => $cursor,
+                    'limit'  => 200,
                 ]);
 
-                if ($initRes->ok()) {
-                    $records = $initRes->json('_embedded.records');
-                    if (!empty($records)) {
-                        $cursor = $records[0]['paging_token'];
-                        Setting::updateOrCreate(['key' => $cursorKey], ['value' => $cursor]);
-                    }
+                if (!$response->ok()) {
+                    continue;
                 }
-                continue;
-            }
-
-            // Fetch operations for the pool since cursor
-            $response = Http::retry(3, 200)->get("{$horizonUrl}/liquidity_pools/{$poolId}/operations", [
-                'order'  => 'asc',
-                'cursor' => $cursor,
-                'limit'  => 200,
-            ]);
-
-            if (!$response->ok()) {
+            } catch (\Throwable $e) {
+                Log::warning("Whale activity tracking: failed to fetch operations for pool {$poolId}: " . $e->getMessage());
                 continue;
             }
 
