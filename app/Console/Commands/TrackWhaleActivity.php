@@ -88,11 +88,11 @@ class TrackWhaleActivity extends Command
         $cursorSetting = Setting::where('key', $cursorKey)->first();
         $cursor = $cursorSetting ? $cursorSetting->value : null;
 
-        $horizonUrl = 'https://horizon.stellar.org';
+        $horizonUrl = rtrim(env('HORIZON_URL', 'https://horizon.stellar.org'), '/');
 
         // If no cursor exists, fetch the latest trade to initialize it
         if (!$cursor) {
-            $initRes = Http::get("{$horizonUrl}/trades", [
+            $initRes = Http::retry(3, 200)->get("{$horizonUrl}/trades", [
                 'base_asset_type'   => $assetType,
                 'base_asset_code'   => $code,
                 'base_asset_issuer' => $issuer,
@@ -112,7 +112,7 @@ class TrackWhaleActivity extends Command
         }
 
         // Fetch trades after the cursor
-        $response = Http::get("{$horizonUrl}/trades", [
+        $response = Http::retry(3, 200)->get("{$horizonUrl}/trades", [
             'base_asset_type'   => $assetType,
             'base_asset_code'   => $code,
             'base_asset_issuer' => $issuer,
@@ -160,7 +160,7 @@ class TrackWhaleActivity extends Command
                 // Fetch transaction hash from Horizon Operation details
                 $txHash = null;
                 try {
-                    $opRes = Http::timeout(4)->get("{$horizonUrl}/operations/{$operationId}");
+                    $opRes = Http::timeout(4)->retry(3, 200)->get("{$horizonUrl}/operations/{$operationId}");
                     if ($opRes->ok()) {
                         $txHash = $opRes->json('transaction_hash');
                     }
@@ -205,10 +205,10 @@ class TrackWhaleActivity extends Command
         $issuer = $token->asset_issuer;
         $targetAssetString = "{$code}:{$issuer}";
 
-        $horizonUrl = 'https://horizon.stellar.org';
+        $horizonUrl = rtrim(env('HORIZON_URL', 'https://horizon.stellar.org'), '/');
 
         // Fetch pools associated with this asset
-        $poolsRes = Http::get("{$horizonUrl}/liquidity_pools", [
+        $poolsRes = Http::retry(3, 200)->get("{$horizonUrl}/liquidity_pools", [
             'reserves' => $targetAssetString,
             'limit'    => 200,
         ]);
@@ -244,7 +244,7 @@ class TrackWhaleActivity extends Command
 
             // If no cursor exists, fetch latest LP operation to initialize it
             if (!$cursor) {
-                $initRes = Http::get("{$horizonUrl}/liquidity_pools/{$poolId}/operations", [
+                $initRes = Http::retry(3, 200)->get("{$horizonUrl}/liquidity_pools/{$poolId}/operations", [
                     'order' => 'desc',
                     'limit' => 1,
                 ]);
@@ -260,7 +260,7 @@ class TrackWhaleActivity extends Command
             }
 
             // Fetch operations for the pool since cursor
-            $response = Http::get("{$horizonUrl}/liquidity_pools/{$poolId}/operations", [
+            $response = Http::retry(3, 200)->get("{$horizonUrl}/liquidity_pools/{$poolId}/operations", [
                 'order'  => 'asc',
                 'cursor' => $cursor,
                 'limit'  => 200,
