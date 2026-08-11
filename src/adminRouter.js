@@ -8,6 +8,7 @@ import LpHistoryView from "./pages/admin/LpHistoryView.vue";
 import VerificationFeesView from "./pages/admin/VerificationFeesView.vue";
 import ProjectVerificationView from "./pages/admin/ProjectVerificationView.vue";
 import MetadataCrudView from "./pages/admin/MetadataCrudView.vue";
+import SupportQueriesView from "./pages/admin/SupportQueriesView.vue";
 
 const routes = [
     {
@@ -57,6 +58,11 @@ const routes = [
                 path: "metadata-management",
                 component: MetadataCrudView,
                 meta: { title: "Admin — Project Metadata CRUD" }
+            },
+            {
+                path: "support-queries",
+                component: SupportQueriesView,
+                meta: { title: "Admin — User Support Inquiries" }
             }
         ]
     }

@@ -69,6 +69,10 @@ Route::middleware('admin')->prefix('admin')->group(function () {
     Route::get('verifications', 'AdminController@getVerifications');
     Route::post('verifications/{id}/status', 'AdminController@updateVerificationStatus');
     Route::post('verifications/{id}/edit', 'AdminController@editVerificationDetails');
+    
+    // Inquiries management
+    Route::get('inquiries', 'AdminController@getInquiries');
+    Route::post('inquiries/{id}/resolve', 'AdminController@resolveInquiry');
 
     // Project Category CRUD
     Route::get('categories', 'AdminController@getCategories');
@@ -106,6 +110,7 @@ Route::prefix('token')->group(function () {
     Route::get('download-toml', 'TokenController@downloadToml')->name('token.downloadToml');
     Route::get('{code}/{issuer}/whale-activity', 'TokenController@whaleActivity')->name('token.whaleActivity');
     Route::get('stellar-proxy', 'TokenController@stellarProxy')->name('token.stellarProxy');
+    Route::post('report-issue', 'TokenController@reportIssue')->name('token.reportIssue')->middleware('throttle:3,1');
 });
 
 

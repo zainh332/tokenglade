@@ -731,4 +731,34 @@ class AdminController extends Controller
         $label->delete();
         return response()->json(['status' => 'success', 'message' => 'Wallet label deleted.']);
     }
+
+    public function getInquiries()
+    {
+        $inquiries = \App\Models\ProjectInquiry::orderBy('created_at', 'desc')->get();
+        return response()->json([
+            'status' => 'success',
+            'inquiries' => $inquiries
+        ]);
+    }
+
+    public function resolveInquiry(Request $request, $id)
+    {
+        $inquiry = \App\Models\ProjectInquiry::findOrFail($id);
+        
+        $request->validate([
+            'status' => 'required|string|in:pending,resolved,ignored',
+            'reply' => 'nullable|string',
+        ]);
+
+        $inquiry->update([
+            'status' => $request->status,
+            'reply' => $request->reply,
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Inquiry updated successfully.',
+            'inquiry' => $inquiry
+        ]);
+    }
 }

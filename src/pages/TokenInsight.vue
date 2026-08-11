@@ -522,7 +522,7 @@
           </div>
 
           <!-- Actions -->
-          <div class="acts">
+          <div class="acts flex flex-col sm:flex-row justify-between items-center w-full gap-2.5">
             <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 w-full sm:w-auto">
               <a :href="scopulyTradeUrl" target="_blank" rel="noopener noreferrer"
                 class="btn brand select-none inline-flex items-center gap-1.5">
@@ -534,20 +534,17 @@
                 <span v-if="establishingTrustline" class="animate-pulse">Establishing...</span>
                 <span v-else>Establish Trustline</span>
               </button>
-              <!--
-              <button @click="shareModalOpen = true"
-                class="btn dark select-none inline-flex items-center gap-1.5 hover:border-purple-500/50 transition text-purple-400">
-                <Share2 class="w-4 h-4 text-purple-400" />
-                <span>Share Token</span>
-              </button>
-              -->
-            </div>
-            <div class="flex items-center gap-2.5 w-full sm:w-auto mt-2 sm:mt-0 justify-center sm:justify-start flex-wrap">
               <!-- Website -->
               <a v-if="token.website" :href="token.website" target="_blank" title="Website" aria-label="Website"
                 class="btn icon-btn select-none hover:text-white transition">
                 <Globe class="w-4 h-4 text-slate-300" />
               </a>
+            </div>
+            <div class="w-full sm:w-auto flex justify-center sm:justify-end">
+              <button @click="isVerified ? (reportModalOpen = true) : (verificationModal = true)"
+                class="btn dark select-none inline-flex items-center gap-1.5 hover:border-cyan-500/50 transition">
+                <span>Report Incorrect Info</span>
+              </button>
             </div>
           </div>
         </section>
@@ -1727,6 +1724,7 @@
       :liquidity="token.liquidity_overview?.total_tvl || token.liquidity_tvl || 0"
       :holders="token.holders || 0"
     />
+    <ReportModal v-model="reportModalOpen" :token="token" />
     <Footer />
   </div>
 </template>
@@ -1743,6 +1741,7 @@ import Swal from 'sweetalert2';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
 import VerificationModal from '@/components/VerificationModal.vue';
 import ShareTokenModal from '@/components/ShareTokenModal.vue';
+import ReportModal from '@/components/ReportModal.vue';
 import Header from "@/components/Header.vue"
 import Footer from "@/components/Footer.vue"
 
@@ -1919,6 +1918,7 @@ const walletKey = ref('')
 const ConnectWalletModals = ref(false)
 const verificationModal = ref(false)
 const shareModalOpen = ref(false)
+const reportModalOpen = ref(false)
 const verificationLoading = ref(false)
 const selectedTimeframe = ref('1D')
 const selectedChartType = ref('line')

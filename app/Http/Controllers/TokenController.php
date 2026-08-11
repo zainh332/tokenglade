@@ -3160,4 +3160,31 @@ EOT;
             'message' => 'Project ownership confirmed'
         ]);
     }
+
+    public function reportIssue(Request $request)
+    {
+        $request->validate([
+            'asset_code' => 'required|string|max:56',
+            'asset_issuer' => 'required|string|max:56',
+            'name' => 'nullable|string|max:100',
+            'email' => 'required|email|max:150',
+            'topic' => 'required|string|max:100',
+            'message' => 'required|string|max:2000',
+        ]);
+
+        \App\Models\ProjectInquiry::create([
+            'asset_code' => $request->asset_code,
+            'asset_issuer' => $request->asset_issuer,
+            'name' => $request->name,
+            'email' => $request->email,
+            'topic' => $request->topic,
+            'message' => $request->message,
+            'status' => 'pending',
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Your inquiry has been submitted successfully. TokenGlade team will review it shortly.'
+        ]);
+    }
 }
