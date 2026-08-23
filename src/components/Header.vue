@@ -30,6 +30,7 @@
               <input 
                 v-model="searchQuery" 
                 @focus="isFocused = true"
+                @keydown.enter="handleEnterKey"
                 type="text" 
                 placeholder="Search token name or symbol..." 
                 class="bg-transparent border-0 outline-none text-xs text-white placeholder-slate-500 font-mono w-[190px] p-0 focus:ring-0"
@@ -57,22 +58,32 @@
                   <div v-for="asset in assets" :key="`${asset.asset_code}_${asset.asset_issuer}`"
                       @click="() => { selectAsset(asset); close(); }"
                       class="p-3.5 cursor-pointer hover:bg-[#182235]/70 transition duration-150 text-left">
-                      <div class="flex items-center gap-1.5 font-bold text-xs text-white">
-                          <span v-if="getAssetName(asset)" class="font-sans font-semibold text-white">
-                            {{ getAssetName(asset) }} <span class="text-slate-400 font-mono font-normal text-[11px]">· {{ asset.asset_code }}</span>
-                          </span>
-                          <span v-else class="font-mono uppercase text-white">{{ asset.asset_code }}</span>
-                          <img v-if="asset.is_verified" :src="verifiedImg" alt="Verified"
-                              class="flex-shrink-0 w-3.5 h-3.5" title="Verified Token" />
+                      <div v-if="asset.is_wallet" class="flex flex-col gap-1">
+                          <div class="font-sans font-bold text-xs text-cyan-400 flex items-center gap-1.5">
+                              <span>Analyze Wallet Intelligence</span>
+                          </div>
+                          <div class="text-[10px] font-mono text-slate-400 truncate">
+                              Address: {{ asset.asset_issuer }}
+                          </div>
                       </div>
+                      <div v-else>
+                          <div class="flex items-center gap-1.5 font-bold text-xs text-white">
+                              <span v-if="getAssetName(asset)" class="font-sans font-semibold text-white">
+                                {{ getAssetName(asset) }} <span class="text-slate-400 font-mono font-normal text-[11px]">· {{ asset.asset_code }}</span>
+                              </span>
+                              <span v-else class="font-mono uppercase text-white">{{ asset.asset_code }}</span>
+                              <img v-if="asset.is_verified" :src="verifiedImg" alt="Verified"
+                                  class="flex-shrink-0 w-3.5 h-3.5" title="Verified Token" />
+                          </div>
 
-                      <div class="mt-1 text-[10px] font-mono break-all text-slate-400 flex flex-wrap gap-1 leading-normal">
-                          <span class="text-slate-500">Issuer:</span>
-                          <span class="text-slate-400 select-all">{{ shorten(asset.asset_issuer) }}</span>
-                      </div>
+                          <div class="mt-1 text-[10px] font-mono break-all text-slate-400 flex flex-wrap gap-1 leading-normal">
+                              <span class="text-slate-500">Issuer:</span>
+                              <span class="text-slate-400 select-all">{{ shorten(asset.asset_issuer) }}</span>
+                          </div>
 
-                      <div class="mt-1.5 text-[9.5px] font-mono text-cyan-400 font-semibold flex items-center gap-1">
-                          <span>●</span> Holders: {{ formatNumber(asset.accounts.authorized) }}
+                          <div class="mt-1.5 text-[9.5px] font-mono text-cyan-400 font-semibold flex items-center gap-1">
+                              <span>●</span> Holders: {{ formatNumber(asset.accounts.authorized) }}
+                          </div>
                       </div>
                   </div>
                 </div>
@@ -96,6 +107,11 @@
                     <p class="text-[10px] text-slate-500">Connected Wallet</p>
                     <p class="mt-1 text-xs font-mono text-white truncate" :title="walletPk">{{ walletPk }}</p>
                   </div>
+                  <MenuItem v-slot="{ active }">
+                    <router-link :to="`/wallet/${walletPk}`" :class="[active ? 'bg-slate-900' : '', 'block w-full px-4 py-2.5 text-left text-xs text-slate-300 font-extrabold uppercase tracking-wider transition']">
+                      Wallet Intelligence
+                    </router-link>
+                  </MenuItem>
                   <MenuItem v-slot="{ active }">
                     <button type="button" @click="handleDisconnectWallet" :class="[active ? 'bg-red-500/10' : '', 'block w-full px-4 py-2.5 text-left text-xs text-red-400 font-extrabold uppercase tracking-wider']">
                       Disconnect
@@ -131,6 +147,7 @@
             <input 
               v-model="searchQuery" 
               @focus="isFocusedMobile = true"
+              @keydown.enter="handleEnterKey"
               type="text" 
               placeholder="Search token name or symbol..." 
               class="bg-transparent border-0 outline-none text-[16px] text-white placeholder-slate-500 font-mono w-full p-0 focus:ring-0"
@@ -157,22 +174,32 @@
               <div v-for="asset in assets" :key="`${asset.asset_code}_${asset.asset_issuer}`"
                   @click="() => { selectAsset(asset); close(); }"
                   class="p-3.5 cursor-pointer hover:bg-[#182235]/70 transition duration-150 text-left">
-                  <div class="flex items-center gap-1.5 font-bold text-xs text-white">
-                      <span v-if="getAssetName(asset)" class="font-sans font-semibold text-white">
-                        {{ getAssetName(asset) }} <span class="text-slate-400 font-mono font-normal text-[11px]">· {{ asset.asset_code }}</span>
-                      </span>
-                      <span v-else class="font-mono uppercase text-white">{{ asset.asset_code }}</span>
-                      <img v-if="asset.is_verified" :src="verifiedImg" alt="Verified"
-                          class="flex-shrink-0 w-3.5 h-3.5" title="Verified Token" />
+                  <div v-if="asset.is_wallet" class="flex flex-col gap-1">
+                      <div class="font-sans font-bold text-xs text-cyan-400 flex items-center gap-1.5">
+                          <span>Analyze Wallet Intelligence</span>
+                      </div>
+                      <div class="text-[10px] font-mono text-slate-400 truncate">
+                          Address: {{ asset.asset_issuer }}
+                      </div>
                   </div>
+                  <div v-else>
+                      <div class="flex items-center gap-1.5 font-bold text-xs text-white">
+                          <span v-if="getAssetName(asset)" class="font-sans font-semibold text-white">
+                            {{ getAssetName(asset) }} <span class="text-slate-400 font-mono font-normal text-[11px]">· {{ asset.asset_code }}</span>
+                          </span>
+                          <span v-else class="font-mono uppercase text-white">{{ asset.asset_code }}</span>
+                          <img v-if="asset.is_verified" :src="verifiedImg" alt="Verified"
+                              class="flex-shrink-0 w-3.5 h-3.5" title="Verified Token" />
+                      </div>
 
-                  <div class="mt-1 text-[10px] font-mono break-all text-slate-400 flex flex-wrap gap-1 leading-normal">
-                      <span class="text-slate-500">Issuer:</span>
-                      <span class="text-slate-400 select-all">{{ shorten(asset.asset_issuer) }}</span>
-                  </div>
+                      <div class="mt-1 text-[10px] font-mono break-all text-slate-400 flex flex-wrap gap-1 leading-normal">
+                          <span class="text-slate-500">Issuer:</span>
+                          <span class="text-slate-400 select-all">{{ shorten(asset.asset_issuer) }}</span>
+                      </div>
 
-                  <div class="mt-1.5 text-[9.5px] font-mono text-cyan-400 font-semibold flex items-center gap-1">
-                      <span>●</span> Holders: {{ formatNumber(asset.accounts.authorized) }}
+                      <div class="mt-1.5 text-[9.5px] font-mono text-cyan-400 font-semibold flex items-center gap-1">
+                          <span>●</span> Holders: {{ formatNumber(asset.accounts.authorized) }}
+                      </div>
                   </div>
               </div>
             </div>
@@ -191,6 +218,9 @@
               <p class="text-[10px] text-slate-500">Connected Wallet</p>
               <p class="text-xs font-mono text-white truncate">{{ walletPk }}</p>
             </div>
+            <router-link :to="`/wallet/${walletPk}`" @click="close" class="block w-full py-2.5 px-3 text-center text-xs font-bold text-cyan-400 bg-slate-900 border border-slate-800 rounded-xl hover:text-white transition">
+              View Wallet Intelligence
+            </router-link>
             <button @click="() => { handleDisconnectWallet(); close(); }" class="w-full py-3 text-center text-sm font-extrabold uppercase tracking-wider text-red-400 bg-red-950/20 border border-red-900/30 rounded-xl">
               Disconnect
             </button>
@@ -335,6 +365,18 @@ async function searchAssets() {
     return;
   }
 
+  // Detect Stellar Wallet Address Search
+  if (/^G[A-Z2-7]{55}$/.test(rawInput)) {
+    assets.value = [{
+      asset_code: 'Analyze Wallet',
+      asset_issuer: rawInput,
+      is_wallet: true,
+      accounts: { authorized: 0 }
+    }];
+    loading.value = false;
+    return;
+  }
+
   const requestId = ++searchRequestId;
   loading.value = true;
 
@@ -392,17 +434,35 @@ watch(searchQuery, (newValue) => {
 
 function selectAsset(asset) {
   document.activeElement?.blur();
-  router.push({
-    path: "/token-insight",
-    query: {
-      asset_code: asset.asset_code,
-      issuer: asset.asset_issuer
-    }
-  });
+  if (asset.is_wallet) {
+    router.push(`/wallet/${asset.asset_issuer}`);
+  } else {
+    router.push({
+      path: "/token-insight",
+      query: {
+        asset_code: asset.asset_code,
+        issuer: asset.asset_issuer
+      }
+    });
+  }
   searchQuery.value = "";
   assets.value = [];
   isFocused.value = false;
   isFocusedMobile.value = false;
+}
+
+function handleEnterKey() {
+  const rawInput = searchQuery.value.trim();
+  if (/^G[A-Z2-7]{55}$/.test(rawInput)) {
+    selectAsset({
+      asset_code: 'Analyze Wallet',
+      asset_issuer: rawInput,
+      is_wallet: true,
+      accounts: { authorized: 0 }
+    });
+  } else if (assets.value.length > 0) {
+    selectAsset(assets.value[0]);
+  }
 }
 
 const handleKeyDown = (e) => {

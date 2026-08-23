@@ -51,6 +51,13 @@ Route::prefix('wallet')->group(function () {
 
     // Check if wallet is active and has at least 4 XLM
     Route::post('check', 'WalletController@check_wallet')->name('wallet.check');
+
+    // Wallet Intelligence Endpoints
+    Route::get('{address}/overview', 'WalletIntelligenceController@overview')->name('wallet.intelligence.overview');
+    Route::get('{address}/holdings', 'WalletIntelligenceController@holdings')->name('wallet.intelligence.holdings');
+    Route::get('{address}/activity', 'WalletIntelligenceController@activity')->name('wallet.intelligence.activity');
+    Route::get('{address}/portfolio-history', 'WalletIntelligenceController@portfolioHistory')->name('wallet.intelligence.portfolio-history');
+    Route::get('{address}/metrics', 'WalletIntelligenceController@metrics')->name('wallet.intelligence.metrics');
 });
 
 Route::middleware('admin')->prefix('admin')->group(function () {
