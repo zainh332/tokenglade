@@ -1496,7 +1496,7 @@ async function fetchMarketHighlights() {
 async function fetchAssetStats() {
   try {
     const url = new URL('/api/token/stellar-proxy', window.location.origin);
-    url.searchParams.set('endpoint', 'explorer/public/asset/XLM');
+    url.searchParams.set('endpoint', 'api/v2/lumens');
     url.searchParams.set('_', Math.floor(Date.now() / 300000).toString());
     const res = await fetch(url.toString(), {
       method: 'GET',
@@ -1507,15 +1507,14 @@ async function fetchAssetStats() {
     });
 
     if (!res.ok) {
-      throw new Error(`Stellar Expert request failed: ${res.status} ${res.statusText}`);
+      throw new Error(`Stellar Dashboard request failed: ${res.status} ${res.statusText}`);
     }
 
     const data = await res.json();
     if (data) {
-      const supply = parseFloat(data.supply) / 10000000;
-      const reserve = parseFloat(data.reserve) / 10000000;
-      const feePool = parseFloat(data.fee_pool) / 10000000;
-      const circulation = supply - reserve;
+      const circulation = parseFloat(data.circulatingSupply);
+      const feePool = parseFloat(data.feePool);
+      const reserve = parseFloat(data.totalSupply) - circulation - feePool;
 
       xlmCirculation.value = `${Math.round(circulation).toLocaleString()} XLM`;
       xlmReserved.value = `${Math.round(reserve).toLocaleString()} XLM`;

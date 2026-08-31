@@ -2895,7 +2895,7 @@ EOT;
         }
 
         // Restrict endpoint to prevent SSRF
-        if (!preg_match('/^explorer\/public\//', $endpoint)) {
+        if (!preg_match('/^explorer\/public\//', $endpoint) && $endpoint !== 'api/v2/lumens') {
             return response()->json(['error' => 'Invalid endpoint'], 400);
         }
 
@@ -2903,11 +2903,15 @@ EOT;
         $queryParams = $request->except('endpoint');
 
         try {
-            $response = \Illuminate\Support\Facades\Http::get("https://api.stellar.expert/{$endpoint}", $queryParams);
+            if ($endpoint === 'api/v2/lumens') {
+                $response = \Illuminate\Support\Facades\Http::get("https://dashboard.stellar.org/api/v2/lumens/", $queryParams);
+            } else {
+                $response = \Illuminate\Support\Facades\Http::get("https://api.stellar.expert/{$endpoint}", $queryParams);
+            }
             return response($response->body(), $response->status())
                 ->header('Content-Type', $response->header('Content-Type'));
         } catch (\Throwable $e) {
-            return response()->json(['error' => 'Failed to fetch from Stellar.Expert proxy: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Failed to fetch from proxy: ' . $e->getMessage()], 500);
         }
     }
 
