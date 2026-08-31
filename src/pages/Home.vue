@@ -31,7 +31,7 @@
                   <div class="pair">DEX Volume</div>
                   <div class="px" style="margin-top:8px">
                     <template v-if="loadingEcoStats">
-                      <span class="inline-block h-8 w-32 bg-slate-900/60 animate-pulse rounded border border-slate-900/40"></span>
+                      <span class="inline-block h-8 w-32 bg-theme-panel3 animate-pulse rounded border border-theme-line"></span>
                     </template>
                     <template v-else>
                       {{ displayedPrimaryVolume }}
@@ -49,9 +49,9 @@
               </div>
 
               <div class="chartbox eco-chartbox relative" @mousemove="handleChartMouseMove" @mouseleave="handleChartMouseLeave">
-                <div v-if="loadingEcoStats" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/20 backdrop-blur-[2px] z-10 rounded-2xl">
+                <div v-if="loadingEcoStats" class="absolute inset-0 flex flex-col items-center justify-center bg-theme-panel/85 backdrop-blur-[2px] z-10 rounded-lg">
                   <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500 mb-1.5"></div>
-                  <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider font-mono">Loading chart...</span>
+                  <span class="text-[9px] text-theme-dim font-bold uppercase tracking-wider font-mono">Loading chart...</span>
                 </div>
                 <svg viewBox="0 0 600 160" width="100%" height="160" preserveAspectRatio="none" :class="{ 'opacity-10': loadingEcoStats, 'transition-opacity duration-300': true }">
                   <defs>
@@ -81,8 +81,12 @@
 
                 <!-- Floating Hover Tooltip -->
                 <div v-if="hoverPoint"
-                  class="absolute pointer-events-none px-2 py-1 rounded bg-slate-900/90 border border-violet-500/30 text-white font-mono text-[10px] font-bold shadow-lg transform -translate-x-1/2 -translate-y-full mb-2"
-                  :style="{ left: `${(hoverPoint.x / 600) * 100}%`, top: `${(hoverPoint.y / 160) * 100}%` }">
+                  class="eco-tooltip absolute pointer-events-none px-2.5 py-1 rounded-lg bg-slate-900/95 border border-violet-500/40 text-white font-mono text-[10.5px] font-bold shadow-2xl z-30 transition-transform duration-75 select-none"
+                  :style="{
+                    left: `${(hoverPoint.x / 600) * 100}%`,
+                    top: `${(hoverPoint.y / 160) * 100}%`,
+                    transform: `translate(${hoverPoint.x < 60 ? '10%' : hoverPoint.x > 540 ? '-110%' : '-50%'}, ${hoverPoint.y < 45 ? '30%' : '-130%'})`
+                  }">
                   {{ hoverPoint.val }}
                 </div>
               </div>
@@ -99,7 +103,7 @@
                   </div>
                   <div>
                     <div class="k">24H Volume</div>
-                    <div v-if="loadingEcoStats" class="h-3 w-16 bg-slate-900/60 animate-pulse rounded mt-1 border border-slate-900/40"></div>
+                    <div v-if="loadingEcoStats" class="h-3 w-16 bg-theme-panel3 animate-pulse rounded mt-1 border border-theme-line"></div>
                     <div v-else class="v">{{ dailyVolume }}</div>
                   </div>
                 </div>
@@ -115,7 +119,7 @@
                   </div>
                   <div>
                     <div class="k">Active Wallets</div>
-                    <div v-if="loadingEcoStats" class="h-3 w-20 bg-slate-900/60 animate-pulse rounded mt-1 border border-slate-900/40"></div>
+                    <div v-if="loadingEcoStats" class="h-3 w-20 bg-theme-panel3 animate-pulse rounded mt-1 border border-theme-line"></div>
                     <div v-else class="v">{{ formatNumber(activeWallets) }}</div>
                   </div>
                 </div>
@@ -131,7 +135,7 @@
                   </div>
                   <div>
                     <div class="k">DEX Trades</div>
-                    <div v-if="loadingEcoStats" class="h-3 w-20 bg-slate-900/60 animate-pulse rounded mt-1 border border-slate-900/40"></div>
+                    <div v-if="loadingEcoStats" class="h-3 w-20 bg-theme-panel3 animate-pulse rounded mt-1 border border-theme-line"></div>
                     <div v-else class="v">{{ dexTrades24h }}</div>
                   </div>
                 </div>
@@ -147,7 +151,7 @@
                   </div>
                   <div>
                     <div class="k">Total Liquidity</div>
-                    <div v-if="loadingEcoStats" class="h-3 w-16 bg-slate-900/60 animate-pulse rounded mt-1 border border-slate-900/40"></div>
+                    <div v-if="loadingEcoStats" class="h-3 w-16 bg-theme-panel3 animate-pulse rounded mt-1 border border-theme-line"></div>
                     <div v-else class="v">{{ ecoTvl }}</div>
                   </div>
                 </div>
@@ -599,8 +603,8 @@
       <div
         class="search-ecosystem-card bg-gradient-to-r from-purple-900 to-indigo-950 border border-purple-800/40 rounded-3xl p-8 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
         <div class="space-y-2 text-center md:text-left">
-          <h3 class="text-xl font-black text-white tracking-tight">Search the Stellar Ecosystem</h3>
-          <p class="text-xs text-slate-400 max-w-md leading-relaxed">
+          <h3 class="text-xl font-black text-theme-ink dark:text-white tracking-tight">Search the Stellar Ecosystem</h3>
+          <p class="text-xs text-theme-dim dark:text-slate-400 max-w-md leading-relaxed">
             Audit any transaction, look up custom wallets, evaluate pool details, or search for recently verified
             projects directly.
           </p>
@@ -2271,6 +2275,12 @@ onUnmounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.03) !important;
   position: relative;
   overflow: hidden;
+  padding: 10px 0 0 0 !important;
+  border-radius: 12px;
+}
+
+.eco-tooltip {
+  color: #ffffff !important;
 }
 
 .chart-path-transition {
@@ -2461,8 +2471,8 @@ html.light .eco-dashboard:hover {
 }
 
 html.light .eco-chartbox {
-  background: rgba(15, 23, 42, 0.02) !important;
-  border-color: rgba(15, 23, 42, 0.05) !important;
+  background: var(--panel2) !important;
+  border-color: var(--line) !important;
 }
 
 html.light .eco-stat {
@@ -2492,11 +2502,9 @@ html.light .search-ecosystem-card {
   box-shadow: 0 20px 40px -15px rgba(168, 85, 247, 0.05) !important;
 }
 
-html.light .search-ecosystem-card h3 {
-  color: #0f172a !important;
-}
-
-html.light .search-ecosystem-card p {
+html.light .search-ecosystem-card h3,
+html.light .search-ecosystem-card h3.text-white,
+html.light .search-ecosystem-card * {
   color: #0f172a !important;
 }
 

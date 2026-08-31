@@ -40,7 +40,7 @@
         <script>
             // Inline theme loader to prevent Flash of Unstyled Content (FOUC)
             (function() {
-                const theme = localStorage.getItem('theme') || 'dark';
+                const theme = localStorage.getItem('theme') || 'light';
                 if (theme === 'light') {
                     document.documentElement.classList.add('light');
                 } else {

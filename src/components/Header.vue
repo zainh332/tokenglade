@@ -227,7 +227,7 @@ import verifiedImg from '@/assets/verify.png';
 import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import { Sun, Moon } from 'lucide-vue-next';
 
-const theme = ref(localStorage.getItem('theme') || 'dark');
+const theme = ref(localStorage.getItem('theme') || 'light');
 
 const toggleTheme = () => {
   const newTheme = theme.value === 'dark' ? 'light' : 'dark';
@@ -458,6 +458,11 @@ const handleWalletChanged = (event) => {
 };
 
 onMounted(() => {
+  if (theme.value === 'light') {
+    document.documentElement.classList.add('light');
+  } else {
+    document.documentElement.classList.remove('light');
+  }
   window.addEventListener("tokenglade-open-buy-tkg", openBuyTkgModal);
   window.addEventListener("tokenglade-open-launch-token", handleOpenLaunchToken);
   window.addEventListener("tokenglade-wallet-changed", handleWalletChanged);

@@ -834,3 +834,20 @@ html.light .overflow-y-auto,
 html.light .overflow-x-auto {
   scrollbar-color: #cbd5e1 var(--panel2) !important;
 }
+
+/* Ensure Search the Stellar Ecosystem Card text is #0f172a in light theme */
+html.light .search-ecosystem-card,
+html.light .search-ecosystem-card h1,
+html.light .search-ecosystem-card h2,
+html.light .search-ecosystem-card h3,
+html.light .search-ecosystem-card h3.text-white,
+html.light .search-ecosystem-card p,
+html.light .search-ecosystem-card * {
+  color: #0f172a !important;
+}
+
+/* Tooltip floating above home ecosystem chart */
+.eco-tooltip,
+html.light .eco-tooltip {
+  color: #ffffff !important;
+}
