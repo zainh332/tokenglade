@@ -99,6 +99,58 @@ class StellarTokenService
         
         $volumes = $this->getAssetVolume24h($code, $issuer, $xlmUsdPrice, $usd_price);
 
+        $high24hXlm = null;
+        $low24hXlm = null;
+        $priceChange24h = null;
+
+        try {
+            $nowMs = time() * 1000;
+            $startMs = $nowMs - (24 * 3600 * 1000);
+            $aggResponse = Http::timeout(4)->get($this->horizon . '/trade_aggregations', [
+                'base_asset_type'    => $this->getAssetType($code),
+                'base_asset_code'    => $code,
+                'base_asset_issuer'  => $issuer,
+                'counter_asset_type' => 'native',
+                'resolution'         => 3600000,
+                'start_time'         => $startMs,
+                'end_time'           => $nowMs,
+                'limit'              => 50,
+                'order'              => 'desc'
+            ]);
+
+            if ($aggResponse->ok()) {
+                $records = $aggResponse->json('_embedded.records') ?? [];
+                if (!empty($records)) {
+                    $highs = [];
+                    $lows = [];
+                    foreach ($records as $r) {
+                        if (isset($r['high']) && (float)$r['high'] > 0) $highs[] = (float)$r['high'];
+                        if (isset($r['low']) && (float)$r['low'] > 0) $lows[] = (float)$r['low'];
+                    }
+                    if (!empty($highs)) $high24hXlm = max($highs);
+                    if (!empty($lows)) $low24hXlm = min($lows);
+
+                    $latestClose = isset($records[0]['close']) ? (float)$records[0]['close'] : null;
+                    $oldestOpen = isset($records[count($records) - 1]['open']) ? (float)$records[count($records) - 1]['open'] : null;
+                    if ($latestClose && $oldestOpen && $oldestOpen > 0) {
+                        $priceChange24h = round((($latestClose - $oldestOpen) / $oldestOpen) * 100, 2);
+                    }
+                    if ($price_xlm === null && $latestClose) {
+                        $price_xlm = $latestClose;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('trade_aggregations 24h stats failed', ['msg' => $e->getMessage()]);
+        }
+
+        if ($high24hXlm === null && $price_xlm !== null) {
+            $high24hXlm = $price_xlm;
+        }
+        if ($low24hXlm === null && $price_xlm !== null) {
+            $low24hXlm = $price_xlm;
+        }
+
         $formattedSupply = (float) ($horizon['balances']['authorized'] ?? 0)
             + (float) ($horizon['claimable_balances_amount'] ?? 0)
             + (float) ($horizon['liquidity_pools_amount'] ?? 0)
@@ -229,6 +281,9 @@ class StellarTokenService
             'transactions' => $transactions,
             'volume_1h' => 0.0,
             'volume_24h' => $volumes['total_volume_24h'],
+            'high_24h' => $high24hXlm,
+            'low_24h' => $low24hXlm,
+            'price_change_24h' => $priceChange24h ?? 0.0,
             'usd_price' => $usd_price,
             'xlm_price' => $price_xlm,
 
@@ -597,7 +652,7 @@ class StellarTokenService
         }
 
         foreach ($records as $record) {
-            $timestamp = (int) ($record['timestamp'] / 100000); // ms to sec
+            $timestamp = (int) ($record['timestamp'] / 1000); // ms to sec
             
             \App\Models\StellarOhlcData::updateOrCreate([
                 'asset_code' => $code,
@@ -625,10 +680,10 @@ class StellarTokenService
 
         foreach ($hourlyRecords as $record) {
             $timestampMs = (int) $record['timestamp'];
-            $timestampSec = $timestampMs / 100000;
+            $timestampSec = (int) ($timestampMs / 1000);
             
             $boundaryStartSec = $timestampSec - ($timestampSec % 14400);
-            $boundaryStartMs = $boundaryStartSec * 100000;
+            $boundaryStartMs = $boundaryStartSec * 1000;
 
             if ($current4hCandle === null || $current4hCandle['timestamp'] !== $boundaryStartMs) {
                 if ($current4hCandle !== null) {
@@ -1127,8 +1182,8 @@ class StellarTokenService
         // 2. Fallback to Horizon trade aggregations (e.g. for custom/local assets)
         $totalVolumeXlm = 0.0;
         try {
-            $nowMs = time() * 100000;
-            $startMs = $nowMs - 24 * 3600 * 100000;
+            $nowMs = time() * 1000;
+            $startMs = $nowMs - (24 * 3600 * 1000);
             $aggResponse = Http::timeout(5)->get($this->horizon . '/trade_aggregations', [
                 'base_asset_type'    => $assetType,
                 'base_asset_code'    => $code,

@@ -57,7 +57,7 @@
           <!-- SECONDARY STRIP SKELETON -->
           <div
             class="mt-3.5 py-2.5 px-4 bg-theme-panel2 rounded-xl border border-[rgba(148,163,184,0.12)] flex flex-wrap items-center justify-between gap-3">
-            <div v-for="i in 4" :key="i" class="h-3.5 w-32 bg-[#1D2531]/60 rounded"></div>
+            <div v-for="i in 6" :key="i" class="h-3.5 w-28 bg-[#1D2531]/60 rounded"></div>
           </div>
 
           <!-- ACTIONS SKELETON -->
@@ -460,11 +460,35 @@
 
           <!-- COMPACT SECONDARY STRIP -->
           <div
-            class="mt-3.5 py-2.5 px-4 bg-theme-panel2 rounded-xl border border-[rgba(148,163,184,0.12)] grid grid-cols-[1fr_auto] sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-x-4 gap-y-3 text-xs font-mono">
-            <!-- 1. Total Supply -->
+            class="mt-3.5 py-2.5 px-4 bg-theme-panel2 rounded-xl border border-[rgba(148,163,184,0.12)] grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-x-4 gap-y-3 text-xs font-mono">
+            <!-- 1. 24H High -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400 font-medium">24h High:</span>
+              <span class="text-emerald-400 font-bold flex items-center gap-1">
+                <template v-if="loading"><span
+                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="high24h > 0">{{ formatXlmPrice(high24h) }} XLM</template>
+                <template v-else>—</template>
+              </span>
+            </div>
+            <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
+
+            <!-- 2. 24H Low -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400 font-medium">24h Low:</span>
+              <span class="text-rose-400 font-bold flex items-center gap-1">
+                <template v-if="loading"><span
+                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="low24h > 0">{{ formatXlmPrice(low24h) }} XLM</template>
+                <template v-else>—</template>
+              </span>
+            </div>
+            <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
+
+            <!-- 3. Total Supply -->
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 font-medium">Total Supply:</span>
-              <span class="text-white font-bold">
+              <span class="text-theme-ink font-bold">
                 <template v-if="token.total_supply">{{ formatCompactNumber(token.total_supply) }} {{ token.asset_code
                   }}</template>
                 <template v-else><span
@@ -473,10 +497,10 @@
             </div>
             <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
 
-            <!-- 2. Created -->
+            <!-- 4. Created -->
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 font-medium">Created:</span>
-              <span class="text-white font-bold">
+              <span class="text-theme-ink font-bold">
                 <template v-if="token.mint_date_human && token.mint_date_human !== '-'">{{ token.mint_date_human
                   }}</template>
                 <template v-else-if="loading"><span
@@ -486,10 +510,10 @@
             </div>
             <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
 
-            <!-- 3. Circulating Supply -->
+            <!-- 5. Circulating Supply -->
             <div class="flex items-center gap-1.5">
-              <span class="text-slate-400 font-medium">Circulating Supply:</span>
-              <span class="text-white font-bold flex items-center gap-1">
+              <span class="text-slate-400 font-medium">Circulating:</span>
+              <span class="text-theme-ink font-bold flex items-center gap-1">
                 <template v-if="token.total_supply">{{ formatCompactNumber(token.circulating_supply ||
                   (token.total_supply * 0.425)) }} {{ token.asset_code }}</template>
                 <template v-else><span
@@ -504,10 +528,10 @@
             </div>
             <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
 
-            <!-- 4. Pools -->
+            <!-- 6. Pools -->
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 font-medium">Pools:</span>
-              <span class="text-white font-bold flex items-center gap-1">
+              <span class="text-theme-ink font-bold flex items-center gap-1">
                 <template v-if="liquidityLoading"><span
                     class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                 <template v-else>{{ token.liquidity_overview?.pools_count || token.num_liquidity_pools || 0
@@ -1985,6 +2009,62 @@ const totalAskValue = computed(() => {
   return orderBook.asks.reduce((sum, ask) => sum + (parseFloat(ask.amount || 0) * parseFloat(ask.price || 0)), 0)
 })
 
+const high24h = computed(() => {
+  if (token.high_24h !== undefined && token.high_24h !== null && Number(token.high_24h) > 0) {
+    return Number(token.high_24h)
+  }
+  if (token.price_high_24h !== undefined && token.price_high_24h !== null && Number(token.price_high_24h) > 0) {
+    return Number(token.price_high_24h)
+  }
+  
+  if (chartData.value && chartData.value.length > 0) {
+    const now = Math.floor(Date.now() / 1000)
+    const last24hTime = now - 86400
+    const last24hCandles = chartData.value.filter(c => (c.time || 0) >= last24hTime)
+    const candlesToUse = last24hCandles.length > 0 ? last24hCandles : chartData.value
+    const highs = candlesToUse.map(c => Number(c.high || c.close || 0)).filter(p => p > 0)
+    if (highs.length > 0) return Math.max(...highs)
+  }
+  
+  return Number(token.xlm_price || 0)
+})
+
+const low24h = computed(() => {
+  if (token.low_24h !== undefined && token.low_24h !== null && Number(token.low_24h) > 0) {
+    return Number(token.low_24h)
+  }
+  if (token.price_low_24h !== undefined && token.price_low_24h !== null && Number(token.price_low_24h) > 0) {
+    return Number(token.price_low_24h)
+  }
+  
+  if (chartData.value && chartData.value.length > 0) {
+    const now = Math.floor(Date.now() / 1000)
+    const last24hTime = now - 86400
+    const last24hCandles = chartData.value.filter(c => (c.time || 0) >= last24hTime)
+    const candlesToUse = last24hCandles.length > 0 ? last24hCandles : chartData.value
+    const validLows = candlesToUse.map(c => Number(c.low || c.close || Infinity)).filter(p => p > 0 && p !== Infinity)
+    if (validLows.length > 0) {
+      return Math.min(...validLows)
+    }
+  }
+  
+  return Number(token.xlm_price || 0)
+})
+
+const high24hUsd = computed(() => {
+  if (high24h.value > 0) {
+    return high24h.value * xlmPriceInUsd.value
+  }
+  return 0
+})
+
+const low24hUsd = computed(() => {
+  if (low24h.value > 0) {
+    return low24h.value * xlmPriceInUsd.value
+  }
+  return 0
+})
+
 const bullishSignals = computed(() => {
   const list = []
   if (historicalStats.value?.price_change_pct > 10) {
@@ -3138,10 +3218,20 @@ function formatCandleValue(val) {
 }
 
 function formatXlmPrice(num) {
-  if (num && parseFloat(num) > 0) return parseFloat(num).toFixed(5);
+  if (num && parseFloat(num) > 0) {
+    const val = parseFloat(num);
+    if (val < 0.0001) return val.toFixed(8);
+    if (val < 0.01) return val.toFixed(7);
+    if (val < 1) return val.toFixed(6);
+    return val.toFixed(4);
+  }
   if (token.usd_price) {
     const rate = globalXlmPrice.value || 0.1878;
-    return (token.usd_price / rate).toFixed(5);
+    const val = token.usd_price / rate;
+    if (val < 0.0001) return val.toFixed(8);
+    if (val < 0.01) return val.toFixed(7);
+    if (val < 1) return val.toFixed(6);
+    return val.toFixed(4);
   }
   return "0.0000";
 }
