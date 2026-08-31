@@ -402,16 +402,12 @@
               <div class="sub dim">
                 Fully Diluted
               </div>
-              <div class="sub font-mono font-semibold"
-                :class="(historicalStats?.market_cap_change_pct || 0) >= 0 ? 'up' : 'down'">
-                <template v-if="loading || historicalStatsLoading"><span
+              <div class="sub font-mono font-semibold text-cyan-400">
+                <template v-if="loading"><span
                     class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
-                <template v-else-if="historicalStats">
-                  {{ (historicalStats.market_cap_change_pct || 0) >= 0 ? '▲' : '▼' }} {{
-                    (historicalStats.market_cap_change_pct || 0) >= 0 ? '+' : '' }}{{
-                    historicalStats.market_cap_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase() }})
+                <template v-else>
+                  {{ circulatingSupplyRatio }}% Circulating
                 </template>
-                <template v-else>▲ +0%</template>
               </div>
             </div>
 
@@ -1961,6 +1957,14 @@ const xlmPriceInUsd = computed(() => {
     return token.usd_price / token.xlm_price;
   }
   return globalXlmPrice.value || 0.1878; // standard fallback rate
+})
+
+const circulatingSupplyRatio = computed(() => {
+  if (token.total_supply && Number(token.total_supply) > 0) {
+    const circ = Number(token.circulating_supply) || Number(token.total_supply);
+    return Math.min(100, Math.round((circ / Number(token.total_supply)) * 100));
+  }
+  return 100;
 })
 
 const orderBook = reactive({
