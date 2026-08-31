@@ -624,6 +624,12 @@
   </div>
 </template>
 
+<script>
+export default {
+  name: 'Home'
+};
+</script>
+
 <script setup>
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
@@ -636,7 +642,7 @@ import logo from "@/assets/Xl-logo.png";
 import verified from "@/assets/verify.png";
 
 import axios from 'axios'
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted, onActivated, onDeactivated, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { getCookie, getNetwork } from "../utils/utils.js";
 import { fetchXlmPrice } from "../utils/api.js";
@@ -1733,6 +1739,33 @@ function formatXlmVolume(val) {
   return `${Math.round(val)} XLM`;
 }
 
+function startIntervals() {
+  if (!feedInterval) {
+    feedInterval = setInterval(addMockActivity, 4000);
+  }
+  if (!realtimeMetricsInterval) {
+    realtimeMetricsInterval = setInterval(() => {
+      latestLedgerSequence.value += 1;
+      marketSpread.value = (0.31 + Math.random() * 0.04).toFixed(2) + '%';
+      activeWallets.value = activeWallets.value + Math.round(Math.random() * 6 - 3);
+      const baseTvl = parseFloat(ecoTvl.value.replace(/[^0-9.]/g, '')) || 142.0;
+      const newTvl = baseTvl + (Math.random() * 0.2 - 0.1);
+      ecoTvl.value = `$${newTvl.toFixed(1)}M`;
+    }, 4000);
+  }
+}
+
+function stopIntervals() {
+  if (feedInterval) {
+    clearInterval(feedInterval);
+    feedInterval = null;
+  }
+  if (realtimeMetricsInterval) {
+    clearInterval(realtimeMetricsInterval);
+    realtimeMetricsInterval = null;
+  }
+}
+
 onMounted(() => {
   window.addEventListener('click', handleClickOutside);
   window.addEventListener("tokenglade-open-launch-token", handleOpenLaunchToken);
@@ -1747,7 +1780,7 @@ onMounted(() => {
   generateFallbackActivity();
 
   // Start real-time activity stream updates immediately
-  feedInterval = setInterval(addMockActivity, 4000);
+  startIntervals();
 
   // Fetch API and network data asynchronously in the background
   fetchLatestTokens();
@@ -1766,36 +1799,25 @@ onMounted(() => {
   }).catch(e => {
     console.error('getNetwork failed:', e);
   });
+});
 
-  // Start real-time updates for ledger sequence, spreads, and network metrics
-  realtimeMetricsInterval = setInterval(() => {
-    // 1. Organic ledger closes (~5s network block time)
-    latestLedgerSequence.value += 1;
+onActivated(() => {
+  refreshWalletState();
+  if (route.query.launch === 'true') {
+    isTokenModalOpen.value = true;
+    router.replace({ query: {} });
+  }
+  startIntervals();
+});
 
-    // 3. Fluctuate spread organically centered on 0.33%
-    marketSpread.value = (0.31 + Math.random() * 0.04).toFixed(2) + '%';
-
-    // 4. Daily volume remains stable and updates only on page load or API refresh
-    // (Removed client-side fluctuation to prevent counter-intuitive decreases)
-
-    // Fluctuate active wallets slightly
-    activeWallets.value = activeWallets.value + Math.round(Math.random() * 6 - 3);
-
-    // Fluctuate TVL slightly
-    const baseTvl = parseFloat(ecoTvl.value.replace(/[^0-9.]/g, '')) || 142.0;
-    const newTvl = baseTvl + (Math.random() * 0.2 - 0.1);
-    ecoTvl.value = `$${newTvl.toFixed(1)}M`;
-
-    // 5. DEX trades count remains stable and updates only on page load or API refresh
-    // (Removed client-side fluctuation to prevent counter-intuitive decreases)
-  }, 4000);
+onDeactivated(() => {
+  stopIntervals();
 });
 
 onUnmounted(() => {
   window.removeEventListener('click', handleClickOutside);
   window.removeEventListener("tokenglade-open-launch-token", handleOpenLaunchToken);
-  if (feedInterval) clearInterval(feedInterval);
-  if (realtimeMetricsInterval) clearInterval(realtimeMetricsInterval);
+  stopIntervals();
 });
 </script>
 

@@ -1729,8 +1729,14 @@
   </div>
 </template>
 
+<script>
+export default {
+  name: 'TokenInsight'
+};
+</script>
+
 <script setup>
-import { reactive, onMounted, onUnmounted, watch, ref, computed, nextTick } from "vue"
+import { reactive, onMounted, onUnmounted, onActivated, onDeactivated, watch, ref, computed, nextTick } from "vue"
 import { useRoute } from "vue-router"
 import axios from "axios"
 import { createChart, CrosshairMode, CandlestickSeries, LineSeries, AreaSeries, HistogramSeries } from "lightweight-charts"
@@ -2862,6 +2868,22 @@ onMounted(async () => {
 onUnmounted(() => {
   window.removeEventListener('tokenglade-wallet-changed', handleWalletChanged)
   window.removeEventListener('theme-changed', initChart)
+  stopLiveTradesPolling()
+})
+
+onActivated(async () => {
+  walletKey.value = getCookie('public_key') || ''
+  isWalletConnected.value = !!walletKey.value
+  startLiveTradesPolling()
+  await nextTick()
+  if (chartInstance && chartContainer.value) {
+    try {
+      chartInstance.timeScale().fitContent()
+    } catch (e) {}
+  }
+})
+
+onDeactivated(() => {
   stopLiveTradesPolling()
 })
 
