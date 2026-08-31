@@ -37,8 +37,19 @@
         <link rel="icon" type="image/png" href="{{ Vite::asset('src/assets/token-glade-logo.png') }}">
         <meta name="google-site-verification" content="efg2XUb3x3NC7DsUUkEtjtQ2k5ewYAMGt-rkqAjlQDM" />
         <script src="https://unpkg.com/@albedo-link/intent"></script>
+        <script>
+            // Inline theme loader to prevent Flash of Unstyled Content (FOUC)
+            (function() {
+                const theme = localStorage.getItem('theme') || 'dark';
+                if (theme === 'light') {
+                    document.documentElement.classList.add('light');
+                } else {
+                    document.documentElement.classList.remove('light');
+                }
+            })();
+        </script>
     </head>
-    <body class="antialiased overflow-x-hidden bg-[#070A13] min-h-screen">
+    <body class="antialiased overflow-x-hidden bg-theme-bg text-theme-ink min-h-screen transition-colors duration-200">
        <div id="app" class="min-h-screen">
         <beta-ribbon></beta-ribbon>
        </div>

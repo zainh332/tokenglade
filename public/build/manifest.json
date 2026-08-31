@@ -3,7 +3,7 @@
     "file": "assets/hearing-c2166cd4.js"
   },
   "resources/css/app.css": {
-    "file": "assets/app-95d8dd66.css",
+    "file": "assets/app-5507fd20.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
@@ -34,10 +34,6 @@
   "src/assets/hero_ecosystem.png": {
     "file": "assets/hero_ecosystem-70981645.png",
     "src": "src/assets/hero_ecosystem.png"
-  },
-  "src/assets/lights.png": {
-    "file": "assets/lights-c425c569.png",
-    "src": "src/assets/lights.png"
   },
   "src/assets/reward.png": {
     "file": "assets/reward-9c1d8a04.png",
@@ -76,7 +72,7 @@
     "src": "src/assets/wallet.jpg"
   },
   "src/main.css": {
-    "file": "assets/main-bedec275.css",
+    "file": "assets/main-60002cf7.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -97,9 +93,9 @@
       "assets/stop-abbef106.png"
     ],
     "css": [
-      "assets/main-bedec275.css"
+      "assets/main-60002cf7.css"
     ],
-    "file": "assets/main-270de494.js",
+    "file": "assets/main-ece9ec82.js",
     "imports": [
       "_hearing-c2166cd4.js"
     ],

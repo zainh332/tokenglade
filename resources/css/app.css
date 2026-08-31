@@ -5,6 +5,108 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Global Dark Theme (Default/Source of Truth) */
+  --bg: #070A13;
+  --panel: #111620;
+  --panel2: #0E131C;
+  --panel3: #151D2D;
+  --line: #1D2531;
+  --line2: #28313F;
+  --ink: #D5DBE5;
+  --dim: #8791A0;
+  --faint: #586172;
+  --very-muted: #475569;
+  --chart-line: #a78bfa;
+  --row-hover: rgba(255, 255, 255, 0.02);
+}
+
+html.light {
+  /* Global Light Theme Overrides */
+  --bg: #F6F8FC;
+  --panel: #FFFFFF;
+  --panel2: #F8FAFC;
+  --panel3: #F1F5F9;
+  --line: #E2E8F0;
+  --line2: #EEF2F7;
+  --ink: #0F172A;
+  --dim: #475569;
+  --faint: #64748B;
+  --very-muted: #94A3B8;
+  --chart-line: #7c3aed;
+  --row-hover: rgba(15, 23, 42, 0.03);
+}
+
+/* Light mode text color overrides to ensure contrast for hardcoded dark theme classes */
+html.light h1.text-white,
+html.light h2.text-white,
+html.light h3.text-white,
+html.light h4.text-white,
+html.light p.text-white,
+html.light strong.text-white,
+html.light td.text-white,
+html.light th.text-white,
+html.light div.text-white:not(.btn):not([class*="bg-"]):not([class*="from-"]):not([class*="to-"]),
+html.light span.text-white:not(.btn):not([class*="bg-"]):not([class*="from-"]):not([class*="to-"]),
+html.light strong:not(.btn):not([class*="bg-"]):not([class*="from-"]):not([class*="to-"]) {
+  color: var(--ink) !important;
+}
+
+/* Ensure text inside colored gradient cards / buttons remains white in light mode */
+html.light [class*="from-"] h1.text-white,
+html.light [class*="from-"] h2.text-white,
+html.light [class*="from-"] h3.text-white,
+html.light [class*="from-"] p.text-white,
+html.light [class*="from-"] strong.text-white,
+html.light [class*="from-"] span.text-white,
+html.light [class*="bg-gradient"] h1.text-white,
+html.light [class*="bg-gradient"] h2.text-white,
+html.light [class*="bg-gradient"] h3.text-white,
+html.light [class*="bg-gradient"] p.text-white,
+html.light [class*="bg-gradient"] strong.text-white,
+html.light [class*="bg-gradient"] span.text-white {
+  color: #ffffff !important;
+}
+
+html.light .text-slate-400,
+html.light .text-gray-400,
+html.light .text-slate-500,
+html.light .text-gray-500,
+html.light .text-slate-550 {
+  color: var(--dim) !important;
+}
+
+html.light .text-slate-300,
+html.light .text-gray-300,
+html.light .text-slate-200,
+html.light .text-gray-200 {
+  color: var(--ink) !important;
+}
+
+/* Light mode loading skeleton overrides */
+html.light .animate-pulse div,
+html.light .animate-pulse span {
+  background-color: var(--line) !important;
+  border-color: var(--line2) !important;
+}
+
+/* Custom scrollbars themed */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--dim);
+}
+
+
 
 * {
   font-family: 'Inter', sans-serif;
@@ -485,4 +587,250 @@ body:has([data-headlessui-state*="open"]) {
 .swal2-icon.swal2-info {
   border-color: #12cbee !important;
   color: #12cbee !important;
+}
+
+/* Light Theme overrides for Contact Modal input fields & buttons */
+html.light #contact-name,
+html.light #contact-email,
+html.light #contact-message {
+  background-color: var(--panel2) !important;
+  border-color: var(--line) !important;
+  color: var(--ink) !important;
+}
+
+html.light #contact-name::placeholder,
+html.light #contact-email::placeholder,
+html.light #contact-message::placeholder {
+  color: var(--very-muted) !important;
+}
+
+html.light form button[type="button"] {
+  border-color: var(--line) !important;
+  color: var(--dim) !important;
+}
+
+html.light form button[type="button"]:hover {
+  background-color: var(--panel3) !important;
+  color: var(--ink) !important;
+}
+
+/* Light Theme overrides for Generate Token & general modal dark boxes */
+html.light .bg-\[\#182235\],
+html.light .bg-\[\#151D2D\] {
+  background-color: var(--panel3) !important;
+  border-color: var(--line) !important;
+  color: var(--ink) !important;
+}
+
+html.light input.bg-\[\#182235\],
+html.light textarea.bg-\[\#182235\],
+html.light input.bg-\[\#151D2D\],
+html.light textarea.bg-\[\#151D2D\],
+html.light .bg-\[\#182235\] input,
+html.light .bg-\[\#182235\] textarea,
+html.light .bg-\[\#151D2D\] input,
+html.light .bg-\[\#151D2D\] textarea {
+  color: var(--ink) !important;
+  background-color: var(--panel2) !important;
+}
+
+html.light .bg-\[\#182235\]::placeholder,
+html.light .bg-\[\#151D2D\]::placeholder,
+html.light .bg-\[\#182235\] input::placeholder,
+html.light .bg-\[\#182235\] textarea::placeholder,
+html.light .bg-\[\#151D2D\] input::placeholder,
+html.light .bg-\[\#151D2D\] textarea::placeholder {
+  color: var(--very-muted) !important;
+}
+
+html.light .border-\[rgba\(148\,163\,184\,0\.16\)\] {
+  border-color: var(--line) !important;
+}
+
+html.light .hover\:bg-\[\#182235\]:hover {
+  background-color: var(--panel2) !important;
+}
+
+/* Light Theme overrides for VerificationModal (Claim & Verify Project Modal) */
+html.light .bg-\[\#111620\] {
+  background-color: var(--panel) !important;
+  border-color: var(--line) !important;
+}
+
+html.light .bg-\[\#111620\] input,
+html.light .bg-\[\#111620\] textarea,
+html.light .bg-\[\#111620\] select {
+  background-color: var(--panel3) !important;
+  border-color: var(--line) !important;
+  color: var(--ink) !important;
+}
+
+html.light .bg-\[\#111620\] input::placeholder,
+html.light .bg-\[\#111620\] textarea::placeholder {
+  color: var(--very-muted) !important;
+}
+
+html.light .bg-\[\#111620\] select option {
+  background-color: var(--panel) !important;
+  color: var(--ink) !important;
+}
+
+html.light .bg-\[\#111620\] .bg-slate-900\/40,
+html.light .bg-\[\#111620\] .bg-slate-900\/50,
+html.light .bg-\[\#111620\] .bg-slate-900\/30 {
+  background-color: var(--panel3) !important;
+  border-color: var(--line) !important;
+}
+
+html.light .bg-\[\#111620\] .bg-cyan-950\/20 {
+  background-color: rgba(34, 211, 238, 0.08) !important;
+  border-color: rgba(34, 211, 238, 0.25) !important;
+}
+
+html.light .bg-\[\#111620\] .bg-cyan-950\/20 * {
+  color: #0891b2 !important;
+}
+
+html.light .bg-\[\#111620\] .bg-amber-950\/20 {
+  background-color: rgba(245, 158, 11, 0.08) !important;
+  border-color: rgba(245, 158, 11, 0.25) !important;
+}
+
+html.light .bg-\[\#111620\] .bg-amber-950\/20 * {
+  color: #d97706 !important;
+}
+
+html.light .bg-\[\#111620\] button.border-cyan-400 {
+  background-color: rgba(34, 211, 238, 0.1) !important;
+  color: #0891b2 !important;
+}
+
+html.light .bg-\[\#111620\] button.border-purple-500 {
+  background-color: rgba(168, 85, 247, 0.1) !important;
+  color: #7c3aed !important;
+}
+
+html.light .bg-\[\#111620\] button.border-slate-800 {
+  background-color: var(--panel3) !important;
+  border-color: var(--line) !important;
+  color: var(--dim) !important;
+}
+
+html.light .bg-\[\#111620\] button.bg-slate-900 {
+  background-color: var(--panel2) !important;
+  border-color: var(--line) !important;
+  color: var(--ink) !important;
+}
+
+html.light .bg-\[\#111620\] button.bg-slate-900:hover {
+  background-color: var(--panel3) !important;
+  border-color: var(--line2) !important;
+}
+
+/* Light Mode overrides for loading skeletons & pulse elements */
+html.light .bg-slate-950\/40 {
+  background-color: var(--panel2) !important;
+}
+
+html.light .border-slate-900\/60 {
+  border-color: var(--line) !important;
+}
+
+html.light .bg-slate-900,
+html.light .bg-slate-900\/60,
+html.light .bg-slate-900\/80,
+html.light .bg-slate-950\/60 {
+  background-color: var(--line) !important;
+}
+
+html.light .border-slate-900,
+html.light .border-slate-800,
+html.light .border-slate-900\/40,
+html.light .border-slate-800\/60,
+html.light .border-slate-800\/80 {
+  border-color: var(--line2) !important;
+}
+
+/* SweetAlert2 / Transaction Loader Light Theme overrides */
+html.light .swal2-container {
+  background-color: rgba(15, 23, 42, 0.4) !important;
+}
+
+html.light .swal2-popup {
+  background: var(--panel) !important;
+  border: 1px solid var(--line) !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.12) !important;
+  color: var(--ink) !important;
+}
+
+html.light .swal2-title {
+  color: var(--ink) !important;
+}
+
+html.light .swal2-html-container {
+  color: var(--dim) !important;
+}
+
+html.light .swal-compact .swal2-html-container {
+  color: var(--dim) !important;
+}
+
+html.light .swal2-cancel {
+  background: var(--panel2) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--ink) !important;
+}
+
+html.light .swal2-cancel:hover {
+  background: var(--panel3) !important;
+  color: var(--ink) !important;
+}
+
+html.light .swal2-loader {
+  border-color: #7c3aed transparent #7c3aed transparent !important;
+}
+
+/* Token Insight Skeleton Loader & Tooltip Light Theme overrides */
+html.light .bg-\[\#1D2531\],
+html.light .bg-\[\#1D2531\]\/40,
+html.light .bg-\[\#1D2531\]\/60,
+html.light .bg-\[\#1D2531\]\/80 {
+  background-color: var(--line) !important;
+}
+
+html.light .bg-\[\#1b212c\] {
+  background-color: var(--panel3) !important;
+  border-color: var(--line) !important;
+  color: var(--dim) !important;
+}
+
+html.light .bg-\[\#1b212c\]:hover {
+  background-color: var(--panel2) !important;
+  color: var(--ink) !important;
+}
+
+/* Light Theme Scrollbars (Global) */
+html.light .custom-scrollbar::-webkit-scrollbar-track,
+html.light .overflow-y-auto::-webkit-scrollbar-track,
+html.light .overflow-x-auto::-webkit-scrollbar-track {
+  background: var(--panel2) !important;
+}
+
+html.light .custom-scrollbar::-webkit-scrollbar-thumb,
+html.light .overflow-y-auto::-webkit-scrollbar-thumb,
+html.light .overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+  border-radius: 4px;
+}
+
+html.light .custom-scrollbar::-webkit-scrollbar-thumb:hover,
+html.light .overflow-y-auto::-webkit-scrollbar-thumb:hover,
+html.light .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8 !important;
+}
+
+html.light .custom-scrollbar,
+html.light .overflow-y-auto,
+html.light .overflow-x-auto {
+  scrollbar-color: #cbd5e1 var(--panel2) !important;
 }

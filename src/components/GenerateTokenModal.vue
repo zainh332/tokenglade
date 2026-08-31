@@ -15,7 +15,7 @@
           leave-from="opacity-100 translate-y-0 sm:scale-100"
           leave-to="opacity-0 translate-y-3 sm:translate-y-0 sm:scale-95">
           <DialogPanel
-            class="relative w-full max-w-lg mx-4 sm:mx-0 flex flex-col max-h-[85vh] overflow-hidden rounded-2xl border border-[rgba(148,163,184,0.16)] bg-[#111827] shadow-2xl transform-gpu will-change-[transform,opacity]">
+            class="relative w-full max-w-lg mx-4 sm:mx-0 flex flex-col max-h-[85vh] overflow-hidden rounded-2xl border border-theme-line bg-theme-panel shadow-2xl transform-gpu will-change-[transform,opacity]">
               
             <template v-if="!showSuccessModal">
               <!-- Gradient top border -->
@@ -23,7 +23,7 @@
 
               <!-- Close button -->
               <button @click="closeModal"
-                class="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#151D2D] text-slate-400 border border-[rgba(148,163,184,0.16)] hover:text-white hover:bg-[#182235] transition focus:outline-none"
+                class="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-theme-panel2 text-slate-400 border border-theme-line hover:text-theme-ink hover:bg-theme-panel transition focus:outline-none"
                 aria-label="Close">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                   stroke="currentColor">

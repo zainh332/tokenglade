@@ -1,17 +1,18 @@
 <template>
   <div v-if="modelValue" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm transition-all duration-300">
     <!-- Modal Card -->
-    <div class="relative w-full max-w-xl bg-[#0f172a]/95 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col text-left">
+    <div class="relative w-full max-w-xl bg-theme-panel border border-theme-line rounded-3xl overflow-hidden shadow-2xl flex flex-col text-left">
       
       <!-- Gradient Decorative Header line -->
       <div class="h-1.5 w-full bg-gradient-to-r from-purple-500 via-cyan-500 to-emerald-500"></div>
 
       <!-- Modal Header -->
-      <div class="p-5 pb-3 border-b border-slate-850 flex items-center justify-between">
-        <h3 class="text-base font-bold text-white font-display">Share Token</h3>
+      <div class="p-5 pb-4 border-b border-theme-line bg-theme-panel2 flex items-center justify-between">
+        <h3 class="text-base font-bold text-theme-ink font-display">Share Token</h3>
         <button 
           @click="closeModal"
-          class="p-1.5 rounded-xl bg-slate-900/60 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition"
+          class="p-1.5 rounded-xl bg-theme-panel hover:bg-theme-panel2 border border-theme-line text-theme-dim hover:text-theme-ink transition"
+          aria-label="Close modal"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -23,59 +24,59 @@
       <div class="p-5 space-y-5">
         
         <!-- Premium Stats Showcase Display -->
-        <div class="bg-slate-950/40 border border-slate-850 rounded-2xl p-5 space-y-4">
+        <div class="bg-theme-panel2 border border-theme-line rounded-2xl p-5 space-y-4">
           <!-- Token Header inside Stats Display -->
           <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-white font-bold select-none overflow-hidden flex-shrink-0">
+            <div class="w-11 h-11 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-theme-ink font-bold select-none overflow-hidden flex-shrink-0">
               <img v-if="token.image" :src="token.image" class="w-full h-full object-cover" />
               <span v-else class="text-sm font-mono">{{ token.asset_code?.substring(0, 2).toUpperCase() }}</span>
             </div>
             <div>
               <div class="flex items-center gap-2">
-                <span class="text-sm font-bold text-white uppercase">{{ token.asset_code }}</span>
-                <span v-if="token.token_verify === 1 || token.is_verified" class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                <span class="text-sm font-bold text-theme-ink uppercase">{{ token.asset_code }}</span>
+                <span v-if="token.token_verify === 1 || token.is_verified" class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
                   ✓ Verified
                 </span>
               </div>
-              <span class="text-xs text-slate-500 font-medium block truncate max-w-[280px]">{{ token.name || token.project?.org_name || 'Stellar Project' }}</span>
+              <span class="text-xs text-theme-dim font-medium block truncate max-w-[280px]">{{ token.name || token.project?.org_name || 'Stellar Project' }}</span>
             </div>
           </div>
 
           <!-- Stats Grid -->
-          <div class="grid grid-cols-2 gap-x-6 gap-y-4 pt-2 border-t border-slate-900">
+          <div class="grid grid-cols-2 gap-x-6 gap-y-4 pt-3 border-t border-theme-line">
             <!-- 1. Price USD -->
             <div class="space-y-0.5">
-              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Price (USD)</span>
-              <span class="text-sm font-mono font-bold text-white block">≈ ${{ formatPrice(usdPrice) }}</span>
+              <span class="text-[10px] font-bold text-theme-dim uppercase tracking-wide">Price (USD)</span>
+              <span class="text-sm font-mono font-bold text-theme-ink block">≈ ${{ formatPrice(usdPrice) }}</span>
             </div>
             <!-- 2. Price XLM -->
             <div class="space-y-0.5">
-              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Price (XLM)</span>
-              <span class="text-sm font-mono font-bold text-cyan-400 block">{{ formatXlmPrice(xlmPrice) }} XLM</span>
+              <span class="text-[10px] font-bold text-theme-dim uppercase tracking-wide">Price (XLM)</span>
+              <span class="text-sm font-mono font-bold text-cyan-600 dark:text-cyan-400 block">{{ formatXlmPrice(xlmPrice) }} XLM</span>
             </div>
             <!-- 3. 24H Change -->
             <div class="space-y-0.5">
-              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">24H Change</span>
-              <span class="text-sm font-mono font-bold block" :class="priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'">
+              <span class="text-[10px] font-bold text-theme-dim uppercase tracking-wide">24H Change</span>
+              <span class="text-sm font-mono font-bold block" :class="priceChange >= 0 ? 'text-emerald-500' : 'text-rose-500'">
                 {{ priceChange >= 0 ? '▲ +' : '▼ ' }}{{ priceChange }}%
               </span>
             </div>
             <!-- 4. Liquidity -->
             <div class="space-y-0.5">
-              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Liquidity</span>
-              <span class="text-sm font-mono font-bold text-white block">${{ formatNumber(liquidity) }}</span>
+              <span class="text-[10px] font-bold text-theme-dim uppercase tracking-wide">Liquidity</span>
+              <span class="text-sm font-mono font-bold text-theme-ink block">${{ formatNumber(liquidity) }}</span>
             </div>
             <!-- 5. Holders -->
             <div class="space-y-0.5">
-              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Holders</span>
-              <span class="text-sm font-mono font-bold text-white block">{{ formatNumber(holders) }}</span>
+              <span class="text-[10px] font-bold text-theme-dim uppercase tracking-wide">Holders</span>
+              <span class="text-sm font-mono font-bold text-theme-ink block">{{ formatNumber(holders) }}</span>
             </div>
             <!-- 6. Trust Score -->
             <div class="space-y-0.5">
-              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Trust Score</span>
+              <span class="text-[10px] font-bold text-theme-dim uppercase tracking-wide">Trust Score</span>
               <span 
                 class="text-sm font-mono font-bold block"
-                :class="(token.rating?.average ?? 7.5) >= 8 ? 'text-emerald-400' : ((token.rating?.average ?? 7.5) >= 5 ? 'text-amber-400' : 'text-rose-400')"
+                :class="(token.rating?.average ?? 7.5) >= 8 ? 'text-emerald-500' : ((token.rating?.average ?? 7.5) >= 5 ? 'text-amber-500' : 'text-rose-500')"
               >
                 {{ (token.rating?.average ?? 7.5).toFixed(1) }} / 10
               </span>
@@ -85,13 +86,13 @@
 
         <!-- Sharing Row / Grid -->
         <div class="space-y-2">
-          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Share to Channels</label>
+          <label class="block text-[11px] font-bold text-theme-dim uppercase tracking-wider">Share to Channels</label>
           <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
             <!-- X (Twitter) -->
             <a 
               :href="xShareUrl" 
               target="_blank" 
-              class="px-3 py-3 bg-black hover:bg-slate-900 border border-slate-850 hover:border-slate-800 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-white transition"
+              class="px-3 py-3 bg-black hover:bg-slate-900 border border-theme-line rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold text-white transition"
             >
               <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -138,7 +139,7 @@
             <!-- Copy Link (Beside LinkedIn Button) -->
             <button 
               @click="copyTokenUrl"
-              class="px-3 py-3 bg-purple-600/10 hover:bg-purple-600/25 border border-purple-500/20 hover:border-purple-500/40 rounded-xl text-xs font-bold text-purple-400 hover:text-purple-300 transition flex items-center justify-center gap-1.5"
+              class="px-3 py-3 bg-purple-600/10 hover:bg-purple-600/25 border border-purple-500/20 hover:border-purple-500/40 rounded-xl text-xs font-bold text-purple-600 dark:text-purple-400 transition flex items-center justify-center gap-1.5"
             >
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5z" />

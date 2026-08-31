@@ -24,15 +24,15 @@
             leave-from="opacity-100 translate-y-0 scale-100"
             leave-to="opacity-0 translate-y-2 scale-95"
           >
-            <DialogPanel class="w-full max-w-lg overflow-hidden rounded-[25px] bg-[#111827] border border-[rgba(148,163,184,0.16)] shadow-2xl">
-              <div class="flex items-start justify-between gap-4 border-b border-[rgba(148,163,184,0.16)] bg-[#151D2D] px-6 py-5">
+            <DialogPanel class="w-full max-w-lg overflow-hidden rounded-[25px] bg-theme-panel border border-theme-line shadow-2xl">
+              <div class="flex items-start justify-between gap-4 border-b border-theme-line bg-theme-panel2 px-6 py-5">
                 <div>
-                  <DialogTitle class="text-xl font-bold text-white tracking-tight">Contact Us</DialogTitle>
-                  <p class="mt-1 text-xs text-slate-400 font-mono">Send a message to the TokenGlade team</p>
+                  <DialogTitle class="text-xl font-bold text-theme-ink tracking-tight">Contact Us</DialogTitle>
+                  <p class="mt-1 text-xs text-theme-dim font-mono">Send a message to the TokenGlade team</p>
                 </div>
                 <button
                   type="button"
-                  class="flex h-9 w-9 items-center justify-center rounded-full bg-[#182235] border border-[rgba(148,163,184,0.16)] text-slate-400 transition hover:text-white hover:bg-[#151D2D]"
+                  class="flex h-9 w-9 items-center justify-center rounded-full bg-theme-panel2 border border-theme-line text-theme-dim transition hover:text-theme-ink hover:bg-theme-panel"
                   aria-label="Close contact modal"
                   @click="closeModal"
                 >

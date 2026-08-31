@@ -38,7 +38,7 @@
 
           <!-- Hero Right Content: Premium 3D Custom illustration -->
           <div class="lg:col-span-5 relative flex items-center justify-center">
-            <div class="w-full max-w-[420px] aspect-square bg-[#0b0f19]/80 border border-gray-850 rounded-[2.5rem] p-4 shadow-2xl relative overflow-hidden flex items-center justify-center group hover:border-cyan-500/30 transition-all duration-500">
+            <div class="w-full max-w-[420px] aspect-square bg-theme-panel border border-theme-line rounded-[2.5rem] p-4 shadow-2xl relative overflow-hidden flex items-center justify-center group hover:border-cyan-500/30 transition-all duration-500">
               <img :src="heroEcosystem" alt="TokenGlade Ecosystem Diagram" class="w-full h-full object-cover rounded-2xl" />
             </div>
           </div>

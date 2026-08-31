@@ -41,7 +41,7 @@
                 <div class="h-4 w-20 bg-[#1D2531]/80 rounded ml-auto"></div>
                 <div class="h-2.5 w-24 bg-[#1D2531]/40 rounded ml-auto"></div>
               </div>
-              <div class="w-14 h-14 rounded-full border-4 border-[#1D2531]/60 flex-none"></div>
+              <div class="w-14 h-14 rounded-full border-4 border-theme-line/60 flex-none"></div>
             </div>
           </div>
 
@@ -56,7 +56,7 @@
 
           <!-- SECONDARY STRIP SKELETON -->
           <div
-            class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] flex flex-wrap items-center justify-between gap-3">
+            class="mt-3.5 py-2.5 px-4 bg-theme-panel2 rounded-xl border border-[rgba(148,163,184,0.12)] flex flex-wrap items-center justify-between gap-3">
             <div v-for="i in 4" :key="i" class="h-3.5 w-32 bg-[#1D2531]/60 rounded"></div>
           </div>
 
@@ -80,7 +80,7 @@
                 <div class="h-5 bg-[#1D2531]/60 rounded w-36"></div>
                 <div class="h-6 bg-[#1D2531]/60 rounded-lg w-40"></div>
               </div>
-              <div class="h-[340px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+              <div class="h-[340px] bg-theme-panel2/40 rounded-xl border border-theme-line/40"></div>
             </div>
 
             <!-- Market Exposure Stats Skeleton -->
@@ -103,11 +103,11 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
                 <div class="space-y-4">
                   <div class="h-3.5 bg-[#1D2531]/60 rounded w-28"></div>
-                  <div class="h-[200px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+                  <div class="h-[200px] bg-theme-panel2/40 rounded-xl border border-theme-line/40"></div>
                 </div>
                 <div class="space-y-4">
                   <div class="h-3.5 bg-[#1D2531]/60 rounded w-28"></div>
-                  <div class="h-[200px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+                  <div class="h-[200px] bg-theme-panel2/40 rounded-xl border border-theme-line/40"></div>
                 </div>
               </div>
             </div>
@@ -117,7 +117,7 @@
               <div class="card-hd">
                 <div class="h-5 bg-[#1D2531]/60 rounded w-28"></div>
               </div>
-              <div class="h-[200px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40 mt-4"></div>
+              <div class="h-[200px] bg-theme-panel2/40 rounded-xl border border-theme-line/40 mt-4"></div>
             </div>
           </div>
 
@@ -133,8 +133,8 @@
                 <div class="h-3 bg-[#1D2531]/60 rounded w-full"></div>
                 <div class="h-2 bg-[#1D2531]/40 rounded w-1/2"></div>
               </div>
-              <div class="h-20 bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
-              <div class="h-16 bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+              <div class="h-20 bg-theme-panel2/40 rounded-xl border border-theme-line/40"></div>
+              <div class="h-16 bg-theme-panel2/40 rounded-xl border border-theme-line/40"></div>
             </div>
 
             <!-- Whale Activity Card Skeleton -->
@@ -143,8 +143,8 @@
                 <div class="h-5 bg-[#1D2531]/60 rounded w-32"></div>
                 <div class="h-4 bg-[#1D2531]/40 rounded w-16"></div>
               </div>
-              <div class="space-y-3.5 bg-[#0E131C]/40 p-4 rounded-xl border border-[#1D2531]/40">
-                <div v-for="i in 3" :key="i" class="space-y-2 pb-3 border-b border-[#1D2531]/20 last:border-b-0 last:pb-0">
+              <div class="space-y-3.5 bg-theme-panel2/40 p-4 rounded-xl border border-theme-line/40">
+                <div v-for="i in 3" :key="i" class="space-y-2 pb-3 border-b border-theme-line/20 last:border-b-0 last:pb-0">
                   <div class="flex justify-between">
                     <div class="h-3 bg-[#1D2531]/60 rounded w-36"></div>
                     <div class="h-3 bg-[#1D2531]/40 rounded w-8"></div>
@@ -181,7 +181,7 @@
 
       <!-- NOT FOUND STATE -->
       <div v-else-if="notFound"
-        class="flex flex-col items-center justify-center text-center py-20 px-4 bg-[#111620] border border-[#1D2531] rounded-3xl mt-8">
+        class="flex flex-col items-center justify-center text-center py-20 px-4 bg-theme-panel border border-theme-line rounded-3xl mt-8">
         <div
           class="w-16 h-16 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20 text-3xl mb-4">
           ⚠️</div>
@@ -265,7 +265,7 @@
           <!-- STATS TIMEFRAME HEADER -->
           <div class="flex items-center justify-between mt-4 mb-2 px-1">
             <span class="text-xs font-mono font-semibold text-slate-400 uppercase tracking-wider">Key Metrics</span>
-            <div class="flex items-center gap-1 bg-[#0E131C] p-1 rounded-lg border border-[rgba(148,163,184,0.12)]">
+            <div class="flex items-center gap-1 bg-theme-panel2 p-1 rounded-lg border border-[rgba(148,163,184,0.12)]">
               <button @click="changeStatsTimeframe('24h')"
                 class="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold transition-all"
                 :class="selectedStatsTimeframe === '24h' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-slate-400 hover:text-white'">
@@ -460,7 +460,7 @@
 
           <!-- COMPACT SECONDARY STRIP -->
           <div
-            class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] grid grid-cols-[1fr_auto] sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-x-4 gap-y-3 text-xs font-mono">
+            class="mt-3.5 py-2.5 px-4 bg-theme-panel2 rounded-xl border border-[rgba(148,163,184,0.12)] grid grid-cols-[1fr_auto] sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-x-4 gap-y-3 text-xs font-mono">
             <!-- 1. Total Supply -->
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 font-medium">Total Supply:</span>
@@ -805,7 +805,7 @@
           <div style="grid-column: 1 / -1; display:flex;flex-direction:column;gap:14px;margin-bottom:2px"
             v-if="activeTab === 'holders'">
             <div v-if="holdersLoading"
-              class="flex flex-col items-center justify-center py-20 bg-[#111620] rounded-xl border border-[#1D2531]">
+              class="flex flex-col items-center justify-center py-20 bg-theme-panel rounded-xl border border-theme-line">
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
               <span class="text-xs text-slate-400 font-bold mt-3">Loading holder distribution data...</span>
             </div>
@@ -818,7 +818,7 @@
                       metrics</p>
                   </div>
                   <div
-                    class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-[#0E131C] px-3 py-1.5 rounded-xl border border-[#1D2531] font-mono">
+                    class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-theme-panel2 px-3 py-1.5 rounded-xl border border-theme-line font-mono">
                     Total Holders: {{ formatNumber(token.holders || 1240) }}
                   </div>
                 </div>
@@ -827,7 +827,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
                   <!-- Left Half (50% Width): Donut Chart Card -->
                   <div
-                    class="flex flex-row md:flex-col items-center gap-4 sm:gap-6 justify-center bg-[#0E131C] p-4 sm:p-6 rounded-2xl border border-[#1D2531] h-full">
+                    class="flex flex-row md:flex-col items-center gap-4 sm:gap-6 justify-center bg-theme-panel2 p-4 sm:p-6 rounded-2xl border border-theme-line h-full">
                     <div
                       class="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 flex items-center justify-center flex-shrink-0">
                       <svg class="w-full h-full" viewBox="0 0 100 100">
@@ -847,7 +847,7 @@
 
                     <div class="space-y-2 sm:space-y-3 text-[10px] sm:text-xs font-mono w-full flex-1">
                       <div
-                        class="flex items-center justify-between gap-1.5 font-semibold bg-[#111620] p-2 sm:p-3 rounded-xl border border-[#1D2531]">
+                        class="flex items-center justify-between gap-1.5 font-semibold bg-theme-panel p-2 sm:p-3 rounded-xl border border-theme-line">
                         <div class="flex items-center gap-1.5">
                           <span class="w-2.5 h-2.5 rounded-full bg-[#12CBEE] flex-none"></span>
                           <span class="text-slate-400">Top 10 Wallets:</span>
@@ -855,7 +855,7 @@
                         <span class="text-white font-bold">{{ top10Percentage }}%</span>
                       </div>
                       <div
-                        class="flex items-center justify-between gap-1.5 font-semibold bg-[#111620] p-2 sm:p-3 rounded-xl border border-[#1D2531]">
+                        class="flex items-center justify-between gap-1.5 font-semibold bg-theme-panel p-2 sm:p-3 rounded-xl border border-theme-line">
                         <div class="flex items-center gap-1.5">
                           <span class="w-2.5 h-2.5 rounded-full bg-[#1d2531] flex-none"></span>
                           <span class="text-slate-400">Others:</span>
@@ -868,7 +868,7 @@
                   <!-- Right Half (50% Width): 4 Cards Stacked Vertically -->
                   <div class="flex flex-col gap-4">
                     <!-- 1. Healthy Distribution / Whale Concentration Warning -->
-                    <div class="bg-[#0E131C] p-5 rounded-2xl border border-[#1D2531]">
+                    <div class="bg-theme-panel2 p-5 rounded-2xl border border-theme-line">
                       <div v-if="parseFloat(top10Percentage) > 50"
                         class="flex gap-3 bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 text-xs text-rose-400">
                         <span class="text-xl flex-shrink-0">⚠️</span>
@@ -898,7 +898,7 @@
                     <!-- 2 & 3: Side-by-Side Stats Cards -->
                     <div class="grid grid-cols-2 gap-4">
                       <!-- 2. Average per Holder -->
-                      <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                      <div class="bg-theme-panel2 p-4 rounded-2xl border border-theme-line font-mono">
                         <span
                           class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block leading-snug">Average
                           per Holder</span>
@@ -908,7 +908,7 @@
                       </div>
 
                       <!-- 3. New Holders -->
-                      <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                      <div class="bg-theme-panel2 p-4 rounded-2xl border border-theme-line font-mono">
                         <span
                           class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block leading-snug">New
                           Holders (24h/7d)</span>
@@ -921,7 +921,7 @@
 
                     <!-- 4. Largest Non-Treasury Holder -->
                     <div v-if="biggestIndividualHolder"
-                      class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                      class="bg-theme-panel2 p-4 rounded-2xl border border-theme-line font-mono">
                       <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest
                         Non-Treasury Holder</span>
                       <div class="flex items-center justify-between text-xs mt-1.5">
@@ -948,7 +948,7 @@
                     <h3>Largest Non-Project Holders</h3>
                   </div>
                   <div style="padding: 20px;">
-                    <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
+                    <div class="overflow-x-auto border border-theme-line rounded-xl bg-theme-panel">
                       <table class="trades">
                         <thead>
                           <tr>
@@ -994,7 +994,7 @@
                     <h3>Official Project Wallets</h3>
                   </div>
                   <div style="padding: 20px;">
-                    <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
+                    <div class="overflow-x-auto border border-theme-line rounded-xl bg-theme-panel">
                       <table class="trades">
                         <thead>
                           <tr>
@@ -1043,7 +1043,7 @@
             style="grid-column: 1 / -1; display:flex;flex-direction:column;gap:14px;margin-bottom:2px;min-width:0;width:100%"
             v-if="activeTab === 'liquidity'">
             <div v-if="liquidityLoading"
-              class="flex flex-col items-center justify-center py-20 bg-[#111620] rounded-xl border border-[#1D2531]">
+              class="flex flex-col items-center justify-center py-20 bg-theme-panel rounded-xl border border-theme-line">
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
               <span class="text-xs text-slate-400 font-bold mt-3">Loading on-chain AMM liquidity stats...</span>
             </div>
@@ -1056,14 +1056,14 @@
                       (AMM) pools & depth</p>
                   </div>
                   <div
-                    class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-[#0E131C] px-3 py-1.5 rounded-xl border border-[#1D2531] font-mono">
+                    class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-theme-panel2 px-3 py-1.5 rounded-xl border border-theme-line font-mono">
                     Total TVL: ${{ formatNumber(token.liquidity_overview?.total_tvl || 0) }}
                   </div>
                 </div>
 
                 <!-- Metrics Grid -->
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6 font-mono">
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Total
                       TVL</span>
                     <span class="text-sm sm:text-lg font-black text-white mt-1 block">
@@ -1071,7 +1071,7 @@
                     </span>
                   </div>
 
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Active
                       Pools</span>
                     <span class="text-sm sm:text-lg font-black text-white mt-1 block">
@@ -1079,7 +1079,7 @@
                     </span>
                   </div>
 
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest
                       Pool</span>
                     <span class="text-xs sm:text-sm font-black text-white mt-1 block truncate font-sans py-1"
@@ -1091,7 +1091,7 @@
                     </span>
                   </div>
 
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">24h LP
                       Volume</span>
                     <span class="text-sm sm:text-lg font-black text-white mt-1 block">
@@ -1099,7 +1099,7 @@
                     </span>
                   </div>
 
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Average
                       APR</span>
                     <span class="text-sm sm:text-lg font-black text-emerald-400 mt-1 block">
@@ -1107,7 +1107,7 @@
                     </span>
                   </div>
 
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Depth
                       (±2%)</span>
                     <span class="text-sm sm:text-lg font-black text-white mt-1 block">
@@ -1123,7 +1123,7 @@
                   <h3>Top Liquidity Pools</h3>
                 </div>
                 <div style="padding: 20px;">
-                  <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
+                  <div class="overflow-x-auto border border-theme-line rounded-xl bg-theme-panel">
                     <table class="trades">
                       <thead>
                         <tr>
@@ -1419,7 +1419,7 @@
 
               <!-- Signals Grid -->
               <div
-                class="grid grid-cols-1 divide-y divide-slate-800/60 border-t border-b border-slate-800/60 bg-[#0E131C]">
+                class="grid grid-cols-1 divide-y divide-slate-800/60 border-t border-b border-slate-800/60 bg-theme-panel2">
                 <!-- Bullish Signals -->
                 <div class="p-4 space-y-2">
                   <span class="text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider block font-mono">▲
@@ -1495,11 +1495,11 @@
             <!-- Whale Activity Card -->
             <div class="card select-text">
               <div class="card-hd">
-                <h3>Whale Activity<span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5"
+                <h3>Whale Activity<span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-theme-panel3 border border-theme-line text-[9px] text-theme-dim font-serif italic select-none cursor-default hover:bg-theme-panel2 hover:text-theme-ink transition-all ml-1.5"
                       :title="'Tracking trades \u2265 ' + formatNumberWithCommas(token.whale_activity_threshold_xlm || 100) + ' XLM'">i</span></h3>
                 <span class="tag">Live Tracker</span>
               </div>
-              <div class="p-4 space-y-3.5 bg-[#0E131C] border-t border-slate-800/60">
+              <div class="p-4 space-y-3.5 bg-theme-panel2 border-t border-slate-800/60">
                 <div v-if="largeEventsLoading" class="text-xs text-slate-500 animate-pulse py-2 text-center">
                   Loading activity...
                 </div>
@@ -1554,7 +1554,7 @@
                   <span class="nm">
                     <span class="shield">🛡</span>Immutable code
                     <span
-                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5"
+                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-theme-panel3 border border-theme-line text-[9px] text-theme-dim font-serif italic select-none cursor-default hover:bg-theme-panel2 hover:text-theme-ink transition-all ml-1.5"
                       title="YES means the issuer account is locked and cannot mint more tokens (0% inflation risk).">i</span>
                   </span>
                   <span class="sval" :class="token.issuer_locked ? 'yes' : 'none'">{{ token.issuer_locked ? 'YES' : 'NO'
@@ -1564,7 +1564,7 @@
                   <span class="nm">
                     <span class="shield">🛡</span>Clawback disabled
                     <span
-                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5"
+                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-theme-panel3 border border-theme-line text-[9px] text-theme-dim font-serif italic select-none cursor-default hover:bg-theme-panel2 hover:text-theme-ink transition-all ml-1.5"
                       title="YES means clawbacks are disabled; the issuer cannot seize or recall tokens from user accounts.">i</span>
                   </span>
                   <span class="sval" :class="!token.auth_clawback_enabled ? 'yes' : 'none'">{{
@@ -1575,7 +1575,7 @@
                   <span class="nm">
                     <span class="shield">🛡</span>Revocation disabled
                     <span
-                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5"
+                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-theme-panel3 border border-theme-line text-[9px] text-theme-dim font-serif italic select-none cursor-default hover:bg-theme-panel2 hover:text-theme-ink transition-all ml-1.5"
                       title="YES means authorization revocation is disabled; the issuer cannot freeze your account's trustline.">i</span>
                   </span>
                   <span class="sval" :class="!token.auth_revocable ? 'yes' : 'none'">{{ !token.auth_revocable ? 'YES' :
@@ -1586,7 +1586,7 @@
                   <span class="nm">
                     <span class="shield">🛡</span>Authorization required
                     <span
-                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5"
+                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-theme-panel3 border border-theme-line text-[9px] text-theme-dim font-serif italic select-none cursor-default hover:bg-theme-panel2 hover:text-theme-ink transition-all ml-1.5"
                       title="NONE means anyone can hold, trade, or transfer this token freely without manual approval.">i</span>
                   </span>
                   <span class="sval" :class="token.auth_required ? 'none' : 'yes'" style="font-size:10px">{{
@@ -2849,6 +2849,7 @@ onMounted(async () => {
   walletKey.value = getCookie('public_key') || ''
   isWalletConnected.value = !!walletKey.value
   window.addEventListener('tokenglade-wallet-changed', handleWalletChanged)
+  window.addEventListener('theme-changed', initChart)
   
   fetchXlmPrice().then(price => {
     globalXlmPrice.value = price;
@@ -2860,6 +2861,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('tokenglade-wallet-changed', handleWalletChanged)
+  window.removeEventListener('theme-changed', initChart)
   stopLiveTradesPolling()
 })
 
@@ -2895,25 +2897,30 @@ async function initChart() {
   const containerWidth = chartContainer.value.clientWidth || 800;
 
   try {
+    const isLight = document.documentElement.classList.contains('light');
+    const bgColor = isLight ? '#FFFFFF' : '#111620';
+    const textColor = isLight ? '#475569' : '#8791A0';
+    const lineColor = isLight ? '#E2E8F0' : '#1D2531';
+
     chartInstance = createChart(chartContainer.value, {
       width: containerWidth,
       height: 320,
       layout: {
-        background: { type: 'solid', color: '#111620' },
-        textColor: '#8791A0',
+        background: { type: 'solid', color: bgColor },
+        textColor: textColor,
       },
       grid: {
-        vertLines: { color: '#1D2531' },
-        horzLines: { color: '#1D2531' },
+        vertLines: { color: lineColor },
+        horzLines: { color: lineColor },
       },
       crosshair: {
         mode: CrosshairMode.Normal,
       },
       rightPriceScale: {
-        borderColor: '#1D2531',
+        borderColor: lineColor,
       },
       timeScale: {
-        borderColor: '#1D2531',
+        borderColor: lineColor,
         timeVisible: true,
         secondsVisible: false,
         fixLeftEdge: false,
@@ -3154,14 +3161,7 @@ watch(selectedChartType, () => {
 }
 
 .asset-page-wrapper {
-  --bg: #070A13;
-  --panel: #111620;
-  --panel2: #0E131C;
-  --line: #1D2531;
-  --line2: #28313F;
-  --ink: #D5DBE5;
-  --dim: #8791A0;
-  --faint: #586172;
+  /* Inherited globally for light/dark mode */
   --amber: #12CBEE;
   --pink: #F0189C;
   --blue: #0A5CE0;
@@ -3514,12 +3514,12 @@ watch(selectedChartType, () => {
 }
 
 .acts .btn.dark {
-  background: #0E131C;
-  border-color: rgba(148, 163, 184, 0.16);
+  background: var(--panel2);
+  border-color: var(--line);
 }
 
 .acts .btn.dark:hover {
-  background: #131A26;
+  background: var(--line);
   border-color: var(--amber);
 }
 
@@ -3675,7 +3675,7 @@ watch(selectedChartType, () => {
 .track {
   height: 5px;
   border-radius: 3px;
-  background: #1a212c;
+  background: var(--panel2);
   overflow: hidden;
 }
 
@@ -3831,7 +3831,7 @@ watch(selectedChartType, () => {
 
 .sval.none {
   color: var(--dim);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--panel3);
 }
 
 .expo {
@@ -4020,27 +4020,62 @@ table.trades tr:hover td {
   }
 }
 
-.overflow-y-auto::-webkit-scrollbar {
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-track {
+.overflow-y-auto::-webkit-scrollbar-track,
+.overflow-x-auto::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
   background: rgba(17, 22, 32, 0.5);
   border-radius: 4px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb {
+.overflow-y-auto::-webkit-scrollbar-thumb,
+.overflow-x-auto::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(40, 52, 73, 0.8);
   border-radius: 4px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+.overflow-y-auto::-webkit-scrollbar-thumb:hover,
+.overflow-x-auto::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(56, 73, 102, 1);
 }
 
-.overflow-y-auto {
+.overflow-y-auto,
+.overflow-x-auto,
+.custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(40, 52, 73, 0.8) rgba(17, 22, 32, 0.5);
+}
+
+/* Light Theme Scrollbars */
+html.light .overflow-y-auto::-webkit-scrollbar-track,
+html.light .overflow-x-auto::-webkit-scrollbar-track,
+html.light .custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--panel2);
+}
+
+html.light .overflow-y-auto::-webkit-scrollbar-thumb,
+html.light .overflow-x-auto::-webkit-scrollbar-thumb,
+html.light .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+
+html.light .overflow-y-auto::-webkit-scrollbar-thumb:hover,
+html.light .overflow-x-auto::-webkit-scrollbar-thumb:hover,
+html.light .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+html.light .overflow-y-auto,
+html.light .overflow-x-auto,
+html.light .custom-scrollbar {
+  scrollbar-color: #cbd5e1 var(--panel2);
 }
 </style>

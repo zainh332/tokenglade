@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-[#070A13] min-h-screen text-slate-100 font-sans antialiased selection:bg-purple-500/30 selection:text-white">
+    class="bg-theme-bg min-h-screen text-theme-ink font-sans antialiased selection:bg-purple-500/30 selection:text-white">
     <Header @wallet-status="handleWalletStatus" />
 
     <!-- MAIN PAGE CONTAINER -->
@@ -60,22 +60,22 @@
                       <stop offset="1" stop-color="#8b5cf6" stop-opacity="0" />
                     </linearGradient>
                   </defs>
-                  <g stroke="#1D2531" stroke-width="0.8" stroke-dasharray="3,3">
+                  <g stroke="var(--line)" stroke-width="0.8" stroke-dasharray="3,3">
                     <line x1="0" y1="40" x2="600" y2="40" />
                     <line x1="0" y1="80" x2="600" y2="80" />
                     <line x1="0" y1="120" x2="600" y2="120" />
                   </g>
                   <path :d="ecoChartPaths.fill" fill="url(#ecoFill)" class="chart-path-transition" />
-                  <path :d="ecoChartPaths.line" fill="none" stroke="#a78bfa" stroke-width="1.8"
+                  <path :d="ecoChartPaths.line" fill="none" stroke="var(--chart-line)" stroke-width="1.8"
                     class="chart-path-transition" />
                   
                   <!-- Hover Crosshair & Pointer Dot -->
                   <template v-if="hoverPoint">
-                    <line :x1="hoverPoint.x" y1="0" :x2="hoverPoint.x" y2="160" stroke="#a78bfa" stroke-width="1" stroke-dasharray="2,2" opacity="0.6" />
-                    <circle :cx="hoverPoint.x" :cy="hoverPoint.y" r="4.5" fill="#a78bfa" stroke="#0b0f19" stroke-width="2" />
+                    <line :x1="hoverPoint.x" y1="0" :x2="hoverPoint.x" y2="160" stroke="var(--chart-line)" stroke-width="1" stroke-dasharray="2,2" opacity="0.6" />
+                    <circle :cx="hoverPoint.x" :cy="hoverPoint.y" r="4.5" fill="var(--chart-line)" stroke="var(--bg)" stroke-width="2" />
                   </template>
                   <template v-else>
-                    <circle :cx="ecoChartPaths.lastX" :cy="ecoChartPaths.lastY" r="3.5" fill="#a78bfa" />
+                    <circle :cx="ecoChartPaths.lastX" :cy="ecoChartPaths.lastY" r="3.5" fill="var(--chart-line)" />
                   </template>
                 </svg>
 
@@ -159,19 +159,19 @@
           <div class="card mv">
             <div class="card-hd flex items-center justify-between pb-2 border-b border-slate-900/60">
               <h3>Market Movers</h3>
-              <div class="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-900/60">
+              <div class="flex items-center gap-1 bg-theme-panel3 p-0.5 rounded-lg border border-theme-line">
                 <button @click="activeMoverTab = 'trending'"
-                  :class="activeMoverTab === 'trending' ? 'bg-[#0b0f19] border-slate-800' : 'text-slate-500 hover:text-slate-350 border-transparent'"
+                  :class="activeMoverTab === 'trending' ? 'bg-theme-panel border-theme-line' : 'text-slate-500 hover:text-slate-350 border-transparent'"
                   class="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded border transition focus:outline-none">
                   <span :class="activeMoverTab === 'trending' ? 'bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent inline-block' : ''">Trending</span>
                 </button>
                 <button @click="activeMoverTab = 'gainers'"
-                  :class="activeMoverTab === 'gainers' ? 'bg-[#0b0f19] border-slate-800' : 'text-slate-500 hover:text-slate-350 border-transparent'"
+                  :class="activeMoverTab === 'gainers' ? 'bg-theme-panel border-theme-line' : 'text-slate-500 hover:text-slate-350 border-transparent'"
                   class="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded border transition focus:outline-none">
                   <span :class="activeMoverTab === 'gainers' ? 'bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent inline-block' : ''">Gainers</span>
                 </button>
                 <button @click="activeMoverTab = 'losers'"
-                  :class="activeMoverTab === 'losers' ? 'bg-[#0b0f19] border-slate-800' : 'text-slate-500 hover:text-slate-350 border-transparent'"
+                  :class="activeMoverTab === 'losers' ? 'bg-theme-panel border-theme-line' : 'text-slate-500 hover:text-slate-350 border-transparent'"
                   class="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded border transition focus:outline-none">
                   <span :class="activeMoverTab === 'losers' ? 'bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent inline-block' : ''">Losers</span>
                 </button>
@@ -219,7 +219,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="t in displayedMovers" :key="t.symbol" @click="goToProject(t, $event)" class="cursor-pointer hover:bg-slate-900/60 transition">
+                <tr v-for="t in displayedMovers" :key="t.symbol" @click="goToProject(t, $event)" class="cursor-pointer transition">
                   <td>
                     <div class="sym">
                       <img v-if="t.logo_url" :src="t.logo_url"
@@ -259,7 +259,7 @@
             <transition-group name="list" tag="div">
               <div v-for="act in activityFeed.slice(0, 8)" :key="act.id" 
                 class="row transition duration-150" 
-                :class="act.txHash ? 'cursor-pointer hover:bg-slate-900/40' : 'cursor-default'"
+                :class="act.txHash ? 'cursor-pointer hover:bg-theme-panel3' : 'cursor-default'"
                 @click="openTx(act)">
                 <span class="badge" :class="{
                   'b-lp': act.type === 'LIQUIDITY',
@@ -287,17 +287,17 @@
 
           <div v-if="loadingPoolsList" class="p-4 space-y-2">
             <div v-for="i in 5" :key="i"
-              class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl animate-pulse">
+              class="flex items-center justify-between p-2.5 bg-theme-panel2 border border-theme-line rounded-xl animate-pulse">
               <div class="space-y-1">
-                <div class="h-3 w-20 bg-slate-900 rounded border border-slate-800/60"></div>
-                <div class="h-2 w-14 bg-slate-900/80 rounded border border-slate-800/40"></div>
+                <div class="h-3 w-20 bg-theme-line rounded border border-theme-line2"></div>
+                <div class="h-2 w-14 bg-theme-line/80 rounded border border-theme-line2"></div>
               </div>
-              <div class="h-3.5 w-16 bg-slate-900 rounded border border-slate-800/60"></div>
+              <div class="h-3.5 w-16 bg-theme-line rounded border border-theme-line2"></div>
             </div>
           </div>
           <div v-else class="p-4 space-y-2">
             <div v-for="pool in poolsList.slice(0, 5)" :key="pool.pair"
-              class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl text-xs">
+              class="flex items-center justify-between p-2.5 bg-theme-panel2 border border-theme-line rounded-xl text-xs">
               <div>
                 <span class="font-bold text-white block">{{ pool.pair }}</span>
                 <span class="text-[9px] text-slate-555">TVL: ${{ pool.tvl.toLocaleString() }}</span>
@@ -310,18 +310,18 @@
 
       <!-- Featured Projects Section -->
       <div class="card p-6 space-y-4">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-900">
+        <div class="flex items-center justify-between pb-2 border-b border-theme-line">
           <div>
-            <h3 class="text-sm font-black text-white tracking-wider uppercase">Featured Projects</h3>
+            <h3 class="text-sm font-black text-theme-ink tracking-wider uppercase">Featured Projects</h3>
           </div>
           <!-- Left/Right Scroll Buttons -->
           <div class="flex items-center gap-1.5 select-none">
-            <button @click="scrollSlider('left')" class="p-1.5 bg-slate-950 border border-slate-900 rounded-lg hover:border-slate-800 text-slate-400 hover:text-white transition focus:outline-none">
+            <button @click="scrollSlider('left')" class="p-1.5 bg-theme-panel2 border border-theme-line rounded-lg hover:bg-theme-panel3 text-theme-dim hover:text-theme-ink transition focus:outline-none cursor-pointer shadow-sm" aria-label="Scroll left">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <button @click="scrollSlider('right')" class="p-1.5 bg-slate-950 border border-slate-900 rounded-lg hover:border-slate-800 text-slate-400 hover:text-white transition focus:outline-none">
+            <button @click="scrollSlider('right')" class="p-1.5 bg-theme-panel2 border border-theme-line rounded-lg hover:bg-theme-panel3 text-theme-dim hover:text-theme-ink transition focus:outline-none cursor-pointer shadow-sm" aria-label="Scroll right">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
               </svg>
@@ -331,29 +331,29 @@
 
         <div v-if="loadingFeaturedProjects" class="flex overflow-x-auto gap-4 py-2 no-scrollbar">
           <div v-for="i in 4" :key="i"
-            class="flex-shrink-0 w-[calc(25%-12px)] min-w-[280px] flex items-center justify-between p-4 bg-slate-950/40 border border-slate-900/60 rounded-2xl animate-pulse h-20">
+            class="flex-shrink-0 w-[calc(25%-12px)] min-w-[280px] flex items-center justify-between p-4 bg-theme-panel2 border border-theme-line rounded-2xl animate-pulse h-20">
             <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-full bg-slate-900 border border-slate-800/80 flex-shrink-0"></div>
+              <div class="w-8 h-8 rounded-full bg-theme-line border border-theme-line2 flex-shrink-0"></div>
               <div class="space-y-1">
-                <div class="h-3.5 w-16 bg-slate-900 rounded"></div>
-                <div class="h-2 w-10 bg-slate-900/80 rounded"></div>
+                <div class="h-3.5 w-16 bg-theme-line rounded"></div>
+                <div class="h-2 w-10 bg-theme-line/80 rounded"></div>
               </div>
             </div>
-            <div class="h-3.5 w-14 bg-slate-900 rounded"></div>
+            <div class="h-3.5 w-14 bg-theme-line rounded"></div>
           </div>
         </div>
         
         <div v-else ref="featuredSliderRef" class="flex overflow-x-auto gap-4 py-2 scroll-smooth no-scrollbar">
           <router-link v-for="project in displayedFeaturedProjects" :key="project.symbol"
             :to="{ path: '/token-insight', query: { asset_code: project.symbol, issuer: project.issuer } }"
-            class="flex-shrink-0 w-[calc(25%-12px)] min-w-[280px] bg-slate-950/40 border border-slate-900/60 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-850 hover:bg-slate-900/40 transition cursor-pointer select-none space-y-3.5 no-underline">
+            class="flex-shrink-0 w-[calc(25%-12px)] min-w-[280px] bg-theme-panel2 border border-theme-line rounded-2xl p-4 flex flex-col justify-between hover:border-theme-line2 hover:bg-theme-panel3 transition cursor-pointer select-none space-y-3.5 no-underline">
             
             <!-- Top Logo & Name -->
             <div class="flex items-center gap-3">
               <img v-if="project.logo_url" :src="project.logo_url"
-                class="w-8 h-8 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
+                class="w-8 h-8 rounded-full object-contain p-0.5 bg-theme-panel3 border border-theme-line" />
               <span v-else
-                class="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center font-bold text-[10px] text-cyan-400">
+                class="w-8 h-8 rounded-full bg-theme-panel3 flex items-center justify-center font-bold text-[10px] text-cyan-400">
                 {{ project.symbol?.slice(0, 2) }}
               </span>
               <div>
@@ -413,15 +413,15 @@
             <div v-else class="space-y-2">
               <router-link v-for="token in latestCreatedTokens.slice(0, 5)" :key="token.id"
                 :to="{ path: '/token-insight', query: { asset_code: token.asset_code, issuer: token.issuer_public_key || token.asset_issuer || token.issuer } }"
-                class="bg-slate-950/40 border border-slate-900/60 rounded-xl p-3 text-xs cursor-pointer hover:border-slate-800 hover:bg-slate-900/40 transition flex flex-col space-y-1.5 no-underline">
+                class="bg-theme-panel2 border border-theme-line rounded-xl p-3 text-xs cursor-pointer hover:border-theme-line2 hover:bg-theme-panel3 transition flex flex-col space-y-1.5 no-underline">
                 
                 <!-- Top Row: Logo, Name, Ticker, Verified Badge, Time Ago -->
                 <!-- Top Row: Logo, Name, Ticker, Verified Badge -->
                 <div class="flex items-center gap-2.5 min-w-0">
                   <img v-if="token.logo_url" :src="token.logo_url"
-                    class="w-7 h-7 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
+                    class="w-7 h-7 rounded-full object-contain p-0.5 bg-theme-panel3 border border-theme-line" />
                   <span v-else
-                    class="w-7 h-7 rounded-full bg-slate-900 flex items-center justify-center font-bold text-[9px] text-cyan-400">
+                    class="w-7 h-7 rounded-full bg-theme-panel3 flex items-center justify-center font-bold text-[9px] text-cyan-400">
                     {{ token.asset_code?.slice(0, 2).toUpperCase() }}
                   </span>
                   <div class="flex items-center gap-1.5 min-w-0">
@@ -474,12 +474,12 @@
           <div v-else class="flex-1 overflow-y-auto px-4 py-3 space-y-2 custom-scrollbar">
             <router-link v-for="token in topVolumeTokens" :key="token.symbol"
               :to="{ path: '/token-insight', query: { asset_code: token.symbol, issuer: token.issuer } }"
-              class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl text-xs cursor-pointer hover:border-slate-800 hover:bg-slate-900/40 transition no-underline">
+              class="flex items-center justify-between p-2.5 bg-theme-panel2 border border-theme-line rounded-xl text-xs cursor-pointer hover:border-theme-line2 hover:bg-theme-panel3 transition no-underline">
               <div class="flex items-center gap-2">
                 <img v-if="token.logo_url" :src="token.logo_url"
-                  class="w-6 h-6 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
+                  class="w-6 h-6 rounded-full object-contain p-0.5 bg-theme-panel3 border border-theme-line" />
                 <span v-else
-                  class="w-6 h-6 rounded-full bg-slate-900 flex items-center justify-center font-bold text-[9px] text-cyan-400">
+                  class="w-6 h-6 rounded-full bg-theme-panel3 flex items-center justify-center font-bold text-[9px] text-cyan-400">
                   {{ token.symbol?.slice(0, 2).toUpperCase() }}
                 </span>
                 <span class="font-bold text-white block">{{ token.symbol }}</span>
@@ -522,20 +522,20 @@
           <div v-else class="flex-1 overflow-y-auto px-4 py-3 space-y-2 custom-scrollbar">
             <router-link v-for="highlight in networkHighlights" :key="highlight.label"
               :to="{ path: '/token-insight', query: { asset_code: highlight.symbol, issuer: highlight.issuer } }"
-              class="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-900/60 rounded-xl text-xs cursor-pointer hover:border-slate-800 hover:bg-slate-900/40 transition no-underline">
+              class="flex items-center justify-between p-2.5 bg-theme-panel2 border border-theme-line rounded-xl text-xs cursor-pointer hover:border-theme-line2 hover:bg-theme-panel3 transition no-underline">
               <div>
-                <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">{{ highlight.label }}</span>
+                <span class="text-[9px] text-slate-555 font-bold uppercase tracking-wider block">{{ highlight.label }}</span>
                 <div class="flex items-center gap-1.5 mt-0.5">
                   <img v-if="highlight.logo_url" :src="highlight.logo_url"
-                    class="w-4 h-4 rounded-full object-contain p-0.5 bg-slate-900 border border-slate-800" />
+                    class="w-4 h-4 rounded-full object-contain p-0.5 bg-theme-panel3 border border-theme-line" />
                   <span v-else
-                    class="w-4 h-4 rounded-full bg-slate-900 flex items-center justify-center font-bold text-[8px] text-cyan-400">
+                    class="w-4 h-4 rounded-full bg-theme-panel3 flex items-center justify-center font-bold text-[8px] text-cyan-400">
                     {{ highlight.symbol?.slice(0, 2).toUpperCase() }}
                   </span>
                   <span class="font-bold text-white">{{ highlight.symbol }}</span>
                 </div>
               </div>
-              <span class="font-mono text-[10px] text-cyan-400 font-bold bg-[#070A13] border border-slate-900 px-2 py-1 rounded-lg">
+              <span class="font-mono text-[10px] text-cyan-400 font-bold bg-theme-bg border border-theme-line px-2 py-1 rounded-lg">
                 {{ highlight.value }}
               </span>
             </router-link>
@@ -544,8 +544,8 @@
       </div>
 
       <!-- SECTION 5: ECOSYSTEM NETWORK STATISTICS -->
-      <div class="bg-[#0b0f19]/60 border border-slate-900 rounded-3xl p-6 shadow-2xl space-y-6">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-900">
+      <div class="bg-theme-panel border border-theme-line rounded-3xl p-6 shadow-2xl space-y-6">
+        <div class="flex items-center justify-between pb-3 border-b border-theme-line">
           <h3 class="text-xs font-black text-white uppercase tracking-wider">Stellar Statistics</h3>
           <span
             class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase font-mono bg-slate-950/60 border border-violet-500/30 shadow-[0_0_12px_rgba(139,92,246,0.15)]">
@@ -557,37 +557,37 @@
 
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 text-center">
           <!-- Unique Assets -->
-          <div class="p-3 bg-slate-950/30 border border-slate-900/60 rounded-2xl">
+          <div class="p-3 bg-theme-panel2 border border-theme-line rounded-2xl">
             <p class="text-[9px] text-slate-550 uppercase font-bold tracking-wider">Unique Assets</p>
             <p class="font-mono font-bold text-white text-sm mt-1" v-if="loadingHighlights">...</p>
             <p class="font-mono font-bold text-white text-sm mt-1" v-else>{{ uniqueAssetsCount }}</p>
           </div>
           <!-- 24h DEX Trades -->
-          <div class="p-3 bg-slate-950/30 border border-slate-900/60 rounded-2xl">
+          <div class="p-3 bg-theme-panel2 border border-theme-line rounded-2xl">
             <p class="text-[9px] text-slate-550 uppercase font-bold tracking-wider">24h DEX Trades</p>
             <p class="font-mono font-bold text-white text-sm mt-1" v-if="loadingHighlights">...</p>
             <p class="font-mono font-bold text-white text-sm mt-1" v-else>{{ dexTrades24h }}</p>
           </div>
           <!-- 24h DEX Volume -->
-          <div class="p-3 bg-slate-950/30 border border-slate-900/60 rounded-2xl">
+          <div class="p-3 bg-theme-panel2 border border-theme-line rounded-2xl">
             <p class="text-[9px] text-slate-550 uppercase font-bold tracking-wider">24h DEX Volume</p>
             <p class="font-mono font-bold text-white text-sm mt-1" v-if="loadingHighlights">...</p>
             <p class="font-mono font-bold text-white text-sm mt-1" v-else>{{ dexVolume24h }}</p>
           </div>
           <!-- XLM in Circulation -->
-          <div class="p-3 bg-slate-950/30 border border-slate-900/60 rounded-2xl">
+          <div class="p-3 bg-theme-panel2 border border-theme-line rounded-2xl">
             <p class="text-[9px] text-slate-550 uppercase font-bold tracking-wider">XLM in Circulation</p>
             <p class="font-mono font-bold text-white text-sm mt-1" v-if="loadingHighlights">...</p>
             <p class="font-mono font-bold text-white text-sm mt-1" v-else>{{ xlmCirculation }}</p>
           </div>
           <!-- XLM Reserved -->
-          <div class="p-3 bg-slate-950/30 border border-slate-900/60 rounded-2xl">
+          <div class="p-3 bg-theme-panel2 border border-theme-line rounded-2xl">
             <p class="text-[9px] text-slate-550 uppercase font-bold tracking-wider">XLM Reserved</p>
             <p class="font-mono font-bold text-white text-sm mt-1" v-if="loadingHighlights">...</p>
             <p class="font-mono font-bold text-white text-sm mt-1" v-else>{{ xlmReserved }}</p>
           </div>
           <!-- XLM Fee Pool -->
-          <div class="p-3 bg-slate-950/30 border border-slate-900/60 rounded-2xl">
+          <div class="p-3 bg-theme-panel2 border border-theme-line rounded-2xl">
             <p class="text-[9px] text-slate-550 uppercase font-bold tracking-wider">XLM Fee Pool</p>
             <p class="font-mono font-bold text-white text-sm mt-1" v-if="loadingHighlights">...</p>
             <p class="font-mono font-bold text-white text-sm mt-1" v-else>{{ xlmFeePool }}</p>
@@ -597,7 +597,7 @@
 
       <!-- SECTION 6: SEARCH THE STELLAR ECOSYSTEM CONSOLE -->
       <div
-        class="bg-gradient-to-r from-purple-950/30 to-[#0b0f19]/60 border border-slate-900 rounded-3xl p-8 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+        class="search-ecosystem-card bg-gradient-to-r from-purple-900 to-indigo-950 border border-purple-800/40 rounded-3xl p-8 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
         <div class="space-y-2 text-center md:text-left">
           <h3 class="text-xl font-black text-white tracking-tight">Search the Stellar Ecosystem</h3>
           <p class="text-xs text-slate-400 max-w-md leading-relaxed">
@@ -1808,14 +1808,7 @@ onUnmounted(() => {
 /* CUSTOM HERO STYLE RULES */
 .hero {
   padding: 14px 0 6px;
-  --bg: #0A0D13;
-  --panel: #111620;
-  --panel2: #0E131C;
-  --line: #1D2531;
-  --line2: #28313F;
-  --ink: #D5DBE5;
-  --dim: #8791A0;
-  --faint: #586172;
+  /* Inherited globally for light/dark mode */
   --amber: #12CBEE;
   --amber-dim: #0a5a6b;
   --pink: #F0189C;
@@ -1872,15 +1865,15 @@ onUnmounted(() => {
 }
 
 .card {
-  background: rgba(11, 15, 25, 0.6);
-  border: 1px solid #0f172a;
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 24px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   transition: border-color 0.3s ease;
 }
 
 .card:hover {
-  border-color: #1e293b;
+  border-color: var(--line2);
 }
 
 .card h3 {
@@ -1897,7 +1890,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 13px 16px;
-  border-bottom: 1px solid #0f172a;
+  border-bottom: 1px solid var(--line);
 }
 
 .card-hd .tag {
@@ -2047,7 +2040,7 @@ onUnmounted(() => {
 }
 
 .mv tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--row-hover);
 }
 
 .sym {
@@ -2098,10 +2091,7 @@ onUnmounted(() => {
 
 /* GRID3 TERMINAL CARDS STYLING */
 .grid3 .card {
-  --panel2: #111620;
-  --line: #1D2531;
-  --faint: #586172;
-  --ink: #D5DBE5;
+  /* Inherited globally for light/dark mode */
   --mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
@@ -2457,5 +2447,78 @@ onUnmounted(() => {
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(40, 52, 73, 0.8) rgba(17, 22, 32, 0.5);
+}
+
+/* Light Theme overrides for Stellar Ecosystem Overview Card */
+html.light .eco-dashboard {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light .eco-dashboard:hover {
+  border-color: rgba(124, 58, 237, 0.25) !important;
+}
+
+html.light .eco-chartbox {
+  background: rgba(15, 23, 42, 0.02) !important;
+  border-color: rgba(15, 23, 42, 0.05) !important;
+}
+
+html.light .eco-stat {
+  background: rgba(15, 23, 42, 0.03) !important;
+  border-color: rgba(15, 23, 42, 0.05) !important;
+}
+
+html.light .eco-stat:hover {
+  background: rgba(124, 58, 237, 0.05) !important;
+  border-color: rgba(124, 58, 237, 0.2) !important;
+}
+
+html.light .stat-icon-wrapper {
+  background: rgba(15, 23, 42, 0.02) !important;
+  border-color: rgba(15, 23, 42, 0.05) !important;
+}
+
+html.light .eco-stat:hover .stat-icon-wrapper {
+  background: rgba(124, 58, 237, 0.1) !important;
+  border-color: rgba(124, 58, 237, 0.2) !important;
+}
+
+/* Search the Stellar Ecosystem Card Light Theme overrides */
+html.light .search-ecosystem-card {
+  background: linear-gradient(135deg, #f3e8ff, #e0e7ff) !important;
+  border-color: rgba(168, 85, 247, 0.15) !important;
+  box-shadow: 0 20px 40px -15px rgba(168, 85, 247, 0.05) !important;
+}
+
+html.light .search-ecosystem-card h3 {
+  color: #0f172a !important;
+}
+
+html.light .search-ecosystem-card p {
+  color: #0f172a !important;
+}
+
+/* Light Theme overrides for live status badges (Ecosystem Health Live, Real-time, DEX Yields, Volume, Stats, Live Data) */
+html.light .inline-flex.bg-slate-950\/60.border-violet-500\/30 {
+  background: rgba(124, 58, 237, 0.08) !important;
+  border-color: rgba(124, 58, 237, 0.2) !important;
+  box-shadow: none !important;
+}
+
+html.light .inline-flex.bg-slate-950\/60.border-violet-500\/30 > span {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  color: #7c3aed !important;
+}
+
+/* Light Theme overrides for Market Movers active tab text */
+html.light .card-hd button span.bg-clip-text {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  color: #7c3aed !important;
 }
 </style>

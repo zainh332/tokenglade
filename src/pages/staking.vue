@@ -1,8 +1,8 @@
 <template>
     <div
-        class="bg-[#070A13] min-h-screen text-slate-100 font-sans antialiased selection:bg-purple-500/30 selection:text-white">
+        class="bg-theme-bg min-h-screen text-theme-ink font-sans antialiased selection:bg-purple-500/30 selection:text-white">
         <Header />
-        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-24 pb-12 sm:pb-24 relative top-0 z-0 bg-[#070A13] overflow-hidden">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-24 pb-12 sm:pb-24 relative top-0 z-0 bg-theme-bg overflow-hidden">
             <!-- Blue Radial Glow Lighting treatment for Hero -->
             <div
                 class="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[150px] pointer-events-none animate-pulse-slow">
@@ -31,9 +31,9 @@
                 <!-- Form -->
                 <div class="w-full max-w-md lg:max-w-lg flex-shrink-0 px-4 sm:px-0">
                     <div
-                        class="w-full bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-[25px] shadow-2xl overflow-hidden">
+                        class="w-full bg-theme-panel border border-theme-line rounded-[25px] shadow-2xl overflow-hidden">
                         <div
-                            class="bg-[#151D2D] border-b border-[rgba(148,163,184,0.16)] text-white text-center py-5 rounded-t-[25px]">
+                            class="bg-theme-panel2 border-b border-theme-line text-theme-ink text-center py-5 rounded-t-[25px]">
                             <h2 class="card-header">
                                 Stake with <span>TokenGlade</span>
                             </h2>
@@ -43,7 +43,7 @@
                             <!-- Current Balance (always visible) -->
                             <div>
                                 <label for="current_balance"
-                                    class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
+                                    class="block text-[10px] font-bold uppercase tracking-wider text-theme-dim font-mono">
                                     Current balance
                                 </label>
 
@@ -51,16 +51,16 @@
                                 <div class="mt-1 relative">
                                     <input v-if="!loadingBalance" type="text" id="current_balance"
                                         name="current_balance" :value="tkgBalance"
-                                        class="w-full px-3.5 py-2.5 bg-[#182235] border border-[rgba(148,163,184,0.16)] text-white placeholder-slate-650 rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition"
+                                        class="w-full px-3.5 py-2.5 bg-theme-panel3 border border-theme-line text-theme-ink placeholder-slate-650 rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition"
                                         placeholder="Current balance" readonly required />
-                                    <div v-else class="w-full h-10 rounded-md relative overflow-hidden bg-slate-900"
+                                    <div v-else class="w-full h-10 rounded-xl relative overflow-hidden bg-theme-panel3 border border-theme-line"
                                         aria-busy="true">
                                         <div
-                                            class="absolute inset-0 animate-pulse bg-gradient-to-r from-[#182235] via-[#151D2D] to-[#182235]">
+                                            class="absolute inset-0 animate-pulse bg-gradient-to-r from-theme-panel3 via-theme-panel2 to-theme-panel3">
                                         </div>
                                     </div>
                                 </div>
-                                <p v-if="loadingBalance" class="mt-2 text-xs text-slate-500">Fetching your TKG balance…
+                                <p v-if="loadingBalance" class="mt-2 text-xs text-theme-dim font-mono">Fetching your TKG balance…
                                 </p>
                             </div>
 
@@ -68,12 +68,12 @@
                             <div class="relative w-full">
                                 <div class="flex items-center justify-between mb-1">
                                     <label for="range_value"
-                                        class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
+                                        class="block text-[10px] font-bold uppercase tracking-wider text-theme-dim font-mono">
 
                                     </label>
-                                    <span class="text-xs text-slate-500 font-mono">
-                                        Min: <strong class="text-white">1,500</strong> • Max: <strong
-                                            class="text-white">{{ formattedMaxStake }}</strong>
+                                    <span class="text-xs text-theme-dim font-mono">
+                                        Min: <strong class="text-theme-ink">1,500</strong> • Max: <strong
+                                            class="text-theme-ink">{{ formattedMaxStake }}</strong>
                                     </span>
                                 </div>
 
@@ -105,10 +105,10 @@
                                     Stake amount
                                 </label>
                                 <input type="text" :value="selectedTokensFormatted"
-                                    class="mt-1 w-full px-3.5 py-2.5 bg-[#182235] border border-[rgba(148,163,184,0.16)] text-white rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition"
+                                    class="mt-1 w-full px-3.5 py-2.5 bg-theme-panel3 border border-theme-line text-theme-ink rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition"
                                     readonly />
                             </div>
-                            <div class="mt-2 rounded-xl border border-[rgba(148,163,184,0.16)] bg-[#151D2D] p-3">
+                            <div class="mt-2 rounded-xl border border-theme-line bg-theme-panel2 p-3">
                                 <!-- Projected tier / APY -->
                                 <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                                     <div class="text-sm text-slate-300">
@@ -122,7 +122,7 @@
                                                 : projected.tier === 3 ? 'bg-teal-500/10 text-teal-400 border border-teal-500/20'
                                                     : projected.tier === 2 ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
                                                         : projected.tier === 1 ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20'
-                                                            : 'bg-slate-800/40 text-slate-400 border border-[rgba(148,163,184,0.16)]'">
+                                                            : 'bg-slate-800/40 text-slate-400 border border-theme-line'">
                                             Tier {{ projected.tier || '—' }} • {{ projected.apy.toFixed(2) }}% APY
                                         </span>
                                     </div>
@@ -130,19 +130,19 @@
 
                                 <!-- Reward chips -->
                                 <div class="grid grid-cols-3 gap-2 text-center">
-                                    <div class="rounded-lg bg-[#182235] border border-[rgba(148,163,184,0.16)] p-2">
+                                    <div class="rounded-lg bg-theme-panel3 border border-theme-line p-2">
                                         <div class="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Est.
                                             Daily</div>
                                         <div class="text-sm font-bold text-white font-mono mt-0.5">{{ fmtTKG(estDaily)
                                             }}</div>
                                     </div>
-                                    <div class="rounded-lg bg-[#182235] border border-[rgba(148,163,184,0.16)] p-2">
+                                    <div class="rounded-lg bg-theme-panel3 border border-theme-line p-2">
                                         <div class="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Est.
                                             Monthly</div>
                                         <div class="text-sm font-bold text-white font-mono mt-0.5">{{ fmtTKG(estMonthly)
                                             }}</div>
                                     </div>
-                                    <div class="rounded-lg bg-[#182235] border border-[rgba(148,163,184,0.16)] p-2">
+                                    <div class="rounded-lg bg-theme-panel3 border border-theme-line p-2">
                                         <div class="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Est.
                                             Yearly</div>
                                         <div class="text-sm font-bold text-white font-mono mt-0.5">{{ fmtTKG(estYearly)
@@ -186,7 +186,7 @@
             <div class="w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
 
                 <!-- ===== Live Stats (Dark + Glassmorphic Treatment) ===== -->
-                <div class="rounded-2xl bg-[#111827] border border-[rgba(148,163,184,0.16)] shadow-2xl">
+                <div class="rounded-2xl bg-theme-panel border border-theme-line shadow-2xl">
                     <!-- gradient hairline -->
                     <div
                         class="h-1.5 w-full rounded-t-2xl bg-gradient-to-r from-purple-600 via-fuchsia-500 to-cyan-500">
@@ -201,7 +201,7 @@
                         <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <!-- TILE -->
                             <div class="rounded-2xl p-[1px] bg-[rgba(148,163,184,0.16)]">
-                                <div class="rounded-2xl bg-[#182235] p-4">
+                                <div class="rounded-2xl bg-theme-panel3 p-4">
                                     <div class="flex items-center gap-3">
                                         <!-- icon -->
                                         <span
@@ -230,7 +230,7 @@
 
                             <!-- TILE -->
                             <div class="rounded-2xl p-[1px] bg-[rgba(148,163,184,0.16)]">
-                                <div class="rounded-2xl bg-[#182235] p-4">
+                                <div class="rounded-2xl bg-theme-panel3 p-4">
                                     <div class="flex items-center gap-3">
                                         <span class="inline-flex h-9 w-9 items-center justify-center rounded-full
                          bg-gradient-to-br from-sky-500/20 to-cyan-400/20 border border-sky-500/30 text-cyan-400">
@@ -257,7 +257,7 @@
 
                             <!-- Rewards Paid 24h TKG -->
                             <div class="rounded-2xl p-[1px] bg-[rgba(148,163,184,0.16)]">
-                                <div class="rounded-2xl bg-[#182235] p-4">
+                                <div class="rounded-2xl bg-theme-panel3 p-4">
                                     <div class="flex items-center gap-3">
                                         <span class="inline-flex h-9 w-9 items-center justify-center rounded-full
                     bg-gradient-to-br from-cyan-500/20 to-fuchsia-500/20 border border-cyan-500/30 text-cyan-400">
@@ -289,7 +289,7 @@
 
                             <!-- Total Payouts -->
                             <div class="rounded-2xl p-[1px] bg-[rgba(148,163,184,0.16)]">
-                                <div class="rounded-2xl bg-[#182235] p-4">
+                                <div class="rounded-2xl bg-theme-panel3 p-4">
                                     <div class="flex items-center gap-3">
                                         <span
                                             class="inline-flex h-9 w-9 items-center justify-center rounded-full
@@ -321,23 +321,23 @@
                         </div>
                     </div>
                 </div> <!-- ===== APY Tiers (Dark Table, Glassmorphic Treatment) ===== -->
-                <div class="rounded-2xl bg-[#111827] border border-[rgba(148,163,184,0.16)] shadow-2xl overflow-hidden">
+                <div class="rounded-2xl bg-theme-panel border border-theme-line shadow-2xl overflow-hidden">
                     <div
                         class="h-1.5 w-full rounded-t-2xl bg-gradient-to-r from-purple-600 via-fuchsia-500 to-cyan-500">
                     </div>
 
                     <div class="px-6 py-5">
-                        <h3 class="text-[18px] font-bold text-white tracking-tight">APY Tiers</h3>
+                        <h3 class="text-[18px] font-bold text-theme-ink tracking-tight">APY Tiers</h3>
                         <p class="text-xs text-slate-400 mt-1">
                             Rewards are calculated daily based on your tier.
                         </p>
                     </div>
 
                     <div class="px-6 pb-6">
-                        <div class="overflow-hidden rounded-xl border border-[rgba(148,163,184,0.16)] bg-[#151D2D]">
+                        <div class="overflow-hidden rounded-xl border border-theme-line bg-theme-panel2">
                             <table class="min-w-full text-left">
                                 <thead
-                                    class="bg-[#182235] text-slate-400 border-b border-[rgba(148,163,184,0.16)] font-mono uppercase tracking-wider text-xs">
+                                    class="bg-theme-panel3 text-slate-400 border-b border-theme-line font-mono uppercase tracking-wider text-xs">
                                     <tr>
                                         <th class="py-3 px-4 font-bold">Tier</th>
                                         <th class="py-3 px-4 font-bold">Amount Staked (TKG)</th>
@@ -346,7 +346,7 @@
                                 </thead>
                                 <tbody class="divide-y divide-[rgba(148,163,184,0.16)]/60 text-slate-300">
                                     <tr v-for="tier in apyTiers" :key="tier.tier"
-                                        class="bg-transparent hover:bg-[#182235]/40 transition">
+                                        class="bg-transparent hover:bg-theme-panel3/40 transition">
                                         <td class="py-3 px-4 font-bold text-white">Tier {{ tier.tier }}</td>
                                         <td class="py-3 px-4 font-mono">{{ tier.range }}</td>
                                         <td class="py-3 px-4">
@@ -371,10 +371,10 @@
                 <h2 class="text-2xl font-bold text-center text-white tracking-tight mb-6">Your Staking History</h2>
 
                 <div
-                    class="w-full bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-2xl shadow-2xl overflow-hidden">
+                    class="w-full bg-theme-panel border border-theme-line rounded-2xl shadow-2xl overflow-hidden">
                     <table class="min-w-full border-collapse">
                         <thead
-                            class="bg-[#182235] text-slate-400 border-b border-[rgba(148,163,184,0.16)] font-mono uppercase tracking-wider text-xs">
+                            class="bg-theme-panel2 text-theme-dim border-b border-theme-line font-mono uppercase tracking-wider text-xs">
                             <tr>
                                 <th class="py-3.5 px-4 text-right font-bold">Amount</th>
                                 <th class="py-3.5 px-4 text-center font-bold">APY</th>
@@ -388,7 +388,7 @@
 
                         <tbody>
                             <tr v-for="pos in positions" :key="pos.id"
-                                class="border-b border-[rgba(148,163,184,0.16)]/60 bg-transparent hover:bg-[#182235]/30 transition text-slate-300">
+                                class="border-b border-theme-line/60 bg-transparent hover:bg-theme-panel3/30 transition text-slate-300">
 
                                 <td class="py-3 px-4 text-right font-mono text-white font-bold">
                                     {{ formatAmount(pos.amount) }} TKG
@@ -403,7 +403,7 @@
                                         class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border"
                                         :class="pos.status_id === 1 || pos.status_id === 2 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                                             : pos.status_id === 3 ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                                                : 'bg-slate-800/40 text-slate-400 border-[rgba(148,163,184,0.16)]'"
+                                                : 'bg-slate-800/40 text-slate-400 border-theme-line'"
                                         :title="pos.status || '—'">
                                         {{ pos.status || '—' }}
                                     </span>
@@ -433,7 +433,7 @@
                                 <td class="py-3 px-4 text-center">
                                     <a v-if="pos.transaction" :href="txUrl(pos.transaction)" target="_blank"
                                         rel="noopener"
-                                        class="inline-block px-2.5 py-1 rounded-full bg-[#182235] text-cyan-400 border border-[rgba(148,163,184,0.16)] font-mono text-xs hover:text-white hover:bg-[#151D2D] transition"
+                                        class="inline-block px-2.5 py-1 rounded-full bg-theme-panel3 text-cyan-400 border border-theme-line font-mono text-xs hover:text-white hover:bg-theme-panel2 transition"
                                         :title="pos.transaction">
                                         {{ shortMiddle(pos.transaction, 6, 6) }}
                                     </a>
@@ -465,7 +465,7 @@
 
         <section class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-16">
             <div
-                class="w-full bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-3xl shadow-2xl overflow-hidden px-4 sm:px-8 py-8">
+                class="w-full bg-theme-panel border border-theme-line rounded-3xl shadow-2xl overflow-hidden px-4 sm:px-8 py-8">
                     <div class="sm:flex sm:items-center">
                         <div class="sm:flex-auto">
                             <div
@@ -484,7 +484,7 @@
                                     <table class="min-w-full">
                                         <thead>
                                             <tr
-                                                class="bg-transparent border-b border-[rgba(148,163,184,0.16)] sm:divide-x sm:divide-[rgba(148,163,184,0.16)]">
+                                                class="bg-transparent border-b border-theme-line sm:divide-x sm:divide-[rgba(148,163,184,0.16)]">
                                                 <th scope="col"
                                                     class="pb-3.5 text-center text-[18px] sm:text-[20px] font-semibold text-white">
                                                     Wallet Address</th>
@@ -508,7 +508,7 @@
                                             </tr>
 
                                             <tr v-for="(row, index) in pageRows" :key="index"
-                                                class="bg-transparent border-b border-[rgba(148,163,184,0.16)]/60 hover:bg-[#182235]/30 transition text-slate-300">
+                                                class="bg-transparent border-b border-theme-line/60 hover:bg-theme-panel3/30 transition text-slate-300">
                                                 <td class="py-4 px-4 text-center text-sm font-medium text-slate-200">
                                                     <span :title="row.wallet_address">{{ shortMiddle(row.wallet_address,
                                                         6, 6)
@@ -523,7 +523,7 @@
                                                 <td class="py-4 px-4 text-center">
                                                     <a v-if="row.transaction" :href="txUrl(row.transaction)"
                                                         target="_blank" rel="noopener noreferrer"
-                                                        class="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[rgba(148,163,184,0.16)] bg-[#182235] text-cyan-400 hover:bg-[#151D2D] hover:text-white transition focus:outline-none"
+                                                        class="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-full border border-theme-line bg-theme-panel3 text-cyan-400 hover:bg-theme-panel2 hover:text-white transition focus:outline-none"
                                                         :title="`View transaction ${row.transaction} on the explorer`"
                                                         aria-label="View on Explorer">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
@@ -552,51 +552,51 @@
 
         <section class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mt-16 pb-10">
             <div
-                class="w-full px-4 pt-12 pb-8 mx-auto bg-[#111827] border border-[rgba(148,163,184,0.16)] sm:px-6 lg:px-8 rounded-3xl shadow-2xl text-center">
-                <h2 class="text-3xl font-bold text-white tracking-tight mb-2">How Staking Works</h2>
-                <p class="text-sm text-slate-400 mb-10">Earn rewards every 24 hours by staking $TKG</p>
+                class="w-full px-4 pt-12 pb-8 mx-auto bg-theme-panel border border-theme-line sm:px-6 lg:px-8 rounded-3xl shadow-2xl text-center">
+                <h2 class="text-3xl font-bold text-theme-ink tracking-tight mb-2">How Staking Works</h2>
+                <p class="text-sm text-theme-dim mb-10">Earn rewards every 24 hours by staking $TKG</p>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-10 pb-6">
                     <div class="flex flex-col items-center">
                         <div
-                            class="bg-[#182235] border border-[rgba(148,163,184,0.16)] p-4 rounded-full mb-4 animate-pulseSoft">
+                            class="bg-theme-panel2 border border-theme-line p-4 rounded-full mb-4 animate-pulseSoft">
                             <img :src="Wallet" alt="Connect Wallet" class="w-12 h-12 rounded-full" />
                         </div>
-                        <h3 class="text-lg font-bold text-white tracking-tight mb-2">Connect Wallet</h3>
-                        <p class="text-slate-400 text-xs leading-relaxed">
+                        <h3 class="text-lg font-bold text-theme-ink tracking-tight mb-2">Connect Wallet</h3>
+                        <p class="text-theme-dim text-xs leading-relaxed">
                             Connect your Stellar wallet to TokenGlade
                         </p>
                     </div>
 
                     <div class="flex flex-col items-center">
                         <div
-                            class="bg-[#182235] border border-[rgba(148,163,184,0.16)] p-4 rounded-full mb-4 animate-pulseSoft">
+                            class="bg-theme-panel2 border border-theme-line p-4 rounded-full mb-4 animate-pulseSoft">
                             <img :src="Coin" alt="Start Staking" class="w-12 h-12 rounded-full" />
                         </div>
-                        <h3 class="text-lg font-bold text-white tracking-tight mb-2">Start Staking</h3>
-                        <p class="text-slate-400 text-xs leading-relaxed">
-                            Choose the amount of <strong class="text-white">TKG</strong> to stake and confirm
+                        <h3 class="text-lg font-bold text-theme-ink tracking-tight mb-2">Start Staking</h3>
+                        <p class="text-theme-dim text-xs leading-relaxed">
+                            Choose the amount of <strong class="text-theme-ink">TKG</strong> to stake and confirm
                         </p>
                     </div>
 
                     <div class="flex flex-col items-center">
                         <div
-                            class="bg-[#182235] border border-[rgba(148,163,184,0.16)] p-4 rounded-full mb-4 animate-pulseSoft">
+                            class="bg-theme-panel2 border border-theme-line p-4 rounded-full mb-4 animate-pulseSoft">
                             <img :src="reward" alt="Rewards" class="w-12 h-12 rounded-full" />
                         </div>
-                        <h3 class="text-lg font-bold text-white tracking-tight mb-2">Earn Rewards (24h)</h3>
-                        <p class="text-slate-400 text-xs leading-relaxed">
-                            Rewards will be distributed every <strong class="text-white">24 hours</strong>
+                        <h3 class="text-lg font-bold text-theme-ink tracking-tight mb-2">Earn Rewards (24h)</h3>
+                        <p class="text-theme-dim text-xs leading-relaxed">
+                            Rewards will be distributed every <strong class="text-theme-ink">24 hours</strong>
                         </p>
                     </div>
 
                     <div class="flex flex-col items-center">
                         <div
-                            class="bg-[#182235] border border-[rgba(148,163,184,0.16)] p-4 rounded-full mb-4 animate-pulseSoft">
+                            class="bg-theme-panel2 border border-theme-line p-4 rounded-full mb-4 animate-pulseSoft">
                             <img :src="stop" alt="Unstake Anytime" class="w-12 h-12 rounded-full" />
                         </div>
-                        <h3 class="text-lg font-bold text-white tracking-tight mb-2">Unstake Anytime</h3>
-                        <p class="text-slate-400 text-xs leading-relaxed">
+                        <h3 class="text-lg font-bold text-theme-ink tracking-tight mb-2">Unstake Anytime</h3>
+                        <p class="text-theme-dim text-xs leading-relaxed">
                             Stop staking whenever you like
                         </p>
                     </div>
@@ -607,9 +607,9 @@
 
         <section class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mt-16 pb-10">
             <div
-                class="w-full px-4 pt-8 pb-8 mx-auto bg-[#111827] border border-[rgba(148,163,184,0.16)] sm:px-6 lg:px-8 rounded-3xl shadow-2xl">
-                <div class="px-6 py-5 border-b border-[rgba(148,163,184,0.16)]">
-                    <h3 class="text-xl font-bold text-white tracking-tight">Frequently Asked Questions</h3>
+                class="w-full px-4 pt-8 pb-8 mx-auto bg-theme-panel border border-theme-line sm:px-6 lg:px-8 rounded-3xl shadow-2xl">
+                <div class="px-6 py-5 border-b border-theme-line">
+                    <h3 class="text-xl font-bold text-theme-ink tracking-tight">Frequently Asked Questions</h3>
                 </div>
 
                 <div class="divide-y divide-[rgba(148,163,184,0.16)]/60">
