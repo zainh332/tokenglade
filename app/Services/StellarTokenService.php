@@ -20,20 +20,21 @@ class StellarTokenService
             throw new \Exception('Invalid Stellar address format.');
         }
 
-        if ($horizonAsset === null) {
-            $horizonResponse = Http::get($this->horizon . '/assets', [
-                'asset_issuer' => $issuer,
-                'asset_code' => $code,
-                'limit' => 1
-            ]);
+        $horizon = $horizonAsset;
+        if ($horizon === null) {
+            try {
+                $horizonResponse = Http::timeout(5)->get($this->horizon . '/assets', [
+                    'asset_issuer' => $issuer,
+                    'asset_code' => $code,
+                    'limit' => 1
+                ]);
 
-            if (!$horizonResponse->ok()) {
-                throw new \Exception('Asset not found.');
-            }
-            $horizon = $horizonResponse->json('_embedded.records.0');
-        } else {
-            $horizon = $horizonAsset;
+                if ($horizonResponse->ok()) {
+                    $horizon = $horizonResponse->json('_embedded.records.0');
+                }
+            } catch (\Throwable $e) {}
         }
+        $horizon = $horizon ?? [];
 
         $assetId = "{$code}-{$issuer}";
         $expertUrl = "https://api.stellar.expert/explorer/public/asset/{$assetId}";
@@ -43,7 +44,9 @@ class StellarTokenService
             $response = Http::timeout(4)->get($expertUrl);
             if ($response->ok()) {
                 $seData = $response->json();
-                Cache::put($seCacheKey, $seData, 3600); // Cache for 1 hour
+                if (!empty($seData)) {
+                    Cache::put($seCacheKey, $seData, 3600); // Cache for 1 hour
+                }
             } else {
                 $seData = Cache::get($seCacheKey);
             }
@@ -66,20 +69,21 @@ class StellarTokenService
         }
 
         if ($price_xlm === null) {
-            $orderbook = Http::get($this->horizon . '/order_book', [
-                'selling_asset_type' => $this->getAssetType($code),
-                'selling_asset_code' => $code,
-                'selling_asset_issuer' => $issuer,
-                'buying_asset_type' => 'native',
-            ]);
+            try {
+                $orderbook = Http::timeout(4)->get($this->horizon . '/order_book', [
+                    'selling_asset_type' => $this->getAssetType($code),
+                    'selling_asset_code' => $code,
+                    'selling_asset_issuer' => $issuer,
+                    'buying_asset_type' => 'native',
+                ]);
 
-            if ($orderbook->ok()) {
-                $bestBid = $orderbook->json('bids.0.price');
-                $price_xlm = $bestBid ? (float) $bestBid : null;
-            }
+                if ($orderbook->ok()) {
+                    $bestBid = $orderbook->json('bids.0.price');
+                    $price_xlm = $bestBid ? (float) $bestBid : null;
+                }
+            } catch (\Throwable $e) {}
         }
 
-        $horizon = $horizonAsset ?? $horizonResponse->json('_embedded.records.0');
         $toml = $this->fetchTomlMetadata($horizon);
 
         $tokenDomain = null;
@@ -182,8 +186,11 @@ class StellarTokenService
             );
         }
 
-        $issuerResponse = Http::get($this->horizon . "/accounts/{$issuer}");
-        $issuerData = $issuerResponse->ok() ? $issuerResponse->json() : null;
+        $issuerData = null;
+        try {
+            $issuerResponse = Http::timeout(4)->get($this->horizon . "/accounts/{$issuer}");
+            $issuerData = $issuerResponse->ok() ? $issuerResponse->json() : null;
+        } catch (\Throwable $e) {}
 
         $masterKeyWeight = 1;
         if (isset($issuerData['signers'])) {
@@ -328,59 +335,66 @@ class StellarTokenService
 
     private function getRecentTransactions(string $issuer, string $code): array
     {
-        $assetType = $this->getAssetType($code);
+        try {
+            $assetType = $this->getAssetType($code);
 
-        $response = Http::get($this->horizon . '/trades', [
-            'base_asset_type'   => $assetType,
-            'base_asset_code'   => $code,
-            'base_asset_issuer' => $issuer,
-            'counter_asset_type' => 'native',
-            'order'             => 'desc',
-            'limit'             => 200,
-        ]);
+            $response = Http::timeout(4)->get($this->horizon . '/trades', [
+                'base_asset_type'   => $assetType,
+                'base_asset_code'   => $code,
+                'base_asset_issuer' => $issuer,
+                'counter_asset_type' => 'native',
+                'order'             => 'desc',
+                'limit'             => 200,
+            ]);
 
-        if (!$response->ok()) {
+            if (!$response->ok()) {
+                return [];
+            }
+
+            $records = $response->json('_embedded.records') ?? [];
+
+            return collect($records)
+                ->map(function ($trade) use ($code, $issuer) {
+                    $isBase = (($trade['base_asset_code'] ?? null) === $code && ($trade['base_asset_issuer'] ?? null) === $issuer);
+                    $isLiquidityPool = (($trade['trade_type'] ?? '') === 'liquidity_pool');
+
+                    if ($isBase) {
+                        if ($isLiquidityPool) {
+                            $side = !empty($trade['base_is_seller']) ? 'sell' : 'buy';
+                        } else {
+                            $side = !empty($trade['base_is_seller']) ? 'buy' : 'sell';
+                        }
+                        $amount = (float) ($trade['base_amount'] ?? 0);
+                        $value  = (float) ($trade['counter_amount'] ?? 0);
+                    } else {
+                        if ($isLiquidityPool) {
+                            $side = !empty($trade['base_is_seller']) ? 'buy' : 'sell';
+                        } else {
+                            $side = !empty($trade['base_is_seller']) ? 'sell' : 'buy';
+                        }
+                        $amount = (float) ($trade['counter_amount'] ?? 0);
+                        $value  = (float) ($trade['base_amount'] ?? 0);
+                    }
+
+                    $price = $amount > 0 ? $value / $amount : 0;
+                    $timeStr = isset($trade['ledger_close_time'])
+                        ? \Carbon\Carbon::parse($trade['ledger_close_time'])->diffForHumans()
+                        : 'recently';
+
+                    return [
+                        'type'   => $trade['trade_type'] ?? 'order_book',
+                        'side'   => $side,
+                        'amount' => $amount,
+                        'value'  => $value,
+                        'price'  => $price,
+                        'time'   => $timeStr,
+                    ];
+                })
+                ->values()
+                ->toArray();
+        } catch (\Throwable $e) {
             return [];
         }
-
-        $records = $response->json('_embedded.records') ?? [];
-
-        return collect($records)
-            ->map(function ($trade) use ($code, $issuer) {
-                $isBase = (($trade['base_asset_code'] ?? null) === $code && ($trade['base_asset_issuer'] ?? null) === $issuer);
-                $isLiquidityPool = ($trade['trade_type'] === 'liquidity_pool');
-
-                if ($isBase) {
-                    if ($isLiquidityPool) {
-                        $side = $trade['base_is_seller'] ? 'sell' : 'buy';
-                    } else {
-                        $side = $trade['base_is_seller'] ? 'buy' : 'sell';
-                    }
-                    $amount = (float) $trade['base_amount'];
-                    $value  = (float) $trade['counter_amount'];
-                } else {
-                    if ($isLiquidityPool) {
-                        $side = $trade['base_is_seller'] ? 'buy' : 'sell';
-                    } else {
-                        $side = $trade['base_is_seller'] ? 'sell' : 'buy';
-                    }
-                    $amount = (float) $trade['counter_amount'];
-                    $value  = (float) $trade['base_amount'];
-                }
-
-                $price = $amount > 0 ? $value / $amount : 0;
-
-                return [
-                    'type'   => $trade['trade_type'],
-                    'side'   => $side,
-                    'amount' => $amount,
-                    'value'  => $value,
-                    'price'  => $price,
-                    'time'   => \Carbon\Carbon::parse($trade['ledger_close_time'])->diffForHumans(),
-                ];
-            })
-            ->values()
-            ->toArray();
     }
 
     private function getLastHourVolume(string $issuer, string $code): float
@@ -497,31 +511,36 @@ class StellarTokenService
     public function getAssetsByIssuer(string $issuer): array
     {
         if (!$this->isValidStellarAddress($issuer)) {
-            throw new \Exception('Invalid Stellar address format.');
-        }
-
-        $response = Http::get($this->horizon . '/assets', [
-            'asset_issuer' => $issuer,
-            'limit' => 200
-        ]);
-
-        if (!$response->ok()) {
-            throw new \Exception('Failed to fetch assets.');
-        }
-
-        $records = $response->json('_embedded.records') ?? [];
-
-        if (empty($records)) {
             return [];
         }
 
-        // SMART SELECTION
-        usort($records, function ($a, $b) {
-            return ($b['accounts']['authorized'] ?? 0)
-                <=> ($a['accounts']['authorized'] ?? 0);
-        });
+        try {
+            $response = Http::timeout(6)->get($this->horizon . '/assets', [
+                'asset_issuer' => $issuer,
+                'limit' => 200
+            ]);
 
-        return $records;
+            if (!$response->ok()) {
+                return [];
+            }
+
+            $records = $response->json('_embedded.records') ?? [];
+
+            if (empty($records)) {
+                return [];
+            }
+
+            // SMART SELECTION
+            usort($records, function ($a, $b) {
+                return ($b['accounts']['authorized'] ?? 0)
+                    <=> ($a['accounts']['authorized'] ?? 0);
+            });
+
+            return $records;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("getAssetsByIssuer error for {$issuer}: " . $e->getMessage());
+            return [];
+        }
     }
 
     protected function fetchTomlMetadata(?array $asset): array
@@ -594,7 +613,7 @@ class StellarTokenService
                     'project' => $project,
                     'token'   => $token,
                 ];
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 return [
                     'project' => [],
                     'token'   => [],
@@ -887,21 +906,26 @@ class StellarTokenService
         return Cache::remember($cacheKey, 120, function () use ($issuer, $code, $tokenDomain) {
             $expertUrl = "https://api.stellar.expert/explorer/public/asset/{$code}-{$issuer}";
             
-            $assetResponse = Http::get($expertUrl);
             $decimals = 7;
-            if ($assetResponse->ok()) {
-                $decimals = (int) ($assetResponse->json('decimals') ?? 7);
-            }
+            try {
+                $assetResponse = Http::timeout(5)->get($expertUrl);
+                if ($assetResponse->ok()) {
+                    $decimals = (int) ($assetResponse->json('decimals') ?? 7);
+                }
+            } catch (\Throwable $e) {}
 
-            $holdersResponse = Http::timeout(8)->get("{$expertUrl}/holders", [
-                'limit' => 35,
-                'order' => 'desc'
-            ]);
+            $holdersResponse = null;
+            try {
+                $holdersResponse = Http::timeout(8)->get("{$expertUrl}/holders", [
+                    'limit' => 35,
+                    'order' => 'desc'
+                ]);
+            } catch (\Throwable $e) {}
 
             $projectHolders = [];
             $individualHolders = [];
 
-            if ($holdersResponse->ok()) {
+            if ($holdersResponse && $holdersResponse->ok()) {
                 $records = $holdersResponse->json('_embedded.records') ?? [];
                 
                 $verifiedProj = \App\Models\VerifiedProject::where('identifier', $issuer)

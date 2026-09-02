@@ -1413,78 +1413,235 @@ EOT;
 
     public function show(Request $request, StellarTokenService $service)
     {
-        $request->validate([
-            'issuer' => 'required|string'
-        ]);
+        try {
+            $issuer = $request->query('issuer') ? strtoupper(trim($request->query('issuer'))) : null;
+            $code = $request->query('code') ?: ($request->query('asset_code') ? strtoupper(trim($request->query('asset_code'))) : null);
 
-        $issuer = strtoupper($request->issuer);
-        $stellarToken = StellarToken::where('issuer_public_key', $issuer)
-            ->latest()->first();
-
-        $assets = Cache::remember("issuer_assets_{$issuer}", 3600, function () use ($service, $issuer) {
-            return $service->getAssetsByIssuer($issuer);
-        });
-
-        if (empty($assets)) {
-            return response()->json(['error' => 'No assets found'], 400);
-        }
-
-        $code = $assets[0]['asset_code'];
-
-        $cacheKey = "token_insight_v2_{$issuer}_{$code}";
-        $insight = Cache::remember($cacheKey, 15, function () use ($service, $issuer, $code, $assets) {
-            return $service->getTokenInsight($issuer, $code, $assets[0]);
-        });
-
-        $isDbVerified = false;
-
-        if ($stellarToken) {
-            $isDbVerified = Token::where('stellar_token_id', $stellarToken->id)
-                ->where('token_verify', 1)
-                ->exists();
-        }
-
-        $verificationProject = VerifiedProject::where('identifier', $issuer)
-            ->where('blockchain_id', 1)
-            ->latest()
-            ->first();
-
-
-        $isVerified =
-            $isDbVerified || ($verificationProject && $verificationProject->status == 1);
-
-        $isVerificationPending =
-            $verificationProject &&
-            $verificationProject->status == 2;
-
-        $logo = $insight['image'] ?? null;
-        $website = $insight['website'] ?? null;
-        $documentation = $insight['documentation'] ?? null;
-        $whitepaper = $insight['whitepaper'] ?? null;
-        $github = $insight['github'] ?? null;
-        $medium = $insight['medium'] ?? null;
-        $twitter = $insight['twitter'] ?? null;
-        $telegram = $insight['telegram'] ?? null;
-        $discord = $insight['discord'] ?? null;
-        $linkedin = $insight['linkedin'] ?? null;
-        $reddit = $insight['reddit'] ?? null;
-        $youtube = $insight['youtube'] ?? null;
-        $tiktok = $insight['tiktok'] ?? null;
-        $instagram = $insight['instagram'] ?? null;
-        $facebook = $insight['facebook'] ?? null;
-        $projectDetails = null;
-
-        $formatUrl = function ($url) {
-            if (!$url) return null;
-            $url = trim($url);
-            if ($url !== '' && !preg_match('/^https?:\/\//i', $url)) {
-                return 'https://' . $url;
+            // If issuer is not provided directly, try to resolve from database or code
+            if (!$issuer && $code) {
+                $dbToken = StellarToken::where('asset_code', $code)->latest()->first()
+                    ?? StellarMarketToken::where('asset_code', $code)->latest()->first();
+                if ($dbToken) {
+                    $issuer = strtoupper($dbToken->issuer_public_key ?? $dbToken->asset_issuer);
+                } else {
+                    // Try to resolve primary issuer from Horizon
+                    try {
+                        $searchRes = Http::timeout(4)->get('https://horizon.stellar.org/assets', [
+                            'asset_code' => $code,
+                            'limit' => 1
+                        ]);
+                        if ($searchRes->ok()) {
+                            $issuer = $searchRes->json('_embedded.records.0.asset_issuer');
+                        }
+                    } catch (\Throwable $e) {}
+                }
             }
-            return $url;
-        };
 
-        if ($verificationProject) {
-            if ($verificationProject->status == 1) {
+            if (!$issuer) {
+                return response()->json(['error' => 'Asset issuer is required'], 400);
+            }
+
+            $stellarToken = StellarToken::where('issuer_public_key', $issuer)
+                ->latest()->first();
+
+            // 1. Fetch assets for issuer (only cache when non-empty)
+            $cacheKeyAssets = "issuer_assets_{$issuer}";
+            $assets = Cache::get($cacheKeyAssets);
+
+            if (empty($assets)) {
+                try {
+                    $assets = $service->getAssetsByIssuer($issuer);
+                    if (!empty($assets)) {
+                        Cache::put($cacheKeyAssets, $assets, 3600);
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning("Failed to get assets by issuer for {$issuer}: " . $e->getMessage());
+                    $assets = [];
+                }
+            }
+
+            // 2. DB Fallback if Horizon returned empty or errored
+            if (empty($assets) && $stellarToken) {
+                $assets = [[
+                    'asset_code' => $stellarToken->asset_code,
+                    'asset_issuer' => $stellarToken->issuer_public_key,
+                    'asset_type' => strlen($stellarToken->asset_code) <= 4 ? 'credit_alphanum4' : 'credit_alphanum12',
+                    'accounts' => ['authorized' => 0],
+                    'balances' => ['authorized' => (string)$stellarToken->total_supply],
+                    'num_claimable_balances' => 0,
+                    'num_liquidity_pools' => 0,
+                    'num_contracts' => 0,
+                    'claimable_balances_amount' => '0',
+                    'liquidity_pools_amount' => '0',
+                    'contracts_amount' => '0',
+                    'flags' => [
+                        'auth_required' => false,
+                        'auth_revocable' => false,
+                        'auth_immutable' => false,
+                        'auth_clawback_enabled' => false,
+                    ]
+                ]];
+            }
+
+            // 3. Fallback to StellarMarketToken if exists in DB
+            if (empty($assets)) {
+                $marketToken = StellarMarketToken::where('asset_issuer', $issuer)->first();
+                if ($marketToken) {
+                    $assets = [[
+                        'asset_code' => $marketToken->asset_code,
+                        'asset_issuer' => $marketToken->asset_issuer,
+                        'asset_type' => strlen($marketToken->asset_code) <= 4 ? 'credit_alphanum4' : 'credit_alphanum12',
+                        'accounts' => ['authorized' => $marketToken->current_holders ?? 0],
+                        'balances' => ['authorized' => '0'],
+                        'num_claimable_balances' => 0,
+                        'num_liquidity_pools' => 0,
+                        'num_contracts' => 0,
+                        'claimable_balances_amount' => '0',
+                        'liquidity_pools_amount' => '0',
+                        'contracts_amount' => '0',
+                        'flags' => [
+                            'auth_required' => false,
+                            'auth_revocable' => false,
+                            'auth_immutable' => false,
+                            'auth_clawback_enabled' => false,
+                        ]
+                    ]];
+                }
+            }
+
+            if (empty($assets)) {
+                return response()->json(['error' => 'No assets found for this issuer.'], 404);
+            }
+
+            // Select matching asset or first asset
+            $matchedAsset = $assets[0];
+            if ($code) {
+                foreach ($assets as $a) {
+                    if (strtoupper($a['asset_code'] ?? '') === $code) {
+                        $matchedAsset = $a;
+                        break;
+                    }
+                }
+            }
+            $code = $matchedAsset['asset_code'];
+
+            // 4. Cache or fetch Token Insight
+            $cacheKey = "token_insight_v2_{$issuer}_{$code}";
+            $insight = Cache::get($cacheKey);
+
+            if (!$insight || empty($insight['asset_code'])) {
+                try {
+                    $insight = $service->getTokenInsight($issuer, $code, $matchedAsset);
+                    if (!empty($insight) && !empty($insight['asset_code'])) {
+                        Cache::put($cacheKey, $insight, 15);
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning("Failed to get token insight for {$code}-{$issuer}: " . $e->getMessage());
+                    $insight = [
+                        'asset_code'       => $code,
+                        'issuer'           => $issuer,
+                        'is_minted_on_tokenglade' => $stellarToken !== null,
+                        'name'             => $stellarToken?->name ?? $code,
+                        'image'            => $stellarToken?->logo ?? null,
+                        'description'      => $stellarToken?->desc ?? null,
+                        'project'          => [
+                            'org_name' => $stellarToken?->name ?? $code,
+                            'org_url'  => $stellarToken?->website_url ?? null,
+                        ],
+                        'total_supply'     => (float) ($stellarToken?->total_supply ?? ($matchedAsset['balances']['authorized'] ?? 0)),
+                        'trustlines'       => (int) ($matchedAsset['accounts']['authorized'] ?? 0),
+                        'holders'          => (int) ($matchedAsset['accounts']['authorized'] ?? 0),
+                        'top_holders'      => [],
+                        'project_holders'  => [],
+                        'issuer_locked'    => $stellarToken ? (bool)$stellarToken->lock_status : false,
+                        'minting_possible' => $stellarToken ? !(bool)$stellarToken->lock_status : true,
+                        'mint_date_human'  => $stellarToken ? $stellarToken->created_at->format('Y-m-d') : '-',
+                        'liquidity_pools'  => (float) ($matchedAsset['num_liquidity_pools'] ?? 0),
+                        'updated_at'       => '1 min ago',
+                        'website'          => $stellarToken?->website_url ?? null,
+                        'twitter'          => null,
+                        'email'            => null,
+                        'support_email'    => null,
+                        'auth_required'    => ($matchedAsset['flags']['auth_required'] ?? false),
+                        'auth_revocable'   => ($matchedAsset['flags']['auth_revocable'] ?? false),
+                        'auth_immutable'   => ($matchedAsset['flags']['auth_immutable'] ?? false),
+                        'auth_clawback_enabled' => ($matchedAsset['flags']['auth_clawback_enabled'] ?? false),
+                        'num_claimable_balances' => $matchedAsset['num_claimable_balances'] ?? 0,
+                        'num_contracts'    => $matchedAsset['num_contracts'] ?? 0,
+                        'claimable_balances_amount' => $matchedAsset['claimable_balances_amount'] ?? 0,
+                        'liquidity_pools_amount' => $matchedAsset['liquidity_pools_amount'] ?? 0,
+                        'contracts_amount' => $matchedAsset['contracts_amount'] ?? 0,
+                        'transactions'     => [],
+                        'volume_1h'        => 0.0,
+                        'volume_24h'       => 0.0,
+                        'high_24h'         => null,
+                        'low_24h'          => null,
+                        'price_change_24h' => 0.0,
+                        'usd_price'        => 0.0,
+                        'xlm_price'        => 0.0,
+                        'activity'         => [
+                            'total_trades'    => 0,
+                            'traded_volume'   => 0,
+                            'payments'        => 0,
+                            'payments_volume' => 0,
+                        ],
+                        'rating'           => [
+                            'age'        => 5,
+                            'activity'   => 5,
+                            'trustlines' => 5,
+                            'liquidity'  => 5,
+                            'volume7d'   => 5,
+                            'interop'    => 5,
+                            'average'    => 5,
+                        ],
+                        'liquidity_overview' => null,
+                        'token_domain'       => null,
+                    ];
+                }
+            }
+
+            $isDbVerified = false;
+            if ($stellarToken) {
+                $isDbVerified = Token::where('stellar_token_id', $stellarToken->id)
+                    ->where('token_verify', 1)
+                    ->exists();
+            }
+
+            $verificationProject = VerifiedProject::where('identifier', $issuer)
+                ->where('blockchain_id', 1)
+                ->latest()
+                ->first();
+
+            $isVerified = $isDbVerified || ($verificationProject && $verificationProject->status == 1);
+            $isVerificationPending = $verificationProject && $verificationProject->status == 2;
+
+            $logo = $insight['image'] ?? null;
+            $website = $insight['website'] ?? null;
+            $documentation = $insight['documentation'] ?? null;
+            $whitepaper = $insight['whitepaper'] ?? null;
+            $github = $insight['github'] ?? null;
+            $medium = $insight['medium'] ?? null;
+            $twitter = $insight['twitter'] ?? null;
+            $telegram = $insight['telegram'] ?? null;
+            $discord = $insight['discord'] ?? null;
+            $linkedin = $insight['linkedin'] ?? null;
+            $reddit = $insight['reddit'] ?? null;
+            $youtube = $insight['youtube'] ?? null;
+            $tiktok = $insight['tiktok'] ?? null;
+            $instagram = $insight['instagram'] ?? null;
+            $facebook = $insight['facebook'] ?? null;
+            $projectDetails = null;
+
+            $formatUrl = function ($url) {
+                if (!$url) return null;
+                $url = trim($url);
+                if ($url !== '' && !preg_match('/^https?:\/\//i', $url)) {
+                    return 'https://' . $url;
+                }
+                return $url;
+            };
+
+            if ($verificationProject && $verificationProject->status == 1) {
                 $projectDetails = $verificationProject->profile()
                     ->with(['officialLinks', 'socialLinks', 'officialWallets', 'verifiedProject'])
                     ->first();
@@ -1568,68 +1725,77 @@ EOT;
                     }
                 }
             }
-        }
 
-        $marketToken = StellarMarketToken::updateOrCreate(
-            [
-                'asset_code' => $code,
-                'asset_issuer' => $issuer,
-            ],
-            [
-                'name' => $insight['name'] ?? $code,
+            try {
+                $marketToken = StellarMarketToken::updateOrCreate(
+                    [
+                        'asset_code' => $code,
+                        'asset_issuer' => $issuer,
+                    ],
+                    [
+                        'name' => $insight['name'] ?? $code,
+                        'image' => $logo,
+                        'website' => $website,
+                        'is_verified' => $isVerified,
+                        'current_holders' => $insight['holders'] ?? 0,
+                        'current_price_usd' => $insight['usd_price'] ?? null,
+                        'current_price_xlm' => $insight['xlm_price'] ?? null,
+                        'last_viewed_at' => now(),
+                    ]
+                );
+
+                $votes = [
+                    'trusted' => $marketToken->votes()
+                        ->where('vote_type', 'trusted')
+                        ->count(),
+                    'suspicious' => $marketToken->votes()
+                        ->where('vote_type', 'suspicious')
+                        ->count(),
+                    'scam' => $marketToken->votes()
+                        ->where('vote_type', 'scam')
+                        ->count(),
+                ];
+            } catch (\Throwable $e) {
+                Log::warning("Market token updateOrCreate error: " . $e->getMessage());
+                $votes = [
+                    'trusted' => 0,
+                    'suspicious' => 0,
+                    'scam' => 0,
+                ];
+            }
+
+            $whaleActivityThreshold = \App\Models\Setting::where('key', 'whale_activity_threshold_xlm')->first();
+            $whaleActivityThresholdVal = $whaleActivityThreshold ? (float) $whaleActivityThreshold->value : 100.0;
+
+            return response()->json([
+                ...$insight,
                 'image' => $logo,
                 'website' => $website,
-
+                'documentation' => $documentation,
+                'whitepaper' => $whitepaper,
+                'github' => $github,
+                'medium' => $medium,
+                'twitter' => $twitter,
+                'telegram' => $telegram,
+                'discord' => $discord,
+                'linkedin' => $linkedin,
+                'reddit' => $reddit,
+                'youtube' => $youtube,
+                'tiktok' => $tiktok,
+                'instagram' => $instagram,
+                'facebook' => $facebook,
+                'project_details' => $projectDetails,
                 'is_verified' => $isVerified,
-
-                'current_holders' => $insight['holders'] ?? 0,
-                'current_price_usd' => $insight['usd_price'] ?? null,
-                'current_price_xlm' => $insight['xlm_price'] ?? null,
-
-                'last_viewed_at' => now(),
-            ]
-        );
-
-        $votes = [
-            'trusted' => $marketToken->votes()
-                ->where('vote_type', 'trusted')
-                ->count(),
-
-            'suspicious' => $marketToken->votes()
-                ->where('vote_type', 'suspicious')
-                ->count(),
-
-            'scam' => $marketToken->votes()
-                ->where('vote_type', 'scam')
-                ->count(),
-        ];
-
-        $whaleActivityThreshold = \App\Models\Setting::where('key', 'whale_activity_threshold_xlm')->first();
-        $whaleActivityThresholdVal = $whaleActivityThreshold ? (float) $whaleActivityThreshold->value : 100.0;
-
-        return response()->json([
-            ...$insight,
-            'image' => $logo,
-            'website' => $website,
-            'documentation' => $documentation,
-            'whitepaper' => $whitepaper,
-            'github' => $github,
-            'medium' => $medium,
-            'twitter' => $twitter,
-            'telegram' => $telegram,
-            'discord' => $discord,
-            'linkedin' => $linkedin,
-            'reddit' => $reddit,
-            'youtube' => $youtube,
-            'tiktok' => $tiktok,
-            'instagram' => $instagram,
-            'facebook' => $facebook,
-            'project_details' => $projectDetails,
-            'is_verified' => $isVerified,
-            'is_verification_pending' => $isVerificationPending,
-            'votes' => $votes,
-            'whale_activity_threshold_xlm' => $whaleActivityThresholdVal,
-        ]);
+                'is_verification_pending' => $isVerificationPending,
+                'votes' => $votes,
+                'whale_activity_threshold_xlm' => $whaleActivityThresholdVal,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error("Critical error in TokenController@show: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Failed to load asset details. Please try again.'], 500);
+        }
     }
 
     public function holders(Request $request, StellarTokenService $service)
@@ -1640,9 +1806,16 @@ EOT;
             'token_domain' => 'nullable|string',
         ]);
         
-        $holders = $service->getHoldersData($request->issuer, $request->code, $request->token_domain);
-        
-        return response()->json($holders);
+        try {
+            $holders = $service->getHoldersData($request->issuer, $request->code, $request->token_domain);
+            return response()->json($holders);
+        } catch (\Throwable $e) {
+            Log::warning("Holders fetch error for {$request->code}-{$request->issuer}: " . $e->getMessage());
+            return response()->json([
+                'top_holders' => [],
+                'project_holders' => []
+            ]);
+        }
     }
 
     public function liquidity(Request $request, StellarTokenService $service)
@@ -1653,12 +1826,25 @@ EOT;
             'usd_price' => 'nullable|numeric',
         ]);
         
-        $xlmUsdPrice = $service->getXlmUsdPrice();
-        $usdPrice = (float) ($request->usd_price ?? 0);
-        
-        $liquidity = $service->getLiquidityPoolsInfo($request->code, $request->issuer, $xlmUsdPrice, $usdPrice);
-        
-        return response()->json($liquidity);
+        try {
+            $xlmUsdPrice = $service->getXlmUsdPrice();
+            $usdPrice = (float) ($request->usd_price ?? 0);
+            
+            $liquidity = $service->getLiquidityPoolsInfo($request->code, $request->issuer, $xlmUsdPrice, $usdPrice);
+            return response()->json($liquidity);
+        } catch (\Throwable $e) {
+            Log::warning("Liquidity fetch error for {$request->code}-{$request->issuer}: " . $e->getMessage());
+            return response()->json([
+                'total_tvl' => 0,
+                'pools_count' => 0,
+                'largest_pool_name' => '-',
+                'largest_pool_tvl' => 0,
+                'lp_volume_24h' => 0,
+                'avg_apr' => 0,
+                'depth_2pct' => 0,
+                'pools' => [],
+            ]);
+        }
     }
 
     public function stellarTokenVote(Request $request)
@@ -2483,12 +2669,38 @@ EOT;
         $issuer = strtoupper($issuer);
         $token = StellarToken::where('issuer_public_key', $issuer)->first();
 
-        try {
-            $assets = Cache::remember("issuer_assets_{$issuer}", 3600, function () use ($service, $issuer) {
-                return $service->getAssetsByIssuer($issuer);
-            });
-        } catch (\Exception $e) {
-            $assets = [];
+        $cacheKeyAssets = "issuer_assets_{$issuer}";
+        $assets = Cache::get($cacheKeyAssets);
+        if (empty($assets)) {
+            try {
+                $assets = $service->getAssetsByIssuer($issuer);
+                if (!empty($assets)) {
+                    Cache::put($cacheKeyAssets, $assets, 3600);
+                }
+            } catch (\Throwable $e) {
+                $assets = [];
+            }
+        }
+
+        if (empty($assets) && $token) {
+            $assets = [[
+                'asset_code' => $token->asset_code,
+                'asset_issuer' => $token->issuer_public_key,
+                'accounts' => ['authorized' => 0],
+                'balances' => ['authorized' => (string)$token->total_supply],
+            ]];
+        }
+
+        if (empty($assets)) {
+            $marketToken = StellarMarketToken::where('asset_issuer', $issuer)->first();
+            if ($marketToken) {
+                $assets = [[
+                    'asset_code' => $marketToken->asset_code,
+                    'asset_issuer' => $marketToken->asset_issuer,
+                    'accounts' => ['authorized' => $marketToken->current_holders ?? 0],
+                    'balances' => ['authorized' => '0'],
+                ]];
+            }
         }
 
         if (empty($assets)) {
@@ -2497,12 +2709,17 @@ EOT;
 
         $code = $assets[0]['asset_code'];
 
-        try {
-            $insight = Cache::remember("token_insight_v2_{$issuer}_{$code}", 15, function () use ($service, $issuer, $code, $assets) {
-                return $service->getTokenInsight($issuer, $code, $assets[0]);
-            });
-        } catch (\Exception $e) {
-            $insight = [];
+        $cacheKey = "token_insight_v2_{$issuer}_{$code}";
+        $insight = Cache::get($cacheKey);
+        if (!$insight || empty($insight['asset_code'])) {
+            try {
+                $insight = $service->getTokenInsight($issuer, $code, $assets[0]);
+                if (!empty($insight) && !empty($insight['asset_code'])) {
+                    Cache::put($cacheKey, $insight, 15);
+                }
+            } catch (\Throwable $e) {
+                $insight = [];
+            }
         }
 
         $usdPrice = number_format($insight['usd_price'] ?? 0, 4);
@@ -2537,12 +2754,38 @@ EOT;
         $issuer = strtoupper($issuer);
         $token = StellarToken::where('issuer_public_key', $issuer)->first();
 
-        try {
-            $assets = Cache::remember("issuer_assets_{$issuer}", 3600, function () use ($service, $issuer) {
-                return $service->getAssetsByIssuer($issuer);
-            });
-        } catch (\Exception $e) {
-            $assets = [];
+        $cacheKeyAssets = "issuer_assets_{$issuer}";
+        $assets = Cache::get($cacheKeyAssets);
+        if (empty($assets)) {
+            try {
+                $assets = $service->getAssetsByIssuer($issuer);
+                if (!empty($assets)) {
+                    Cache::put($cacheKeyAssets, $assets, 3600);
+                }
+            } catch (\Throwable $e) {
+                $assets = [];
+            }
+        }
+
+        if (empty($assets) && $token) {
+            $assets = [[
+                'asset_code' => $token->asset_code,
+                'asset_issuer' => $token->issuer_public_key,
+                'accounts' => ['authorized' => 0],
+                'balances' => ['authorized' => (string)$token->total_supply],
+            ]];
+        }
+
+        if (empty($assets)) {
+            $marketToken = StellarMarketToken::where('asset_issuer', $issuer)->first();
+            if ($marketToken) {
+                $assets = [[
+                    'asset_code' => $marketToken->asset_code,
+                    'asset_issuer' => $marketToken->asset_issuer,
+                    'accounts' => ['authorized' => $marketToken->current_holders ?? 0],
+                    'balances' => ['authorized' => '0'],
+                ]];
+            }
         }
 
         if (empty($assets)) {
@@ -2551,12 +2794,17 @@ EOT;
 
         $code = $assets[0]['asset_code'];
 
-        try {
-            $insight = Cache::remember("token_insight_v2_{$issuer}_{$code}", 15, function () use ($service, $issuer, $code, $assets) {
-                return $service->getTokenInsight($issuer, $code, $assets[0]);
-            });
-        } catch (\Exception $e) {
-            $insight = [];
+        $cacheKey = "token_insight_v2_{$issuer}_{$code}";
+        $insight = Cache::get($cacheKey);
+        if (!$insight || empty($insight['asset_code'])) {
+            try {
+                $insight = $service->getTokenInsight($issuer, $code, $assets[0]);
+                if (!empty($insight) && !empty($insight['asset_code'])) {
+                    Cache::put($cacheKey, $insight, 15);
+                }
+            } catch (\Throwable $e) {
+                $insight = [];
+            }
         }
 
         $usdPrice = number_format($insight['usd_price'] ?? 0, 4);

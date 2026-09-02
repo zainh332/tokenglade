@@ -1812,11 +1812,13 @@ const largeEvents = ref([])
 const largeEventsLoading = ref(true)
 
 const refreshLiveTrades = async () => {
-  if (!issuerInput.value) return;
+  const curIssuer = issuerInput.value || token.issuer;
+  if (!curIssuer) return;
   try {
     const res = await axios.get("/api/token/show", {
       params: {
-        issuer: issuerInput.value
+        issuer: curIssuer,
+        code: token.asset_code || route.query.asset_code || route.query.code || route.params.code || undefined
       }
     });
     if (res.data) {
@@ -2583,7 +2585,13 @@ function fallbackCopy(onSuccess) {
 }
 
 async function fetchToken() {
-  if (!issuerInput.value) return
+  const currentIssuer = issuerInput.value || route.query.issuer || route.params.issuer;
+  const currentCode = route.query.asset_code || route.query.code || route.params.code;
+  if (!currentIssuer && !currentCode) {
+    loading.value = false;
+    notFound.value = true;
+    return;
+  }
   loading.value = true
   imageError.value = false
   notFound.value = false
@@ -2601,7 +2609,8 @@ async function fetchToken() {
   try {
     const res = await axios.get("/api/token/show", {
       params: {
-        issuer: issuerInput.value
+        issuer: currentIssuer || undefined,
+        code: currentCode || undefined,
       }
     })
 
@@ -2612,6 +2621,9 @@ async function fetchToken() {
     }
 
     Object.assign(token, res.data)
+    if (token.issuer && !issuerInput.value) {
+      issuerInput.value = token.issuer;
+    }
 
     // Reset holders and liquidity to empty state initially
     token.top_holders = []
@@ -2975,12 +2987,15 @@ watch(
   [() => route.query, () => route.params],
   ([query, params]) => {
     const issuer = query.issuer || params.issuer;
-    if (issuer) {
-      issuerInput.value = issuer
-      fetchToken()
-      startLiveTradesPolling()
+    const code = query.asset_code || query.code || params.code;
+    if (issuer || code) {
+      if (issuer) {
+        issuerInput.value = issuer;
+      }
+      fetchToken();
+      startLiveTradesPolling();
     } else {
-      loading.value = false
+      loading.value = false;
     }
   },
   { immediate: true }
