@@ -61,16 +61,13 @@
               </div>
               
               <div class="flex items-center gap-3">
-                <h1 class="text-base sm:text-lg md:text-xl font-mono text-theme-ink break-all leading-none font-bold select-all flex-1 min-w-0" :title="address">
+                <h1 class="text-xs sm:text-sm md:text-base font-mono text-theme-ink break-all leading-relaxed font-semibold select-all flex-1 min-w-0" :title="address">
                   {{ address }}
                 </h1>
                 <button @click="copyAddress" class="p-2 bg-theme-panel2 border border-theme-line rounded-lg hover:border-theme-line2 hover:text-theme-ink transition flex-shrink-0" title="Copy Address">
                   <Check v-if="copied" class="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                   <Copy v-else class="w-4 h-4 text-theme-dim" />
                 </button>
-                <a :href="`https://stellar.expert/explorer/public/account/${address}`" target="_blank" class="p-2 bg-theme-panel2 border border-theme-line rounded-lg hover:border-theme-line2 hover:text-cyan-500 transition flex-shrink-0" title="View on StellarExpert">
-                  <ArrowUpRight class="w-4 h-4 text-theme-dim hover:text-cyan-500" />
-                </a>
               </div>
 
               <!-- Mini stats -->
@@ -109,12 +106,7 @@
                   <span v-if="overviewLoading" class="inline-block w-16 h-5 bg-theme-line animate-pulse rounded"></span>
                   <span v-else>{{ formatNumber(overviewData?.xlm_balance, 2) }}</span>
                 </div>
-                <div class="text-[11px] text-theme-dim font-semibold uppercase flex items-center gap-1.5">
-                  <div class="w-3.5 h-3.5 flex-shrink-0">
-                    <XlmLogo />
-                  </div>
-                  <span>Native XLM</span>
-                </div>
+                <div class="text-[11px] text-theme-dim font-semibold uppercase">Native XLM</div>
               </div>
 
               <!-- Assets Held -->
@@ -267,7 +259,10 @@
                               <span v-if="hold.asset_type === 'liquidity_pool_shares'" class="text-[9px] lowercase bg-theme-panel2 text-theme-faint px-1 py-0.2 rounded border border-theme-line">pool</span>
                             </div>
                             <div class="text-[10px] text-theme-faint break-all select-all max-w-[200px] truncate" :title="hold.asset_issuer">
-                              {{ hold.asset_issuer ? shortenAddress(hold.asset_issuer) : 'Stellar Network' }}
+                              <router-link v-if="hold.asset_issuer" :to="`/wallet/${hold.asset_issuer}`" class="text-theme-faint hover:text-cyan-600 dark:hover:text-cyan-400 hover:underline transition-colors">
+                                {{ shortenAddress(hold.asset_issuer) }}
+                              </router-link>
+                              <span v-else>Stellar Network</span>
                             </div>
                           </div>
                         </td>
@@ -358,9 +353,9 @@
 
                         <td class="py-3.5 px-4">
                           <div v-if="hold.asset_issuer" class="flex items-center gap-2">
-                            <span class="text-xs text-theme-dim select-all font-mono">
+                            <router-link :to="`/wallet/${hold.asset_issuer}`" class="text-xs text-cyan-600 dark:text-cyan-400 hover:underline select-all font-mono transition-colors" :title="hold.asset_issuer">
                               {{ shortenAddress(hold.asset_issuer) }}
-                            </span>
+                            </router-link>
                             <button @click="copyIssuer(hold.asset_issuer, hold.id)" class="p-1 bg-theme-panel border border-theme-line hover:border-theme-line2 rounded text-theme-dim hover:text-theme-ink transition flex-shrink-0 cursor-pointer">
                               <Check v-if="issuerCopiedId === hold.id" class="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
                               <Copy v-else class="w-3 h-3 text-theme-dim" />
@@ -592,7 +587,10 @@
                           <span class="text-[9px] lowercase bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1 py-0.2 rounded border border-amber-500/20">claimable</span>
                         </div>
                         <div class="text-[10px] text-theme-faint break-all select-all max-w-[200px] truncate" :title="hold.asset_issuer">
-                          {{ hold.asset_issuer ? shortenAddress(hold.asset_issuer) : 'Stellar Network' }}
+                          <router-link v-if="hold.asset_issuer" :to="`/wallet/${hold.asset_issuer}`" class="text-theme-faint hover:text-cyan-600 dark:hover:text-cyan-400 hover:underline transition-colors">
+                            {{ shortenAddress(hold.asset_issuer) }}
+                          </router-link>
+                          <span v-else>Stellar Network</span>
                         </div>
                       </div>
                     </td>
@@ -684,7 +682,7 @@
                             <span class="font-bold text-emerald-600 dark:text-emerald-400">+{{ formatNumber(event.amount, 2) }} {{ event.asset_code || 'XLM' }}</span>
                           </div>
                           <div class="text-[10px] text-theme-faint font-mono">
-                            Received from <span class="text-theme-ink select-all font-semibold">{{ shortenAddress(event.counterparty_address) }}</span>
+                            Received from <router-link v-if="event.counterparty_address" :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link><span v-else class="text-theme-ink select-all font-semibold">Unknown</span>
                           </div>
                         </div>
 
@@ -695,7 +693,7 @@
                             <span class="font-bold text-rose-600 dark:text-rose-400">-{{ formatNumber(event.amount, 2) }} {{ event.asset_code || 'XLM' }}</span>
                           </div>
                           <div class="text-[10px] text-theme-faint font-mono">
-                            Sent to <span class="text-theme-ink select-all font-semibold">{{ shortenAddress(event.counterparty_address) }}</span>
+                            Sent to <router-link v-if="event.counterparty_address" :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link><span v-else class="text-theme-ink select-all font-semibold">Unknown</span>
                           </div>
                         </div>
 
@@ -750,7 +748,7 @@
                             <span class="font-bold text-theme-ink">Claimed Pending Balance</span>
                           </div>
                           <div class="text-[10px] text-theme-faint font-mono" v-if="event.counterparty_address">
-                            Claimed from {{ shortenAddress(event.counterparty_address) }}
+                            Claimed from <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link>
                           </div>
                         </div>
 
@@ -762,7 +760,7 @@
                           </div>
                           <div class="text-[10px] text-theme-faint font-mono">
                             <span>Locked {{ formatNumber(event.amount, 5) }} {{ event.asset_code }}</span>
-                            <span v-if="event.counterparty_address"> for <span class="text-theme-ink font-semibold select-all">{{ shortenAddress(event.counterparty_address) }}</span></span>
+                            <span v-if="event.counterparty_address"> for <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link></span>
                           </div>
                         </div>
 
@@ -774,6 +772,41 @@
                           </div>
                           <div class="text-[10px] text-theme-faint font-mono">
                             <span>{{ formatNumber(event.amount, 5) }} {{ event.asset_code }} available to claim</span>
+                          </div>
+                        </div>
+
+                        <!-- ACCOUNT MERGE -->
+                        <div v-else-if="event.event_type === 'ACCOUNT_MERGE'" class="space-y-0.5">
+                          <div>
+                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20 mr-2">MERGE</span>
+                            <span class="font-bold text-theme-ink">Account Merged</span>
+                          </div>
+                          <div class="text-[10px] text-theme-faint font-mono">
+                            Merged into <router-link v-if="event.counterparty_address" :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link>
+                          </div>
+                        </div>
+
+                        <!-- CLAWBACK -->
+                        <div v-else-if="event.event_type === 'CLAWBACK'" class="space-y-0.5">
+                          <div>
+                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20 mr-2">CLAWBACK</span>
+                            <span class="font-bold text-theme-ink">Clawback Asset</span>
+                          </div>
+                          <div class="text-[10px] text-theme-faint font-mono">
+                            <span>{{ formatNumber(event.amount, 2) }} {{ event.asset_code }}</span>
+                            <span v-if="event.counterparty_address"> from <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link></span>
+                          </div>
+                        </div>
+
+                        <!-- TRUSTLINE FLAGS -->
+                        <div v-else-if="event.event_type === 'TRUSTLINE_FLAGS'" class="space-y-0.5">
+                          <div>
+                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-theme-dim bg-theme-panel2 border border-theme-line px-2 py-0.5 rounded mr-2">FLAGS</span>
+                            <span class="font-bold text-theme-ink">Trustline Flags</span>
+                          </div>
+                          <div class="text-[10px] text-theme-faint font-mono">
+                            <span>Token {{ event.asset_code }}</span>
+                            <span v-if="event.counterparty_address"> for <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link></span>
                           </div>
                         </div>
 
@@ -794,8 +827,9 @@
                             <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-theme-dim bg-theme-panel2 border border-theme-line px-2 py-0.5 rounded mr-2">CONFIG</span>
                             <span class="font-bold text-theme-ink">{{ getEventName(event.event_type) }}</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono" v-if="event.asset_code">
-                            Key: {{ event.asset_code }}
+                          <div class="text-[10px] text-theme-faint font-mono">
+                            <span v-if="event.asset_code">Key: {{ event.asset_code }}</span>
+                            <span v-if="event.counterparty_address && /^G[A-Z2-7]{55}$/.test(event.counterparty_address)"> | Signer: <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link></span>
                           </div>
                         </div>
 
@@ -805,8 +839,9 @@
                             <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-theme-dim bg-theme-panel2 border border-theme-line px-2 py-0.5 rounded mr-2">OP</span>
                             <span class="font-bold text-theme-ink">{{ getEventName(event.event_type) }}</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono" v-if="event.amount">
-                            Amount: {{ formatNumber(event.amount, 2) }} {{ event.asset_code }}
+                          <div class="text-[10px] text-theme-faint font-mono">
+                            <span v-if="event.amount">Amount: {{ formatNumber(event.amount, 2) }} {{ event.asset_code }}</span>
+                            <span v-if="event.counterparty_address && /^G[A-Z2-7]{55}$/.test(event.counterparty_address)"> with <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link></span>
                           </div>
                         </div>
                       </div>
@@ -818,15 +853,8 @@
                     <div class="text-xs text-theme-ink font-extrabold">
                       {{ event.value_usd ? '$' + formatNumber(event.value_usd, 2) : '--' }}
                     </div>
-                    <div class="text-[10px] text-theme-dim flex items-center justify-end gap-1.5">
+                    <div class="text-[10px] text-theme-dim flex items-center justify-end">
                       <span>{{ formatRelativeTime(event.occurred_at) }}</span>
-                      <a v-if="event.transaction_hash" 
-                         target="_blank" 
-                         :href="`https://stellar.expert/explorer/public/tx/${event.transaction_hash}`" 
-                         class="p-1 bg-theme-panel border border-theme-line hover:border-theme-line2 rounded text-theme-dim hover:text-theme-ink transition"
-                         title="View on StellarExpert">
-                        <ArrowUpRight class="w-3 h-3" />
-                      </a>
                     </div>
                   </div>
                 </div>
@@ -863,7 +891,10 @@
                          class="p-2.5 bg-theme-panel2 border border-theme-line rounded-lg flex items-center justify-between text-xs font-mono">
                       <div class="flex items-center gap-2 min-w-0">
                         <span class="w-1.5 h-1.5 rounded-full" :class="signer.key === address ? 'bg-cyan-500' : 'bg-theme-faint'"></span>
-                        <span class="text-theme-ink truncate max-w-[170px]" :title="signer.key">{{ shortenAddress(signer.key) }}</span>
+                        <router-link v-if="signer.key !== address" :to="`/wallet/${signer.key}`" class="text-cyan-600 dark:text-cyan-400 hover:underline truncate max-w-[170px] transition-colors" :title="signer.key">
+                          {{ shortenAddress(signer.key) }}
+                        </router-link>
+                        <span v-else class="text-theme-ink truncate max-w-[170px]" :title="signer.key">{{ shortenAddress(signer.key) }}</span>
                         <span v-if="signer.key === address" class="text-[9px] uppercase px-1.5 py-0.2 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 rounded font-bold">Master</span>
                       </div>
                       <span class="text-theme-ink font-bold bg-theme-panel border border-theme-line px-2 py-0.5 rounded text-[11px]">Weight: {{ signer.weight }}</span>

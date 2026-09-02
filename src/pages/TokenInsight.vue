@@ -230,8 +230,8 @@
                 </div>
 
                 <div class="issuer">
-                  <span>Issuer: <a :href="stellarExpertAssetUrl" target="_blank" rel="noopener noreferrer"
-                      class="mono">{{ shorten(token.issuer) }}</a></span>
+                  <span>Issuer: <router-link :to="`/wallet/${token.issuer}`"
+                      class="mono text-cyan-400 hover:text-cyan-300 transition-colors" :title="token.issuer">{{ shorten(token.issuer) }}</router-link></span>
                   <button @click="copyIssuer" class="btn dark select-none" style="padding:2px 8px;font-size:10.5px">
                     {{ copied ? 'Copied!' : 'Copy Address' }}
                   </button>
@@ -945,11 +945,11 @@
                       <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest
                         Non-Treasury Holder</span>
                       <div class="flex items-center justify-between text-xs mt-1.5">
-                        <a :href="`https://stellar.expert/explorer/public/account/${biggestIndividualHolder.address}`"
-                          target="_blank" rel="noopener noreferrer"
-                          class="font-mono text-cyan-400 hover:text-cyan-300 font-bold">
+                        <router-link :to="`/wallet/${biggestIndividualHolder.address}`"
+                          class="font-mono text-cyan-400 hover:text-cyan-300 font-bold transition-colors"
+                          :title="biggestIndividualHolder.address">
                           {{ shorten(biggestIndividualHolder.address) }}
-                        </a>
+                        </router-link>
                         <span class="font-black text-white font-mono">
                           {{ formatNumber(biggestIndividualHolder.balance) }} {{ token.asset_code }} ({{
                           biggestIndividualHolder.percent }}%)
@@ -982,12 +982,11 @@
                             class="hover:bg-white/2 transition">
                             <td class="font-bold text-white">#{{ index + 1 }}</td>
                             <td class="font-mono text-xs text-left">
-                              <a :href="`https://stellar.expert/explorer/public/account/${holder.address}`"
-                                target="_blank" rel="noopener noreferrer"
-                                class="text-cyan-400 hover:text-cyan-300 transition font-semibold"
+                              <router-link :to="`/wallet/${holder.address}`"
+                                class="text-cyan-400 hover:text-cyan-300 transition-colors font-semibold"
                                 :title="holder.address">
                                 {{ shorten(holder.address) }}
-                              </a>
+                              </router-link>
                             </td>
                             <td>
                               <div class="font-bold text-white font-mono">{{ formatNumber(holder.balance) }} {{
@@ -1029,12 +1028,11 @@
                               <div class="font-bold text-white font-sans text-xs">
                                 {{ holder.name || 'Project Reserve Wallet' }}
                               </div>
-                              <a :href="`https://stellar.expert/explorer/public/account/${holder.address}`"
-                                target="_blank" rel="noopener noreferrer"
-                                class="text-cyan-400 hover:underline text-[10px] font-semibold mt-0.5 block"
+                              <router-link :to="`/wallet/${holder.address}`"
+                                class="text-cyan-400 hover:underline text-[10px] font-semibold mt-0.5 block transition-colors"
                                 :title="holder.address">
                                 {{ shorten(holder.address) }}
-                              </a>
+                              </router-link>
                             </td>
                             <td>
                               <div class="font-bold text-white font-mono">{{ formatNumber(holder.balance) }} {{
@@ -1657,9 +1655,17 @@
                     </div>
                     
                     <div class="flex items-center justify-between gap-2 text-[11px] text-slate-400 flex-wrap">
-                      <span class="font-mono">
-                        ≈ {{ formatNumberWithCommas(event.xlm_value) }} XLM
-                      </span>
+                      <div class="flex items-center gap-1.5 font-mono">
+                        <span>≈ {{ formatNumberWithCommas(event.xlm_value) }} XLM</span>
+                        <template v-if="event.wallet_address && event.wallet_address !== 'Unknown'">
+                          <span class="text-slate-500">by</span>
+                          <router-link :to="`/wallet/${event.wallet_address}`" 
+                                       class="text-cyan-400 hover:underline font-mono text-[10.5px] transition-colors"
+                                       :title="event.wallet_address">
+                            {{ shorten(event.wallet_address) }}
+                          </router-link>
+                        </template>
+                      </div>
                       <span class="text-slate-500 font-mono text-[10px]">{{ event.time_ago }}</span>
                     </div>
                   </div>
