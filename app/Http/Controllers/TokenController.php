@@ -1526,7 +1526,7 @@ EOT;
             $code = $matchedAsset['asset_code'];
 
             // 4. Cache or fetch Token Insight
-            $cacheKey = "token_insight_v2_{$issuer}_{$code}";
+            $cacheKey = "token_insight_v3_{$issuer}_{$code}";
             $insight = Cache::get($cacheKey);
 
             if (!$insight || empty($insight['asset_code'])) {

@@ -754,6 +754,51 @@
                           </div>
                         </div>
 
+                        <!-- CLAIMABLE BALANCE CREATE -->
+                        <div v-else-if="event.event_type === 'CLAIMABLE_BALANCE_CREATE'" class="space-y-0.5">
+                          <div>
+                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 mr-2">CLAIMABLE</span>
+                            <span class="font-bold text-theme-ink">Created Claimable Balance</span>
+                          </div>
+                          <div class="text-[10px] text-theme-faint font-mono">
+                            <span>Locked {{ formatNumber(event.amount, 5) }} {{ event.asset_code }}</span>
+                            <span v-if="event.counterparty_address"> for <span class="text-theme-ink font-semibold select-all">{{ shortenAddress(event.counterparty_address) }}</span></span>
+                          </div>
+                        </div>
+
+                        <!-- CLAIMABLE BALANCE RECEIVED -->
+                        <div v-else-if="event.event_type === 'CLAIMABLE_BALANCE_RECEIVED'" class="space-y-0.5">
+                          <div>
+                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 mr-2">CLAIMABLE</span>
+                            <span class="font-bold text-theme-ink">Received Claimable Balance</span>
+                          </div>
+                          <div class="text-[10px] text-theme-faint font-mono">
+                            <span>{{ formatNumber(event.amount, 5) }} {{ event.asset_code }} available to claim</span>
+                          </div>
+                        </div>
+
+                        <!-- SMART CONTRACT / SOROBAN -->
+                        <div v-else-if="event.event_type === 'INVOKE_HOST_FUNCTION'" class="space-y-0.5">
+                          <div>
+                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 mr-2">CONTRACT</span>
+                            <span class="font-bold text-theme-ink">Smart Contract Invocation</span>
+                          </div>
+                          <div class="text-[10px] text-theme-faint font-mono" v-if="event.counterparty_address">
+                            Function: {{ event.counterparty_address }}
+                          </div>
+                        </div>
+
+                        <!-- SET OPTIONS / MANAGE DATA -->
+                        <div v-else-if="event.event_type === 'SET_OPTIONS' || event.event_type === 'MANAGE_DATA'" class="space-y-0.5">
+                          <div>
+                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-theme-dim bg-theme-panel2 border border-theme-line px-2 py-0.5 rounded mr-2">CONFIG</span>
+                            <span class="font-bold text-theme-ink">{{ getEventName(event.event_type) }}</span>
+                          </div>
+                          <div class="text-[10px] text-theme-faint font-mono" v-if="event.asset_code">
+                            Key: {{ event.asset_code }}
+                          </div>
+                        </div>
+
                         <!-- DEFAULT -->
                         <div v-else class="space-y-0.5">
                           <div>
@@ -1262,10 +1307,18 @@ function getEventName(type) {
     'LP_REMOVE': 'Liquidity Withdrawal',
     'TRUSTLINE_ADD': 'Add Trustline',
     'TRUSTLINE_REMOVE': 'Remove Trustline',
+    'CLAIMABLE_BALANCE_CREATE': 'Create Claimable Balance',
+    'CLAIMABLE_BALANCE_RECEIVED': 'Received Claimable Balance',
     'CLAIMABLE_BALANCE_CLAIM': 'Claim Balance',
     'OFFER_CREATE': 'Create Offer',
     'OFFER_UPDATE': 'Update Offer',
     'OFFER_CANCEL': 'Cancel Offer',
+    'INVOKE_HOST_FUNCTION': 'Smart Contract Call',
+    'SET_OPTIONS': 'Account Configuration',
+    'MANAGE_DATA': 'Manage Data Entry',
+    'BUMP_SEQUENCE': 'Bump Sequence',
+    'CLAWBACK': 'Clawback Asset',
+    'TRUSTLINE_FLAGS': 'Trustline Flags',
   };
   return map[type] || (type ? type.replace(/_/g, ' ') : 'Operation');
 }
@@ -1295,12 +1348,48 @@ async function loadOverview() {
   }
 }
 
+async function resolveMissingLogos() {
+  const targets = holdings.value.filter(h => 
+    h.asset_code !== 'XLM' && 
+    h.asset_type !== 'liquidity_pool_shares' && 
+    h.asset_issuer
+  );
+
+  if (targets.length === 0) return;
+
+  targets.forEach(async (hold) => {
+    const cacheKey = `tg_asset_logo_v2_${hold.asset_code}_${hold.asset_issuer}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      if (cached !== 'none') hold.logo_url = cached;
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/token/stellar-proxy?endpoint=explorer/public/asset/${hold.asset_code}-${hold.asset_issuer}`);
+      if (res.ok) {
+        const json = await res.json();
+        const logo = json.toml_info?.image || json.toml_info?.orgLogo || json.tomlInfo?.image || json.image || null;
+        if (logo) {
+          hold.logo_url = logo;
+          sessionStorage.setItem(cacheKey, logo);
+        } else {
+          sessionStorage.setItem(cacheKey, 'none');
+        }
+      }
+    } catch (e) {
+      // Ignore network errors
+    }
+  });
+}
+
 async function loadHoldings() {
   try {
     holdingsLoading.value = true;
     const { data } = await axios.get(`/api/wallet/${address.value}/holdings`);
     if (data.status === 'success') {
       holdings.value = data.data ?? [];
+      resolveMissingLogos();
     }
   } catch (err) {
     console.error(err);
