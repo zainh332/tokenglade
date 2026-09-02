@@ -26,6 +26,7 @@ Route::prefix('global')->group(function () {
     Route::get('blockchains', 'GlobalController@blockchains')->name('global.blockchains');
     Route::get('generated_tokens', 'GlobalController@generated_tokens')->name('global.generatedTokens');
     Route::get('verified_projects', 'GlobalController@verified_projects')->name('global.verifiedProjects');
+    Route::get('verified_projects_metrics', 'GlobalController@verified_projects_metrics')->name('global.verifiedProjectsMetrics');
     Route::get('top_volume_tokens', 'GlobalController@top_volume_tokens')->name('global.topVolumeTokens');
     Route::get('network_highlights', 'GlobalController@network_highlights')->name('global.networkHighlights');
     Route::get('count_data', 'GlobalController@count_data')->name('global.countData');

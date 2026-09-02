@@ -276,73 +276,31 @@ class GlobalController extends Controller
     {
         try {
             $projects = \App\Models\VerifiedProject::where('status', 1)
+                ->with('profile')
                 ->get()
                 ->map(function ($p) {
+                    $desc = $p->profile->short_description ?? ($p->profile->full_description ?? "Verified asset \"{$p->asset_code}\" on the Stellar network.");
+                    $logoUrl = $p->profile->logo_url ?? null;
+
+                    // Instantly check if cached metrics already exist without blocking
                     $cacheKey = "verified_project_analytics_v4_" . $p->id;
-                    return \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($p) {
-                        $supply = 0;
-                        $price_xlm = 0.0;
-                        $price_usd = 0.0;
-                        $holders = 0;
-                        $desc = "Verified asset \"{$p->asset_code}\" on the Stellar network.";
-                        $logoUrl = null;
+                    $cached = \Illuminate\Support\Facades\Cache::get($cacheKey);
 
-                        try {
-                            $tokenService = app(\App\Services\StellarTokenService::class);
-                            $insight = $tokenService->getTokenInsight($p->identifier, $p->asset_code);
-
-                            $supply = $insight['total_supply'] ?? 0;
-                            $price_xlm = $insight['xlm_price'] ?? 0.0;
-                            $price_usd = $insight['usd_price'] ?? 0.0;
-                            $holders = $insight['holders'] ?? 0;
-                            $logoUrl = $insight['image'] ?? null;
-                            $desc = $insight['description'] ?? $desc;
-                        } catch (\Throwable $ex) {
-                            \Illuminate\Support\Facades\Log::warning("TokenInsight fetch failed for {$p->asset_code} inside verified_projects: " . $ex->getMessage());
-                            
-                            // Fallback to basic StellarExpert parse if token insight fails
-                            try {
-                                $response = \Illuminate\Support\Facades\Http::timeout(3)
-                                    ->get("https://api.stellar.expert/explorer/public/asset/{$p->asset_code}-{$p->identifier}");
-
-                                if ($response->successful()) {
-                                    $data = $response->json();
-                                    $price_usd = isset($data['price']) ? (float)$data['price'] : 0.0;
-                                    $supply = isset($data['supply']) ? (float)$data['supply'] / 10000000 : 0;
-                                    $logoUrl = $data['toml_info']['image'] ?? null;
-                                    $desc = $data['toml_info']['conditions'] ?? ($data['toml_info']['desc'] ?? $desc);
-
-                                    $tokenService = app(\App\Services\StellarTokenService::class);
-                                    $xlmUsdPrice = $tokenService->getXlmUsdPrice();
-                                    $price_xlm = $xlmUsdPrice > 0 ? ($price_usd / $xlmUsdPrice) : 0.0;
-                                    
-                                    if (isset($data['trustlines']['authorized'])) {
-                                        $holders = (int)$data['trustlines']['authorized'];
-                                    } elseif (isset($data['trustlines'])) {
-                                        $holders = (int)$data['trustlines'];
-                                    }
-                                }
-                            } catch (\Throwable $seEx) {}
-                        }
-
-                        $mcap = round($supply * $price_usd);
-
-                        return [
-                            'id' => $p->id,
-                            'name' => $p->name ?? $p->asset_code,
-                            'symbol' => $p->asset_code,
-                            'issuer' => $p->identifier,
-                            'desc' => $desc,
-                            'mcap' => round($mcap),
-                            'supply' => round($supply),
-                            'price_xlm' => $price_xlm,
-                            'price_usd' => $price_usd,
-                            'holders' => $holders,
-                            'logo_url' => $logoUrl,
-                            'website' => $p->website,
-                            'twitter' => $p->twitter,
-                        ];
-                    });
+                    return [
+                        'id' => $p->id,
+                        'name' => $p->name ?? $p->asset_code,
+                        'symbol' => $p->asset_code,
+                        'issuer' => $p->identifier,
+                        'desc' => $desc,
+                        'mcap' => isset($cached['mcap']) ? (float)$cached['mcap'] : null,
+                        'supply' => isset($cached['supply']) ? (float)$cached['supply'] : null,
+                        'price_xlm' => isset($cached['price_xlm']) ? (float)$cached['price_xlm'] : null,
+                        'price_usd' => isset($cached['price_usd']) ? (float)$cached['price_usd'] : null,
+                        'holders' => isset($cached['holders']) ? (int)$cached['holders'] : null,
+                        'logo_url' => $logoUrl ?? ($cached['logo_url'] ?? null),
+                        'website' => $p->website ?? ($p->profile->website ?? null),
+                        'twitter' => $p->twitter ?? ($p->profile->twitter ?? null),
+                    ];
                 });
 
             return response()->json([
@@ -354,6 +312,87 @@ class GlobalController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to fetch verified projects.',
+            ], 500);
+        }
+    }
+
+    public function verified_projects_metrics()
+    {
+        try {
+            $projects = \App\Models\VerifiedProject::where('status', 1)->get();
+            $tokenService = app(\App\Services\StellarTokenService::class);
+            $xlmUsdPrice = $tokenService->getXlmUsdPrice();
+            $metrics = [];
+
+            foreach ($projects as $p) {
+                $cacheKey = "verified_project_analytics_v4_" . $p->id;
+                $projectMetrics = \Illuminate\Support\Facades\Cache::remember($cacheKey, 600, function () use ($p, $tokenService, $xlmUsdPrice) {
+                    $supply = 0;
+                    $price_xlm = 0.0;
+                    $price_usd = 0.0;
+                    $holders = 0;
+                    $logoUrl = null;
+
+                    // 1. Fast fetch directly via StellarExpert asset endpoint
+                    try {
+                        $response = \Illuminate\Support\Facades\Http::timeout(3)
+                            ->get("https://api.stellar.expert/explorer/public/asset/{$p->asset_code}-{$p->identifier}");
+
+                        if ($response->successful()) {
+                            $data = $response->json();
+                            $price_usd = isset($data['price']) ? (float)$data['price'] : 0.0;
+                            $supply = isset($data['supply']) ? (float)$data['supply'] / 10000000 : 0;
+                            $logoUrl = $data['toml_info']['image'] ?? null;
+                            $price_xlm = $xlmUsdPrice > 0 ? ($price_usd / $xlmUsdPrice) : 0.0;
+                            
+                            if (isset($data['trustlines']['authorized'])) {
+                                $holders = (int)$data['trustlines']['authorized'];
+                            } elseif (isset($data['trustlines'])) {
+                                $holders = (int)$data['trustlines'];
+                            }
+                        }
+                    } catch (\Throwable $seEx) {}
+
+                    // 2. Fallback to TokenInsight if no price/holders retrieved
+                    if ($price_usd == 0 && $holders == 0) {
+                        try {
+                            $insight = $tokenService->getTokenInsight($p->identifier, $p->asset_code);
+                            $supply = $insight['total_supply'] ?? $supply;
+                            $price_xlm = $insight['xlm_price'] ?? $price_xlm;
+                            $price_usd = $insight['usd_price'] ?? $price_usd;
+                            $holders = $insight['holders'] ?? $holders;
+                            $logoUrl = $insight['image'] ?? $logoUrl;
+                        } catch (\Throwable $ex) {}
+                    }
+
+                    $mcap = round($supply * $price_usd);
+
+                    return [
+                        'id' => $p->id,
+                        'symbol' => $p->asset_code,
+                        'issuer' => $p->identifier,
+                        'mcap' => round($mcap),
+                        'supply' => round($supply),
+                        'price_xlm' => $price_xlm,
+                        'price_usd' => $price_usd,
+                        'holders' => $holders,
+                        'logo_url' => $logoUrl,
+                    ];
+                });
+
+                $metrics[$p->id] = $projectMetrics;
+                $metrics[$p->asset_code] = $projectMetrics;
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'metrics' => $metrics,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('verified_projects_metrics error', ['message' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch verified projects metrics.',
             ], 500);
         }
     }

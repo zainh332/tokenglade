@@ -376,15 +376,27 @@
             <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-900/40">
               <div class="flex flex-col">
                 <span class="text-[8px] text-slate-555 uppercase font-bold tracking-wider">M.Cap</span>
-                <span class="font-mono text-[10px] text-white font-bold mt-0.5">{{ project.mcap || '—' }}</span>
+                <span class="font-mono text-[10px] text-white font-bold mt-0.5">
+                  <template v-if="project.mcap">{{ project.mcap }}</template>
+                  <template v-else-if="loadingFeaturedMetrics"><span class="text-slate-500 font-normal animate-pulse">...</span></template>
+                  <template v-else>—</template>
+                </span>
               </div>
               <div class="flex flex-col">
                 <span class="text-[8px] text-slate-555 uppercase font-bold tracking-wider">Holders</span>
-                <span class="font-mono text-[10px] text-white font-bold mt-0.5">{{ project.holders || '—' }}</span>
+                <span class="font-mono text-[10px] text-white font-bold mt-0.5">
+                  <template v-if="project.holders">{{ project.holders }}</template>
+                  <template v-else-if="loadingFeaturedMetrics"><span class="text-slate-500 font-normal animate-pulse">...</span></template>
+                  <template v-else>—</template>
+                </span>
               </div>
               <div class="flex flex-col">
                 <span class="text-[8px] text-slate-555 uppercase font-bold tracking-wider">Price</span>
-                <span class="font-mono text-[10px] text-white font-bold mt-0.5" style="line-height: 1.25;">{{ project.price_xlm }}</span>
+                <span class="font-mono text-[10px] text-white font-bold mt-0.5" style="line-height: 1.25;">
+                  <template v-if="project.price_xlm">{{ project.price_xlm }}</template>
+                  <template v-else-if="loadingFeaturedMetrics"><span class="text-slate-500 font-normal animate-pulse">...</span></template>
+                  <template v-else>—</template>
+                </span>
               </div>
             </div>
 
@@ -743,6 +755,7 @@ const poolsList = ref([]);
 const trendingTokens = ref([]);
 const allActiveTokens = ref([]);
 const featuredProjects = ref([]);
+const loadingFeaturedMetrics = ref(false);
 const latestCreatedTokens = ref([]);
 const topVolumeRawTokens = ref([]);
 const loadingTopVolume = ref(true);
@@ -775,12 +788,17 @@ const displayedFeaturedProjects = computed(() => {
   }
 
   return sortedProjects.map((p) => {
+    const hasMcap = p.mcap !== undefined && p.mcap !== null && p.mcap !== '' && !isNaN(p.mcap);
+    const hasHolders = p.holders !== undefined && p.holders !== null && p.holders !== '' && !isNaN(p.holders);
+    const hasPriceXlm = p.price_xlm !== undefined && p.price_xlm !== null && p.price_xlm !== '' && !isNaN(p.price_xlm);
+    const hasPriceUsd = p.price_usd !== undefined && p.price_usd !== null && p.price_usd !== '' && !isNaN(p.price_usd);
+
     return {
       ...p,
-      mcap: (p.mcap !== undefined && p.mcap !== null) ? formatVolume(p.mcap) : '—',
-      holders: (p.holders !== undefined && p.holders !== null) ? formatNumber(p.holders) : '—',
-      price_usd: (p.price_usd !== undefined && p.price_usd !== null) ? formatPrice(p.price_usd) : '—',
-      price_xlm: (p.price_xlm !== undefined && p.price_xlm !== null) ? formatXlmPrice(p.price_xlm) : '—',
+      mcap: hasMcap ? formatVolume(p.mcap) : null,
+      holders: hasHolders ? formatNumber(p.holders) : null,
+      price_usd: hasPriceUsd ? formatPrice(p.price_usd) : null,
+      price_xlm: hasPriceXlm ? formatXlmPrice(p.price_xlm) : null,
       isTkg: p.symbol === 'TKG'
     };
   });
@@ -1195,11 +1213,49 @@ async function fetchFeaturedProjects() {
     });
     if (response.data && response.data.status === "success" && Array.isArray(response.data.projects)) {
       featuredProjects.value = response.data.projects;
+      
+      // Check if any project has missing/empty metrics to backfill in the background
+      const needsMetrics = response.data.projects.some(p => p.mcap === null || p.mcap === undefined || p.holders === null);
+      if (needsMetrics) {
+        fetchFeaturedProjectsMetrics();
+      }
     }
   } catch (error) {
     console.error("Error fetching verified projects:", error);
   } finally {
     loadingFeaturedProjects.value = false;
+  }
+}
+
+async function fetchFeaturedProjectsMetrics() {
+  loadingFeaturedMetrics.value = true;
+  try {
+    const res = await axios.get('/api/global/verified_projects_metrics', {
+      params: { t: Date.now() },
+      headers: { 'X-CSRF-TOKEN': csrfToken }
+    });
+    if (res.data && res.data.status === "success" && res.data.metrics) {
+      const metrics = res.data.metrics;
+      featuredProjects.value = featuredProjects.value.map(p => {
+        const m = metrics[p.id] || metrics[p.symbol];
+        if (m) {
+          return {
+            ...p,
+            mcap: (m.mcap !== undefined && m.mcap !== null) ? m.mcap : p.mcap,
+            holders: (m.holders !== undefined && m.holders !== null) ? m.holders : p.holders,
+            price_usd: (m.price_usd !== undefined && m.price_usd !== null) ? m.price_usd : p.price_usd,
+            price_xlm: (m.price_xlm !== undefined && m.price_xlm !== null) ? m.price_xlm : p.price_xlm,
+            supply: (m.supply !== undefined && m.supply !== null) ? m.supply : p.supply,
+            logo_url: m.logo_url || p.logo_url,
+          };
+        }
+        return p;
+      });
+    }
+  } catch (err) {
+    console.error("Error fetching featured projects metrics:", err);
+  } finally {
+    loadingFeaturedMetrics.value = false;
   }
 }
 
