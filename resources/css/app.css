@@ -52,6 +52,10 @@ html.light strong:not(.btn):not([class*="bg-"]):not([class*="from-"]):not([class
   color: var(--ink) !important;
 }
 
+html.light .xlm-logo-icon {
+  color: #000000 !important;
+}
+
 /* Ensure text inside colored gradient cards / buttons remains white in light mode */
 html.light [class*="from-"] h1.text-white,
 html.light [class*="from-"] h2.text-white,
