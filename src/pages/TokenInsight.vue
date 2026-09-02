@@ -1151,8 +1151,8 @@
                       <input
                         v-model="poolSearch"
                         type="text"
-                        placeholder="Search pool / token..."
-                        class="bg-theme-panel border border-theme-line rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono w-48 transition"
+                        placeholder="Search pool pair..."
+                        class="pool-search-input"
                       />
                     </div>
                   </div>
@@ -1172,38 +1172,44 @@
                       <tbody v-if="filteredPools && filteredPools.length" class="font-mono">
                         <tr v-for="(pool, index) in filteredPools" :key="index"
                           class="hover:bg-white/2 transition">
-                          <td style="text-align:left" class="font-bold text-white">
+                          <td style="text-align:left">
                             <div class="flex items-center gap-2">
                               <a :href="`https://stellar.expert/explorer/public/liquidity-pool/${pool.id}`"
                                 target="_blank" rel="noopener noreferrer"
-                                class="text-[#12CBEE] hover:underline transition font-semibold truncate block max-w-[140px] xs:max-w-[180px] sm:max-w-none">
+                                class="pool-pair-link font-semibold truncate block max-w-[140px] xs:max-w-[180px] sm:max-w-none">
                                 {{ pool.name }}
                               </a>
-                              <span v-if="pool.fee_bp" class="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono flex-shrink-0">
+                              <span v-if="pool.fee_bp" class="pool-fee-badge">
                                 {{ (pool.fee_bp / 100).toFixed(2) }}% fee
                               </span>
                             </div>
-                            <span class="text-[10px] text-slate-500 font-mono block mt-0.5" :title="pool.id">
+                            <span class="text-[10.5px] dim font-mono block mt-0.5" :title="pool.id">
                               {{ shorten(pool.id) }}
                             </span>
                           </td>
                           <td style="text-align:left">
-                            <span v-if="pool.reserves_formatted" class="text-xs text-slate-300 font-sans font-medium">
+                            <span v-if="pool.reserves_formatted" class="text-xs dim font-mono font-medium">
                               {{ pool.reserves_formatted }}
                             </span>
-                            <span v-else class="text-slate-500 text-xs">—</span>
-                          </td>
-                          <td class="font-bold text-white">
-                            ${{ formatNumber(pool.tvl) }}
+                            <span v-else class="text-xs faint">—</span>
                           </td>
                           <td>
-                            <span class="font-extrabold text-xs px-2 py-0.5 rounded-lg"
-                              :class="pool.apr > 0 ? 'bg-[#2ED47A]/10 text-[#2ED47A]' : 'bg-slate-800/80 text-slate-400'">
-                              {{ pool.apr ? pool.apr.toFixed(2) : '0.00' }}%
+                            <span class="font-bold font-mono" style="color: var(--ink)">
+                              ${{ formatNumber(pool.tvl) }}
                             </span>
                           </td>
-                          <td class="font-semibold text-slate-300">
-                            ${{ formatNumber(pool.volume) }}
+                          <td>
+                            <span v-if="pool.apr && pool.apr > 0" class="apr-badge">
+                              {{ pool.apr.toFixed(2) }}%
+                            </span>
+                            <span v-else class="apr-zero">
+                              —
+                            </span>
+                          </td>
+                          <td>
+                            <span class="font-mono" style="color: var(--dim)">
+                              ${{ formatNumber(pool.volume) }}
+                            </span>
                           </td>
                         </tr>
                       </tbody>
@@ -4251,5 +4257,70 @@ html.light .overflow-y-auto,
 html.light .overflow-x-auto,
 html.light .custom-scrollbar {
   scrollbar-color: #cbd5e1 var(--panel2);
+}
+
+.pool-fee-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--panel2);
+  border: 1px solid var(--line2);
+  color: var(--dim);
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.2;
+}
+
+.apr-badge {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  color: var(--up);
+  background: rgba(46, 212, 122, 0.1);
+  border: 1px solid rgba(46, 212, 122, 0.25);
+  display: inline-block;
+  line-height: 1.3;
+}
+
+.apr-zero {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--faint);
+  font-weight: 500;
+}
+
+.pool-pair-link {
+  color: var(--cyan);
+  transition: color 0.15s ease;
+}
+
+.pool-pair-link:hover {
+  color: var(--amber);
+  text-decoration: underline;
+}
+
+.pool-search-input {
+  background: var(--panel2);
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink);
+  outline: none;
+  transition: all 0.15s ease;
+  width: 190px;
+}
+
+.pool-search-input:focus {
+  border-color: var(--amber);
+}
+
+.pool-search-input::placeholder {
+  color: var(--faint);
 }
 </style>
