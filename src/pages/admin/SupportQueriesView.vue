@@ -276,6 +276,7 @@ const saveInquiry = async () => {
         inquiries.value[idx] = res.data.inquiry;
       }
       activeInquiry.value = null;
+      window.dispatchEvent(new CustomEvent('admin-counts-updated'));
     }
   } catch (err) {
     console.error("Error resolving support inquiry:", err);
