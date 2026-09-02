@@ -11,7 +11,6 @@ class Kernel extends ConsoleKernel
         Commands\DistributeStakingRewards::class,
         Commands\TakeTokenSnapshots::class,
         Commands\TrackWhaleActivity::class,
-        Commands\TakeWalletSnapshots::class,
     ];
 
     /**
@@ -22,7 +21,6 @@ class Kernel extends ConsoleKernel
         $schedule->command('staking:reward')->hourly();
         $schedule->command('tokens:snapshot')->hourly();
         $schedule->command('tokens:track-whale-activity')->everyThirtyMinutes();
-        $schedule->command('wallets:snapshot')->hourly();
 
         // LP rewards (controlled execution)
         $schedule->command('lp:distribute-rewards')

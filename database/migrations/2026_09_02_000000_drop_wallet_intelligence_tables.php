@@ -11,14 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Tables deprecated and dropped - wallet data is fetched real-time from Horizon
-    }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
         Schema::dropIfExists('wallet_metrics');
         Schema::dropIfExists('wallet_asset_snapshots');
         Schema::dropIfExists('wallet_portfolio_snapshots');
@@ -26,5 +18,13 @@ return new class extends Migration
         Schema::dropIfExists('wallet_holdings');
         Schema::dropIfExists('wallet_indexing_states');
         Schema::dropIfExists('tracked_wallets');
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        // Tables dropped intentionally for real-time Horizon fetching
     }
 };

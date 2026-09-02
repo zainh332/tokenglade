@@ -11,12 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('wallet_holdings', function (Blueprint $table) {
-            $table->decimal('limit', 30, 7)->nullable();
-            $table->boolean('is_authorized')->nullable();
-            $table->boolean('is_authorized_to_maintain_liabilities')->nullable();
-            $table->boolean('is_clawback_enabled')->nullable();
-        });
+        // wallet_holdings table is deprecated and removed
     }
 
     /**
@@ -24,13 +19,5 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('wallet_holdings', function (Blueprint $table) {
-            $table->dropColumn([
-                'limit',
-                'is_authorized',
-                'is_authorized_to_maintain_liabilities',
-                'is_clawback_enabled'
-            ]);
-        });
     }
 };

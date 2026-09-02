@@ -2,17 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\TrackedWallet;
-use App\Models\WalletIndexingState;
-use App\Models\WalletHolding;
-use App\Models\WalletEvent;
-use App\Models\WalletMetric;
-use App\Models\WalletPortfolioSnapshot;
-use App\Models\WalletAssetSnapshot;
 use App\Models\StellarMarketToken;
+use App\Models\StellarToken;
 use App\Models\ProjectOfficialWallet;
 use App\Models\User;
-use App\Jobs\IndexWalletHistoryJob;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -36,177 +29,92 @@ class WalletIntelligenceService
     }
 
     /**
-     * Track a wallet on-demand.
-     */
-    public function trackWallet(string $address): TrackedWallet
-    {
-        $isConnected = User::where('public_key', $address)->where('status', 1)->exists();
-        $isOfficial = ProjectOfficialWallet::where('wallet_address', $address)->exists();
-
-        $tracked = TrackedWallet::updateOrCreate(
-            ['wallet_address' => $address],
-            [
-                'is_connected_wallet' => $isConnected,
-                'is_official_wallet' => $isOfficial,
-            ]
-        );
-
-        if (!$tracked->first_viewed_at) {
-            $tracked->first_viewed_at = now();
-        }
-        $tracked->last_viewed_at = now();
-        $tracked->view_count += 1;
-
-        // Automatically manage priority lifecycle
-        if ($isConnected || $isOfficial || $tracked->is_watchlisted || $tracked->view_count >= 5) {
-            $tracked->tracking_status = 'ACTIVE';
-        } else {
-            $tracked->tracking_status = 'PASSIVE';
-        }
-
-        $tracked->save();
-
-        // Ensure indexing state exists
-        WalletIndexingState::firstOrCreate(
-            ['wallet_address' => $address],
-            [
-                'indexing_status' => 'pending',
-                'historical_index_complete' => false,
-            ]
-        );
-
-        return $tracked;
-    }
-
-    /**
-     * Fetch current account info from Stellar Horizon.
+     * Fetch current account info from Stellar Horizon with 5s short cache to deduplicate simultaneous requests.
      */
     public function fetchCurrentWalletState(string $address): array
     {
-        try {
-            $response = $this->sendHorizonRequest('GET', "accounts/{$address}", [], 5, 3);
-            
-            if ($response->status() === 404) {
-                return [
-                    'active' => false,
-                    'balances' => [],
-                    'claimable_balances' => [],
-                    'sequence' => 0,
-                    'subentry_count' => 0,
-                    'signers' => [],
-                    'home_domain' => null,
-                    'num_assets' => 0,
-                ];
-            }
-
-            if (!$response->ok()) {
-                throw new \RuntimeException("Horizon accounts fetch failed: " . $response->body());
-            }
-
-            $data = $response->json();
-            
-            // Fetch claimable balances where wallet is a claimant
-            $claimableBalances = [];
+        $cacheKey = "horizon_account_state_{$address}";
+        return Cache::remember($cacheKey, 5, function () use ($address) {
             try {
-                $cbResponse = $this->sendHorizonRequest('GET', "claimable_balances", [
-                    'claimant' => $address,
-                    'limit' => 200,
-                ], 5, 3);
-                if ($cbResponse->ok()) {
-                    $claimableBalances = $cbResponse->json('_embedded.records') ?? [];
+                $response = $this->sendHorizonRequest('GET', "accounts/{$address}", [], 5, 1);
+                
+                if ($response->status() === 404) {
+                    return [
+                        'active' => false,
+                        'balances' => [],
+                        'claimable_balances' => [],
+                        'sequence' => 0,
+                        'subentry_count' => 0,
+                        'signers' => [],
+                        'thresholds' => [],
+                        'flags' => [],
+                        'home_domain' => null,
+                        'inflation_destination' => null,
+                        'num_assets' => 0,
+                    ];
                 }
-            } catch (Throwable $e) {
-                Log::warning("Failed to fetch claimable balances for {$address}: " . $e->getMessage());
-            }
 
-            $balances = $data['balances'] ?? [];
-            
-            return [
-                'active' => true,
-                'balances' => $balances,
-                'claimable_balances' => $claimableBalances,
-                'sequence' => (int) ($data['sequence'] ?? 0),
-                'subentry_count' => (int) ($data['subentry_count'] ?? 0),
-                'signers' => $data['signers'] ?? [],
-                'home_domain' => $data['home_domain'] ?? null,
-                'num_assets' => count($balances),
-            ];
-        } catch (Throwable $e) {
-            Log::error("Error fetching current wallet state for {$address}: " . $e->getMessage());
-            throw $e;
-        }
+                if (!$response->ok()) {
+                    throw new \RuntimeException("Horizon accounts fetch failed: " . $response->body());
+                }
+
+                $data = $response->json();
+                
+                // Fetch claimable balances where wallet is a claimant (fast timeout)
+                $claimableBalances = [];
+                try {
+                    $cbResponse = $this->sendHorizonRequest('GET', "claimable_balances", [
+                        'claimant' => $address,
+                        'limit' => 200,
+                    ], 3, 0);
+                    if ($cbResponse->ok()) {
+                        $claimableBalances = $cbResponse->json('_embedded.records') ?? [];
+                    }
+                } catch (Throwable $e) {
+                    Log::warning("Failed to fetch claimable balances for {$address}: " . $e->getMessage());
+                }
+
+                $balances = $data['balances'] ?? [];
+                
+                return [
+                    'active' => true,
+                    'balances' => $balances,
+                    'claimable_balances' => $claimableBalances,
+                    'sequence' => (int) ($data['sequence'] ?? 0),
+                    'subentry_count' => (int) ($data['subentry_count'] ?? 0),
+                    'signers' => $data['signers'] ?? [],
+                    'thresholds' => $data['thresholds'] ?? [],
+                    'flags' => $data['flags'] ?? [],
+                    'home_domain' => $data['home_domain'] ?? null,
+                    'inflation_destination' => $data['inflation_destination'] ?? null,
+                    'num_assets' => count($balances),
+                ];
+            } catch (Throwable $e) {
+                Log::error("Error fetching current wallet state for {$address}: " . $e->getMessage());
+                throw $e;
+            }
+        });
     }
 
     /**
-     * Resolve XLM & USD price for a specific asset.
+     * Valuate a Liquidity Pool Share holding in real-time.
      */
-    public function resolveAssetPrice(string $assetType, string $code, string $issuer, float $xlmUsdPrice, bool $skipHorizon = false): array
+    public function valuateLpShare(string $poolId, float $userShares, float $xlmUsdPrice): array
     {
-        if ($assetType === 'native' || $code === 'XLM') {
-            return [
-                'price_xlm' => 1.0,
-                'price_usd' => $xlmUsdPrice,
-            ];
-        }
-
-        // Try resolving via StellarMarketToken table
-        $marketToken = StellarMarketToken::where('asset_code', strtoupper($code))
-            ->where('asset_issuer', $issuer)
-            ->first();
-
-        if ($marketToken && $marketToken->current_price_xlm !== null) {
-            $priceXlm = (float) $marketToken->current_price_xlm;
-            $priceUsd = (float) $marketToken->current_price_usd ?: ($priceXlm * $xlmUsdPrice);
-            return [
-                'price_xlm' => $priceXlm,
-                'price_usd' => $priceUsd,
-            ];
-        }
-
-        if ($skipHorizon) {
+        if (!$poolId || $userShares <= 0.0) {
             return [
                 'price_xlm' => 0.0,
                 'price_usd' => 0.0,
+                'value_xlm' => 0.0,
+                'value_usd' => 0.0,
+                'assets_desc' => 'LP',
             ];
         }
 
-        // Query Horizon orderbook best bid as fallback
-        try {
-            $obResponse = $this->sendHorizonRequest('GET', "order_book", [
-                'selling_asset_type' => $assetType,
-                'selling_asset_code' => $code,
-                'selling_asset_issuer' => $issuer,
-                'buying_asset_type' => 'native',
-                'limit' => 1,
-            ], 3, 0);
-
-            if ($obResponse->ok()) {
-                $bestBid = $obResponse->json('bids.0.price');
-                if ($bestBid) {
-                    $priceXlm = (float) $bestBid;
-                    return [
-                        'price_xlm' => $priceXlm,
-                        'price_usd' => $priceXlm * $xlmUsdPrice,
-                    ];
-                }
-            }
-        } catch (Throwable $e) {}
-
-        return [
-            'price_xlm' => 0.0,
-            'price_usd' => 0.0,
-        ];
-    }
-
-    /**
-     * Valuate a Liquidity Pool Share holding.
-     */
-    protected function valuateLpShare(string $poolId, float $userShares, float $xlmUsdPrice): array
-    {
-        $cacheKey = "lp_pool_valuation_{$poolId}";
-        $poolData = Cache::remember($cacheKey, 600, function () use ($poolId) {
+        $cacheKey = "lp_pool_val_{$poolId}";
+        $poolData = Cache::remember($cacheKey, 300, function () use ($poolId) {
             try {
-                $response = $this->sendHorizonRequest('GET', "liquidity_pools/{$poolId}", [], 4, 0);
+                $response = $this->sendHorizonRequest('GET', "liquidity_pools/{$poolId}", [], 3, 0);
                 return $response->ok() ? $response->json() : null;
             } catch (Throwable $e) {
                 return null;
@@ -248,40 +156,88 @@ class WalletIntelligenceService
                 $resCode = $parts[0] ?? '';
                 $resIssuer = $parts[1] ?? '';
                 $reserveAssets[] = $resCode;
-                $resAssetType = strlen($resCode) <= 4 ? 'credit_alphanum4' : 'credit_alphanum12';
-                $price = $this->resolveAssetPrice($resAssetType, $resCode, $resIssuer, $xlmUsdPrice);
-                $totalPoolValueXlm += ($amount * $price['price_xlm']);
+                
+                // Lookup market price
+                $marketToken = StellarMarketToken::where('asset_code', strtoupper($resCode))
+                    ->where('asset_issuer', $resIssuer)
+                    ->first();
+                $priceXlm = $marketToken ? (float) ($marketToken->current_price_xlm ?? 0.0) : 0.0;
+                $totalPoolValueXlm += ($amount * $priceXlm);
             }
         }
 
         $sharePriceXlm = $totalPoolValueXlm / $totalShares;
         $sharePriceUsd = $sharePriceXlm * $xlmUsdPrice;
 
-        $userValXlm = $userShares * $sharePriceXlm;
-        $userValUsd = $userShares * $sharePriceUsd;
-
         return [
             'price_xlm' => $sharePriceXlm,
             'price_usd' => $sharePriceUsd,
-            'value_xlm' => $userValXlm,
-            'value_usd' => $userValUsd,
+            'value_xlm' => $userShares * $sharePriceXlm,
+            'value_usd' => $userShares * $sharePriceUsd,
             'assets_desc' => implode(' / ', $reserveAssets) ?: 'LP',
         ];
     }
 
     /**
-     * Rebuild and valuate all holdings for a wallet.
+     * Fetch and valuate all holdings for a wallet in real-time with bulk queries (instant performance).
      */
-    public function refreshHoldings(string $address, bool $skipHorizonPrice = false): array
+    public function getWalletHoldings(string $address, ?array $prefetchedState = null): array
     {
-        $state = $this->fetchCurrentWalletState($address);
+        $state = $prefetchedState ?? $this->fetchCurrentWalletState($address);
+        if (!$state['active']) {
+            return [];
+        }
+
         $xlmUsdPrice = $this->tokenService->getXlmUsdPrice();
         
+        // 1. Gather all unique asset codes to do fast BULK DB queries (0 HTTP calls per asset)
+        $assetCodes = [];
+        foreach ($state['balances'] as $bal) {
+            if (!empty($bal['asset_code'])) {
+                $assetCodes[] = strtoupper($bal['asset_code']);
+            }
+        }
+        foreach ($state['claimable_balances'] as $cb) {
+            $assetStr = $cb['asset'] ?? '';
+            if ($assetStr && $assetStr !== 'native') {
+                $parts = explode(':', $assetStr);
+                if (!empty($parts[0])) {
+                    $assetCodes[] = strtoupper($parts[0]);
+                }
+            }
+        }
+        $assetCodes = array_unique(array_filter($assetCodes));
+
+        // Bulk load market prices from DB
+        $marketTokensMap = [];
+        if (!empty($assetCodes)) {
+            $marketTokens = StellarMarketToken::whereIn('asset_code', $assetCodes)->get();
+            foreach ($marketTokens as $mt) {
+                $key = strtoupper($mt->asset_code) . ':' . $mt->asset_issuer;
+                $marketTokensMap[$key] = [
+                    'price_xlm' => (float) ($mt->current_price_xlm ?? 0.0),
+                    'price_usd' => (float) ($mt->current_price_usd ?: (($mt->current_price_xlm ?? 0.0) * $xlmUsdPrice)),
+                ];
+            }
+        }
+
+        // Bulk load verified token logos from DB
+        $dbTokensMap = [];
+        if (!empty($assetCodes)) {
+            $dbTokens = StellarToken::whereIn('asset_code', $assetCodes)
+                ->whereNotNull('logo')
+                ->get();
+            foreach ($dbTokens as $t) {
+                $key = strtoupper($t->asset_code) . ':' . $t->issuer_public_key;
+                $dbTokensMap[$key] = $t->logo;
+            }
+        }
+
         $holdingsData = [];
         $totalValUsd = 0.0;
         $totalValXlm = 0.0;
 
-        // 1. Process regular balances
+        // 2. Process regular balances
         foreach ($state['balances'] as $bal) {
             $assetType = $bal['asset_type'];
             $balance = (float) $bal['balance'];
@@ -290,29 +246,33 @@ class WalletIntelligenceService
             if ($assetType === 'native' && $balance <= 0.0) continue;
 
             if ($assetType === 'native') {
+                $valXlm = $balance;
+                $valUsd = $balance * $xlmUsdPrice;
                 $holdingsData[] = [
+                    'id' => 'native_xlm',
                     'asset_type' => 'native',
                     'asset_code' => 'XLM',
                     'asset_issuer' => '',
                     'balance' => $balance,
                     'price_xlm' => 1.0,
                     'price_usd' => $xlmUsdPrice,
-                    'value_xlm' => $balance,
-                    'value_usd' => $balance * $xlmUsdPrice,
+                    'value_xlm' => $valXlm,
+                    'value_usd' => $valUsd,
                     'pool_id' => '',
                     'limit' => null,
                     'is_authorized' => true,
                     'is_authorized_to_maintain_liabilities' => true,
                     'is_clawback_enabled' => false,
+                    'logo_url' => null,
                 ];
-                $totalValXlm += $balance;
-                $totalValUsd += ($balance * $xlmUsdPrice);
+                $totalValXlm += $valXlm;
+                $totalValUsd += $valUsd;
             } elseif ($assetType === 'liquidity_pool_shares') {
-                // For LP positions, only show positive balance ones
                 if ($balance <= 0.0) continue;
                 $poolId = $bal['liquidity_pool_id'] ?? '';
                 $lpVal = $this->valuateLpShare($poolId, $balance, $xlmUsdPrice);
                 $holdingsData[] = [
+                    'id' => 'lp_' . $poolId,
                     'asset_type' => 'liquidity_pool_shares',
                     'asset_code' => $lpVal['assets_desc'] ?? 'LP',
                     'asset_issuer' => '',
@@ -326,23 +286,36 @@ class WalletIntelligenceService
                     'is_authorized' => isset($bal['is_authorized']) ? (bool) $bal['is_authorized'] : true,
                     'is_authorized_to_maintain_liabilities' => isset($bal['is_authorized_to_maintain_liabilities']) ? (bool) $bal['is_authorized_to_maintain_liabilities'] : true,
                     'is_clawback_enabled' => isset($bal['is_clawback_enabled']) ? (bool) $bal['is_clawback_enabled'] : false,
+                    'logo_url' => null,
                 ];
                 $totalValXlm += $lpVal['value_xlm'];
                 $totalValUsd += $lpVal['value_usd'];
             } else {
                 $code = $bal['asset_code'] ?? '';
                 $issuer = $bal['asset_issuer'] ?? '';
-                $price = $this->resolveAssetPrice($assetType, $code, $issuer, $xlmUsdPrice, $skipHorizonPrice);
-                $valXlm = $balance * $price['price_xlm'];
-                $valUsd = $balance * $price['price_usd'];
+                $mapKey = strtoupper($code) . ':' . $issuer;
+
+                $priceXlm = 0.0;
+                $priceUsd = 0.0;
+                if (isset($marketTokensMap[$mapKey])) {
+                    $priceXlm = $marketTokensMap[$mapKey]['price_xlm'];
+                    $priceUsd = $marketTokensMap[$mapKey]['price_usd'];
+                }
+
+                $valXlm = $balance * $priceXlm;
+                $valUsd = $balance * $priceUsd;
+
+                // Resolve logo fast (from map or cache in memory, no remote HTTP)
+                $logoUrl = $dbTokensMap[$mapKey] ?? Cache::get("asset_logo_{$code}_{$issuer}");
 
                 $holdingsData[] = [
+                    'id' => "asset_{$code}_{$issuer}",
                     'asset_type' => $assetType,
                     'asset_code' => $code,
                     'asset_issuer' => $issuer,
                     'balance' => $balance,
-                    'price_xlm' => $price['price_xlm'],
-                    'price_usd' => $price['price_usd'],
+                    'price_xlm' => $priceXlm,
+                    'price_usd' => $priceUsd,
                     'value_xlm' => $valXlm,
                     'value_usd' => $valUsd,
                     'pool_id' => '',
@@ -350,19 +323,21 @@ class WalletIntelligenceService
                     'is_authorized' => isset($bal['is_authorized']) ? (bool) $bal['is_authorized'] : true,
                     'is_authorized_to_maintain_liabilities' => isset($bal['is_authorized_to_maintain_liabilities']) ? (bool) $bal['is_authorized_to_maintain_liabilities'] : true,
                     'is_clawback_enabled' => isset($bal['is_clawback_enabled']) ? (bool) $bal['is_clawback_enabled'] : false,
+                    'logo_url' => $logoUrl,
                 ];
                 $totalValXlm += $valXlm;
                 $totalValUsd += $valUsd;
             }
         }
 
-        // 2. Process claimable balances
+        // 3. Process claimable balances
         foreach ($state['claimable_balances'] as $cb) {
             $amount = (float) ($cb['amount'] ?? 0.0);
             if ($amount <= 0.0) continue;
 
             $assetStr = $cb['asset'] ?? '';
-            $price = ['price_xlm' => 0.0, 'price_usd' => 0.0];
+            $priceXlm = 0.0;
+            $priceUsd = 0.0;
             $assetCode = 'XLM';
             $assetIssuer = '';
             $assetType = 'native';
@@ -372,24 +347,30 @@ class WalletIntelligenceService
                 $assetCode = $parts[0] ?? '';
                 $assetIssuer = $parts[1] ?? '';
                 $assetType = strlen($assetCode) <= 4 ? 'credit_alphanum4' : 'credit_alphanum12';
-                $price = $this->resolveAssetPrice($assetType, $assetCode, $assetIssuer, $xlmUsdPrice, $skipHorizonPrice);
+                $mapKey = strtoupper($assetCode) . ':' . $assetIssuer;
+                if (isset($marketTokensMap[$mapKey])) {
+                    $priceXlm = $marketTokensMap[$mapKey]['price_xlm'];
+                    $priceUsd = $marketTokensMap[$mapKey]['price_usd'];
+                }
             } else {
-                $price = [
-                    'price_xlm' => 1.0,
-                    'price_usd' => $xlmUsdPrice,
-                ];
+                $priceXlm = 1.0;
+                $priceUsd = $xlmUsdPrice;
             }
 
-            $valXlm = $amount * $price['price_xlm'];
-            $valUsd = $amount * $price['price_usd'];
+            $valXlm = $amount * $priceXlm;
+            $valUsd = $amount * $priceUsd;
+
+            $mapKey = strtoupper($assetCode) . ':' . $assetIssuer;
+            $logoUrl = ($assetCode === 'XLM') ? null : ($dbTokensMap[$mapKey] ?? Cache::get("asset_logo_{$assetCode}_{$assetIssuer}"));
 
             $holdingsData[] = [
+                'id' => 'cb_' . ($cb['id'] ?? uniqid()),
                 'asset_type' => 'claimable_balance',
                 'asset_code' => $assetCode,
                 'asset_issuer' => $assetIssuer,
                 'balance' => $amount,
-                'price_xlm' => $price['price_xlm'],
-                'price_usd' => $price['price_usd'],
+                'price_xlm' => $priceXlm,
+                'price_usd' => $priceUsd,
                 'value_xlm' => $valXlm,
                 'value_usd' => $valUsd,
                 'pool_id' => $cb['id'] ?? '',
@@ -397,235 +378,176 @@ class WalletIntelligenceService
                 'is_authorized' => true,
                 'is_authorized_to_maintain_liabilities' => true,
                 'is_clawback_enabled' => false,
+                'logo_url' => $logoUrl,
             ];
             $totalValXlm += $valXlm;
             $totalValUsd += $valUsd;
         }
 
-        // 3. Update or create in Database
-        $updatedIds = [];
-        foreach ($holdingsData as $hold) {
-            $allocation = $totalValUsd > 0 ? ($hold['value_usd'] / $totalValUsd) * 100 : 0.0;
-            
-            $holdingRecord = WalletHolding::updateOrCreate(
-                [
-                    'wallet_address' => $address,
-                    'asset_type' => $hold['asset_type'],
-                    'asset_code' => $hold['asset_code'],
-                    'asset_issuer' => $hold['asset_issuer'],
-                    'pool_id' => $hold['pool_id'],
-                ],
-                [
-                    'balance' => $hold['balance'],
-                    'price_xlm' => $hold['price_xlm'],
-                    'price_usd' => $hold['price_usd'],
-                    'value_xlm' => $hold['value_xlm'],
-                    'value_usd' => $hold['value_usd'],
-                    'allocation_percentage' => $allocation,
-                    'limit' => $hold['limit'],
-                    'is_authorized' => $hold['is_authorized'],
-                    'is_authorized_to_maintain_liabilities' => $hold['is_authorized_to_maintain_liabilities'],
-                    'is_clawback_enabled' => $hold['is_clawback_enabled'],
-                ]
-            );
-            $updatedIds[] = $holdingRecord->id;
+        // Calculate allocation percentages
+        foreach ($holdingsData as &$hold) {
+            $hold['allocation_percentage'] = $totalValUsd > 0 ? ($hold['value_usd'] / $totalValUsd) * 100 : 0.0;
         }
 
-        // Delete any holdings that are no longer present
-        WalletHolding::where('wallet_address', $address)
-            ->whereNotIn('id', $updatedIds)
-            ->delete();
-
-        // Update last refreshed at
-        TrackedWallet::where('wallet_address', $address)->update([
-            'last_refreshed_at' => now(),
-        ]);
-
-        return WalletHolding::where('wallet_address', $address)->get()->toArray();
+        return $holdingsData;
     }
 
     /**
-     * Index next chunk of wallet history from Stellar Horizon (operations & trades).
-     * Returns true if there are more chunks, false otherwise.
+     * Get complete live overview for a wallet from Horizon in milliseconds.
      */
-    public function indexNextChunk(string $address): bool
+    public function getWalletOverview(string $address): array
     {
-        $state = WalletIndexingState::where('wallet_address', $address)->firstOrFail();
-        
-        if ($state->indexing_status === 'pending') {
-            $state->update([
-                'indexing_status' => 'indexing',
-                'first_indexed_at' => now(),
-            ]);
+        $state = $this->fetchCurrentWalletState($address);
+        if (!$state['active']) {
+            throw new \RuntimeException("Wallet not found on the Stellar network.");
         }
 
-        // Fast-path: If the wallet is completely unfunded/inactive on the ledger, it has no history
-        $walletState = $this->fetchCurrentWalletState($address);
-        if (!$walletState['active']) {
-            $state->update([
-                'indexing_status' => 'ready',
-                'historical_index_complete' => true,
-                'last_indexed_at' => now(),
-            ]);
-            return false;
+        $holdings = $this->getWalletHoldings($address, $state);
+
+        $regularHoldings = array_filter($holdings, fn($h) => $h['asset_type'] !== 'claimable_balance');
+        $claimableHoldings = array_filter($holdings, fn($h) => $h['asset_type'] === 'claimable_balance');
+
+        $portfolioValueUsd = array_sum(array_column($regularHoldings, 'value_usd'));
+        $portfolioValueXlm = array_sum(array_column($regularHoldings, 'value_xlm'));
+
+        $liquidHoldings = array_filter($regularHoldings, fn($h) => $h['asset_type'] !== 'liquidity_pool_shares');
+        $lpHoldings = array_filter($regularHoldings, fn($h) => $h['asset_type'] === 'liquidity_pool_shares');
+
+        $assetsHeld = count(array_filter($liquidHoldings, fn($h) => $h['balance'] > 0));
+        $trustlinesCount = count(array_filter($liquidHoldings, fn($h) => $h['asset_type'] !== 'native'));
+        $poolsCount = count(array_filter($lpHoldings, fn($h) => $h['balance'] > 0));
+
+        $xlmBalance = 0.0;
+        foreach ($regularHoldings as $h) {
+            if ($h['asset_type'] === 'native') {
+                $xlmBalance = (float) $h['balance'];
+                break;
+            }
         }
 
-        $xlmUsdPrice = $this->tokenService->getXlmUsdPrice();
-        $hasMoreOps = false;
-        $hasMoreTrades = false;
+        $claimableCount = count($claimableHoldings);
+        $claimableValueUsd = array_sum(array_column($claimableHoldings, 'value_usd'));
 
-        try {
-            // 1. Process Operations page
-            $opParams = [
-                'order' => 'asc',
-                'limit' => 200,
-            ];
-            if ($state->last_processed_cursor) {
-                $opParams['cursor'] = $state->last_processed_cursor;
-            }
+        $isConnected = User::where('public_key', $address)->where('status', 1)->exists();
+        $isOfficial = ProjectOfficialWallet::where('wallet_address', $address)->exists();
 
-            $opResponse = $this->sendHorizonRequest('GET', "accounts/{$address}/operations", $opParams, 10, 3);
-
-            if ($opResponse->status() === 404) {
-                $opRecords = [];
-            } elseif (!$opResponse->ok()) {
-                throw new \RuntimeException("Failed to fetch operations: " . $opResponse->body());
-            } else {
-                $opRecords = $opResponse->json('_embedded.records') ?? [];
-            }
-            $newOpCursor = $state->last_processed_cursor;
-            $lastLedger = $state->last_processed_ledger;
-
-            foreach ($opRecords as $op) {
-                $newOpCursor = $op['paging_token'];
-                $lastLedger = (int) ($op['ledger'] ?? $lastLedger);
-                
-                $opId = (string) $op['id'];
-
-                // Check duplicate
-                $exists = WalletEvent::where('wallet_address', $address)
-                    ->where('operation_id', $opId)
-                    ->exists();
-
-                if ($exists) continue;
-
-                $event = $this->normalizeOperation($address, $op, $xlmUsdPrice);
-                if ($event) {
-                    try {
-                        WalletEvent::create($event);
-                    } catch (\Illuminate\Database\QueryException $e) {
-                        if ($e->getCode() === '23000' || str_contains($e->getMessage(), '1062')) {
-                            continue;
-                        }
-                        throw $e;
-                    }
-                }
-            }
-
-            if (count($opRecords) === 200) {
-                $hasMoreOps = true;
-            }
-
-            // 2. Process Trades page
-            $tradeParams = [
-                'order' => 'asc',
-                'limit' => 200,
-            ];
-            if ($state->last_processed_trade_cursor) {
-                $tradeParams['cursor'] = $state->last_processed_trade_cursor;
-            }
-
-            $tradeResponse = $this->sendHorizonRequest('GET', "accounts/{$address}/trades", $tradeParams, 10, 3);
-
-            if ($tradeResponse->status() === 404) {
-                $tradeRecords = [];
-            } elseif (!$tradeResponse->ok()) {
-                throw new \RuntimeException("Failed to fetch trades: " . $tradeResponse->body());
-            } else {
-                $tradeRecords = $tradeResponse->json('_embedded.records') ?? [];
-            }
-            $newTradeCursor = $state->last_processed_trade_cursor;
-
-            foreach ($tradeRecords as $trade) {
-                $newTradeCursor = $trade['paging_token'];
-                $tradeUid = "trade_" . $trade['id'];
-
-                // Check duplicate
-                $exists = WalletEvent::where('wallet_address', $address)
-                    ->where('operation_id', $tradeUid)
-                    ->exists();
-
-                if ($exists) continue;
-
-                $event = $this->normalizeTrade($address, $trade, $xlmUsdPrice);
-                if ($event) {
-                    try {
-                        WalletEvent::create($event);
-                    } catch (\Illuminate\Database\QueryException $e) {
-                        if ($e->getCode() === '23000' || str_contains($e->getMessage(), '1062')) {
-                            continue;
-                        }
-                        throw $e;
-                    }
-                }
-            }
-
-            if (count($tradeRecords) === 200) {
-                $hasMoreTrades = true;
-            }
-
-            // Save cursors
-            $state->update([
-                'last_processed_cursor' => $newOpCursor,
-                'last_processed_trade_cursor' => $newTradeCursor,
-                'last_processed_ledger' => $lastLedger,
-                'last_indexed_at' => now(),
-            ]);
-
-            $hasMore = $hasMoreOps || $hasMoreTrades;
-
-            if (!$hasMore) {
-                // Done indexing history
-                $state->update([
-                    'indexing_status' => 'ready',
-                    'historical_index_complete' => true,
-                    'error_message' => null,
-                ]);
-
-                // Update metrics
-                $this->updateMetrics($address);
-            }
-
-            return $hasMore;
-
-        } catch (Throwable $e) {
-            Log::error("Historical indexing failed for {$address}: " . $e->getMessage());
-            $state->update([
-                'indexing_status' => 'failed',
-                'error_message' => $e->getMessage(),
-            ]);
-            throw $e;
-        }
+        return [
+            'wallet_address' => $address,
+            'portfolio_value_xlm' => (float) $portfolioValueXlm,
+            'portfolio_value_usd' => (float) $portfolioValueUsd,
+            'xlm_balance' => (float) $xlmBalance,
+            'asset_count' => (int) $assetsHeld,
+            'assets_held' => (int) $assetsHeld,
+            'trustlines_count' => (int) $trustlinesCount,
+            'pools_count' => (int) $poolsCount,
+            'claimable_count' => (int) $claimableCount,
+            'claimable_value_usd' => (float) $claimableValueUsd,
+            'is_connected_wallet' => $isConnected,
+            'is_official_wallet' => $isOfficial,
+            'sequence' => $state['sequence'],
+            'subentry_count' => $state['subentry_count'],
+            'signers' => $state['signers'],
+            'thresholds' => $state['thresholds'],
+            'flags' => $state['flags'],
+            'home_domain' => $state['home_domain'],
+            'inflation_destination' => $state['inflation_destination'],
+            'tracking_status' => $isConnected || $isOfficial ? 'ACTIVE' : 'READY',
+            'historical_index_complete' => true,
+            'indexing_status' => 'ready',
+        ];
     }
 
     /**
-     * Normalize operations into event records.
+     * Get live activity / operations directly from Horizon in real-time.
+     */
+    public function getWalletActivity(string $address, ?string $cursor = null, int $limit = 10, string $type = 'all'): array
+    {
+        $limit = min(max($limit, 5), 100);
+        $xlmUsdPrice = $this->tokenService->getXlmUsdPrice();
+
+        $params = [
+            'order' => 'desc',
+            'limit' => $limit,
+            'include_failed' => 'false',
+        ];
+        if ($cursor) {
+            $params['cursor'] = $cursor;
+        }
+
+        $endpoint = "accounts/{$address}/operations";
+        if ($type === 'payments') {
+            $endpoint = "accounts/{$address}/payments";
+        } elseif ($type === 'trades') {
+            $endpoint = "accounts/{$address}/trades";
+        }
+
+        $response = $this->sendHorizonRequest('GET', $endpoint, $params, 5, 1);
+
+        if ($response->status() === 404) {
+            return [
+                'records' => [],
+                'next_cursor' => null,
+                'prev_cursor' => null,
+                'has_more' => false,
+            ];
+        }
+
+        if (!$response->ok()) {
+            throw new \RuntimeException("Failed to fetch operations from Horizon: " . $response->body());
+        }
+
+        $rawRecords = $response->json('_embedded.records') ?? [];
+        $events = [];
+
+        foreach ($rawRecords as $raw) {
+            if ($type === 'trades' || isset($raw['base_asset_code']) || isset($raw['counter_asset_code'])) {
+                $normalized = $this->normalizeTrade($address, $raw, $xlmUsdPrice);
+            } else {
+                $normalized = $this->normalizeOperation($address, $raw, $xlmUsdPrice);
+            }
+
+            if ($normalized) {
+                $events[] = $normalized;
+            }
+        }
+
+        $nextCursor = null;
+        $prevCursor = null;
+        if (!empty($rawRecords)) {
+            $lastRecord = end($rawRecords);
+            $nextCursor = $lastRecord['paging_token'] ?? null;
+            $firstRecord = reset($rawRecords);
+            $prevCursor = $firstRecord['paging_token'] ?? null;
+        }
+
+        return [
+            'records' => $events,
+            'next_cursor' => $nextCursor,
+            'prev_cursor' => $prevCursor,
+            'has_more' => count($rawRecords) === $limit,
+        ];
+    }
+
+    /**
+     * Normalize operations into clean human-readable event objects.
      */
     protected function normalizeOperation(string $address, array $op, float $xlmUsdPrice): ?array
     {
         $type = $op['type'] ?? '';
-        $opId = (string) $op['id'];
+        $opId = (string) ($op['id'] ?? '');
         $ledger = (int) ($op['ledger'] ?? 0);
         $txHash = $op['transaction_hash'] ?? '';
-        $occurredAt = Carbon::parse($op['created_at']);
+        $occurredAt = isset($op['created_at']) ? Carbon::parse($op['created_at'])->toIso8601String() : now()->toIso8601String();
+        $pagingToken = $op['paging_token'] ?? $opId;
 
         $event = [
+            'id' => $opId ?: uniqid(),
+            'paging_token' => $pagingToken,
             'wallet_address' => $address,
             'transaction_hash' => $txHash,
             'operation_id' => $opId,
             'ledger' => $ledger,
             'occurred_at' => $occurredAt,
-            'metadata_json' => $op,
             'event_type' => 'OTHER',
             'asset_code' => null,
             'asset_issuer' => null,
@@ -666,13 +588,14 @@ class WalletIntelligenceService
                 $assetIssuer = $op['asset_issuer'] ?? '';
                 $assetType = $op['asset_type'] ?? 'native';
 
-                $price = $this->resolveAssetPrice($assetType, $assetCode, $assetIssuer, $xlmUsdPrice);
-                
+                $priceXlm = ($assetCode === 'XLM') ? 1.0 : 0.0;
+                $priceUsd = ($assetCode === 'XLM') ? $xlmUsdPrice : 0.0;
+
                 $event['asset_code'] = $assetCode;
                 $event['asset_issuer'] = $assetIssuer;
                 $event['amount'] = $amount;
-                $event['value_xlm'] = $amount * $price['price_xlm'];
-                $event['value_usd'] = $amount * $price['price_usd'];
+                $event['value_xlm'] = $amount * $priceXlm;
+                $event['value_usd'] = $amount * $priceUsd;
 
                 if ($to === $address) {
                     $event['event_type'] = 'PAYMENT_IN';
@@ -684,8 +607,7 @@ class WalletIntelligenceService
                 break;
 
             case 'account_merge':
-                // Merges account, sending all XLM to destination
-                $mergedAccount = $op['source_account'] ?? '';
+                $mergedAccount = $op['source_account'] ?? ($op['account'] ?? '');
                 $into = $op['into'] ?? '';
                 
                 $event['asset_code'] = 'XLM';
@@ -706,36 +628,31 @@ class WalletIntelligenceService
                 
                 $destAssetCode = $op['asset_code'] ?? 'XLM';
                 $destAssetIssuer = $op['asset_issuer'] ?? '';
-                $destAssetType = $op['asset_type'] ?? 'native';
                 $destAmount = (float) ($op['amount'] ?? 0.0);
 
                 $srcAssetCode = $op['source_asset_code'] ?? 'XLM';
                 $srcAssetIssuer = $op['source_asset_issuer'] ?? '';
-                $srcAssetType = $op['source_asset_type'] ?? 'native';
                 $srcAmount = (float) ($op['source_amount'] ?? $op['amount'] ?? 0.0);
 
-                // If from and to are both the wallet: it's a swap! Handled entirely by `/trades`
                 if ($from === $address && $to === $address) {
-                    return null; // Skip operation event, let trade handle it
-                }
-
-                if ($to === $address) {
-                    $price = $this->resolveAssetPrice($destAssetType, $destAssetCode, $destAssetIssuer, $xlmUsdPrice);
+                    $event['event_type'] = 'BUY';
+                    $event['asset_code'] = $destAssetCode;
+                    $event['asset_issuer'] = $destAssetIssuer;
+                    $event['amount'] = $destAmount;
+                    $event['counter_asset_code'] = $srcAssetCode;
+                    $event['counter_asset_issuer'] = $srcAssetIssuer;
+                    $event['counter_amount'] = $srcAmount;
+                } elseif ($to === $address) {
                     $event['event_type'] = 'PAYMENT_IN';
                     $event['asset_code'] = $destAssetCode;
                     $event['asset_issuer'] = $destAssetIssuer;
                     $event['amount'] = $destAmount;
-                    $event['value_xlm'] = $destAmount * $price['price_xlm'];
-                    $event['value_usd'] = $destAmount * $price['price_usd'];
                     $event['counterparty_address'] = $from;
                 } else {
-                    $price = $this->resolveAssetPrice($srcAssetType, $srcAssetCode, $srcAssetIssuer, $xlmUsdPrice);
                     $event['event_type'] = 'PAYMENT_OUT';
                     $event['asset_code'] = $srcAssetCode;
                     $event['asset_issuer'] = $srcAssetIssuer;
                     $event['amount'] = $srcAmount;
-                    $event['value_xlm'] = $srcAmount * $price['price_xlm'];
-                    $event['value_usd'] = $srcAmount * $price['price_usd'];
                     $event['counterparty_address'] = $to;
                 }
                 break;
@@ -752,15 +669,19 @@ class WalletIntelligenceService
 
             case 'claim_claimable_balance':
                 $event['event_type'] = 'CLAIMABLE_BALANCE_CLAIM';
-                // Claimable balance amount/asset isn't always direct in operations list, but we save metadata
+                $event['counterparty_address'] = $op['claimant'] ?? null;
                 break;
 
             case 'liquidity_pool_deposit':
                 $event['event_type'] = 'LP_ADD';
+                $event['asset_code'] = 'LP';
+                $event['amount'] = (float) ($op['shares_received'] ?? 0.0);
                 break;
 
             case 'liquidity_pool_withdraw':
                 $event['event_type'] = 'LP_REMOVE';
+                $event['asset_code'] = 'LP';
+                $event['amount'] = (float) ($op['shares'] ?? 0.0);
                 break;
 
             case 'manage_sell_offer':
@@ -790,7 +711,7 @@ class WalletIntelligenceService
     }
 
     /**
-     * Normalize trades into event records.
+     * Normalize trades into clean human-readable event objects.
      */
     protected function normalizeTrade(string $address, array $trade, float $xlmUsdPrice): ?array
     {
@@ -800,45 +721,42 @@ class WalletIntelligenceService
 
         $baseCode = $trade['base_asset_code'] ?? 'XLM';
         $baseIssuer = $trade['base_asset_issuer'] ?? '';
-        $baseType = $trade['base_asset_type'] ?? 'native';
         $baseAmount = (float) ($trade['base_amount'] ?? 0.0);
 
         $counterCode = $trade['counter_asset_code'] ?? 'XLM';
         $counterIssuer = $trade['counter_asset_issuer'] ?? '';
-        $counterType = $trade['counter_asset_type'] ?? 'native';
         $counterAmount = (float) ($trade['counter_amount'] ?? 0.0);
 
         $tradeId = $trade['id'] ?? '';
         $opId = $trade['operation_id'] ?? '';
         $txHash = $trade['transaction_hash'] ?? '';
-        $occurredAt = Carbon::parse($trade['ledger_close_time']);
+        $occurredAt = isset($trade['ledger_close_time']) ? Carbon::parse($trade['ledger_close_time'])->toIso8601String() : now()->toIso8601String();
         $ledger = (int) ($opId ? ((int)$opId) >> 32 : 0);
 
-        // Determine if BUY or SELL of the base asset
         $isBuy = false;
         if ($baseAccount === $address) {
             $isBuy = !$baseIsSeller;
         } elseif ($counterAccount === $address) {
             $isBuy = $baseIsSeller;
         } else {
-            return null; // Trade doesn't belong to this wallet
+            $isBuy = true;
         }
 
         $eventType = $isBuy ? 'BUY' : 'SELL';
 
-        // Resolve value of base asset
-        $price = $this->resolveAssetPrice($baseType, $baseCode, $baseIssuer, $xlmUsdPrice);
-        $valXlm = $baseAmount * $price['price_xlm'];
-        $valUsd = $baseAmount * $price['price_usd'];
-
-        // Fallback to counter asset if base has no value
-        if ($valXlm <= 0.0) {
-            $cPrice = $this->resolveAssetPrice($counterType, $counterCode, $counterIssuer, $xlmUsdPrice);
-            $valXlm = $counterAmount * $cPrice['price_xlm'];
-            $valUsd = $counterAmount * $cPrice['price_usd'];
+        $valXlm = 0.0;
+        $valUsd = 0.0;
+        if ($baseCode === 'XLM') {
+            $valXlm = $baseAmount;
+            $valUsd = $baseAmount * $xlmUsdPrice;
+        } elseif ($counterCode === 'XLM') {
+            $valXlm = $counterAmount;
+            $valUsd = $counterAmount * $xlmUsdPrice;
         }
 
         return [
+            'id' => "trade_" . $tradeId,
+            'paging_token' => $trade['paging_token'] ?? $tradeId,
             'wallet_address' => $address,
             'transaction_hash' => $txHash,
             'operation_id' => "trade_" . $tradeId,
@@ -854,127 +772,13 @@ class WalletIntelligenceService
             'value_usd' => $valUsd,
             'counterparty_address' => ($baseAccount === $address) ? $counterAccount : $baseAccount,
             'occurred_at' => $occurredAt,
-            'metadata_json' => $trade,
         ];
-    }
-
-    /**
-     * Recalculate metrics for a given wallet address.
-     */
-    public function updateMetrics(string $address): void
-    {
-        $holdings = WalletHolding::where('wallet_address', $address)
-            ->where('asset_type', '!=', 'claimable_balance')
-            ->get();
-        $totalValXlm = $holdings->sum('value_xlm');
-        $totalValUsd = $holdings->sum('value_usd');
-        $assetCount = $holdings->where('balance', '>', 0)->count();
-        
-        $trustlineCount = $holdings->whereIn('asset_type', ['credit_alphanum4', 'credit_alphanum12'])->count();
-        $lpPositionCount = $holdings->where('asset_type', 'liquidity_pool_shares')->count();
-
-        // Time limits
-        $now = now();
-        $time24h = $now->copy()->subHours(24);
-        $time7d = $now->copy()->subDays(7);
-        $time30d = $now->copy()->subDays(30);
-
-        // Transaction/Event counts
-        $txCount24h = WalletEvent::where('wallet_address', $address)->where('occurred_at', '>=', $time24h)->count();
-        $txCount7d = WalletEvent::where('wallet_address', $address)->where('occurred_at', '>=', $time7d)->count();
-        $txCount30d = WalletEvent::where('wallet_address', $address)->where('occurred_at', '>=', $time30d)->count();
-
-        // Buy/Sell volume 24h & 7d (of BUY & SELL event values)
-        $buyVol24h = WalletEvent::where('wallet_address', $address)
-            ->where('event_type', 'BUY')
-            ->where('occurred_at', '>=', $time24h)
-            ->sum('value_xlm');
-
-        $sellVol24h = WalletEvent::where('wallet_address', $address)
-            ->where('event_type', 'SELL')
-            ->where('occurred_at', '>=', $time24h)
-            ->sum('value_xlm');
-
-        $buyVol7d = WalletEvent::where('wallet_address', $address)
-            ->where('event_type', 'BUY')
-            ->where('occurred_at', '>=', $time7d)
-            ->sum('value_xlm');
-
-        $sellVol7d = WalletEvent::where('wallet_address', $address)
-            ->where('event_type', 'SELL')
-            ->where('occurred_at', '>=', $time7d)
-            ->sum('value_xlm');
-
-        // Average trade size and largest trade size (XLM)
-        $tradesQuery = WalletEvent::where('wallet_address', $address)
-            ->whereIn('event_type', ['BUY', 'SELL']);
-
-        $avgTradeSize = $tradesQuery->avg('value_xlm');
-        $largestTrade = $tradesQuery->max('value_xlm');
-
-        WalletMetric::updateOrCreate(
-            ['wallet_address' => $address],
-            [
-                'portfolio_value_xlm' => $totalValXlm,
-                'portfolio_value_usd' => $totalValUsd,
-                'asset_count' => $assetCount,
-                'trustline_count' => $trustlineCount,
-                'lp_position_count' => $lpPositionCount,
-                'transaction_count_24h' => $txCount24h,
-                'transaction_count_7d' => $txCount7d,
-                'transaction_count_30d' => $txCount30d,
-                'buy_volume_xlm_24h' => $buyVol24h,
-                'sell_volume_xlm_24h' => $sellVol24h,
-                'buy_volume_xlm_7d' => $buyVol7d,
-                'sell_volume_xlm_7d' => $sellVol7d,
-                'average_trade_size_xlm' => $avgTradeSize,
-                'largest_trade_xlm' => $largestTrade,
-                'last_calculated_at' => now(),
-            ]
-        );
-    }
-
-    /**
-     * Capture portfolio snapshots for a wallet.
-     */
-    public function takeSnapshot(string $address): void
-    {
-        $holdings = WalletHolding::where('wallet_address', $address)
-            ->where('asset_type', '!=', 'claimable_balance')
-            ->get();
-        $totalValXlm = $holdings->sum('value_xlm');
-        $totalValUsd = $holdings->sum('value_usd');
-        $assetCount = $holdings->where('balance', '>', 0)->count();
-
-        $snapshotAt = now();
-
-        WalletPortfolioSnapshot::create([
-            'wallet_address' => $address,
-            'total_value_xlm' => $totalValXlm,
-            'total_value_usd' => $totalValUsd,
-            'asset_count' => $assetCount,
-            'snapshot_at' => $snapshotAt,
-        ]);
-
-        foreach ($holdings as $hold) {
-            WalletAssetSnapshot::create([
-                'wallet_address' => $address,
-                'asset_code' => $hold->asset_code ?: 'XLM',
-                'asset_issuer' => $hold->asset_issuer ?: null,
-                'balance' => $hold->balance,
-                'price_xlm' => $hold->price_xlm,
-                'price_usd' => $hold->price_usd,
-                'value_xlm' => $hold->value_xlm,
-                'value_usd' => $hold->value_usd,
-                'snapshot_at' => $snapshotAt,
-            ]);
-        }
     }
 
     /**
      * Send HTTP request to Horizon with node fallback on failure.
      */
-    protected function sendHorizonRequest(string $method, string $path, array $params = [], int $timeout = 10, int $retries = 3): \Illuminate\Http\Client\Response
+    protected function sendHorizonRequest(string $method, string $path, array $params = [], int $timeout = 5, int $retries = 1): \Illuminate\Http\Client\Response
     {
         if ($this->isTestnet) {
             $urls = ['https://horizon-testnet.stellar.org'];
