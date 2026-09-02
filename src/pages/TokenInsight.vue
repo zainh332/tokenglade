@@ -1137,39 +1137,69 @@
                 </div>
               </section>
 
-              <!-- Top Pools Table Card (Separate!) -->
+              <!-- All Pools Table Card -->
               <div class="card mt-2">
                 <div class="card-hd">
-                  <h3>Top Liquidity Pools</h3>
+                  <div class="flex justify-between items-center w-full flex-wrap gap-3">
+                    <div class="flex items-center gap-2">
+                      <h3>All Liquidity Pools</h3>
+                      <span class="tag font-mono text-cyan-400" v-if="token.liquidity_overview?.pools?.length">
+                        {{ token.liquidity_overview.pools.length }} Active
+                      </span>
+                    </div>
+                    <div v-if="(token.liquidity_overview?.pools?.length || 0) > 3" class="relative">
+                      <input
+                        v-model="poolSearch"
+                        type="text"
+                        placeholder="Search pool / token..."
+                        class="bg-theme-panel border border-theme-line rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono w-48 transition"
+                      />
+                    </div>
+                  </div>
                 </div>
                 <div style="padding: 20px;">
                   <div class="overflow-x-auto border border-theme-line rounded-xl bg-theme-panel">
                     <table class="trades">
                       <thead>
                         <tr>
-                          <th style="text-align:left;width:40%">Market / Pool Pair</th>
-                          <th style="width:20%">Total TVL</th>
-                          <th style="width:20%">APR</th>
-                          <th style="width:20%">24h Volume</th>
+                          <th style="text-align:left;width:28%">Market / Pool Pair</th>
+                          <th style="text-align:left;width:32%">Reserves Breakdown</th>
+                          <th style="width:14%">Total TVL</th>
+                          <th style="width:12%">APR</th>
+                          <th style="width:14%">24h Volume</th>
                         </tr>
                       </thead>
-                      <tbody v-if="token.liquidity_overview?.pools && token.liquidity_overview.pools.length"
-                        class="font-mono">
-                        <tr v-for="(pool, index) in token.liquidity_overview.pools" :key="index"
+                      <tbody v-if="filteredPools && filteredPools.length" class="font-mono">
+                        <tr v-for="(pool, index) in filteredPools" :key="index"
                           class="hover:bg-white/2 transition">
                           <td style="text-align:left" class="font-bold text-white">
-                            <a :href="`https://stellar.expert/explorer/public/liquidity-pool/${pool.id}`"
-                              target="_blank" rel="noopener noreferrer"
-                              class="text-[#12CBEE] hover:underline transition font-semibold truncate block max-w-[120px] xs:max-w-[160px] sm:max-w-none">
-                              {{ pool.name }}
-                            </a>
+                            <div class="flex items-center gap-2">
+                              <a :href="`https://stellar.expert/explorer/public/liquidity-pool/${pool.id}`"
+                                target="_blank" rel="noopener noreferrer"
+                                class="text-[#12CBEE] hover:underline transition font-semibold truncate block max-w-[140px] xs:max-w-[180px] sm:max-w-none">
+                                {{ pool.name }}
+                              </a>
+                              <span v-if="pool.fee_bp" class="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono flex-shrink-0">
+                                {{ (pool.fee_bp / 100).toFixed(2) }}% fee
+                              </span>
+                            </div>
+                            <span class="text-[10px] text-slate-500 font-mono block mt-0.5" :title="pool.id">
+                              {{ shorten(pool.id) }}
+                            </span>
+                          </td>
+                          <td style="text-align:left">
+                            <span v-if="pool.reserves_formatted" class="text-xs text-slate-300 font-sans font-medium">
+                              {{ pool.reserves_formatted }}
+                            </span>
+                            <span v-else class="text-slate-500 text-xs">—</span>
                           </td>
                           <td class="font-bold text-white">
                             ${{ formatNumber(pool.tvl) }}
                           </td>
                           <td>
-                            <span class="font-extrabold text-xs px-2 py-0.5 rounded-lg bg-[#2ED47A]/10 text-[#2ED47A]">
-                              {{ pool.apr.toFixed(2) }}%
+                            <span class="font-extrabold text-xs px-2 py-0.5 rounded-lg"
+                              :class="pool.apr > 0 ? 'bg-[#2ED47A]/10 text-[#2ED47A]' : 'bg-slate-800/80 text-slate-400'">
+                              {{ pool.apr ? pool.apr.toFixed(2) : '0.00' }}%
                             </span>
                           </td>
                           <td class="font-semibold text-slate-300">
@@ -1179,8 +1209,9 @@
                       </tbody>
                       <tbody v-else>
                         <tr>
-                          <td colspan="4" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">No
-                            liquidity pool data detected on-chain</td>
+                          <td colspan="5" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">
+                            {{ poolSearch ? 'No liquidity pools match your search query.' : 'No liquidity pool data detected on-chain' }}
+                          </td>
                         </tr>
                       </tbody>
                     </table>
@@ -1810,6 +1841,18 @@ const holdersLoading = ref(true)
 const liquidityLoading = ref(true)
 const largeEvents = ref([])
 const largeEventsLoading = ref(true)
+const poolSearch = ref('')
+
+const filteredPools = computed(() => {
+  const pools = token.liquidity_overview?.pools || []
+  if (!poolSearch.value.trim()) return pools
+  const q = poolSearch.value.trim().toLowerCase()
+  return pools.filter(p => 
+    (p.name && p.name.toLowerCase().includes(q)) ||
+    (p.id && p.id.toLowerCase().includes(q)) ||
+    (p.reserves_formatted && p.reserves_formatted.toLowerCase().includes(q))
+  )
+})
 
 const refreshLiveTrades = async () => {
   const curIssuer = issuerInput.value || token.issuer;

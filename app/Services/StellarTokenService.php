@@ -756,35 +756,89 @@ class StellarTokenService
         
         $records = [];
         
-        // 1. Fetch pool paired with XLM (native)
+        // 1. Fetch general pools from Horizon with pagination (up to 1000 pools)
+        try {
+            $nextUrl = $this->horizon . '/liquidity_pools?' . http_build_query([
+                'reserves' => $targetAssetString,
+                'limit' => 200,
+            ]);
+            
+            $pages = 0;
+            while ($nextUrl && $pages < 5) {
+                $pages++;
+                $responseGeneral = Http::timeout(4)->get($nextUrl);
+                if ($responseGeneral->ok()) {
+                    $pageRecords = $responseGeneral->json('_embedded.records') ?? [];
+                    $records = array_merge($records, $pageRecords);
+                    $nextHref = $responseGeneral->json('_links.next.href');
+                    if (!empty($pageRecords) && count($pageRecords) === 200 && $nextHref && $nextHref !== $nextUrl) {
+                        $nextUrl = $nextHref;
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        // 2. Directly query paired with XLM and USDC in case general didn't capture
         try {
             $responseXlm = Http::timeout(3)->get($this->horizon . '/liquidity_pools', [
                 'reserves' => "{$targetAssetString},native",
+                'limit' => 100,
             ]);
             if ($responseXlm->ok()) {
                 $records = array_merge($records, $responseXlm->json('_embedded.records') ?? []);
             }
         } catch (\Throwable $e) {}
 
-        // 2. Fetch pool paired with USDC
         $usdcAsset = 'USDC:GBBD7XJ4PQRRLO3SCMWND5NG3CZFLBCYZIVTTTIH2DZ7P2VTUQXJ4GX3';
         try {
             $responseUsdc = Http::timeout(3)->get($this->horizon . '/liquidity_pools', [
                 'reserves' => "{$targetAssetString},{$usdcAsset}",
+                'limit' => 100,
             ]);
             if ($responseUsdc->ok()) {
                 $records = array_merge($records, $responseUsdc->json('_embedded.records') ?? []);
             }
         } catch (\Throwable $e) {}
 
-        // 3. Fetch general pools (up to 200)
+        // 3. StellarExpert Liquidity Pools API as supplementary source
         try {
-            $responseGeneral = Http::timeout(4)->get($this->horizon . '/liquidity_pools', [
-                'reserves' => $targetAssetString,
-                'limit' => 200,
+            $expertAsset = $assetType === 'native' ? 'XLM' : "{$code}-{$issuer}";
+            $expertPoolsRes = Http::timeout(4)->get("https://api.stellar.expert/explorer/public/liquidity-pool", [
+                'asset' => $expertAsset,
+                'limit' => 100,
             ]);
-            if ($responseGeneral->ok()) {
-                $records = array_merge($records, $responseGeneral->json('_embedded.records') ?? []);
+            if ($expertPoolsRes->ok()) {
+                $expertRecords = $expertPoolsRes->json('_embedded.records') ?? [];
+                foreach ($expertRecords as $er) {
+                    if (isset($er['id'])) {
+                        $res = [];
+                        if (isset($er['asset']) && is_array($er['asset']) && isset($er['reserves']) && is_array($er['reserves'])) {
+                            foreach ($er['asset'] as $idx => $a) {
+                                $canonical = $a === 'native' ? 'native' : str_replace('-', ':', $a);
+                                $rawAmount = $er['reserves'][$idx] ?? 0;
+                                $amountStr = (string)(is_numeric($rawAmount) && $rawAmount > 1000000000 ? $rawAmount / 10000000 : $rawAmount);
+                                $res[] = [
+                                    'asset' => $canonical,
+                                    'amount' => $amountStr
+                                ];
+                            }
+                        }
+                        if (count($res) >= 2) {
+                            $records[] = [
+                                'id' => $er['id'],
+                                'fee_bp' => $er['fee'] ?? 30,
+                                'total_shares' => (string)($er['shares'] ?? 0),
+                                'reserves' => $res,
+                                'expert_tvl' => $er['total_value'] ?? null,
+                                'expert_vol' => $er['volume'] ?? null,
+                            ];
+                        }
+                    }
+                }
             }
         } catch (\Throwable $e) {}
 
@@ -797,7 +851,7 @@ class StellarTokenService
         }
         
         $volumes = $this->getAssetVolume24h($code, $issuer, $xlmUsdPrice, $usd_price);
-        $poolVolumes = $volumes['pool_volumes'];
+        $poolVolumes = $volumes['pool_volumes'] ?? [];
 
         $pools = [];
         $totalTvl = 0;
@@ -847,6 +901,8 @@ class StellarTokenService
                     }
                     if ($usdcAmount !== null) {
                         $tvl = $usdcAmount * 2;
+                    } elseif (isset($record['expert_tvl']) && (float)$record['expert_tvl'] > 0) {
+                        $tvl = (float)$record['expert_tvl'];
                     }
                 }
             }
@@ -854,8 +910,13 @@ class StellarTokenService
             $totalTvl += $tvl;
             
             $poolId = $record['id'];
-            $volume = $poolVolumes[$poolId] ?? 0.0;
-            $apr = $tvl > 0 ? (($volume * 0.003 * 365) / $tvl) * 10000 : 0;
+            $volume = $poolVolumes[$poolId] ?? (float)($record['expert_vol'] ?? 0.0);
+            $feeFactor = (($record['fee_bp'] ?? 30) / 10000);
+            $apr = $tvl > 0 ? (($volume * $feeFactor * 365) / $tvl) * 10000 : 0;
+            
+            $amountA = (float)($assetA['amount'] ?? 0);
+            $amountB = (float)($assetB['amount'] ?? 0);
+            $reservesFormatted = number_format($amountA, $amountA >= 100 ? 0 : 2) . " {$codeA} + " . number_format($amountB, $amountB >= 100 ? 0 : 2) . " {$codeB}";
             
             $pools[] = [
                 'id' => $record['id'],
@@ -863,6 +924,9 @@ class StellarTokenService
                 'tvl' => $tvl,
                 'apr' => $apr,
                 'volume' => $volume,
+                'fee_bp' => $record['fee_bp'] ?? 30,
+                'total_shares' => (float)($record['total_shares'] ?? 0),
+                'reserves_formatted' => $reservesFormatted,
             ];
         }
         
@@ -888,7 +952,7 @@ class StellarTokenService
             'lp_volume_24h' => $lpVolume24h,
             'avg_apr' => $avgApr,
             'depth_2pct' => $depth2pct,
-            'pools' => array_slice($pools, 0, 8),
+            'pools' => $pools,
         ];
     }
 
