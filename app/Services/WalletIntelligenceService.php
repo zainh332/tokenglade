@@ -221,15 +221,23 @@ class WalletIntelligenceService
             }
         }
 
-        // Bulk load verified token logos from DB
+        // Bulk load verified token logos from DB (exact asset_code:issuer match)
         $dbTokensMap = [];
         if (!empty($assetCodes)) {
             $dbTokens = StellarToken::whereIn('asset_code', $assetCodes)
                 ->whereNotNull('logo')
                 ->get();
             foreach ($dbTokens as $t) {
-                $key = strtoupper($t->asset_code) . ':' . $t->issuer_public_key;
-                $dbTokensMap[$key] = $t->logo;
+                $dbTokensMap[strtoupper($t->asset_code) . ':' . $t->issuer_public_key] = $t->logo;
+            }
+
+            foreach ($marketTokens as $mt) {
+                if (!empty($mt->image) && !empty($mt->asset_issuer)) {
+                    $key = strtoupper($mt->asset_code) . ':' . $mt->asset_issuer;
+                    if (!isset($dbTokensMap[$key])) {
+                        $dbTokensMap[$key] = $mt->image;
+                    }
+                }
             }
         }
 
@@ -670,6 +678,96 @@ class WalletIntelligenceService
             case 'claim_claimable_balance':
                 $event['event_type'] = 'CLAIMABLE_BALANCE_CLAIM';
                 $event['counterparty_address'] = $op['claimant'] ?? null;
+                break;
+
+            case 'create_claimable_balance':
+                $amount = (float) ($op['amount'] ?? 0.0);
+                $assetStr = $op['asset'] ?? 'native';
+                $assetCode = 'XLM';
+                $assetIssuer = '';
+
+                if ($assetStr !== 'native') {
+                    $parts = explode(':', $assetStr);
+                    $assetCode = $parts[0] ?? 'XLM';
+                    $assetIssuer = $parts[1] ?? '';
+                }
+
+                $priceXlm = ($assetCode === 'XLM') ? 1.0 : 0.0;
+                $priceUsd = ($assetCode === 'XLM') ? $xlmUsdPrice : 0.0;
+
+                if ($assetCode !== 'XLM' && $assetIssuer) {
+                    $mt = StellarMarketToken::where('asset_code', strtoupper($assetCode))
+                        ->where('asset_issuer', $assetIssuer)
+                        ->first();
+                    if ($mt) {
+                        $priceXlm = (float) ($mt->current_price_xlm ?? 0.0);
+                        $priceUsd = (float) ($mt->current_price_usd ?: ($priceXlm * $xlmUsdPrice));
+                    }
+                }
+
+                $claimants = $op['claimants'] ?? [];
+                $dest = null;
+                foreach ($claimants as $c) {
+                    $d = $c['destination'] ?? '';
+                    if ($d && $d !== $address) {
+                        $dest = $d;
+                        break;
+                    }
+                }
+                if (!$dest && !empty($claimants[0]['destination'])) {
+                    $dest = $claimants[0]['destination'];
+                }
+
+                $sourceAcc = $op['source_account'] ?? ($op['sponsor'] ?? '');
+                $isCreator = ($sourceAcc === $address) || empty($sourceAcc);
+
+                $event['event_type'] = $isCreator ? 'CLAIMABLE_BALANCE_CREATE' : 'CLAIMABLE_BALANCE_RECEIVED';
+                $event['asset_code'] = $assetCode;
+                $event['asset_issuer'] = $assetIssuer;
+                $event['amount'] = $amount;
+                $event['value_xlm'] = $amount * $priceXlm;
+                $event['value_usd'] = $amount * $priceUsd;
+                $event['counterparty_address'] = $dest;
+                break;
+
+            case 'clawback':
+            case 'clawback_claimable_balance':
+                $amount = (float) ($op['amount'] ?? 0.0);
+                $assetCode = $op['asset_code'] ?? 'XLM';
+                $assetIssuer = $op['asset_issuer'] ?? '';
+                $event['event_type'] = 'CLAWBACK';
+                $event['asset_code'] = $assetCode;
+                $event['asset_issuer'] = $assetIssuer;
+                $event['amount'] = $amount;
+                $event['counterparty_address'] = $op['from'] ?? null;
+                break;
+
+            case 'set_options':
+                $event['event_type'] = 'SET_OPTIONS';
+                $event['counterparty_address'] = $op['signer_key'] ?? ($op['inflation_dest'] ?? null);
+                break;
+
+            case 'manage_data':
+                $event['event_type'] = 'MANAGE_DATA';
+                $event['asset_code'] = $op['name'] ?? null;
+                break;
+
+            case 'bump_sequence':
+                $event['event_type'] = 'BUMP_SEQUENCE';
+                $event['amount'] = isset($op['bump_to']) ? (float)$op['bump_to'] : null;
+                break;
+
+            case 'invoke_host_function':
+                $event['event_type'] = 'INVOKE_HOST_FUNCTION';
+                $event['counterparty_address'] = $op['function'] ?? null;
+                break;
+
+            case 'set_trust_line_flags':
+            case 'allow_trust':
+                $event['event_type'] = 'TRUSTLINE_FLAGS';
+                $event['asset_code'] = $op['asset_code'] ?? null;
+                $event['asset_issuer'] = $op['asset_issuer'] ?? null;
+                $event['counterparty_address'] = $op['trustor'] ?? null;
                 break;
 
             case 'liquidity_pool_deposit':
