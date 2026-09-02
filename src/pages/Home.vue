@@ -163,20 +163,20 @@
           <div class="card mv">
             <div class="card-hd flex items-center justify-between pb-2 border-b border-slate-900/60">
               <h3>Market Movers</h3>
-              <div class="flex items-center gap-1 bg-theme-panel3 p-0.5 rounded-lg border border-theme-line">
+              <div class="flex items-center gap-1 bg-theme-panel3 p-0.5 rounded-lg border border-theme-line font-sans">
                 <button @click="activeMoverTab = 'trending'"
                   :class="activeMoverTab === 'trending' ? 'bg-theme-panel border-theme-line' : 'text-slate-500 hover:text-slate-350 border-transparent'"
-                  class="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded border transition focus:outline-none">
+                  class="px-2.5 py-0.5 text-xs font-semibold rounded border transition focus:outline-none">
                   <span :class="activeMoverTab === 'trending' ? 'bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent inline-block' : ''">Trending</span>
                 </button>
                 <button @click="activeMoverTab = 'gainers'"
                   :class="activeMoverTab === 'gainers' ? 'bg-theme-panel border-theme-line' : 'text-slate-500 hover:text-slate-350 border-transparent'"
-                  class="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded border transition focus:outline-none">
+                  class="px-2.5 py-0.5 text-xs font-semibold rounded border transition focus:outline-none">
                   <span :class="activeMoverTab === 'gainers' ? 'bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent inline-block' : ''">Gainers</span>
                 </button>
                 <button @click="activeMoverTab = 'losers'"
                   :class="activeMoverTab === 'losers' ? 'bg-theme-panel border-theme-line' : 'text-slate-500 hover:text-slate-350 border-transparent'"
-                  class="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded border transition focus:outline-none">
+                  class="px-2.5 py-0.5 text-xs font-semibold rounded border transition focus:outline-none">
                   <span :class="activeMoverTab === 'losers' ? 'bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent inline-block' : ''">Losers</span>
                 </button>
               </div>
@@ -2044,11 +2044,12 @@ onUnmounted(() => {
 }
 
 .stat .k {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: .08em;
-  color: var(--faint);
-  text-transform: uppercase;
+  font-family: var(--body);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--dim);
 }
 
 .stat .v {
@@ -2093,14 +2094,14 @@ onUnmounted(() => {
 }
 
 .mv th {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--faint);
+  font-family: var(--body);
+  font-size: 11.5px;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--dim);
   text-align: right;
   padding: 8px 16px;
-  font-weight: 500;
+  font-weight: 600;
   border-bottom: 1px solid var(--line);
 }
 
@@ -2149,14 +2150,17 @@ onUnmounted(() => {
 }
 
 .tk b {
+  font-family: var(--body);
   font-weight: 600;
   color: var(--ink);
+  font-size: 13px;
 }
 
 .tk small {
   display: block;
-  color: var(--faint);
-  font-size: 10.5px;
+  font-family: var(--body);
+  color: var(--dim);
+  font-size: 11px;
 }
 
 .up,

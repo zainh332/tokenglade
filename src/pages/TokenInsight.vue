@@ -198,11 +198,13 @@
       <!-- ACTUAL CONTENT (Visible when loading is false and notFound is false) -->
       <div v-else class="space-y-8">
 
-        <!-- BREADCRUMB -->
-        <div class="crumb select-none">
-          <router-link to="/">Terminal</router-link> &middot;
-          <span class="dim">Asset Insight</span> &middot;
-          <span class="mono">{{ token.asset_code }}</span>
+        <!-- TERMINAL BREADCRUMB / STATUS BAR -->
+        <div class="status select-none">
+          <router-link to="/">TERMINAL</router-link>
+          <span>&middot;</span>
+          <span>ASSET INSIGHT</span>
+          <span>&middot;</span>
+          <span class="text-cyan-400 font-semibold">{{ token.asset_code }}</span>
         </div>
 
         <!-- ASSET HEADER CARD -->
@@ -229,11 +231,15 @@
                     class="claim-btn select-none cursor-pointer transition">Claim & Verify Project</button>
                 </div>
 
-                <div class="issuer">
-                  <span>Issuer: <router-link :to="`/wallet/${token.issuer}`"
-                      class="mono text-cyan-400 hover:text-cyan-300 transition-colors" :title="token.issuer">{{ shorten(token.issuer) }}</router-link></span>
-                  <button @click="copyIssuer" class="btn dark select-none" style="padding:2px 8px;font-size:10.5px">
-                    {{ copied ? 'Copied!' : 'Copy Address' }}
+                <div class="issuer flex items-center gap-2 flex-wrap mt-2 font-mono text-xs">
+                  <span class="text-theme-faint">Issuer:</span>
+                  <router-link :to="`/wallet/${token.issuer}`"
+                      class="text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 hover:underline transition-colors font-semibold select-all" :title="token.issuer">
+                    {{ shorten(token.issuer) }}
+                  </router-link>
+                  <button @click="copyIssuer" class="px-2.5 py-0.5 bg-theme-panel2 border border-theme-line hover:border-theme-line2 rounded text-[11px] font-mono text-theme-ink flex items-center gap-1 transition cursor-pointer select-none">
+                    <span v-if="copied" class="text-emerald-400 font-bold">✓ Copied</span>
+                    <span v-else class="text-theme-dim">Copy Address</span>
                   </button>
                 </div>
               </div>
@@ -264,16 +270,16 @@
 
           <!-- STATS TIMEFRAME HEADER -->
           <div class="flex items-center justify-between mt-4 mb-2 px-1">
-            <span class="text-xs font-mono font-semibold text-slate-400 uppercase tracking-wider">Key Metrics</span>
+            <span class="text-xs font-sans font-semibold text-slate-400">Key Metrics</span>
             <div class="flex items-center gap-1 bg-theme-panel2 p-1 rounded-lg border border-[rgba(148,163,184,0.12)]">
               <button @click="changeStatsTimeframe('24h')"
-                class="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold transition-all"
-                :class="selectedStatsTimeframe === '24h' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-slate-400 hover:text-white'">
+                class="px-2.5 py-0.5 rounded text-[11px] font-sans font-medium transition-all"
+                :class="selectedStatsTimeframe === '24h' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 font-semibold' : 'text-slate-400 hover:text-white'">
                 24H Track
               </button>
               <button @click="changeStatsTimeframe('7d')"
-                class="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold transition-all"
-                :class="selectedStatsTimeframe === '7d' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-slate-400 hover:text-white'">
+                class="px-2.5 py-0.5 rounded text-[11px] font-sans font-medium transition-all"
+                :class="selectedStatsTimeframe === '7d' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 font-semibold' : 'text-slate-400 hover:text-white'">
                 7D Track
               </button>
             </div>
@@ -399,7 +405,7 @@
                   (token.total_supply || 0)) }}</template>
                 <template v-else>$0</template>
               </div>
-              <div class="sub dim">
+              <div class="sub font-mono dim">
                 Fully Diluted
               </div>
               <div class="sub font-mono font-semibold text-cyan-400">
@@ -690,13 +696,11 @@
                 <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <!-- Bids (Buy Orders) -->
                   <div>
-                    <div class="flex justify-between items-center mb-2 px-1">
-                      <span class="text-xs font-bold text-emerald-400 font-mono">
-                        BIDS ({{ orderBook.bids.length }}): {{ formatNumber(totalBidVolume) }} {{ token.asset_code }} /
-                        {{
-                        formatNumber(totalBidValue) }} XLM
+                    <div class="flex justify-between items-center mb-2 px-1 font-sans text-xs">
+                      <span class="font-medium text-emerald-500 dark:text-emerald-400">
+                        Bids ({{ orderBook.bids.length }}): <span class="font-mono text-emerald-400 font-semibold">{{ formatNumber(totalBidVolume) }} {{ token.asset_code }} / {{ formatNumber(totalBidValue) }} XLM</span>
                       </span>
-                      <span class="text-[10px] text-slate-500 font-mono">Spread: {{ spreadPercent }}%</span>
+                      <span class="text-slate-400">Spread: <span class="font-mono text-slate-300 font-medium">{{ spreadPercent }}%</span></span>
                     </div>
                     <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
                       <table class="trades select-all">
@@ -736,11 +740,9 @@
 
                   <!-- Asks (Sell Orders) -->
                   <div>
-                    <div class="flex justify-between items-center mb-2 px-1">
-                      <span class="text-xs font-bold text-rose-400 font-mono">
-                        ASKS ({{ orderBook.asks.length }}): {{ formatNumber(totalAskVolume) }} {{ token.asset_code }} /
-                        {{
-                        formatNumber(totalAskValue) }} XLM
+                    <div class="flex justify-between items-center mb-2 px-1 font-sans text-xs">
+                      <span class="font-medium text-rose-500 dark:text-rose-400">
+                        Asks ({{ orderBook.asks.length }}): <span class="font-mono text-rose-400 font-semibold">{{ formatNumber(totalAskVolume) }} {{ token.asset_code }} / {{ formatNumber(totalAskValue) }} XLM</span>
                       </span>
                     </div>
                     <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
@@ -888,16 +890,15 @@
                   <!-- Right Half (50% Width): 4 Cards Stacked Vertically -->
                   <div class="flex flex-col gap-4">
                     <!-- 1. Healthy Distribution / Whale Concentration Warning -->
-                    <div class="bg-theme-panel2 p-5 rounded-2xl border border-theme-line">
+                    <div class="bg-theme-panel2 p-5 rounded-2xl border border-theme-line font-sans">
                       <div v-if="parseFloat(top10Percentage) > 50"
                         class="flex gap-3 bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 text-xs text-rose-400">
                         <span class="text-xl flex-shrink-0">⚠️</span>
                         <div>
                           <span
-                            class="font-extrabold uppercase tracking-wider block text-[11px] text-rose-500 font-mono">Whale
-                            Concentration Warning</span>
+                            class="font-semibold block text-xs text-rose-500 dark:text-rose-400">Whale Concentration Warning</span>
                           <span class="mt-1 block font-medium leading-relaxed">The top 10 wallets hold <strong
-                              class="font-black text-white">{{ top10Percentage }}%</strong> of supply. This asset has
+                              class="font-bold text-white">{{ top10Percentage }}%</strong> of supply. This asset has
                             elevated whale concentration risk.</span>
                         </div>
                       </div>
@@ -906,33 +907,30 @@
                         <span class="text-xl flex-shrink-0">✓</span>
                         <div>
                           <span
-                            class="font-extrabold uppercase tracking-wider block text-[11px] text-emerald-500 font-mono">Healthy
-                            Distribution</span>
+                            class="font-semibold block text-xs text-emerald-500 dark:text-emerald-400">Healthy Distribution</span>
                           <span class="mt-1 block font-medium leading-relaxed">The top 10 wallets hold <strong
-                              class="font-black text-white">{{ top10Percentage }}%</strong> of supply, representing
+                              class="font-bold text-white">{{ top10Percentage }}%</strong> of supply, representing
                             healthy decentralization across active holders.</span>
                         </div>
                       </div>
                     </div>
 
                     <!-- 2 & 3: Side-by-Side Stats Cards -->
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 gap-4 font-sans">
                       <!-- 2. Average per Holder -->
-                      <div class="bg-theme-panel2 p-4 rounded-2xl border border-theme-line font-mono">
+                      <div class="bg-theme-panel2 p-4 rounded-2xl border border-theme-line">
                         <span
-                          class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block leading-snug">Average
-                          per Holder</span>
-                        <span class="text-sm sm:text-base font-black text-white mt-1 block truncate">
+                          class="text-xs font-semibold text-slate-400 block leading-snug">Average per Holder</span>
+                        <span class="text-sm sm:text-base font-bold text-white mt-1 block truncate font-mono">
                           {{ formatNumber(averageTokensPerHolder) }} {{ token.asset_code }}
                         </span>
                       </div>
 
                       <!-- 3. New Holders -->
-                      <div class="bg-theme-panel2 p-4 rounded-2xl border border-theme-line font-mono">
+                      <div class="bg-theme-panel2 p-4 rounded-2xl border border-theme-line">
                         <span
-                          class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block leading-snug">New
-                          Holders (24h/7d)</span>
-                        <span class="text-sm sm:text-base font-black text-white mt-1 block">
+                          class="text-xs font-semibold text-slate-400 block leading-snug">New Holders (24h/7d)</span>
+                        <span class="text-sm sm:text-base font-bold text-white mt-1 block font-mono">
                           +{{ holderGrowth.growth24h }} <span class="text-slate-500 font-medium text-xs">/</span> +{{
                           holderGrowth.growth7d }}
                         </span>
@@ -941,9 +939,8 @@
 
                     <!-- 4. Largest Non-Treasury Holder -->
                     <div v-if="biggestIndividualHolder"
-                      class="bg-theme-panel2 p-4 rounded-2xl border border-theme-line font-mono">
-                      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest
-                        Non-Treasury Holder</span>
+                      class="bg-theme-panel2 p-4 rounded-2xl border border-theme-line font-sans">
+                      <span class="text-xs font-semibold text-slate-400 block">Largest Non-Treasury Holder</span>
                       <div class="flex items-center justify-between text-xs mt-1.5">
                         <router-link :to="`/wallet/${biggestIndividualHolder.address}`"
                           class="font-mono text-cyan-400 hover:text-cyan-300 font-bold transition-colors"
@@ -1074,61 +1071,55 @@
                       (AMM) pools & depth</p>
                   </div>
                   <div
-                    class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-theme-panel2 px-3 py-1.5 rounded-xl border border-theme-line font-mono">
-                    Total TVL: ${{ formatNumber(token.liquidity_overview?.total_tvl || 0) }}
+                    class="text-xs font-semibold text-slate-300 bg-theme-panel2 px-3 py-1.5 rounded-xl border border-theme-line font-sans">
+                    Total TVL: <span class="font-mono text-white font-bold">${{ formatNumber(token.liquidity_overview?.total_tvl || 0) }}</span>
                   </div>
                 </div>
 
                 <!-- Metrics Grid -->
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6 font-mono">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6 font-sans">
                   <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
-                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Total
-                      TVL</span>
-                    <span class="text-sm sm:text-lg font-black text-white mt-1 block">
+                    <span class="text-xs font-semibold text-slate-400 block">Total TVL</span>
+                    <span class="text-sm sm:text-lg font-bold text-white mt-1 block font-mono">
                       ${{ formatNumber(token.liquidity_overview?.total_tvl) }}
                     </span>
                   </div>
 
                   <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
-                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Active
-                      Pools</span>
-                    <span class="text-sm sm:text-lg font-black text-white mt-1 block">
+                    <span class="text-xs font-semibold text-slate-400 block">Active Pools</span>
+                    <span class="text-sm sm:text-lg font-bold text-white mt-1 block font-mono">
                       {{ token.liquidity_overview?.pools_count || 0 }}
                     </span>
                   </div>
 
                   <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
-                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest
-                      Pool</span>
-                    <span class="text-xs sm:text-sm font-black text-white mt-1 block truncate font-sans py-1"
+                    <span class="text-xs font-semibold text-slate-400 block">Largest Pool</span>
+                    <span class="text-xs sm:text-sm font-bold text-white mt-1 block truncate py-1"
                       :title="token.liquidity_overview?.largest_pool_name">
                       {{ token.liquidity_overview?.largest_pool_name || '-' }}
                     </span>
-                    <span class="text-[10px] text-slate-500 font-bold block mt-0.5">
+                    <span class="text-[11px] text-slate-500 font-medium block mt-0.5 font-mono">
                       ${{ formatNumber(token.liquidity_overview?.largest_pool_tvl) }} TVL
                     </span>
                   </div>
 
                   <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
-                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">24h LP
-                      Volume</span>
-                    <span class="text-sm sm:text-lg font-black text-white mt-1 block">
+                    <span class="text-xs font-semibold text-slate-400 block">24h LP Volume</span>
+                    <span class="text-sm sm:text-lg font-bold text-white mt-1 block font-mono">
                       ${{ formatNumber(token.liquidity_overview?.lp_volume_24h) }}
                     </span>
                   </div>
 
                   <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
-                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Average
-                      APR</span>
-                    <span class="text-sm sm:text-lg font-black text-emerald-400 mt-1 block">
+                    <span class="text-xs font-semibold text-slate-400 block">Average APR</span>
+                    <span class="text-sm sm:text-lg font-bold text-emerald-400 mt-1 block font-mono">
                       {{ token.liquidity_overview?.avg_apr ? token.liquidity_overview.avg_apr.toFixed(2) : '0.00' }}%
                     </span>
                   </div>
 
                   <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
-                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Depth
-                      (±2%)</span>
-                    <span class="text-sm sm:text-lg font-black text-white mt-1 block">
+                    <span class="text-xs font-semibold text-slate-400 block">Depth (±2%)</span>
+                    <span class="text-sm sm:text-lg font-bold text-white mt-1 block font-mono">
                       ${{ formatNumber(token.liquidity_overview?.depth_2pct) }}
                     </span>
                   </div>
@@ -1166,7 +1157,7 @@
                           v-model="poolSearch"
                           type="text"
                           placeholder="Search pool pair..."
-                          class="pool-search-input"
+                          class="px-3 py-1.5 bg-theme-panel border border-theme-line rounded-lg text-xs font-sans placeholder:font-sans placeholder-theme-faint text-theme-ink focus:outline-none focus:border-cyan-500 transition"
                         />
                       </div>
                     </div>
@@ -1526,7 +1517,7 @@
               <!-- Score Bar -->
               <div class="px-4 pt-4 pb-2">
                 <div class="flex justify-between items-center mb-1.5">
-                  <span class="text-xs font-mono text-slate-400">Composite Score</span>
+                  <span class="text-xs font-sans font-medium text-slate-400">Composite Score</span>
                   <span class="text-sm font-bold font-mono text-white">{{ token.rating?.average?.toFixed(1) ?? '7.5' }}
                     /
                     10</span>
@@ -1543,12 +1534,10 @@
                 class="grid grid-cols-1 divide-y divide-slate-800/60 border-t border-b border-slate-800/60 bg-theme-panel2">
                 <!-- Bullish Signals -->
                 <div class="p-4 space-y-2">
-                  <span class="text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider block font-mono">▲
-                    Bullish
-                    Signals</span>
-                  <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse">Analyzing...
+                  <span class="text-xs font-semibold text-emerald-500 dark:text-emerald-400 block font-sans">▲ Bullish Signals</span>
+                  <div v-if="loading || liquidityLoading" class="text-xs text-slate-400 font-sans animate-pulse">Analyzing...
                   </div>
-                  <ul v-else class="text-xs space-y-1 text-slate-300">
+                  <ul v-else class="text-xs space-y-1 text-slate-300 font-sans">
                     <li v-for="sig in bullishSignals" :key="sig" class="flex items-start gap-1.5 leading-relaxed">
                       <span class="text-emerald-400 font-bold">✓</span>
                       <span>{{ sig }}</span>
@@ -1558,12 +1547,10 @@
 
                 <!-- Bearish Signals -->
                 <div class="p-4 space-y-2">
-                  <span class="text-[10px] font-extrabold text-rose-400 uppercase tracking-wider block font-mono">▼
-                    Bearish
-                    Signals</span>
-                  <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse">Analyzing...
+                  <span class="text-xs font-semibold text-rose-500 dark:text-rose-400 block font-sans">▼ Bearish Signals</span>
+                  <div v-if="loading || liquidityLoading" class="text-xs text-slate-400 font-sans animate-pulse">Analyzing...
                   </div>
-                  <ul v-else class="text-xs space-y-1 text-slate-300">
+                  <ul v-else class="text-xs space-y-1 text-slate-300 font-sans">
                     <li v-for="sig in bearishSignals" :key="sig" class="flex items-start gap-1.5 leading-relaxed">
                       <span class="text-rose-400 font-bold">⚠</span>
                       <span>{{ sig }}</span>
@@ -1574,26 +1561,24 @@
 
               <!-- Key Metrics Grid -->
               <div class="p-4 space-y-2 border-b border-slate-800/60">
-                <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block font-mono">Key
-                  Metrics</span>
-                <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse py-1">Loading
-                  metrics...
+                <span class="text-xs font-semibold text-slate-300 block font-sans">Key Metrics</span>
+                <div v-if="loading || liquidityLoading" class="text-xs text-slate-400 font-sans animate-pulse py-1">Loading metrics...
                 </div>
-                <div v-else class="grid grid-cols-3 gap-2 text-xs">
+                <div v-else class="grid grid-cols-3 gap-2 text-xs font-sans">
                   <div class="flex flex-col gap-0.5">
                     <span class="text-slate-400">Whales:</span>
-                    <span class="font-mono text-white"
+                    <span class="font-mono text-white font-medium"
                       :class="parseFloat(top10Percentage) > 50 ? 'text-rose-400' : 'text-emerald-400'">
                       {{ parseFloat(top10Percentage) > 50 ? 'High' : 'Low' }} ({{ top10Percentage }}%)
                     </span>
                   </div>
                   <div class="flex flex-col gap-0.5">
                     <span class="text-slate-400">Slippage ($10k):</span>
-                    <span class="font-mono text-white">{{ calculatedSlippage }}</span>
+                    <span class="font-mono text-white font-medium">{{ calculatedSlippage }}</span>
                   </div>
                   <div class="flex flex-col gap-0.5">
                     <span class="text-slate-400">Contract Lock:</span>
-                    <span class="font-mono" :class="token.issuer_locked ? 'text-emerald-400' : 'text-amber'">
+                    <span class="font-mono font-medium" :class="token.issuer_locked ? 'text-emerald-400' : 'text-amber'">
                       {{ token.issuer_locked ? 'Secured (Locked)' : 'Unlocked Issuer' }}
                     </span>
                   </div>
@@ -1602,11 +1587,10 @@
 
               <!-- Conclusion -->
               <div class="p-4 space-y-2">
-                <span class="text-[10px] font-extrabold text-cyan-400 uppercase tracking-wider block font-mono">✍ AI
-                  Conclusion</span>
-                <div v-if="loading || liquidityLoading" class="text-xs text-slate-500 animate-pulse">Formulating...
+                <span class="text-xs font-semibold text-cyan-500 dark:text-cyan-400 block font-sans">✍ AI Conclusion</span>
+                <div v-if="loading || liquidityLoading" class="text-xs text-slate-400 font-sans animate-pulse">Formulating...
                 </div>
-                <p v-else class="text-xs text-slate-300 leading-relaxed m-0 p-0"
+                <p v-else class="text-xs text-slate-300 leading-relaxed m-0 p-0 font-sans"
                   style="padding: 0 !important; color: var(--dim) !important;">
                   {{ aiRiskSummary.text }}
                 </p>
@@ -3449,9 +3433,9 @@ watch(selectedChartType, () => {
   --up: #2ED47A;
   --down: #F0616D;
   --cyan: #12CBEE;
-  --mono: "JetBrains Mono", ui-monospace, monospace;
-  --disp: "Space Grotesk", sans-serif;
-  --body: "Inter", sans-serif;
+  --mono: var(--font-mono, "JetBrains Mono", ui-monospace, monospace);
+  --disp: var(--font-disp, "Space Grotesk", sans-serif);
+  --body: var(--font-sans, "Inter", sans-serif);
 
   background: var(--bg);
   color: var(--ink);
@@ -3505,20 +3489,28 @@ watch(selectedChartType, () => {
   }
 }
 
-.crumb {
-  font-family: var(--mono);
+.status, .crumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--body);
   font-size: 12px;
-  color: var(--faint);
+  color: var(--dim);
   padding: 14px 0 0;
+  margin-bottom: 0;
+  flex-wrap: wrap;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
-.crumb a {
-  color: var(--faint);
+.status a, .crumb a {
+  color: var(--dim);
+  text-decoration: none;
   transition: color 0.15s ease;
 }
 
-.crumb a:hover {
-  color: var(--amber);
+.status a:hover, .crumb a:hover {
+  color: var(--cyan);
 }
 
 .card {
@@ -3545,11 +3537,12 @@ watch(selectedChartType, () => {
 }
 
 .tag {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: .1em;
-  color: var(--faint);
-  text-transform: uppercase;
+  font-family: var(--body);
+  font-size: 11px;
+  letter-spacing: normal;
+  color: var(--dim);
+  text-transform: none;
+  font-weight: 500;
 }
 
 .dot {
@@ -3621,8 +3614,8 @@ watch(selectedChartType, () => {
 }
 
 .chip {
-  font-family: var(--mono);
-  font-size: 11px;
+  font-family: var(--body);
+  font-size: 11.5px;
   font-weight: 600;
   padding: 3px 8px;
   border-radius: 6px;
@@ -3643,7 +3636,7 @@ watch(selectedChartType, () => {
 }
 
 .issuer {
-  font-family: var(--mono);
+  font-family: var(--body);
   font-size: 12px;
   color: var(--faint);
   margin-top: 7px;
@@ -3673,28 +3666,34 @@ watch(selectedChartType, () => {
 }
 
 .k {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--dim);
 }
 
 .trust .lbl .k {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-size: 10px;
-  letter-spacing: .1em;
-  color: var(--faint);
-  text-transform: uppercase;
+  font-family: var(--body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: normal;
+  color: var(--dim);
+  text-transform: none;
 }
 
 .trust .lbl .v {
   font-family: var(--disp);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 15px;
   margin-top: 2px;
 }
 
 .trust .lbl small {
-  font-family: var(--mono);
+  font-family: var(--body);
   font-size: 11px;
-  color: var(--faint);
+  color: var(--dim);
 }
 
 .gauge {
@@ -3720,28 +3719,29 @@ watch(selectedChartType, () => {
   gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   margin-top: 20px;
 }
 
 .st {
   background: var(--panel);
-  padding: 13px 15px;
+  padding: 14px 16px;
 }
 
 .st .k {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-size: 10px;
-  letter-spacing: .07em;
-  text-transform: uppercase;
-  color: var(--faint);
+  font-family: var(--body);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--dim);
 }
 
 .st .v {
   font-family: var(--mono);
-  font-size: 17px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   margin-top: 6px;
   letter-spacing: -.01em;
   color: var(--ink);
@@ -3749,7 +3749,8 @@ watch(selectedChartType, () => {
 
 .st .sub {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 11.5px;
+  font-weight: 500;
   margin-top: 3px;
 }
 
@@ -3761,10 +3762,10 @@ watch(selectedChartType, () => {
 }
 
 .acts .btn {
-  font-family: var(--disp);
+  font-family: var(--body);
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.015em;
+  letter-spacing: normal;
   border: 1px solid var(--line2);
   background: var(--panel);
   color: var(--ink);
@@ -3820,17 +3821,22 @@ watch(selectedChartType, () => {
 }
 
 .tabs a {
-  font-family: var(--mono);
-  font-size: 13px;
+  font-family: var(--body);
+  font-size: 13.5px;
+  font-weight: 500;
   color: var(--dim);
-  padding: 11px 14px;
+  padding: 10px 16px;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
+  text-transform: none;
+  letter-spacing: normal;
+  transition: all 0.15s ease;
 }
 
 .tabs a.on {
   color: var(--ink);
-  border-bottom-color: var(--amber);
+  font-weight: 700;
+  border-bottom-color: var(--cyan);
 }
 
 .tabs a:hover {
@@ -3876,8 +3882,9 @@ watch(selectedChartType, () => {
   border: 1px solid var(--line2);
   border-radius: 7px;
   overflow: hidden;
-  font-family: var(--mono);
-  font-size: 11px;
+  font-family: var(--body);
+  font-size: 11.5px;
+  font-weight: 500;
 }
 
 .seg span {
@@ -3904,7 +3911,7 @@ watch(selectedChartType, () => {
 .depth-top {
   display: flex;
   justify-content: space-between;
-  font-family: var(--mono);
+  font-family: var(--body);
   font-size: 12px;
   font-weight: 600;
 }
@@ -3926,9 +3933,9 @@ watch(selectedChartType, () => {
 .depth-sub {
   display: flex;
   justify-content: space-between;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--faint);
+  font-family: var(--body);
+  font-size: 11px;
+  color: var(--dim);
   margin-top: 7px;
 }
 
@@ -3942,7 +3949,7 @@ watch(selectedChartType, () => {
 .hm .top {
   display: flex;
   justify-content: space-between;
-  font-family: var(--mono);
+  font-family: var(--body);
   font-size: 12px;
   margin-bottom: 6px;
 }
@@ -3997,10 +4004,11 @@ watch(selectedChartType, () => {
 }
 
 .ai .mini .k {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-size: 9.5px;
-  letter-spacing: .06em;
-  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--dim);
   text-transform: uppercase;
 }
 
@@ -4038,16 +4046,16 @@ watch(selectedChartType, () => {
 }
 
 .vopt .l {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--faint);
+  font-family: var(--body);
+  font-size: 11px;
+  color: var(--dim);
   margin-top: 5px;
-  letter-spacing: .04em;
+  letter-spacing: normal;
 }
 
 .vopt .n {
-  font-family: var(--mono);
-  font-size: 16px;
+  font-family: var(--body);
+  font-size: 15px;
   font-weight: 700;
   margin-top: 2px;
 }
@@ -4097,8 +4105,8 @@ watch(selectedChartType, () => {
 }
 
 .sval {
-  font-family: var(--mono);
-  font-size: 11px;
+  font-family: var(--body);
+  font-size: 11.5px;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 5px;
@@ -4144,14 +4152,14 @@ table.trades {
 }
 
 table.trades th {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: .07em;
-  text-transform: uppercase;
-  color: var(--faint);
+  font-family: var(--body);
+  font-size: 11.5px;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--dim);
   text-align: right;
-  padding: 10px 16px;
-  font-weight: 500;
+  padding: 8px 12px;
+  font-weight: 600;
   border-bottom: 1px solid var(--line);
 }
 
@@ -4181,12 +4189,12 @@ table.trades tr:hover td {
 }
 
 .side {
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 700;
+  font-family: var(--body);
+  font-size: 10.5px;
+  font-weight: 600;
   padding: 3px 9px;
   border-radius: 5px;
-  letter-spacing: .05em;
+  letter-spacing: normal;
 }
 
 .side.sell {
@@ -4202,7 +4210,7 @@ table.trades tr:hover td {
 .viewall {
   text-align: center;
   padding: 14px;
-  font-family: var(--mono);
+  font-family: var(--body);
   font-size: 12.5px;
   color: var(--amber);
   border-top: 1px solid var(--line);

@@ -86,14 +86,14 @@
 
             <!-- Hash Title and Action Buttons -->
             <div class="space-y-2">
-              <div class="text-[10px] font-mono uppercase tracking-widest text-theme-dim font-bold">Transaction Hash</div>
+              <div class="text-xs font-semibold text-slate-400 font-sans">Transaction Hash</div>
               <div class="flex items-center gap-3 flex-wrap sm:flex-nowrap">
                 <h1 class="text-xs sm:text-sm md:text-base font-mono font-bold text-theme-ink break-all select-all flex-1 min-w-0" :title="txData.hash">
                   {{ txData.hash }}
                 </h1>
                 <div class="flex items-center gap-2 flex-shrink-0">
                   <button @click="copyText(txData.hash, 'hash')" 
-                          class="px-3 py-1.5 bg-theme-panel2 border border-theme-line hover:border-theme-line2 rounded-lg text-xs font-mono text-theme-ink flex items-center gap-1.5 transition cursor-pointer shadow-sm">
+                          class="px-3 py-1.5 bg-theme-panel2 border border-theme-line hover:border-theme-line2 rounded-lg text-xs font-sans font-medium text-theme-ink flex items-center gap-1.5 transition cursor-pointer shadow-sm">
                     <Check v-if="copiedField === 'hash'" class="w-3.5 h-3.5 text-emerald-400" />
                     <Copy v-else class="w-3.5 h-3.5 text-theme-dim" />
                     <span>{{ copiedField === 'hash' ? 'Copied' : 'Copy Hash' }}</span>
@@ -103,10 +103,10 @@
             </div>
 
             <!-- Key Info Grid -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 font-sans">
               <!-- Ledger -->
               <div class="p-3.5 bg-theme-panel2 border border-theme-line rounded-xl space-y-1">
-                <div class="text-[10px] uppercase text-theme-faint font-semibold tracking-wider">Ledger</div>
+                <div class="text-xs font-semibold text-slate-400">Ledger</div>
                 <div class="text-sm font-bold text-cyan-600 dark:text-cyan-400 font-mono">
                   {{ txData.ledger ? '#' + txData.ledger : '--' }}
                 </div>
@@ -114,7 +114,7 @@
 
               <!-- Operations Count -->
               <div class="p-3.5 bg-theme-panel2 border border-theme-line rounded-xl space-y-1">
-                <div class="text-[10px] uppercase text-theme-faint font-semibold tracking-wider">Operations</div>
+                <div class="text-xs font-semibold text-slate-400">Operations</div>
                 <div class="text-sm font-bold text-theme-ink font-mono">
                   {{ txData.operation_count ?? txData.operations?.length ?? 0 }}
                 </div>
@@ -122,7 +122,7 @@
 
               <!-- Fee Charged -->
               <div class="p-3.5 bg-theme-panel2 border border-theme-line rounded-xl space-y-1">
-                <div class="text-[10px] uppercase text-theme-faint font-semibold tracking-wider">Fee Charged</div>
+                <div class="text-xs font-semibold text-slate-400">Fee Charged</div>
                 <div class="text-sm font-bold text-theme-ink font-mono" :title="`${txData.fee_charged_stroops} Stroops`">
                   {{ txData.fee_charged_xlm }} XLM
                 </div>
@@ -130,7 +130,7 @@
 
               <!-- Transaction Size -->
               <div class="p-3.5 bg-theme-panel2 border border-theme-line rounded-xl space-y-1">
-                <div class="text-[10px] uppercase text-theme-faint font-semibold tracking-wider">Size</div>
+                <div class="text-xs font-semibold text-slate-400">Size</div>
                 <div class="text-sm font-bold text-theme-ink font-mono">
                   {{ txData.tx_size_bytes ? txData.tx_size_bytes + ' B' : '--' }}
                 </div>
@@ -151,11 +151,11 @@
               <div class="card-hd border-b border-theme-line pb-3 flex items-center justify-between">
                 <div class="flex items-center gap-2">
                   <h3 class="font-sans font-semibold text-sm text-theme-ink">Operations</h3>
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">
+                  <span class="px-2 py-0.5 rounded-full text-xs font-sans font-medium bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">
                     {{ txData.operations?.length ?? 0 }}
                   </span>
                 </div>
-                <div class="text-[10px] font-mono text-theme-faint uppercase">Executed in order</div>
+                <div class="text-xs font-sans text-theme-dim">Executed in order</div>
               </div>
 
               <!-- Operations List -->
@@ -184,7 +184,7 @@
                         <div v-else class="w-5 h-5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-[9px] font-bold text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
                           {{ op.asset_code.slice(0, 2) }}
                         </div>
-                        <span class="text-[10px] font-bold text-theme-dim uppercase">Amount:</span>
+                        <span class="text-xs font-semibold text-slate-400 font-sans">Amount:</span>
                         <span class="text-sm font-extrabold text-theme-ink font-mono">{{ formatNumber(op.amount, 7) }}</span>
                         <router-link v-if="op.asset_code && op.asset_issuer" 
                                      :to="{ path: '/token-insight', query: { asset_code: op.asset_code, issuer: op.asset_issuer } }" 
@@ -193,21 +193,21 @@
                         </router-link>
                         <span v-else class="text-cyan-600 dark:text-cyan-400 font-bold uppercase">XLM</span>
                       </div>
-                      <div v-if="op.token_meta?.usd_price && parseFloat(op.amount)" class="text-theme-faint text-[11px]">
+                      <div v-if="op.token_meta?.usd_price && parseFloat(op.amount)" class="text-theme-faint text-[11px] font-mono">
                         ≈ ${{ formatNumber(parseFloat(op.amount) * op.token_meta.usd_price, 2) }}
                       </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-theme-line/60 text-[11px]">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-theme-line/60 text-xs font-sans">
                       <div>
-                        <span class="text-theme-faint">From:</span>
-                        <router-link :to="`/wallet/${op.from || op.source_account}`" class="text-cyan-600 dark:text-cyan-400 hover:underline ml-1 font-semibold">
+                        <span class="text-theme-dim">From:</span>
+                        <router-link :to="`/wallet/${op.from || op.source_account}`" class="text-cyan-600 dark:text-cyan-400 hover:underline ml-1 font-mono font-medium">
                           {{ shortenAddress(op.from || op.source_account) }}
                         </router-link>
                       </div>
                       <div>
-                        <span class="text-theme-faint">To:</span>
-                        <router-link :to="`/wallet/${op.to}`" class="text-cyan-600 dark:text-cyan-400 hover:underline ml-1 font-semibold">
+                        <span class="text-theme-dim">To:</span>
+                        <router-link :to="`/wallet/${op.to}`" class="text-cyan-600 dark:text-cyan-400 hover:underline ml-1 font-mono font-medium">
                           {{ shortenAddress(op.to) }}
                         </router-link>
                       </div>
@@ -217,17 +217,17 @@
                   <!-- 2. CREATE CLAIMABLE BALANCE -->
                   <div v-else-if="op.type === 'create_claimable_balance'" class="space-y-2 bg-theme-panel2/70 p-3.5 rounded-xl border border-theme-line text-xs font-mono">
                     <div class="flex items-center gap-2">
-                      <span class="text-[10px] font-bold text-theme-dim uppercase">Locked:</span>
+                      <span class="text-xs font-semibold text-slate-400 font-sans">Locked:</span>
                       <span class="text-sm font-extrabold text-amber-500 font-mono">{{ formatNumber(op.amount, 7) }}</span>
                       <span class="text-theme-ink font-bold">{{ op.asset?.split(':')[0] || op.asset_code || 'XLM' }}</span>
                     </div>
-                    <div class="space-y-1 text-[11px] pt-1 border-t border-theme-line/60" v-if="op.claimants?.length">
-                      <span class="text-theme-faint block">Eligible Claimants:</span>
-                      <div v-for="(c, cIdx) in op.claimants" :key="cIdx" class="flex items-center gap-2">
+                    <div class="space-y-1 text-xs pt-1 border-t border-theme-line/60 font-sans" v-if="op.claimants?.length">
+                      <span class="text-theme-dim block">Eligible Claimants:</span>
+                      <div v-for="(c, cIdx) in op.claimants" :key="cIdx" class="flex items-center gap-2 font-mono">
                         <router-link :to="`/wallet/${c.destination}`" class="text-cyan-600 dark:text-cyan-400 hover:underline">
                           {{ shortenAddress(c.destination) }}
                         </router-link>
-                        <span class="text-theme-faint text-[10px]">Predicate: {{ formatPredicate(c.predicate) }}</span>
+                        <span class="text-theme-dim text-[11px] font-sans">Predicate: {{ formatPredicate(c.predicate) }}</span>
                       </div>
                     </div>
                   </div>
@@ -235,12 +235,12 @@
                   <!-- 3. CLAIM CLAIMABLE BALANCE -->
                   <div v-else-if="op.type === 'claim_claimable_balance'" class="space-y-2 bg-theme-panel2/70 p-3.5 rounded-xl border border-theme-line text-xs font-mono">
                     <div>
-                      <span class="text-theme-faint">Balance ID:</span>
-                      <span class="text-theme-ink font-semibold ml-1 truncate block">{{ op.balance_id }}</span>
+                      <span class="text-theme-dim font-sans">Balance ID:</span>
+                      <span class="text-theme-ink font-semibold ml-1 truncate block font-mono">{{ op.balance_id }}</span>
                     </div>
                     <div v-if="op.claimant">
-                      <span class="text-theme-faint">Claimant:</span>
-                      <router-link :to="`/wallet/${op.claimant}`" class="text-cyan-600 dark:text-cyan-400 hover:underline ml-1 font-semibold">
+                      <span class="text-theme-dim font-sans">Claimant:</span>
+                      <router-link :to="`/wallet/${op.claimant}`" class="text-cyan-600 dark:text-cyan-400 hover:underline ml-1 font-mono font-medium">
                         {{ shortenAddress(op.claimant) }}
                       </router-link>
                     </div>
@@ -250,7 +250,7 @@
                   <div v-else-if="op.type === 'change_trust'" class="space-y-2 bg-theme-panel2/70 p-3.5 rounded-xl border border-theme-line text-xs font-mono">
                     <div class="flex items-center justify-between gap-2">
                       <div class="flex items-center gap-1.5">
-                        <span class="text-theme-faint">Asset:</span>
+                        <span class="text-theme-dim font-sans">Asset:</span>
                         <router-link v-if="op.asset_code && op.asset_issuer" 
                                      :to="{ path: '/token-insight', query: { asset_code: op.asset_code, issuer: op.asset_issuer } }" 
                                      class="text-cyan-600 dark:text-cyan-400 hover:underline font-bold uppercase">
@@ -258,13 +258,13 @@
                         </router-link>
                         <span v-else class="text-theme-ink font-bold">{{ op.asset_code || 'LP' }}</span>
                       </div>
-                      <div class="text-theme-faint text-[11px]">
-                        Limit: <span class="text-theme-ink font-semibold">{{ op.limit ? formatNumber(op.limit, 2) : 'No Limit' }}</span>
+                      <div class="text-theme-dim text-xs font-sans">
+                        Limit: <span class="text-theme-ink font-mono font-semibold">{{ op.limit ? formatNumber(op.limit, 2) : 'No Limit' }}</span>
                       </div>
                     </div>
-                    <div v-if="op.asset_issuer" class="text-[11px] text-theme-faint">
+                    <div v-if="op.asset_issuer" class="text-xs text-theme-dim font-sans">
                       Issuer: 
-                      <router-link :to="`/wallet/${op.asset_issuer}`" class="text-theme-dim hover:text-cyan-400 ml-1">
+                      <router-link :to="`/wallet/${op.asset_issuer}`" class="text-theme-dim hover:text-cyan-400 ml-1 font-mono">
                         {{ shortenAddress(op.asset_issuer) }}
                       </router-link>
                     </div>
@@ -273,19 +273,19 @@
                   <!-- 5. CREATE ACCOUNT -->
                   <div v-else-if="op.type === 'create_account'" class="space-y-2 bg-theme-panel2/70 p-3.5 rounded-xl border border-theme-line text-xs font-mono">
                     <div class="flex items-center gap-2">
-                      <span class="text-[10px] font-bold text-theme-dim uppercase">Starting Balance:</span>
+                      <span class="text-xs font-semibold text-slate-400 font-sans">Starting Balance:</span>
                       <span class="text-sm font-extrabold text-emerald-400 font-mono">{{ formatNumber(op.starting_balance, 2) }} XLM</span>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-theme-line/60 text-[11px]">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-theme-line/60 text-xs font-sans">
                       <div>
-                        <span class="text-theme-faint">Funder:</span>
-                        <router-link :to="`/wallet/${op.funder}`" class="text-cyan-600 dark:text-cyan-400 hover:underline ml-1 font-semibold">
+                        <span class="text-theme-dim">Funder:</span>
+                        <router-link :to="`/wallet/${op.funder}`" class="text-cyan-600 dark:text-cyan-400 hover:underline ml-1 font-mono font-medium">
                           {{ shortenAddress(op.funder) }}
                         </router-link>
                       </div>
                       <div>
-                        <span class="text-theme-faint">Account Created:</span>
-                        <router-link :to="`/wallet/${op.account}`" class="text-cyan-600 dark:text-cyan-400 hover:underline ml-1 font-semibold">
+                        <span class="text-theme-dim">Account Created:</span>
+                        <router-link :to="`/wallet/${op.account}`" class="text-cyan-600 dark:text-cyan-400 hover:underline ml-1 font-mono font-medium">
                           {{ shortenAddress(op.account) }}
                         </router-link>
                       </div>
@@ -401,12 +401,12 @@
                 <h3 class="font-sans font-semibold text-sm text-theme-ink">Details</h3>
               </div>
 
-              <div class="p-5 space-y-4 text-xs font-mono">
+              <div class="p-5 space-y-4 text-xs font-sans">
                 <!-- Source Account -->
                 <div class="space-y-1">
-                  <div class="text-[10px] text-theme-faint uppercase font-bold">Source Account</div>
+                  <div class="text-xs font-semibold text-slate-400">Source Account</div>
                   <div class="flex items-center justify-between gap-2">
-                    <router-link :to="`/wallet/${txData.source_account}`" class="text-cyan-600 dark:text-cyan-400 hover:underline font-semibold truncate" :title="txData.source_account">
+                    <router-link :to="`/wallet/${txData.source_account}`" class="text-cyan-600 dark:text-cyan-400 hover:underline font-mono font-semibold truncate" :title="txData.source_account">
                       {{ shortenAddress(txData.source_account) }}
                     </router-link>
                     <button @click="copyText(txData.source_account, 'source')" class="p-1 text-theme-dim hover:text-theme-ink transition">
@@ -418,49 +418,49 @@
 
                 <!-- Fee Account -->
                 <div class="space-y-1 pt-2 border-t border-theme-line" v-if="txData.fee_account && txData.fee_account !== txData.source_account">
-                  <div class="text-[10px] text-theme-faint uppercase font-bold">Fee Account</div>
-                  <router-link :to="`/wallet/${txData.fee_account}`" class="text-cyan-600 dark:text-cyan-400 hover:underline font-semibold block truncate">
+                  <div class="text-xs font-semibold text-slate-400">Fee Account</div>
+                  <router-link :to="`/wallet/${txData.fee_account}`" class="text-cyan-600 dark:text-cyan-400 hover:underline font-mono font-semibold block truncate">
                     {{ shortenAddress(txData.fee_account) }}
                   </router-link>
                 </div>
 
                 <!-- Sequence Number -->
                 <div class="space-y-1 pt-2 border-t border-theme-line">
-                  <div class="text-[10px] text-theme-faint uppercase font-bold">Sequence Number</div>
-                  <div class="text-theme-ink font-semibold select-all">{{ txData.source_account_sequence }}</div>
+                  <div class="text-xs font-semibold text-slate-400">Sequence Number</div>
+                  <div class="text-theme-ink font-semibold font-mono select-all">{{ txData.source_account_sequence }}</div>
                 </div>
 
                 <!-- Max Fee -->
                 <div class="space-y-1 pt-2 border-t border-theme-line">
-                  <div class="text-[10px] text-theme-faint uppercase font-bold">Max Fee / Bid</div>
-                  <div class="text-theme-ink font-semibold">{{ txData.max_fee_xlm }} XLM <span class="text-theme-faint text-[10px]">({{ txData.max_fee_stroops }} Stroops)</span></div>
+                  <div class="text-xs font-semibold text-slate-400">Max Fee / Bid</div>
+                  <div class="text-theme-ink font-semibold font-mono">{{ txData.max_fee_xlm }} XLM <span class="text-theme-faint text-[10px]">({{ txData.max_fee_stroops }} Stroops)</span></div>
                 </div>
 
                 <!-- Memo -->
                 <div class="space-y-1 pt-2 border-t border-theme-line">
                   <div class="flex items-center justify-between">
-                    <div class="text-[10px] text-theme-faint uppercase font-bold">Memo</div>
-                    <span class="text-[9px] uppercase px-1.5 py-0.2 bg-theme-panel2 text-theme-dim border border-theme-line rounded font-bold">
+                    <div class="text-xs font-semibold text-slate-400">Memo</div>
+                    <span class="text-[10px] px-2 py-0.5 bg-theme-panel2 text-theme-dim border border-theme-line rounded font-medium">
                       {{ txData.memo_type }}
                     </span>
                   </div>
-                  <div class="text-theme-ink font-semibold select-all break-all">
+                  <div class="text-theme-ink font-semibold font-mono select-all break-all">
                     {{ txData.memo || (txData.memo_type === 'none' ? 'None' : '--') }}
                   </div>
                 </div>
 
                 <!-- Preconditions -->
                 <div class="space-y-1 pt-2 border-t border-theme-line" v-if="txData.preconditions">
-                  <div class="text-[10px] text-theme-faint uppercase font-bold">Preconditions</div>
-                  <div v-if="txData.preconditions.timebounds" class="text-[11px] text-theme-dim space-y-0.5">
+                  <div class="text-xs font-semibold text-slate-400">Preconditions</div>
+                  <div v-if="txData.preconditions.timebounds" class="text-xs text-theme-dim space-y-0.5 font-sans">
                     <div v-if="txData.preconditions.timebounds.max_time">
-                      Valid before: <span class="text-theme-ink font-semibold">{{ formatTimestamp(txData.preconditions.timebounds.max_time) }}</span>
+                      Valid before: <span class="text-theme-ink font-semibold font-mono">{{ formatTimestamp(txData.preconditions.timebounds.max_time) }}</span>
                     </div>
                     <div v-if="txData.preconditions.timebounds.min_time && txData.preconditions.timebounds.min_time !== '0'">
-                      Valid after: <span class="text-theme-ink font-semibold">{{ formatTimestamp(txData.preconditions.timebounds.min_time) }}</span>
+                      Valid after: <span class="text-theme-ink font-semibold font-mono">{{ formatTimestamp(txData.preconditions.timebounds.min_time) }}</span>
                     </div>
                   </div>
-                  <div v-else class="text-[11px] text-theme-dim">No specific conditions</div>
+                  <div v-else class="text-xs text-theme-dim font-sans">No specific conditions</div>
                 </div>
               </div>
             </section>
@@ -711,6 +711,10 @@ onMounted(() => {
 
 <style scoped>
 .tx-page-wrapper {
+  --mono: var(--font-mono, "JetBrains Mono", ui-monospace, monospace);
+  --disp: var(--font-disp, "Space Grotesk", sans-serif);
+  --body: var(--font-sans, "Inter", sans-serif);
+
   background: var(--bg);
   color: var(--ink);
   font-family: var(--body);

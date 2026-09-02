@@ -85,15 +85,15 @@
             </div>
 
             <!-- Right Side: Value & Key balances -->
-            <div class="flex flex-wrap sm:flex-nowrap items-center gap-4 lg:text-right w-full lg:w-auto">
+            <div class="flex flex-wrap sm:flex-nowrap items-center gap-4 lg:text-right w-full lg:w-auto font-sans">
               <!-- Highlighted Portfolio Value Card -->
               <div class="bg-gradient-to-br from-cyan-500/10 to-purple-500/10 border border-cyan-500/30 p-4 rounded-xl flex-1 sm:flex-none min-w-[170px] space-y-1 shadow-lg shadow-cyan-500/5">
-                <div class="text-[10px] uppercase text-cyan-600 dark:text-cyan-400 tracking-widest font-bold">Portfolio Value</div>
+                <div class="text-xs font-semibold text-cyan-600 dark:text-cyan-400">Portfolio Value</div>
                 <div class="text-2xl font-black text-theme-ink font-mono leading-none py-1">
                   <span v-if="overviewLoading" class="inline-block w-28 h-7 bg-theme-line animate-pulse rounded"></span>
                   <span v-else>${{ formatNumber(overviewData?.portfolio_value_usd, 2) }}</span>
                 </div>
-                <div class="text-[11px] text-theme-dim font-mono">
+                <div class="text-xs text-theme-dim font-mono">
                   <span v-if="overviewLoading" class="inline-block w-16 h-3 bg-theme-line animate-pulse rounded"></span>
                   <span v-else>{{ formatNumber(overviewData?.portfolio_value_xlm, 2) }} XLM</span>
                 </div>
@@ -101,22 +101,22 @@
 
               <!-- XLM Balance -->
               <div class="bg-theme-panel2 border border-theme-line p-4 rounded-xl flex-1 sm:flex-none min-w-[110px] space-y-1">
-                <div class="text-[10px] uppercase text-theme-faint tracking-wider font-semibold">XLM Balance</div>
+                <div class="text-xs font-semibold text-slate-400">XLM Balance</div>
                 <div class="text-lg font-bold text-theme-ink font-mono leading-tight py-1">
                   <span v-if="overviewLoading" class="inline-block w-16 h-5 bg-theme-line animate-pulse rounded"></span>
                   <span v-else>{{ formatNumber(overviewData?.xlm_balance, 2) }}</span>
                 </div>
-                <div class="text-[11px] text-theme-dim font-semibold uppercase">Native XLM</div>
+                <div class="text-xs text-theme-dim font-medium">Native XLM</div>
               </div>
 
               <!-- Assets Held -->
               <div class="bg-theme-panel2 border border-theme-line p-4 rounded-xl flex-1 sm:flex-none min-w-[100px] space-y-1">
-                <div class="text-[10px] uppercase text-theme-faint tracking-wider font-semibold">Assets Held</div>
+                <div class="text-xs font-semibold text-slate-400">Assets Held</div>
                 <div class="text-lg font-bold text-theme-ink font-mono leading-tight py-1">
                   <span v-if="overviewLoading" class="inline-block w-10 h-5 bg-theme-line animate-pulse rounded"></span>
                   <span v-else>{{ overviewData?.assets_held ?? 0 }}</span>
                 </div>
-                <div class="text-[11px] text-theme-dim font-semibold uppercase">Positions</div>
+                <div class="text-xs text-theme-dim font-medium">Positions</div>
               </div>
 
               <!-- Trustlines -->
@@ -187,7 +187,7 @@
                     <input type="text" 
                            v-model="holdingsSearchQuery" 
                            placeholder="Search assets..." 
-                           class="w-full bg-theme-panel border border-theme-line rounded-lg px-3 py-1.5 text-xs text-theme-ink placeholder-theme-faint focus:outline-none focus:border-cyan-500 transition" />
+                           class="w-full bg-theme-panel border border-theme-line rounded-lg px-3 py-1.5 text-xs text-theme-ink placeholder-theme-faint placeholder:font-sans font-sans focus:outline-none focus:border-cyan-500 transition" />
                   </div>
                   
                   <div class="flex items-center gap-2 self-stretch sm:self-auto justify-between sm:justify-start">
@@ -297,7 +297,7 @@
                     <input type="text" 
                            v-model="trustlinesSearchQuery" 
                            placeholder="Search by code or issuer..." 
-                           class="w-full bg-theme-panel border border-theme-line rounded-lg px-3 py-1.5 text-xs text-theme-ink placeholder-theme-faint focus:outline-none focus:border-cyan-500 transition" />
+                           class="w-full bg-theme-panel border border-theme-line rounded-lg px-3 py-1.5 text-xs text-theme-ink placeholder-theme-faint placeholder:font-sans font-sans focus:outline-none focus:border-cyan-500 transition" />
                   </div>
                   <div class="text-[10px] text-theme-dim font-mono">
                     Showing {{ Math.min(trustlinesLimit, trustlinesFiltered.length) }} of {{ trustlinesFiltered.length }} trustlines
@@ -405,7 +405,7 @@
                     <input type="text" 
                            v-model="poolsSearchQuery" 
                            placeholder="Search pools..." 
-                           class="w-full bg-theme-panel border border-theme-line rounded-lg px-3 py-1.5 text-xs text-theme-ink placeholder-theme-faint focus:outline-none focus:border-cyan-500 transition" />
+                           class="w-full bg-theme-panel border border-theme-line rounded-lg px-3 py-1.5 text-xs text-theme-ink placeholder-theme-faint placeholder:font-sans placeholder:font-medium font-sans focus:outline-none focus:border-cyan-500 transition" />
                   </div>
                   
                   <div class="flex items-center gap-2 self-stretch sm:self-auto justify-between sm:justify-start">
@@ -559,11 +559,11 @@
             <div v-else class="overflow-auto max-h-[350px] custom-scrollbar">
               <table class="w-full text-left border-collapse min-w-[600px]">
                 <thead>
-                  <tr class="border-b border-theme-line text-[10px] font-mono uppercase tracking-wider text-theme-dim bg-theme-panel2/50">
-                    <th class="py-3.5 px-4 font-semibold">Asset</th>
-                    <th class="py-3.5 px-4 font-semibold text-right">Balance</th>
-                    <th class="py-3.5 px-4 font-semibold text-right">Price (USD)</th>
-                    <th class="py-3.5 px-4 font-semibold text-right">Value (USD)</th>
+                  <tr class="border-b border-theme-line text-xs font-sans font-semibold text-theme-dim bg-theme-panel2/50">
+                    <th class="py-3.5 px-4">Asset</th>
+                    <th class="py-3.5 px-4 text-right">Balance</th>
+                    <th class="py-3.5 px-4 text-right">Price (USD)</th>
+                    <th class="py-3.5 px-4 text-right">Value (USD)</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-theme-line text-xs font-mono">
@@ -656,76 +656,76 @@
                         <!-- BUY -->
                         <div v-if="event.event_type === 'BUY'" class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 mr-2">BUY</span>
+                            <span class="text-[11px] font-sans font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 mr-2">BUY</span>
                             <span class="font-bold text-theme-ink">Bought {{ formatNumber(event.amount, 2) }} {{ event.asset_code }}</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono">
-                            Spent {{ formatNumber(event.counter_amount, 2) }} {{ event.counter_asset_code || 'XLM' }}
+                          <div class="text-xs text-theme-dim font-sans mt-0.5">
+                            Spent <span class="font-mono font-medium text-theme-ink">{{ formatNumber(event.counter_amount, 2) }}</span> {{ event.counter_asset_code || 'XLM' }}
                           </div>
                         </div>
 
                         <!-- SELL -->
                         <div v-else-if="event.event_type === 'SELL'" class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20 mr-2">SELL</span>
+                            <span class="text-[11px] font-sans font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20 mr-2">SELL</span>
                             <span class="font-bold text-theme-ink">Sold {{ formatNumber(event.amount, 2) }} {{ event.asset_code }}</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono">
-                            Received {{ formatNumber(event.counter_amount, 2) }} {{ event.counter_asset_code || 'XLM' }}
+                          <div class="text-xs text-theme-dim font-sans mt-0.5">
+                            Received <span class="font-mono font-medium text-theme-ink">{{ formatNumber(event.counter_amount, 2) }}</span> {{ event.counter_asset_code || 'XLM' }}
                           </div>
                         </div>
 
                         <!-- PAYMENT IN -->
                         <div v-else-if="event.event_type === 'PAYMENT_IN'" class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-teal-600 dark:text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded border border-teal-500/20 mr-2">INCOMING</span>
+                            <span class="text-[11px] font-sans font-semibold text-teal-600 dark:text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded border border-teal-500/20 mr-2">INCOMING</span>
                             <span class="font-bold text-emerald-600 dark:text-emerald-400">+{{ formatNumber(event.amount, 2) }} {{ event.asset_code || 'XLM' }}</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono">
-                            Received from <router-link v-if="event.counterparty_address" :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link><span v-else class="text-theme-ink select-all font-semibold">Unknown</span>
+                          <div class="text-xs text-theme-dim font-sans mt-0.5">
+                            Received from <router-link v-if="event.counterparty_address" :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-mono font-medium transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link><span v-else class="text-theme-ink select-all font-medium">Unknown</span>
                           </div>
                         </div>
 
                         <!-- PAYMENT OUT -->
                         <div v-else-if="event.event_type === 'PAYMENT_OUT'" class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20 mr-2">OUTGOING</span>
+                            <span class="text-[11px] font-sans font-semibold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20 mr-2">OUTGOING</span>
                             <span class="font-bold text-rose-600 dark:text-rose-400">-{{ formatNumber(event.amount, 2) }} {{ event.asset_code || 'XLM' }}</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono">
-                            Sent to <router-link v-if="event.counterparty_address" :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link><span v-else class="text-theme-ink select-all font-semibold">Unknown</span>
+                          <div class="text-xs text-theme-dim font-sans mt-0.5">
+                            Sent to <router-link v-if="event.counterparty_address" :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-mono font-medium transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link><span v-else class="text-theme-ink select-all font-medium">Unknown</span>
                           </div>
                         </div>
 
                         <!-- LP ADD -->
                         <div v-else-if="event.event_type === 'LP_ADD'" class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20 mr-2">LP ADD</span>
+                            <span class="text-[11px] font-sans font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20 mr-2">LP ADD</span>
                             <span class="font-bold text-theme-ink">Added Liquidity</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono">
-                            Provided {{ formatNumber(event.amount, 2) }} {{ event.asset_code || 'LP' }}
+                          <div class="text-xs text-theme-dim font-sans mt-0.5">
+                            Provided <span class="font-mono font-medium text-theme-ink">{{ formatNumber(event.amount, 2) }}</span> {{ event.asset_code || 'LP' }}
                           </div>
                         </div>
 
                         <!-- LP REMOVE -->
                         <div v-else-if="event.event_type === 'LP_REMOVE'" class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20 mr-2">LP REMOVE</span>
+                            <span class="text-[11px] font-sans font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20 mr-2">LP REMOVE</span>
                             <span class="font-bold text-theme-ink">Removed Liquidity</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono">
-                            Withdrew {{ formatNumber(event.amount, 2) }} {{ event.asset_code || 'LP' }}
+                          <div class="text-xs text-theme-dim font-sans mt-0.5">
+                            Withdrew <span class="font-mono font-medium text-theme-ink">{{ formatNumber(event.amount, 2) }}</span> {{ event.asset_code || 'LP' }}
                           </div>
                         </div>
 
                         <!-- TRUSTLINE ADD -->
                         <div v-else-if="event.event_type === 'TRUSTLINE_ADD'" class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-theme-dim bg-theme-panel2 border border-theme-line px-2 py-0.5 rounded mr-2">TRUSTLINE</span>
+                            <span class="text-[11px] font-sans font-semibold text-theme-dim bg-theme-panel2 border border-theme-line px-2 py-0.5 rounded mr-2">TRUSTLINE</span>
                             <span class="font-bold text-theme-ink">Added Trustline</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono">
+                          <div class="text-xs text-theme-dim font-sans mt-0.5">
                             Opened trustline for token <span class="text-theme-ink font-semibold">{{ event.asset_code }}</span>
                           </div>
                         </div>
@@ -733,10 +733,10 @@
                         <!-- TRUSTLINE REMOVE -->
                         <div v-else-if="event.event_type === 'TRUSTLINE_REMOVE'" class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-theme-faint bg-theme-panel2 border border-theme-line px-2 py-0.5 rounded mr-2">TRUSTLINE</span>
+                            <span class="text-[11px] font-sans font-semibold text-theme-dim bg-theme-panel2 border border-theme-line px-2 py-0.5 rounded mr-2">TRUSTLINE</span>
                             <span class="font-bold text-theme-ink">Removed Trustline</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono">
+                          <div class="text-xs text-theme-dim font-sans mt-0.5">
                             Closed trustline for token <span class="text-theme-ink font-semibold">{{ event.asset_code }}</span>
                           </div>
                         </div>
@@ -744,104 +744,104 @@
                         <!-- CLAIMABLE BALANCE CLAIM -->
                         <div v-else-if="event.event_type === 'CLAIMABLE_BALANCE_CLAIM'" class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 mr-2">CLAIM</span>
+                            <span class="text-[11px] font-sans font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 mr-2">CLAIM</span>
                             <span class="font-bold text-theme-ink">Claimed Pending Balance</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono" v-if="event.counterparty_address">
-                            Claimed from <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link>
+                          <div class="text-xs text-theme-dim font-sans mt-0.5" v-if="event.counterparty_address">
+                            Claimed from <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-mono font-medium transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link>
                           </div>
                         </div>
 
                         <!-- CLAIMABLE BALANCE CREATE -->
                         <div v-else-if="event.event_type === 'CLAIMABLE_BALANCE_CREATE'" class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 mr-2">CLAIMABLE</span>
+                            <span class="text-[11px] font-sans font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 mr-2">CLAIMABLE</span>
                             <span class="font-bold text-theme-ink">Created Claimable Balance</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono">
-                            <span>Locked {{ formatNumber(event.amount, 5) }} {{ event.asset_code }}</span>
-                            <span v-if="event.counterparty_address"> for <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link></span>
+                          <div class="text-xs text-theme-dim font-sans mt-0.5">
+                            <span>Locked <span class="font-mono font-medium text-theme-ink">{{ formatNumber(event.amount, 5) }}</span> {{ event.asset_code }}</span>
+                            <span v-if="event.counterparty_address"> for <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-mono font-medium transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link></span>
                           </div>
                         </div>
 
                         <!-- CLAIMABLE BALANCE RECEIVED -->
                         <div v-else-if="event.event_type === 'CLAIMABLE_BALANCE_RECEIVED'" class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 mr-2">CLAIMABLE</span>
+                            <span class="text-[11px] font-sans font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 mr-2">CLAIMABLE</span>
                             <span class="font-bold text-theme-ink">Received Claimable Balance</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono">
-                            <span>{{ formatNumber(event.amount, 5) }} {{ event.asset_code }} available to claim</span>
+                          <div class="text-xs text-theme-dim font-sans mt-0.5">
+                            <span><span class="font-mono font-medium text-theme-ink">{{ formatNumber(event.amount, 5) }}</span> {{ event.asset_code }} available to claim</span>
                           </div>
                         </div>
 
                         <!-- ACCOUNT MERGE -->
                         <div v-else-if="event.event_type === 'ACCOUNT_MERGE'" class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20 mr-2">MERGE</span>
+                            <span class="text-[11px] font-sans font-semibold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20 mr-2">MERGE</span>
                             <span class="font-bold text-theme-ink">Account Merged</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono">
-                            Merged into <router-link v-if="event.counterparty_address" :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link>
+                          <div class="text-xs text-theme-dim font-sans mt-0.5">
+                            Merged into <router-link v-if="event.counterparty_address" :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-mono font-medium transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link>
                           </div>
                         </div>
 
                         <!-- CLAWBACK -->
                         <div v-else-if="event.event_type === 'CLAWBACK'" class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20 mr-2">CLAWBACK</span>
+                            <span class="text-[11px] font-sans font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20 mr-2">CLAWBACK</span>
                             <span class="font-bold text-theme-ink">Clawback Asset</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono">
-                            <span>{{ formatNumber(event.amount, 2) }} {{ event.asset_code }}</span>
-                            <span v-if="event.counterparty_address"> from <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link></span>
+                          <div class="text-xs text-theme-dim font-sans mt-0.5">
+                            <span><span class="font-mono font-medium text-theme-ink">{{ formatNumber(event.amount, 2) }}</span> {{ event.asset_code }}</span>
+                            <span v-if="event.counterparty_address"> from <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-mono font-medium transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link></span>
                           </div>
                         </div>
 
                         <!-- TRUSTLINE FLAGS -->
                         <div v-else-if="event.event_type === 'TRUSTLINE_FLAGS'" class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-theme-dim bg-theme-panel2 border border-theme-line px-2 py-0.5 rounded mr-2">FLAGS</span>
+                            <span class="text-[11px] font-sans font-semibold text-theme-dim bg-theme-panel2 border border-theme-line px-2 py-0.5 rounded mr-2">FLAGS</span>
                             <span class="font-bold text-theme-ink">Trustline Flags</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono">
+                          <div class="text-xs text-theme-dim font-sans mt-0.5">
                             <span>Token {{ event.asset_code }}</span>
-                            <span v-if="event.counterparty_address"> for <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link></span>
+                            <span v-if="event.counterparty_address"> for <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-mono font-medium transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link></span>
                           </div>
                         </div>
 
                         <!-- SMART CONTRACT / SOROBAN -->
                         <div v-else-if="event.event_type === 'INVOKE_HOST_FUNCTION'" class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 mr-2">CONTRACT</span>
+                            <span class="text-[11px] font-sans font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 mr-2">CONTRACT</span>
                             <span class="font-bold text-theme-ink">Smart Contract Invocation</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono" v-if="event.counterparty_address">
-                            Function: {{ event.counterparty_address }}
+                          <div class="text-xs text-theme-dim font-sans mt-0.5" v-if="event.counterparty_address">
+                            Function: <span class="font-mono">{{ event.counterparty_address }}</span>
                           </div>
                         </div>
 
                         <!-- SET OPTIONS / MANAGE DATA -->
                         <div v-else-if="event.event_type === 'SET_OPTIONS' || event.event_type === 'MANAGE_DATA'" class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-theme-dim bg-theme-panel2 border border-theme-line px-2 py-0.5 rounded mr-2">CONFIG</span>
+                            <span class="text-[11px] font-sans font-semibold text-theme-dim bg-theme-panel2 border border-theme-line px-2 py-0.5 rounded mr-2">CONFIG</span>
                             <span class="font-bold text-theme-ink">{{ getEventName(event.event_type) }}</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono">
-                            <span v-if="event.asset_code">Key: {{ event.asset_code }}</span>
-                            <span v-if="event.counterparty_address && /^G[A-Z2-7]{55}$/.test(event.counterparty_address)"> | Signer: <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link></span>
+                          <div class="text-xs text-theme-dim font-sans mt-0.5">
+                            <span v-if="event.asset_code">Key: <span class="font-mono">{{ event.asset_code }}</span></span>
+                            <span v-if="event.counterparty_address && /^G[A-Z2-7]{55}$/.test(event.counterparty_address)"> | Signer: <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-mono font-medium transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link></span>
                           </div>
                         </div>
 
                         <!-- DEFAULT -->
                         <div v-else class="space-y-0.5">
                           <div>
-                            <span class="text-[10px] uppercase font-mono font-bold tracking-widest text-theme-dim bg-theme-panel2 border border-theme-line px-2 py-0.5 rounded mr-2">OP</span>
+                            <span class="text-[11px] font-sans font-semibold text-theme-dim bg-theme-panel2 border border-theme-line px-2 py-0.5 rounded mr-2">OP</span>
                             <span class="font-bold text-theme-ink">{{ getEventName(event.event_type) }}</span>
                           </div>
-                          <div class="text-[10px] text-theme-faint font-mono">
-                            <span v-if="event.amount">Amount: {{ formatNumber(event.amount, 2) }} {{ event.asset_code }}</span>
-                            <span v-if="event.counterparty_address && /^G[A-Z2-7]{55}$/.test(event.counterparty_address)"> with <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-semibold transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link></span>
+                          <div class="text-xs text-theme-dim font-sans mt-0.5">
+                            <span v-if="event.amount">Amount: <span class="font-mono font-medium text-theme-ink">{{ formatNumber(event.amount, 2) }}</span> {{ event.asset_code }}</span>
+                            <span v-if="event.counterparty_address && /^G[A-Z2-7]{55}$/.test(event.counterparty_address)"> with <router-link :to="`/wallet/${event.counterparty_address}`" class="text-cyan-600 dark:text-cyan-400 hover:underline select-all font-mono font-medium transition-colors">{{ shortenAddress(event.counterparty_address) }}</router-link></span>
                           </div>
                         </div>
                       </div>
@@ -870,7 +870,7 @@
               <div v-if="hasMoreEvents && filteredEvents.length > 0" class="p-4 text-center border-t border-theme-line bg-theme-panel2/50">
                 <button @click="loadMoreEvents" 
                         :disabled="activityLoading"
-                        class="text-[10px] font-mono font-bold uppercase tracking-wider px-5 py-2 bg-theme-panel border border-theme-line hover:border-theme-line2 transition rounded-lg text-theme-ink cursor-pointer disabled:opacity-50">
+                        class="text-xs font-sans font-semibold px-5 py-2 bg-theme-panel border border-theme-line hover:border-theme-line2 transition rounded-lg text-theme-ink cursor-pointer disabled:opacity-50 shadow-sm">
                   <span v-if="activityLoading">Loading...</span>
                   <span v-else>Load More Activity</span>
                 </button>
@@ -890,65 +890,65 @@
 
               <div class="p-5 space-y-5">
                 <!-- Signers List -->
-                <div class="space-y-2">
-                  <div class="text-[10px] font-mono uppercase tracking-wider text-theme-dim font-semibold">Signers & Weights</div>
+                <div class="space-y-2 font-sans">
+                  <div class="text-xs font-semibold text-slate-400">Signers & Weights</div>
                   <div class="space-y-1.5">
                     <div v-for="signer in sortedSigners" :key="signer.key" 
                          class="p-2.5 bg-theme-panel2 border border-theme-line rounded-lg flex items-center justify-between text-xs font-mono">
-                      <div class="flex items-center gap-2 min-w-0">
-                        <span class="w-1.5 h-1.5 rounded-full" :class="signer.key === address ? 'bg-cyan-500' : 'bg-theme-faint'"></span>
-                        <router-link v-if="signer.key !== address" :to="`/wallet/${signer.key}`" class="text-cyan-600 dark:text-cyan-400 hover:underline truncate max-w-[170px] transition-colors" :title="signer.key">
+                      <div class="flex items-center gap-2 min-w-0 font-sans">
+                        <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="signer.key === address ? 'bg-cyan-500' : 'bg-theme-faint'"></span>
+                        <router-link v-if="signer.key !== address" :to="`/wallet/${signer.key}`" class="text-cyan-600 dark:text-cyan-400 hover:underline truncate max-w-[170px] transition-colors font-mono" :title="signer.key">
                           {{ shortenAddress(signer.key) }}
                         </router-link>
-                        <span v-else class="text-theme-ink truncate max-w-[170px]" :title="signer.key">{{ shortenAddress(signer.key) }}</span>
-                        <span v-if="signer.key === address" class="text-[9px] uppercase px-1.5 py-0.2 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 rounded font-bold">Master</span>
+                        <span v-else class="text-theme-ink truncate max-w-[170px] font-mono" :title="signer.key">{{ shortenAddress(signer.key) }}</span>
+                        <span v-if="signer.key === address" class="text-[10px] px-2 py-0.5 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 rounded font-semibold">Master</span>
                       </div>
-                      <span class="text-theme-ink font-bold bg-theme-panel border border-theme-line px-2 py-0.5 rounded text-[11px]">Weight: {{ signer.weight }}</span>
+                      <span class="text-theme-ink font-semibold bg-theme-panel border border-theme-line px-2.5 py-0.5 rounded text-xs font-sans">Weight: <span class="font-mono font-bold">{{ signer.weight }}</span></span>
                     </div>
-                    <div v-if="!overviewData?.signers?.length" class="text-xs text-theme-dim font-mono py-1">
+                    <div v-if="!overviewData?.signers?.length" class="text-xs text-theme-dim font-sans py-1">
                       No signers found
                     </div>
                   </div>
                 </div>
 
                 <!-- Thresholds -->
-                <div class="space-y-2 pt-2 border-t border-theme-line">
-                  <div class="text-[10px] font-mono uppercase tracking-wider text-theme-dim font-semibold">Operation Thresholds</div>
-                  <div class="grid grid-cols-3 gap-2 text-center font-mono">
+                <div class="space-y-2 pt-2 border-t border-theme-line font-sans">
+                  <div class="text-xs font-semibold text-slate-400">Operation Thresholds</div>
+                  <div class="grid grid-cols-3 gap-2 text-center">
                     <div class="p-2 bg-theme-panel2 border border-theme-line rounded-lg">
-                      <div class="text-[10px] text-theme-faint">Low</div>
-                      <div class="text-sm font-bold text-theme-ink">{{ overviewData?.thresholds?.low_threshold ?? 0 }}</div>
+                      <div class="text-[11px] text-theme-dim">Low</div>
+                      <div class="text-sm font-bold text-theme-ink font-mono">{{ overviewData?.thresholds?.low_threshold ?? 0 }}</div>
                     </div>
                     <div class="p-2 bg-theme-panel2 border border-theme-line rounded-lg">
-                      <div class="text-[10px] text-theme-faint">Medium</div>
-                      <div class="text-sm font-bold text-cyan-600 dark:text-cyan-400">{{ overviewData?.thresholds?.med_threshold ?? 0 }}</div>
+                      <div class="text-[11px] text-theme-dim">Medium</div>
+                      <div class="text-sm font-bold text-cyan-600 dark:text-cyan-400 font-mono">{{ overviewData?.thresholds?.med_threshold ?? 0 }}</div>
                     </div>
                     <div class="p-2 bg-theme-panel2 border border-theme-line rounded-lg">
-                      <div class="text-[10px] text-theme-faint">High</div>
-                      <div class="text-sm font-bold text-rose-600 dark:text-rose-400">{{ overviewData?.thresholds?.high_threshold ?? 0 }}</div>
+                      <div class="text-[11px] text-theme-dim">High</div>
+                      <div class="text-sm font-bold text-rose-600 dark:text-rose-400 font-mono">{{ overviewData?.thresholds?.high_threshold ?? 0 }}</div>
                     </div>
                   </div>
                 </div>
 
                 <!-- Flags -->
-                <div class="space-y-2 pt-2 border-t border-theme-line">
-                  <div class="text-[10px] font-mono uppercase tracking-wider text-theme-dim font-semibold">Account Flags</div>
-                  <div class="grid grid-cols-2 gap-1.5 text-[11px] font-mono">
+                <div class="space-y-2 pt-2 border-t border-theme-line font-sans">
+                  <div class="text-xs font-semibold text-slate-400">Account Flags</div>
+                  <div class="grid grid-cols-2 gap-1.5 text-xs">
                     <div class="p-2 bg-theme-panel2 border border-theme-line rounded flex items-center justify-between">
                       <span class="text-theme-dim">Auth Required</span>
-                      <span class="font-bold" :class="overviewData?.flags?.auth_required ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-faint'">{{ overviewData?.flags?.auth_required ? 'Yes' : 'No' }}</span>
+                      <span class="font-semibold" :class="overviewData?.flags?.auth_required ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-faint'">{{ overviewData?.flags?.auth_required ? 'Yes' : 'No' }}</span>
                     </div>
                     <div class="p-2 bg-theme-panel2 border border-theme-line rounded flex items-center justify-between">
                       <span class="text-theme-dim">Auth Revocable</span>
-                      <span class="font-bold" :class="overviewData?.flags?.auth_revocable ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-faint'">{{ overviewData?.flags?.auth_revocable ? 'Yes' : 'No' }}</span>
+                      <span class="font-semibold" :class="overviewData?.flags?.auth_revocable ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-faint'">{{ overviewData?.flags?.auth_revocable ? 'Yes' : 'No' }}</span>
                     </div>
                     <div class="p-2 bg-theme-panel2 border border-theme-line rounded flex items-center justify-between">
                       <span class="text-theme-dim">Auth Immutable</span>
-                      <span class="font-bold" :class="overviewData?.flags?.auth_immutable ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-faint'">{{ overviewData?.flags?.auth_immutable ? 'Yes' : 'No' }}</span>
+                      <span class="font-semibold" :class="overviewData?.flags?.auth_immutable ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-faint'">{{ overviewData?.flags?.auth_immutable ? 'Yes' : 'No' }}</span>
                     </div>
                     <div class="p-2 bg-theme-panel2 border border-theme-line rounded flex items-center justify-between">
                       <span class="text-theme-dim">Clawback</span>
-                      <span class="font-bold" :class="overviewData?.flags?.auth_clawback_enabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-faint'">{{ overviewData?.flags?.auth_clawback_enabled ? 'Yes' : 'No' }}</span>
+                      <span class="font-semibold" :class="overviewData?.flags?.auth_clawback_enabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-faint'">{{ overviewData?.flags?.auth_clawback_enabled ? 'Yes' : 'No' }}</span>
                     </div>
                   </div>
                 </div>
@@ -1525,9 +1525,9 @@ onMounted(async () => {
 
 .asset-page-wrapper {
   --cyan: #12CBEE;
-  --mono: "JetBrains Mono", ui-monospace, monospace;
-  --disp: "Space Grotesk", sans-serif;
-  --body: "Inter", sans-serif;
+  --mono: var(--font-mono, "JetBrains Mono", ui-monospace, monospace);
+  --disp: var(--font-disp, "Space Grotesk", sans-serif);
+  --body: var(--font-sans, "Inter", sans-serif);
 
   background: var(--bg);
   color: var(--ink);

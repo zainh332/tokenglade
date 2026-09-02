@@ -32,18 +32,18 @@
                 @focus="isFocused = true"
                 @keydown.enter="handleEnterKey"
                 type="text" 
-                placeholder="Search token name or symbol..." 
-                class="bg-transparent border-0 outline-none text-xs text-white placeholder-slate-500 font-mono w-[190px] p-0 focus:ring-0"
+                placeholder="Search token, wallet, or tx hash..." 
+                class="bg-transparent border-0 outline-none text-xs text-white placeholder-slate-400 placeholder:font-sans font-sans font-medium w-[260px] p-0 focus:ring-0"
               />
               <span v-if="loading && searchQuery.trim() !== ''" class="animate-spin rounded-full h-3 w-3 border-b-2 border-cyan-400 flex-shrink-0"></span>
             </div>
 
             <!-- Autocomplete dropdown -->
             <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
-              <div v-if="isFocused" class="hsearch-dropdown absolute right-0 mt-2 w-[340px] bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-xl shadow-2xl z-[99] max-h-[300px] overflow-y-auto custom-scrollbar divide-y divide-[rgba(148,163,184,0.12)]">
+              <div v-if="isFocused" class="hsearch-dropdown absolute right-0 mt-2 w-[380px] bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-xl shadow-2xl z-[99] max-h-[300px] overflow-y-auto custom-scrollbar divide-y divide-[rgba(148,163,184,0.12)]">
                 <!-- If search input is empty -->
-                <div v-if="searchQuery.trim() === ''" class="p-4 text-center text-xs text-slate-400 font-mono">
-                  Type a token name or symbol (e.g. TKG, XLM) to search
+                <div v-if="searchQuery.trim() === ''" class="p-4 text-center text-xs text-slate-400 font-sans leading-relaxed">
+                  Search by token (e.g. <span class="text-cyan-400 font-bold">TKG</span>), wallet address (<span class="text-cyan-400 font-mono">G...</span>), or transaction hash
                 </div>
                 <!-- If Loading -->
                 <div v-else-if="loading && assets.length === 0" class="p-4 text-center text-xs text-slate-400 font-mono">
@@ -169,8 +169,8 @@
               @focus="isFocusedMobile = true"
               @keydown.enter="handleEnterKey"
               type="text" 
-              placeholder="Search token name or symbol..." 
-              class="bg-transparent border-0 outline-none text-[16px] text-theme-ink placeholder-theme-faint font-mono w-full p-0 focus:ring-0"
+              placeholder="Search token, wallet, or tx hash..." 
+              class="bg-transparent border-0 outline-none text-sm text-theme-ink placeholder-slate-400 placeholder:font-sans font-sans font-medium w-full p-0 focus:ring-0"
             />
             <span v-if="loading && searchQuery.trim() !== ''" class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-cyan-400 flex-shrink-0"></span>
           </div>
@@ -178,8 +178,8 @@
           <!-- Autocomplete dropdown mobile -->
           <div v-if="isFocusedMobile" class="mt-1 bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-xl shadow-2xl max-h-[220px] overflow-y-auto custom-scrollbar divide-y divide-[rgba(148,163,184,0.12)]">
             <!-- If search input is empty -->
-            <div v-if="searchQuery.trim() === ''" class="p-3 text-center text-xs text-slate-400 font-mono">
-              Type a token name or symbol (e.g. TKG, XLM) to search
+            <div v-if="searchQuery.trim() === ''" class="p-3 text-center text-xs text-slate-400 font-sans leading-relaxed">
+              Search by token (e.g. <span class="text-cyan-400 font-bold">TKG</span>), wallet address (<span class="text-cyan-400 font-mono">G...</span>), or transaction hash
             </div>
             <!-- If Loading -->
             <div v-else-if="loading && assets.length === 0" class="p-3 text-center text-xs text-slate-400 font-mono">
@@ -618,7 +618,7 @@ const OpenWalletModal = () => {
   --panel: #111620;
   --line: #1D2531;
   --faint: #586172;
-  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   
   margin-left: auto;
   display: flex;
@@ -626,13 +626,26 @@ const OpenWalletModal = () => {
   gap: 8px;
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 7px;
-  padding: 7px 11px;
-  min-width: 220px;
+  border-radius: 9px;
+  padding: 7px 12px;
+  min-width: 290px;
   color: var(--faint);
-  font-family: var(--mono);
-  font-size: 12.5px;
+  font-family: var(--sans);
+  font-size: 13px;
   transition: all 0.2s ease;
+}
+
+.hsearch input {
+  font-family: var(--sans);
+}
+
+.hsearch input::placeholder,
+.search-container-mobile input::placeholder {
+  font-family: var(--sans);
+  font-size: 12.5px;
+  font-weight: 400;
+  color: #64748b;
+  letter-spacing: normal;
 }
 
 .hsearch:hover {
