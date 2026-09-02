@@ -55,6 +55,7 @@ Route::prefix('wallet')->group(function () {
 });
 
 Route::middleware('admin')->prefix('admin')->group(function () {
+    Route::get('sidebar_counts', 'AdminController@getSidebarCounts');
     Route::get('wallets', 'AdminController@wallets');
     Route::get('tokens', 'AdminController@tokens');
     Route::delete('tokens/{id}', 'AdminController@deleteToken');

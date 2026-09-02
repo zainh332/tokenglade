@@ -836,6 +836,7 @@ function updateLocalClaim(id, newStatus, reason) {
       items.value[idx].rejection_reason = reason;
     }
   }
+  window.dispatchEvent(new CustomEvent('admin-counts-updated'));
 }
 
 function formatDate(isoStr) {
