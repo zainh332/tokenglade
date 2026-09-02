@@ -247,14 +247,16 @@ class StellarTokenService
             $supportEmail = $toml['project']['org_support'] ?? null;
         }
 
+        $resolvedImage = $dbToken?->logo ?? $toml['token']['image'] ?? ($seData['toml_info']['image'] ?? ($seData['toml_info']['orgLogo'] ?? null));
+
         return [
             'asset_code'       => $code,
             'issuer'           => $issuer,
             'is_minted_on_tokenglade' => $dbToken !== null,
 
-            'name'             => $dbToken?->name ?? $toml['token']['name'] ?? $toml['project']['org_name'] ?? $code,
-            'image'            => $dbToken?->logo ?? $toml['token']['image'] ?? null,
-            'description'      => $dbToken?->desc ?? $toml['token']['description'] ?? null,
+            'name'             => $dbToken?->name ?? $toml['token']['name'] ?? $toml['project']['org_name'] ?? ($seData['toml_info']['name'] ?? $code),
+            'image'            => $resolvedImage,
+            'description'      => $dbToken?->desc ?? $toml['token']['description'] ?? ($seData['toml_info']['desc'] ?? null),
 
             'project'          => $projectData,
 
