@@ -41,7 +41,7 @@
                 <div class="h-4 w-20 bg-[#1D2531]/80 rounded ml-auto"></div>
                 <div class="h-2.5 w-24 bg-[#1D2531]/40 rounded ml-auto"></div>
               </div>
-              <div class="w-14 h-14 rounded-full border-4 border-[#1D2531]/60 flex-none"></div>
+              <div class="w-14 h-14 rounded-full border-4 border-theme-line/60 flex-none"></div>
             </div>
           </div>
 
@@ -56,8 +56,8 @@
 
           <!-- SECONDARY STRIP SKELETON -->
           <div
-            class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] flex flex-wrap items-center justify-between gap-3">
-            <div v-for="i in 4" :key="i" class="h-3.5 w-32 bg-[#1D2531]/60 rounded"></div>
+            class="mt-3.5 py-2.5 px-4 bg-theme-panel2 rounded-xl border border-[rgba(148,163,184,0.12)] flex flex-wrap items-center justify-between gap-3">
+            <div v-for="i in 6" :key="i" class="h-3.5 w-28 bg-[#1D2531]/60 rounded"></div>
           </div>
 
           <!-- ACTIONS SKELETON -->
@@ -80,7 +80,7 @@
                 <div class="h-5 bg-[#1D2531]/60 rounded w-36"></div>
                 <div class="h-6 bg-[#1D2531]/60 rounded-lg w-40"></div>
               </div>
-              <div class="h-[340px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+              <div class="h-[340px] bg-theme-panel2/40 rounded-xl border border-theme-line/40"></div>
             </div>
 
             <!-- Market Exposure Stats Skeleton -->
@@ -103,11 +103,11 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
                 <div class="space-y-4">
                   <div class="h-3.5 bg-[#1D2531]/60 rounded w-28"></div>
-                  <div class="h-[200px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+                  <div class="h-[200px] bg-theme-panel2/40 rounded-xl border border-theme-line/40"></div>
                 </div>
                 <div class="space-y-4">
                   <div class="h-3.5 bg-[#1D2531]/60 rounded w-28"></div>
-                  <div class="h-[200px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+                  <div class="h-[200px] bg-theme-panel2/40 rounded-xl border border-theme-line/40"></div>
                 </div>
               </div>
             </div>
@@ -117,7 +117,7 @@
               <div class="card-hd">
                 <div class="h-5 bg-[#1D2531]/60 rounded w-28"></div>
               </div>
-              <div class="h-[200px] bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40 mt-4"></div>
+              <div class="h-[200px] bg-theme-panel2/40 rounded-xl border border-theme-line/40 mt-4"></div>
             </div>
           </div>
 
@@ -133,8 +133,8 @@
                 <div class="h-3 bg-[#1D2531]/60 rounded w-full"></div>
                 <div class="h-2 bg-[#1D2531]/40 rounded w-1/2"></div>
               </div>
-              <div class="h-20 bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
-              <div class="h-16 bg-[#0E131C]/40 rounded-xl border border-[#1D2531]/40"></div>
+              <div class="h-20 bg-theme-panel2/40 rounded-xl border border-theme-line/40"></div>
+              <div class="h-16 bg-theme-panel2/40 rounded-xl border border-theme-line/40"></div>
             </div>
 
             <!-- Whale Activity Card Skeleton -->
@@ -143,8 +143,8 @@
                 <div class="h-5 bg-[#1D2531]/60 rounded w-32"></div>
                 <div class="h-4 bg-[#1D2531]/40 rounded w-16"></div>
               </div>
-              <div class="space-y-3.5 bg-[#0E131C]/40 p-4 rounded-xl border border-[#1D2531]/40">
-                <div v-for="i in 3" :key="i" class="space-y-2 pb-3 border-b border-[#1D2531]/20 last:border-b-0 last:pb-0">
+              <div class="space-y-3.5 bg-theme-panel2/40 p-4 rounded-xl border border-theme-line/40">
+                <div v-for="i in 3" :key="i" class="space-y-2 pb-3 border-b border-theme-line/20 last:border-b-0 last:pb-0">
                   <div class="flex justify-between">
                     <div class="h-3 bg-[#1D2531]/60 rounded w-36"></div>
                     <div class="h-3 bg-[#1D2531]/40 rounded w-8"></div>
@@ -181,7 +181,7 @@
 
       <!-- NOT FOUND STATE -->
       <div v-else-if="notFound"
-        class="flex flex-col items-center justify-center text-center py-20 px-4 bg-[#111620] border border-[#1D2531] rounded-3xl mt-8">
+        class="flex flex-col items-center justify-center text-center py-20 px-4 bg-theme-panel border border-theme-line rounded-3xl mt-8">
         <div
           class="w-16 h-16 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20 text-3xl mb-4">
           ⚠️</div>
@@ -265,7 +265,7 @@
           <!-- STATS TIMEFRAME HEADER -->
           <div class="flex items-center justify-between mt-4 mb-2 px-1">
             <span class="text-xs font-mono font-semibold text-slate-400 uppercase tracking-wider">Key Metrics</span>
-            <div class="flex items-center gap-1 bg-[#0E131C] p-1 rounded-lg border border-[rgba(148,163,184,0.12)]">
+            <div class="flex items-center gap-1 bg-theme-panel2 p-1 rounded-lg border border-[rgba(148,163,184,0.12)]">
               <button @click="changeStatsTimeframe('24h')"
                 class="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold transition-all"
                 :class="selectedStatsTimeframe === '24h' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-slate-400 hover:text-white'">
@@ -402,16 +402,12 @@
               <div class="sub dim">
                 Fully Diluted
               </div>
-              <div class="sub font-mono font-semibold"
-                :class="(historicalStats?.market_cap_change_pct || 0) >= 0 ? 'up' : 'down'">
-                <template v-if="loading || historicalStatsLoading"><span
+              <div class="sub font-mono font-semibold text-cyan-400">
+                <template v-if="loading"><span
                     class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
-                <template v-else-if="historicalStats">
-                  {{ (historicalStats.market_cap_change_pct || 0) >= 0 ? '▲' : '▼' }} {{
-                    (historicalStats.market_cap_change_pct || 0) >= 0 ? '+' : '' }}{{
-                    historicalStats.market_cap_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase() }})
+                <template v-else>
+                  {{ circulatingSupplyRatio }}% Circulating
                 </template>
-                <template v-else>▲ +0%</template>
               </div>
             </div>
 
@@ -460,11 +456,35 @@
 
           <!-- COMPACT SECONDARY STRIP -->
           <div
-            class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[rgba(148,163,184,0.12)] grid grid-cols-[1fr_auto] sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-x-4 gap-y-3 text-xs font-mono">
-            <!-- 1. Total Supply -->
+            class="mt-3.5 py-2.5 px-4 bg-theme-panel2 rounded-xl border border-[rgba(148,163,184,0.12)] grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-x-4 gap-y-3 text-xs font-mono">
+            <!-- 1. 24H High -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400 font-medium">24h High:</span>
+              <span class="text-emerald-400 font-bold flex items-center gap-1">
+                <template v-if="loading"><span
+                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="high24h > 0">{{ formatXlmPrice(high24h) }} XLM</template>
+                <template v-else>—</template>
+              </span>
+            </div>
+            <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
+
+            <!-- 2. 24H Low -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400 font-medium">24h Low:</span>
+              <span class="text-rose-400 font-bold flex items-center gap-1">
+                <template v-if="loading"><span
+                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="low24h > 0">{{ formatXlmPrice(low24h) }} XLM</template>
+                <template v-else>—</template>
+              </span>
+            </div>
+            <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
+
+            <!-- 3. Total Supply -->
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 font-medium">Total Supply:</span>
-              <span class="text-white font-bold">
+              <span class="text-theme-ink font-bold">
                 <template v-if="token.total_supply">{{ formatCompactNumber(token.total_supply) }} {{ token.asset_code
                   }}</template>
                 <template v-else><span
@@ -473,10 +493,10 @@
             </div>
             <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
 
-            <!-- 2. Created -->
+            <!-- 4. Created -->
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 font-medium">Created:</span>
-              <span class="text-white font-bold">
+              <span class="text-theme-ink font-bold">
                 <template v-if="token.mint_date_human && token.mint_date_human !== '-'">{{ token.mint_date_human
                   }}</template>
                 <template v-else-if="loading"><span
@@ -486,10 +506,10 @@
             </div>
             <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
 
-            <!-- 3. Circulating Supply -->
+            <!-- 5. Circulating Supply -->
             <div class="flex items-center gap-1.5">
-              <span class="text-slate-400 font-medium">Circulating Supply:</span>
-              <span class="text-white font-bold flex items-center gap-1">
+              <span class="text-slate-400 font-medium">Circulating:</span>
+              <span class="text-theme-ink font-bold flex items-center gap-1">
                 <template v-if="token.total_supply">{{ formatCompactNumber(token.circulating_supply ||
                   (token.total_supply * 0.425)) }} {{ token.asset_code }}</template>
                 <template v-else><span
@@ -504,10 +524,10 @@
             </div>
             <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
 
-            <!-- 4. Pools -->
+            <!-- 6. Pools -->
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 font-medium">Pools:</span>
-              <span class="text-white font-bold flex items-center gap-1">
+              <span class="text-theme-ink font-bold flex items-center gap-1">
                 <template v-if="liquidityLoading"><span
                     class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                 <template v-else>{{ token.liquidity_overview?.pools_count || token.num_liquidity_pools || 0
@@ -805,7 +825,7 @@
           <div style="grid-column: 1 / -1; display:flex;flex-direction:column;gap:14px;margin-bottom:2px"
             v-if="activeTab === 'holders'">
             <div v-if="holdersLoading"
-              class="flex flex-col items-center justify-center py-20 bg-[#111620] rounded-xl border border-[#1D2531]">
+              class="flex flex-col items-center justify-center py-20 bg-theme-panel rounded-xl border border-theme-line">
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
               <span class="text-xs text-slate-400 font-bold mt-3">Loading holder distribution data...</span>
             </div>
@@ -818,7 +838,7 @@
                       metrics</p>
                   </div>
                   <div
-                    class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-[#0E131C] px-3 py-1.5 rounded-xl border border-[#1D2531] font-mono">
+                    class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-theme-panel2 px-3 py-1.5 rounded-xl border border-theme-line font-mono">
                     Total Holders: {{ formatNumber(token.holders || 1240) }}
                   </div>
                 </div>
@@ -827,7 +847,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
                   <!-- Left Half (50% Width): Donut Chart Card -->
                   <div
-                    class="flex flex-row md:flex-col items-center gap-4 sm:gap-6 justify-center bg-[#0E131C] p-4 sm:p-6 rounded-2xl border border-[#1D2531] h-full">
+                    class="flex flex-row md:flex-col items-center gap-4 sm:gap-6 justify-center bg-theme-panel2 p-4 sm:p-6 rounded-2xl border border-theme-line h-full">
                     <div
                       class="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 flex items-center justify-center flex-shrink-0">
                       <svg class="w-full h-full" viewBox="0 0 100 100">
@@ -847,7 +867,7 @@
 
                     <div class="space-y-2 sm:space-y-3 text-[10px] sm:text-xs font-mono w-full flex-1">
                       <div
-                        class="flex items-center justify-between gap-1.5 font-semibold bg-[#111620] p-2 sm:p-3 rounded-xl border border-[#1D2531]">
+                        class="flex items-center justify-between gap-1.5 font-semibold bg-theme-panel p-2 sm:p-3 rounded-xl border border-theme-line">
                         <div class="flex items-center gap-1.5">
                           <span class="w-2.5 h-2.5 rounded-full bg-[#12CBEE] flex-none"></span>
                           <span class="text-slate-400">Top 10 Wallets:</span>
@@ -855,7 +875,7 @@
                         <span class="text-white font-bold">{{ top10Percentage }}%</span>
                       </div>
                       <div
-                        class="flex items-center justify-between gap-1.5 font-semibold bg-[#111620] p-2 sm:p-3 rounded-xl border border-[#1D2531]">
+                        class="flex items-center justify-between gap-1.5 font-semibold bg-theme-panel p-2 sm:p-3 rounded-xl border border-theme-line">
                         <div class="flex items-center gap-1.5">
                           <span class="w-2.5 h-2.5 rounded-full bg-[#1d2531] flex-none"></span>
                           <span class="text-slate-400">Others:</span>
@@ -868,7 +888,7 @@
                   <!-- Right Half (50% Width): 4 Cards Stacked Vertically -->
                   <div class="flex flex-col gap-4">
                     <!-- 1. Healthy Distribution / Whale Concentration Warning -->
-                    <div class="bg-[#0E131C] p-5 rounded-2xl border border-[#1D2531]">
+                    <div class="bg-theme-panel2 p-5 rounded-2xl border border-theme-line">
                       <div v-if="parseFloat(top10Percentage) > 50"
                         class="flex gap-3 bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 text-xs text-rose-400">
                         <span class="text-xl flex-shrink-0">⚠️</span>
@@ -898,7 +918,7 @@
                     <!-- 2 & 3: Side-by-Side Stats Cards -->
                     <div class="grid grid-cols-2 gap-4">
                       <!-- 2. Average per Holder -->
-                      <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                      <div class="bg-theme-panel2 p-4 rounded-2xl border border-theme-line font-mono">
                         <span
                           class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block leading-snug">Average
                           per Holder</span>
@@ -908,7 +928,7 @@
                       </div>
 
                       <!-- 3. New Holders -->
-                      <div class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                      <div class="bg-theme-panel2 p-4 rounded-2xl border border-theme-line font-mono">
                         <span
                           class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block leading-snug">New
                           Holders (24h/7d)</span>
@@ -921,7 +941,7 @@
 
                     <!-- 4. Largest Non-Treasury Holder -->
                     <div v-if="biggestIndividualHolder"
-                      class="bg-[#0E131C] p-4 rounded-2xl border border-[#1D2531] font-mono">
+                      class="bg-theme-panel2 p-4 rounded-2xl border border-theme-line font-mono">
                       <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest
                         Non-Treasury Holder</span>
                       <div class="flex items-center justify-between text-xs mt-1.5">
@@ -948,7 +968,7 @@
                     <h3>Largest Non-Project Holders</h3>
                   </div>
                   <div style="padding: 20px;">
-                    <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
+                    <div class="overflow-x-auto border border-theme-line rounded-xl bg-theme-panel">
                       <table class="trades">
                         <thead>
                           <tr>
@@ -994,7 +1014,7 @@
                     <h3>Official Project Wallets</h3>
                   </div>
                   <div style="padding: 20px;">
-                    <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
+                    <div class="overflow-x-auto border border-theme-line rounded-xl bg-theme-panel">
                       <table class="trades">
                         <thead>
                           <tr>
@@ -1043,7 +1063,7 @@
             style="grid-column: 1 / -1; display:flex;flex-direction:column;gap:14px;margin-bottom:2px;min-width:0;width:100%"
             v-if="activeTab === 'liquidity'">
             <div v-if="liquidityLoading"
-              class="flex flex-col items-center justify-center py-20 bg-[#111620] rounded-xl border border-[#1D2531]">
+              class="flex flex-col items-center justify-center py-20 bg-theme-panel rounded-xl border border-theme-line">
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
               <span class="text-xs text-slate-400 font-bold mt-3">Loading on-chain AMM liquidity stats...</span>
             </div>
@@ -1056,14 +1076,14 @@
                       (AMM) pools & depth</p>
                   </div>
                   <div
-                    class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-[#0E131C] px-3 py-1.5 rounded-xl border border-[#1D2531] font-mono">
+                    class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-theme-panel2 px-3 py-1.5 rounded-xl border border-theme-line font-mono">
                     Total TVL: ${{ formatNumber(token.liquidity_overview?.total_tvl || 0) }}
                   </div>
                 </div>
 
                 <!-- Metrics Grid -->
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6 font-mono">
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Total
                       TVL</span>
                     <span class="text-sm sm:text-lg font-black text-white mt-1 block">
@@ -1071,7 +1091,7 @@
                     </span>
                   </div>
 
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Active
                       Pools</span>
                     <span class="text-sm sm:text-lg font-black text-white mt-1 block">
@@ -1079,7 +1099,7 @@
                     </span>
                   </div>
 
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Largest
                       Pool</span>
                     <span class="text-xs sm:text-sm font-black text-white mt-1 block truncate font-sans py-1"
@@ -1091,7 +1111,7 @@
                     </span>
                   </div>
 
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">24h LP
                       Volume</span>
                     <span class="text-sm sm:text-lg font-black text-white mt-1 block">
@@ -1099,7 +1119,7 @@
                     </span>
                   </div>
 
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Average
                       APR</span>
                     <span class="text-sm sm:text-lg font-black text-emerald-400 mt-1 block">
@@ -1107,7 +1127,7 @@
                     </span>
                   </div>
 
-                  <div class="bg-[#111620] p-3 sm:p-4 rounded-xl border border-[#1D2531]">
+                  <div class="bg-theme-panel p-3 sm:p-4 rounded-xl border border-theme-line">
                     <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Depth
                       (±2%)</span>
                     <span class="text-sm sm:text-lg font-black text-white mt-1 block">
@@ -1117,50 +1137,153 @@
                 </div>
               </section>
 
-              <!-- Top Pools Table Card (Separate!) -->
+              <!-- All Pools Table Card -->
               <div class="card mt-2">
                 <div class="card-hd">
-                  <h3>Top Liquidity Pools</h3>
+                  <div class="flex justify-between items-center w-full flex-wrap gap-3">
+                    <div class="flex items-center gap-2">
+                      <h3>All Liquidity Pools</h3>
+                      <span class="tag font-mono text-cyan-400" v-if="token.liquidity_overview?.pools?.length">
+                        {{ token.liquidity_overview.pools.length }} Active
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <div class="relative">
+                        <select
+                          v-model="poolSortKey"
+                          @change="poolSortDir = (poolSortKey === 'name' ? 'asc' : 'desc')"
+                          class="pool-sort-select"
+                          aria-label="Sort liquidity pools"
+                        >
+                          <option value="tvl">Sort: TVL</option>
+                          <option value="apr">Sort: APR</option>
+                          <option value="volume">Sort: 24h Volume</option>
+                          <option value="total_shares">Sort: Shares</option>
+                          <option value="trustlines">Sort: Trustlines</option>
+                          <option value="name">Sort: Pair Name</option>
+                        </select>
+                      </div>
+                      <div v-if="(token.liquidity_overview?.pools?.length || 0) > 3" class="relative">
+                        <input
+                          v-model="poolSearch"
+                          type="text"
+                          placeholder="Search pool pair..."
+                          class="pool-search-input"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div style="padding: 20px;">
-                  <div class="overflow-x-auto border border-[#1D2531] rounded-xl bg-[#111620]">
+                  <div class="overflow-x-auto border border-theme-line rounded-xl bg-theme-panel">
                     <table class="trades">
                       <thead>
                         <tr>
-                          <th style="text-align:left;width:40%">Market / Pool Pair</th>
-                          <th style="width:20%">Total TVL</th>
-                          <th style="width:20%">APR</th>
-                          <th style="width:20%">24h Volume</th>
+                          <th @click="togglePoolSort('name')" class="sortable-th" style="text-align:left;width:22%">
+                            <div class="flex items-center gap-1.5 cursor-pointer select-none">
+                              <span>Market / Pool Pair</span>
+                              <span class="sort-icon" :class="{ active: poolSortKey === 'name' }">
+                                {{ poolSortKey === 'name' ? (poolSortDir === 'asc' ? '↑' : '↓') : '↕' }}
+                              </span>
+                            </div>
+                          </th>
+                          <th style="text-align:left;width:25%">Reserves Breakdown</th>
+                          <th @click="togglePoolSort('total_shares')" class="sortable-th" style="width:13%">
+                            <div class="flex items-center justify-end gap-1.5 cursor-pointer select-none">
+                              <span>Shares</span>
+                              <span class="sort-icon" :class="{ active: poolSortKey === 'total_shares' }">
+                                {{ poolSortKey === 'total_shares' ? (poolSortDir === 'asc' ? '↑' : '↓') : '↕' }}
+                              </span>
+                            </div>
+                          </th>
+                          <th @click="togglePoolSort('trustlines')" class="sortable-th" style="width:10%">
+                            <div class="flex items-center justify-end gap-1.5 cursor-pointer select-none">
+                              <span>Trustlines</span>
+                              <span class="sort-icon" :class="{ active: poolSortKey === 'trustlines' }">
+                                {{ poolSortKey === 'trustlines' ? (poolSortDir === 'asc' ? '↑' : '↓') : '↕' }}
+                              </span>
+                            </div>
+                          </th>
+                          <th @click="togglePoolSort('tvl')" class="sortable-th" style="width:11%">
+                            <div class="flex items-center justify-end gap-1.5 cursor-pointer select-none">
+                              <span>Total TVL</span>
+                              <span class="sort-icon" :class="{ active: poolSortKey === 'tvl' }">
+                                {{ poolSortKey === 'tvl' ? (poolSortDir === 'asc' ? '↑' : '↓') : '↕' }}
+                              </span>
+                            </div>
+                          </th>
+                          <th @click="togglePoolSort('apr')" class="sortable-th" style="width:9%">
+                            <div class="flex items-center justify-end gap-1.5 cursor-pointer select-none">
+                              <span>APR</span>
+                              <span class="sort-icon" :class="{ active: poolSortKey === 'apr' }">
+                                {{ poolSortKey === 'apr' ? (poolSortDir === 'asc' ? '↑' : '↓') : '↕' }}
+                              </span>
+                            </div>
+                          </th>
+                          <th @click="togglePoolSort('volume')" class="sortable-th" style="width:10%">
+                            <div class="flex items-center justify-end gap-1.5 cursor-pointer select-none">
+                              <span>24h Volume</span>
+                              <span class="sort-icon" :class="{ active: poolSortKey === 'volume' }">
+                                {{ poolSortKey === 'volume' ? (poolSortDir === 'asc' ? '↑' : '↓') : '↕' }}
+                              </span>
+                            </div>
+                          </th>
                         </tr>
                       </thead>
-                      <tbody v-if="token.liquidity_overview?.pools && token.liquidity_overview.pools.length"
-                        class="font-mono">
-                        <tr v-for="(pool, index) in token.liquidity_overview.pools" :key="index"
+                      <tbody v-if="filteredPools && filteredPools.length" class="font-mono">
+                        <tr v-for="(pool, index) in filteredPools" :key="index"
                           class="hover:bg-white/2 transition">
-                          <td style="text-align:left" class="font-bold text-white">
+                          <td style="text-align:left">
                             <a :href="`https://stellar.expert/explorer/public/liquidity-pool/${pool.id}`"
                               target="_blank" rel="noopener noreferrer"
-                              class="text-[#12CBEE] hover:underline transition font-semibold truncate block max-w-[120px] xs:max-w-[160px] sm:max-w-none">
+                              class="pool-pair-link font-semibold truncate block max-w-[140px] xs:max-w-[180px] sm:max-w-none">
                               {{ pool.name }}
                             </a>
-                          </td>
-                          <td class="font-bold text-white">
-                            ${{ formatNumber(pool.tvl) }}
-                          </td>
-                          <td>
-                            <span class="font-extrabold text-xs px-2 py-0.5 rounded-lg bg-[#2ED47A]/10 text-[#2ED47A]">
-                              {{ pool.apr.toFixed(2) }}%
+                            <span class="text-[10.5px] dim font-mono block mt-0.5" :title="pool.id">
+                              {{ shorten(pool.id) }}
                             </span>
                           </td>
-                          <td class="font-semibold text-slate-300">
-                            ${{ formatNumber(pool.volume) }}
+                          <td style="text-align:left">
+                            <span v-if="pool.reserves_formatted" class="text-xs dim font-mono font-medium">
+                              {{ pool.reserves_formatted }}
+                            </span>
+                            <span v-else class="text-xs faint">—</span>
+                          </td>
+                          <td>
+                            <span class="text-xs font-mono font-medium" style="color: var(--ink)" :title="pool.total_shares ? pool.total_shares.toString() : '0'">
+                              {{ formatCompactNumber(pool.total_shares || 0) }}
+                            </span>
+                          </td>
+                          <td>
+                            <span class="text-xs font-mono font-medium" style="color: var(--dim)">
+                              {{ formatNumber(pool.trustlines || 0) }}
+                            </span>
+                          </td>
+                          <td>
+                            <span class="font-bold font-mono" style="color: var(--ink)">
+                              ${{ formatNumber(pool.tvl) }}
+                            </span>
+                          </td>
+                          <td>
+                            <span v-if="pool.apr && pool.apr > 0" class="apr-badge">
+                              {{ pool.apr.toFixed(2) }}%
+                            </span>
+                            <span v-else class="apr-zero">
+                              —
+                            </span>
+                          </td>
+                          <td>
+                            <span class="font-mono" style="color: var(--dim)">
+                              ${{ formatNumber(pool.volume) }}
+                            </span>
                           </td>
                         </tr>
                       </tbody>
                       <tbody v-else>
                         <tr>
-                          <td colspan="4" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">No
-                            liquidity pool data detected on-chain</td>
+                          <td colspan="7" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">
+                            {{ poolSearch ? 'No liquidity pools match your search query.' : 'No liquidity pool data detected on-chain' }}
+                          </td>
                         </tr>
                       </tbody>
                     </table>
@@ -1419,7 +1542,7 @@
 
               <!-- Signals Grid -->
               <div
-                class="grid grid-cols-1 divide-y divide-slate-800/60 border-t border-b border-slate-800/60 bg-[#0E131C]">
+                class="grid grid-cols-1 divide-y divide-slate-800/60 border-t border-b border-slate-800/60 bg-theme-panel2">
                 <!-- Bullish Signals -->
                 <div class="p-4 space-y-2">
                   <span class="text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider block font-mono">▲
@@ -1495,11 +1618,11 @@
             <!-- Whale Activity Card -->
             <div class="card select-text">
               <div class="card-hd">
-                <h3>Whale Activity<span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5"
+                <h3>Whale Activity<span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-theme-panel3 border border-theme-line text-[9px] text-theme-dim font-serif italic select-none cursor-default hover:bg-theme-panel2 hover:text-theme-ink transition-all ml-1.5"
                       :title="'Tracking trades \u2265 ' + formatNumberWithCommas(token.whale_activity_threshold_xlm || 100) + ' XLM'">i</span></h3>
                 <span class="tag">Live Tracker</span>
               </div>
-              <div class="p-4 space-y-3.5 bg-[#0E131C] border-t border-slate-800/60">
+              <div class="p-4 space-y-3.5 bg-theme-panel2 border-t border-slate-800/60">
                 <div v-if="largeEventsLoading" class="text-xs text-slate-500 animate-pulse py-2 text-center">
                   Loading activity...
                 </div>
@@ -1554,7 +1677,7 @@
                   <span class="nm">
                     <span class="shield">🛡</span>Immutable code
                     <span
-                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5"
+                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-theme-panel3 border border-theme-line text-[9px] text-theme-dim font-serif italic select-none cursor-default hover:bg-theme-panel2 hover:text-theme-ink transition-all ml-1.5"
                       title="YES means the issuer account is locked and cannot mint more tokens (0% inflation risk).">i</span>
                   </span>
                   <span class="sval" :class="token.issuer_locked ? 'yes' : 'none'">{{ token.issuer_locked ? 'YES' : 'NO'
@@ -1564,7 +1687,7 @@
                   <span class="nm">
                     <span class="shield">🛡</span>Clawback disabled
                     <span
-                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5"
+                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-theme-panel3 border border-theme-line text-[9px] text-theme-dim font-serif italic select-none cursor-default hover:bg-theme-panel2 hover:text-theme-ink transition-all ml-1.5"
                       title="YES means clawbacks are disabled; the issuer cannot seize or recall tokens from user accounts.">i</span>
                   </span>
                   <span class="sval" :class="!token.auth_clawback_enabled ? 'yes' : 'none'">{{
@@ -1575,7 +1698,7 @@
                   <span class="nm">
                     <span class="shield">🛡</span>Revocation disabled
                     <span
-                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5"
+                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-theme-panel3 border border-theme-line text-[9px] text-theme-dim font-serif italic select-none cursor-default hover:bg-theme-panel2 hover:text-theme-ink transition-all ml-1.5"
                       title="YES means authorization revocation is disabled; the issuer cannot freeze your account's trustline.">i</span>
                   </span>
                   <span class="sval" :class="!token.auth_revocable ? 'yes' : 'none'">{{ !token.auth_revocable ? 'YES' :
@@ -1586,7 +1709,7 @@
                   <span class="nm">
                     <span class="shield">🛡</span>Authorization required
                     <span
-                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1b212c] border border-slate-700/60 text-[9px] text-slate-400 font-serif italic select-none cursor-default hover:bg-slate-700 hover:text-white transition-all ml-1.5"
+                      class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-theme-panel3 border border-theme-line text-[9px] text-theme-dim font-serif italic select-none cursor-default hover:bg-theme-panel2 hover:text-theme-ink transition-all ml-1.5"
                       title="NONE means anyone can hold, trade, or transfer this token freely without manual approval.">i</span>
                   </span>
                   <span class="sval" :class="token.auth_required ? 'none' : 'yes'" style="font-size:10px">{{
@@ -1729,8 +1852,14 @@
   </div>
 </template>
 
+<script>
+export default {
+  name: 'TokenInsight'
+};
+</script>
+
 <script setup>
-import { reactive, onMounted, onUnmounted, watch, ref, computed, nextTick } from "vue"
+import { reactive, onMounted, onUnmounted, onActivated, onDeactivated, watch, ref, computed, nextTick } from "vue"
 import { useRoute } from "vue-router"
 import axios from "axios"
 import { createChart, CrosshairMode, CandlestickSeries, LineSeries, AreaSeries, HistogramSeries } from "lightweight-charts"
@@ -1784,13 +1913,56 @@ const holdersLoading = ref(true)
 const liquidityLoading = ref(true)
 const largeEvents = ref([])
 const largeEventsLoading = ref(true)
+const poolSearch = ref('')
+const poolSortKey = ref('tvl')
+const poolSortDir = ref('desc')
+
+const togglePoolSort = (key) => {
+  if (poolSortKey.value === key) {
+    poolSortDir.value = poolSortDir.value === 'desc' ? 'asc' : 'desc'
+  } else {
+    poolSortKey.value = key
+    poolSortDir.value = (key === 'name') ? 'asc' : 'desc'
+  }
+}
+
+const filteredPools = computed(() => {
+  const pools = [...(token.liquidity_overview?.pools || [])]
+  let result = pools
+  if (poolSearch.value.trim()) {
+    const q = poolSearch.value.trim().toLowerCase()
+    result = result.filter(p => 
+      (p.name && p.name.toLowerCase().includes(q)) ||
+      (p.id && p.id.toLowerCase().includes(q)) ||
+      (p.reserves_formatted && p.reserves_formatted.toLowerCase().includes(q))
+    )
+  }
+
+  const key = poolSortKey.value
+  const dir = poolSortDir.value === 'asc' ? 1 : -1
+
+  return result.sort((a, b) => {
+    let valA = a[key] ?? 0
+    let valB = b[key] ?? 0
+
+    if (key === 'name') {
+      valA = (a.name || '').toLowerCase()
+      valB = (b.name || '').toLowerCase()
+      return dir * valA.localeCompare(valB)
+    }
+
+    return dir * ((Number(valA) || 0) - (Number(valB) || 0))
+  })
+})
 
 const refreshLiveTrades = async () => {
-  if (!issuerInput.value) return;
+  const curIssuer = issuerInput.value || token.issuer;
+  if (!curIssuer) return;
   try {
     const res = await axios.get("/api/token/show", {
       params: {
-        issuer: issuerInput.value
+        issuer: curIssuer,
+        code: token.asset_code || route.query.asset_code || route.query.code || route.params.code || undefined
       }
     });
     if (res.data) {
@@ -1933,6 +2105,14 @@ const xlmPriceInUsd = computed(() => {
   return globalXlmPrice.value || 0.1878; // standard fallback rate
 })
 
+const circulatingSupplyRatio = computed(() => {
+  if (token.total_supply && Number(token.total_supply) > 0) {
+    const circ = Number(token.circulating_supply) || Number(token.total_supply);
+    return Math.min(100, Math.round((circ / Number(token.total_supply)) * 100));
+  }
+  return 100;
+})
+
 const orderBook = reactive({
   bids: [],
   asks: [],
@@ -1977,6 +2157,62 @@ const totalAskVolume = computed(() => {
 const totalAskValue = computed(() => {
   if (!orderBook.asks?.length) return 0
   return orderBook.asks.reduce((sum, ask) => sum + (parseFloat(ask.amount || 0) * parseFloat(ask.price || 0)), 0)
+})
+
+const high24h = computed(() => {
+  if (token.high_24h !== undefined && token.high_24h !== null && Number(token.high_24h) > 0) {
+    return Number(token.high_24h)
+  }
+  if (token.price_high_24h !== undefined && token.price_high_24h !== null && Number(token.price_high_24h) > 0) {
+    return Number(token.price_high_24h)
+  }
+  
+  if (chartData.value && chartData.value.length > 0) {
+    const now = Math.floor(Date.now() / 1000)
+    const last24hTime = now - 86400
+    const last24hCandles = chartData.value.filter(c => (c.time || 0) >= last24hTime)
+    const candlesToUse = last24hCandles.length > 0 ? last24hCandles : chartData.value
+    const highs = candlesToUse.map(c => Number(c.high || c.close || 0)).filter(p => p > 0)
+    if (highs.length > 0) return Math.max(...highs)
+  }
+  
+  return Number(token.xlm_price || 0)
+})
+
+const low24h = computed(() => {
+  if (token.low_24h !== undefined && token.low_24h !== null && Number(token.low_24h) > 0) {
+    return Number(token.low_24h)
+  }
+  if (token.price_low_24h !== undefined && token.price_low_24h !== null && Number(token.price_low_24h) > 0) {
+    return Number(token.price_low_24h)
+  }
+  
+  if (chartData.value && chartData.value.length > 0) {
+    const now = Math.floor(Date.now() / 1000)
+    const last24hTime = now - 86400
+    const last24hCandles = chartData.value.filter(c => (c.time || 0) >= last24hTime)
+    const candlesToUse = last24hCandles.length > 0 ? last24hCandles : chartData.value
+    const validLows = candlesToUse.map(c => Number(c.low || c.close || Infinity)).filter(p => p > 0 && p !== Infinity)
+    if (validLows.length > 0) {
+      return Math.min(...validLows)
+    }
+  }
+  
+  return Number(token.xlm_price || 0)
+})
+
+const high24hUsd = computed(() => {
+  if (high24h.value > 0) {
+    return high24h.value * xlmPriceInUsd.value
+  }
+  return 0
+})
+
+const low24hUsd = computed(() => {
+  if (low24h.value > 0) {
+    return low24h.value * xlmPriceInUsd.value
+  }
+  return 0
 })
 
 const bullishSignals = computed(() => {
@@ -2493,7 +2729,13 @@ function fallbackCopy(onSuccess) {
 }
 
 async function fetchToken() {
-  if (!issuerInput.value) return
+  const currentIssuer = issuerInput.value || route.query.issuer || route.params.issuer;
+  const currentCode = route.query.asset_code || route.query.code || route.params.code;
+  if (!currentIssuer && !currentCode) {
+    loading.value = false;
+    notFound.value = true;
+    return;
+  }
   loading.value = true
   imageError.value = false
   notFound.value = false
@@ -2511,7 +2753,8 @@ async function fetchToken() {
   try {
     const res = await axios.get("/api/token/show", {
       params: {
-        issuer: issuerInput.value
+        issuer: currentIssuer || undefined,
+        code: currentCode || undefined,
       }
     })
 
@@ -2522,6 +2765,9 @@ async function fetchToken() {
     }
 
     Object.assign(token, res.data)
+    if (token.issuer && !issuerInput.value) {
+      issuerInput.value = token.issuer;
+    }
 
     // Reset holders and liquidity to empty state initially
     token.top_holders = []
@@ -2849,6 +3095,7 @@ onMounted(async () => {
   walletKey.value = getCookie('public_key') || ''
   isWalletConnected.value = !!walletKey.value
   window.addEventListener('tokenglade-wallet-changed', handleWalletChanged)
+  window.addEventListener('theme-changed', initChart)
   
   fetchXlmPrice().then(price => {
     globalXlmPrice.value = price;
@@ -2860,6 +3107,23 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('tokenglade-wallet-changed', handleWalletChanged)
+  window.removeEventListener('theme-changed', initChart)
+  stopLiveTradesPolling()
+})
+
+onActivated(async () => {
+  walletKey.value = getCookie('public_key') || ''
+  isWalletConnected.value = !!walletKey.value
+  startLiveTradesPolling()
+  await nextTick()
+  if (chartInstance && chartContainer.value) {
+    try {
+      chartInstance.timeScale().fitContent()
+    } catch (e) {}
+  }
+})
+
+onDeactivated(() => {
   stopLiveTradesPolling()
 })
 
@@ -2867,12 +3131,15 @@ watch(
   [() => route.query, () => route.params],
   ([query, params]) => {
     const issuer = query.issuer || params.issuer;
-    if (issuer) {
-      issuerInput.value = issuer
-      fetchToken()
-      startLiveTradesPolling()
+    const code = query.asset_code || query.code || params.code;
+    if (issuer || code) {
+      if (issuer) {
+        issuerInput.value = issuer;
+      }
+      fetchToken();
+      startLiveTradesPolling();
     } else {
-      loading.value = false
+      loading.value = false;
     }
   },
   { immediate: true }
@@ -2895,25 +3162,30 @@ async function initChart() {
   const containerWidth = chartContainer.value.clientWidth || 800;
 
   try {
+    const isLight = document.documentElement.classList.contains('light');
+    const bgColor = isLight ? '#FFFFFF' : '#111620';
+    const textColor = isLight ? '#475569' : '#8791A0';
+    const lineColor = isLight ? '#E2E8F0' : '#1D2531';
+
     chartInstance = createChart(chartContainer.value, {
       width: containerWidth,
       height: 320,
       layout: {
-        background: { type: 'solid', color: '#111620' },
-        textColor: '#8791A0',
+        background: { type: 'solid', color: bgColor },
+        textColor: textColor,
       },
       grid: {
-        vertLines: { color: '#1D2531' },
-        horzLines: { color: '#1D2531' },
+        vertLines: { color: lineColor },
+        horzLines: { color: lineColor },
       },
       crosshair: {
         mode: CrosshairMode.Normal,
       },
       rightPriceScale: {
-        borderColor: '#1D2531',
+        borderColor: lineColor,
       },
       timeScale: {
-        borderColor: '#1D2531',
+        borderColor: lineColor,
         timeVisible: true,
         secondsVisible: false,
         fixLeftEdge: false,
@@ -3109,10 +3381,20 @@ function formatCandleValue(val) {
 }
 
 function formatXlmPrice(num) {
-  if (num && parseFloat(num) > 0) return parseFloat(num).toFixed(5);
+  if (num && parseFloat(num) > 0) {
+    const val = parseFloat(num);
+    if (val < 0.0001) return val.toFixed(8);
+    if (val < 0.01) return val.toFixed(7);
+    if (val < 1) return val.toFixed(6);
+    return val.toFixed(4);
+  }
   if (token.usd_price) {
     const rate = globalXlmPrice.value || 0.1878;
-    return (token.usd_price / rate).toFixed(5);
+    const val = token.usd_price / rate;
+    if (val < 0.0001) return val.toFixed(8);
+    if (val < 0.01) return val.toFixed(7);
+    if (val < 1) return val.toFixed(6);
+    return val.toFixed(4);
   }
   return "0.0000";
 }
@@ -3154,14 +3436,7 @@ watch(selectedChartType, () => {
 }
 
 .asset-page-wrapper {
-  --bg: #070A13;
-  --panel: #111620;
-  --panel2: #0E131C;
-  --line: #1D2531;
-  --line2: #28313F;
-  --ink: #D5DBE5;
-  --dim: #8791A0;
-  --faint: #586172;
+  /* Inherited globally for light/dark mode */
   --amber: #12CBEE;
   --pink: #F0189C;
   --blue: #0A5CE0;
@@ -3514,12 +3789,12 @@ watch(selectedChartType, () => {
 }
 
 .acts .btn.dark {
-  background: #0E131C;
-  border-color: rgba(148, 163, 184, 0.16);
+  background: var(--panel2);
+  border-color: var(--line);
 }
 
 .acts .btn.dark:hover {
-  background: #131A26;
+  background: var(--line);
   border-color: var(--amber);
 }
 
@@ -3675,7 +3950,7 @@ watch(selectedChartType, () => {
 .track {
   height: 5px;
   border-radius: 3px;
-  background: #1a212c;
+  background: var(--panel2);
   overflow: hidden;
 }
 
@@ -3831,7 +4106,7 @@ watch(selectedChartType, () => {
 
 .sval.none {
   color: var(--dim);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--panel3);
 }
 
 .expo {
@@ -4020,27 +4295,157 @@ table.trades tr:hover td {
   }
 }
 
-.overflow-y-auto::-webkit-scrollbar {
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-track {
+.overflow-y-auto::-webkit-scrollbar-track,
+.overflow-x-auto::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
   background: rgba(17, 22, 32, 0.5);
   border-radius: 4px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb {
+.overflow-y-auto::-webkit-scrollbar-thumb,
+.overflow-x-auto::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(40, 52, 73, 0.8);
   border-radius: 4px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+.overflow-y-auto::-webkit-scrollbar-thumb:hover,
+.overflow-x-auto::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(56, 73, 102, 1);
 }
 
-.overflow-y-auto {
+.overflow-y-auto,
+.overflow-x-auto,
+.custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(40, 52, 73, 0.8) rgba(17, 22, 32, 0.5);
+}
+
+/* Light Theme Scrollbars */
+html.light .overflow-y-auto::-webkit-scrollbar-track,
+html.light .overflow-x-auto::-webkit-scrollbar-track,
+html.light .custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--panel2);
+}
+
+html.light .overflow-y-auto::-webkit-scrollbar-thumb,
+html.light .overflow-x-auto::-webkit-scrollbar-thumb,
+html.light .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+
+html.light .overflow-y-auto::-webkit-scrollbar-thumb:hover,
+html.light .overflow-x-auto::-webkit-scrollbar-thumb:hover,
+html.light .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+html.light .overflow-y-auto,
+html.light .overflow-x-auto,
+html.light .custom-scrollbar {
+  scrollbar-color: #cbd5e1 var(--panel2);
+}
+
+
+.apr-badge {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  color: var(--up);
+  background: rgba(46, 212, 122, 0.1);
+  border: 1px solid rgba(46, 212, 122, 0.25);
+  display: inline-block;
+  line-height: 1.3;
+}
+
+.apr-zero {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--faint);
+  font-weight: 500;
+}
+
+.pool-pair-link {
+  color: var(--cyan);
+  transition: color 0.15s ease;
+}
+
+.pool-pair-link:hover {
+  color: var(--amber);
+  text-decoration: underline;
+}
+
+.pool-search-input {
+  background: var(--panel2);
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink);
+  outline: none;
+  transition: all 0.15s ease;
+  width: 190px;
+}
+
+.pool-search-input:focus {
+  border-color: var(--amber);
+}
+
+.pool-search-input::placeholder {
+  color: var(--faint);
+}
+
+.pool-sort-select {
+  background: var(--panel2);
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  padding: 6px 28px 6px 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink);
+  outline: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+.pool-sort-select:focus {
+  border-color: var(--amber);
+}
+
+.sortable-th {
+  transition: color 0.15s ease;
+  user-select: none;
+}
+
+.sortable-th:hover {
+  color: var(--ink);
+}
+
+.sort-icon {
+  font-size: 10px;
+  color: var(--faint);
+  transition: color 0.15s ease;
+  opacity: 0.5;
+}
+
+.sort-icon.active {
+  color: var(--amber);
+  opacity: 1;
+  font-weight: bold;
 }
 </style>

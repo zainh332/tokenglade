@@ -1,7 +1,7 @@
 <template>
   <!-- FIXED/STICKY NAVIGATION HEADER (pins to top-0 when ticker scrolls away) -->
   <Disclosure as="nav"
-    class="sticky top-0 z-[50] w-full border-b border-slate-900/60 bg-[#070A13]/90 backdrop-blur-md"
+    class="sticky top-0 z-[50] w-full border-b border-theme-line bg-theme-panel/90 backdrop-blur-md"
     v-slot="{ open, close }">
 
     <!-- MAIN NAVIGATION -->
@@ -40,7 +40,7 @@
 
             <!-- Autocomplete dropdown -->
             <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
-              <div v-if="isFocused" class="absolute right-0 mt-2 w-[340px] bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-xl shadow-2xl z-[99] max-h-[300px] overflow-y-auto custom-scrollbar divide-y divide-[rgba(148,163,184,0.12)]">
+              <div v-if="isFocused" class="hsearch-dropdown absolute right-0 mt-2 w-[340px] bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-xl shadow-2xl z-[99] max-h-[300px] overflow-y-auto custom-scrollbar divide-y divide-[rgba(148,163,184,0.12)]">
                 <!-- If search input is empty -->
                 <div v-if="searchQuery.trim() === ''" class="p-4 text-center text-xs text-slate-400 font-mono">
                   Type a token name or symbol (e.g. TKG, XLM) to search
@@ -92,20 +92,26 @@
           </div>
 
           <!-- Connect Wallet -->
-          <div class="flex items-center">
+          <div class="flex items-center gap-3">
+            <!-- Theme Toggle -->
+            <button @click="toggleTheme" class="p-2 rounded-lg border border-theme-line bg-theme-panel hover:bg-theme-panel2 text-theme-dim hover:text-theme-ink transition-all duration-200 focus:outline-none flex items-center justify-center cursor-pointer shadow-sm hover:scale-[1.03] active:scale-[0.97]" aria-label="Toggle theme">
+              <Sun v-if="theme === 'light'" class="w-4.5 h-4.5 text-amber-500" />
+              <Moon v-else class="w-4.5 h-4.5 text-indigo-400" />
+            </button>
+
             <button v-if="!isConnected" @click="OpenWalletModal" class="text-xs text-white font-bold tracking-wide px-5 py-[8px] rounded-[7px] bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] transition-all">
               Connect Wallet
             </button>
             
             <Menu v-else as="div" class="relative inline-block text-left">
-              <MenuButton class="text-xs text-white font-extrabold px-5 py-[7px] rounded-[7px] bg-slate-900 border border-slate-800 hover:border-slate-700 transition">
+              <MenuButton class="text-xs text-theme-ink font-extrabold px-5 py-[7px] rounded-[7px] bg-theme-panel border border-theme-line hover:bg-theme-panel2 transition shadow-sm cursor-pointer">
                 {{ shortMiddle(walletPk) }}
               </MenuButton>
               <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
-                <MenuItems class="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-xl bg-slate-950 border border-slate-850 shadow-2xl focus:outline-none">
-                  <div class="px-4 py-3 border-b border-slate-900">
-                    <p class="text-[10px] text-slate-500">Connected Wallet</p>
-                    <p class="mt-1 text-xs font-mono text-white truncate" :title="walletPk">{{ walletPk }}</p>
+                <MenuItems class="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-xl bg-theme-panel border border-theme-line shadow-2xl focus:outline-none overflow-hidden">
+                  <div class="px-4 py-3 border-b border-theme-line bg-theme-panel2">
+                    <p class="text-[10px] text-theme-dim uppercase font-bold tracking-wider">Connected Wallet</p>
+                    <p class="mt-1 text-xs font-mono text-theme-ink truncate" :title="walletPk">{{ walletPk }}</p>
                   </div>
                   <MenuItem v-slot="{ active }">
                     <router-link :to="`/wallet/${walletPk}`" :class="[active ? 'bg-slate-900' : '', 'block w-full px-4 py-2.5 text-left text-xs text-slate-300 font-extrabold uppercase tracking-wider transition']">
@@ -113,8 +119,8 @@
                     </router-link>
                   </MenuItem>
                   <MenuItem v-slot="{ active }">
-                    <button type="button" @click="handleDisconnectWallet" :class="[active ? 'bg-red-500/10' : '', 'block w-full px-4 py-2.5 text-left text-xs text-red-400 font-extrabold uppercase tracking-wider']">
-                      Disconnect
+                    <button type="button" @click="handleDisconnectWallet" :class="[active ? 'bg-red-500/10 text-red-500' : 'text-red-500 dark:text-red-400', 'block w-full px-4 py-2.5 text-left text-xs font-extrabold uppercase tracking-wider transition']">
+                       Disconnect
                     </button>
                   </MenuItem>
                 </MenuItems>
@@ -124,7 +130,13 @@
         </div>
 
         <!-- Mobile Toggle -->
-        <div class="flex items-center lg:hidden gap-2">
+        <div class="flex items-center lg:hidden gap-2.5">
+          <!-- Theme Toggle (mobile) -->
+          <button @click="toggleTheme" class="p-1.5 rounded-lg border border-theme-line bg-theme-panel text-theme-dim hover:text-theme-ink focus:outline-none flex items-center justify-center cursor-pointer" aria-label="Toggle theme">
+            <Sun v-if="theme === 'light'" class="w-4 h-4 text-amber-500" />
+            <Moon v-else class="w-4 h-4 text-indigo-400" />
+          </button>
+
           <!-- Connect Wallet (mini) -->
           <button v-if="!isConnected" @click="OpenWalletModal" class="text-[10px] text-white font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-[6px] bg-gradient-to-r from-purple-600 to-cyan-500 focus:outline-none">
             Connect
@@ -138,11 +150,11 @@
     </div>
 
     <!-- Mobile Navigation Drawer -->
-    <DisclosurePanel class="lg:hidden bg-[#070A13] border-b border-slate-900 absolute top-full left-0 w-full z-50">
+    <DisclosurePanel class="lg:hidden bg-theme-bg border-b border-theme-line absolute top-full left-0 w-full z-50">
       <div class="px-4 py-4 space-y-3">
         <!-- Mobile Search Box Input (Inline dropdown autocomplete) -->
         <div class="relative search-container-mobile mb-3" ref="searchContainerMobile">
-          <div class="bg-[#182235] border border-[rgba(148,163,184,0.16)] rounded-xl px-3 py-2.5 flex items-center gap-2">
+          <div class="bg-theme-panel2 border border-theme-line rounded-xl px-3 py-2.5 flex items-center gap-2">
             <MagnifyingGlassIcon class="w-4 h-4 text-slate-500 flex-shrink-0" />
             <input 
               v-model="searchQuery" 
@@ -150,7 +162,7 @@
               @keydown.enter="handleEnterKey"
               type="text" 
               placeholder="Search token name or symbol..." 
-              class="bg-transparent border-0 outline-none text-[16px] text-white placeholder-slate-500 font-mono w-full p-0 focus:ring-0"
+              class="bg-transparent border-0 outline-none text-[16px] text-theme-ink placeholder-theme-faint font-mono w-full p-0 focus:ring-0"
             />
             <span v-if="loading && searchQuery.trim() !== ''" class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-cyan-400 flex-shrink-0"></span>
           </div>
@@ -206,22 +218,22 @@
           </div>
         </div>
 
-        <router-link to="/stake" @click="close" class="block py-2.5 px-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-900 rounded-lg">Staking</router-link>
-        <button @click="() => { triggerLaunchToken(); close(); }" class="block w-full text-left py-2.5 px-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-900 rounded-lg focus:outline-none">Launch Token</button>
+        <router-link to="/stake" @click="close" class="block py-2.5 px-3 text-sm font-semibold text-theme-ink hover:bg-theme-panel2 rounded-lg">Staking</router-link>
+        <button @click="() => { triggerLaunchToken(); close(); }" class="block w-full text-left py-2.5 px-3 text-sm font-semibold text-theme-ink hover:bg-theme-panel2 rounded-lg focus:outline-none">Launch Token</button>
         
-        <div class="pt-3 border-t border-slate-900">
+        <div class="pt-3 border-t border-theme-line">
           <button v-if="!isConnected" @click="() => { OpenWalletModal(); close(); }" class="w-full py-3 text-center text-sm font-bold tracking-wide text-white bg-gradient-to-r from-purple-600 to-cyan-500 rounded-xl">
             Connect Wallet
           </button>
           <div v-else class="space-y-2">
-            <div class="px-3 py-2 bg-slate-950 border border-slate-900 rounded-xl">
-              <p class="text-[10px] text-slate-500">Connected Wallet</p>
-              <p class="text-xs font-mono text-white truncate">{{ walletPk }}</p>
+            <div class="px-3 py-2 bg-theme-panel border border-theme-line rounded-xl">
+              <p class="text-[10px] text-theme-dim uppercase font-bold tracking-wider">Connected Wallet</p>
+              <p class="text-xs font-mono text-theme-ink truncate">{{ walletPk }}</p>
             </div>
             <router-link :to="`/wallet/${walletPk}`" @click="close" class="block w-full py-2.5 px-3 text-center text-xs font-bold text-cyan-400 bg-slate-900 border border-slate-800 rounded-xl hover:text-white transition">
               View Wallet Intelligence
             </router-link>
-            <button @click="() => { handleDisconnectWallet(); close(); }" class="w-full py-3 text-center text-sm font-extrabold uppercase tracking-wider text-red-400 bg-red-950/20 border border-red-900/30 rounded-xl">
+            <button @click="() => { handleDisconnectWallet(); close(); }" class="w-full py-3 text-center text-sm font-extrabold uppercase tracking-wider text-red-500 dark:text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition">
               Disconnect
             </button>
           </div>
@@ -243,6 +255,21 @@ import logo from '@/assets/token-glade-logo.png';
 import verifiedImg from '@/assets/verify.png';
 
 import { ref, onMounted, onUnmounted, computed, watch } from "vue";
+import { Sun, Moon } from 'lucide-vue-next';
+
+const theme = ref(localStorage.getItem('theme') || 'light');
+
+const toggleTheme = () => {
+  const newTheme = theme.value === 'dark' ? 'light' : 'dark';
+  theme.value = newTheme;
+  localStorage.setItem('theme', newTheme);
+  if (newTheme === 'light') {
+    document.documentElement.classList.add('light');
+  } else {
+    document.documentElement.classList.remove('light');
+  }
+  window.dispatchEvent(new CustomEvent('theme-changed', { detail: newTheme }));
+};
 import { useRouter, useRoute } from "vue-router";
 import axios from "axios";
 import Modal from '@/components/Modal.vue';
@@ -491,6 +518,11 @@ const handleWalletChanged = (event) => {
 };
 
 onMounted(() => {
+  if (theme.value === 'light') {
+    document.documentElement.classList.add('light');
+  } else {
+    document.documentElement.classList.remove('light');
+  }
   window.addEventListener("tokenglade-open-buy-tkg", openBuyTkgModal);
   window.addEventListener("tokenglade-open-launch-token", handleOpenLaunchToken);
   window.addEventListener("tokenglade-wallet-changed", handleWalletChanged);
@@ -594,14 +626,7 @@ const OpenWalletModal = () => {
   align-items: center;
   width: 100%;
   
-  /* Mockup theme variables */
-  --panel2: #0E131C;
-  --line: #1D2531;
-  --ink: #D5DBE5;
-  --faint: #586172;
-  --up: #2ED47A;
-  --down: #F0616D;
-  --cyan: #12CBEE;
+  /* Mockup theme variables inherited globally */
   --mono: "JetBrains Mono", ui-monospace, monospace;
 }
 .tape-track {
@@ -654,5 +679,52 @@ const OpenWalletModal = () => {
   to {
     transform: translateX(-33.33%);
   }
+}
+
+/* Light Theme overrides for Search Box */
+html.light .hsearch {
+  --panel: #f1f5f9;
+  --line: #cbd5e1;
+  --faint: #64748b;
+}
+
+html.light .hsearch input {
+  color: #0f172a !important;
+}
+
+html.light .hsearch input::placeholder {
+  color: #94a3b8 !important;
+}
+
+html.light .hsearch:hover {
+  border-color: #0284c7 !important;
+}
+
+/* Light Theme overrides for Autocomplete Dropdown */
+html.light .hsearch-dropdown {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  color: #0f172a !important;
+}
+
+html.light .hsearch-dropdown div {
+  color: #475569 !important;
+}
+
+html.light .hsearch-dropdown .text-white {
+  color: #0f172a !important;
+}
+
+html.light .hsearch-dropdown .hover\:bg-\[\#182235\]\/70:hover {
+  background-color: #f1f5f9 !important;
+}
+
+html.light .hsearch-dropdown .text-cyan-400 {
+  color: #0891b2 !important;
+}
+
+html.light .hsearch-dropdown .text-rose-400 {
+  color: #e11d48 !important;
 }
 </style>

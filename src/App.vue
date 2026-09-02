@@ -1,7 +1,11 @@
 <template>
   <div>
-  <!-- <beta-ribbon></beta-ribbon> -->
-  <router-view></router-view>
+    <!-- <beta-ribbon></beta-ribbon> -->
+    <router-view v-slot="{ Component }">
+      <keep-alive include="Home,TokenInsight">
+        <component :is="Component" />
+      </keep-alive>
+    </router-view>
   </div>
 </template>
 

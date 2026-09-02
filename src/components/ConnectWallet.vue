@@ -14,10 +14,10 @@
                         leave-from="opacity-100 translate-y-0 sm:scale-100"
                         leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
                         <DialogPanel
-                            class="relative w-full max-w-md px-6 py-6 overflow-hidden text-left transition-all transform bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-[25px] shadow-2xl">
+                            class="relative w-full max-w-md px-6 py-6 overflow-hidden text-left transition-all transform bg-theme-panel border border-theme-line rounded-[25px] shadow-2xl">
                             <!-- Close Button (X) --> 
                             <button @click="closeModal"
-                                class="absolute text-slate-400 top-4 right-4 hover:text-white transition focus:outline-none"
+                                class="absolute text-theme-dim top-4 right-4 hover:text-theme-ink transition focus:outline-none"
                                 aria-label="Close Modal">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor" class="w-5 h-5">
@@ -35,37 +35,37 @@
                                     <div class="modal-content modal-wallet">
                                         <template v-if="!isWalletConnected">
                                             <div id="connectWalletModal" class="modal-body">
-                                                <h1 class="text-xl font-bold text-center text-white tracking-tight mb-6">
+                                                <h1 class="text-xl font-bold text-center text-theme-ink tracking-tight mb-6">
                                                     Connect Your Wallet
                                                 </h1>
                                                 <div class="mb-4">
                                                     <label for="selectedBlockchain"
-                                                        class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono mb-1.5">
+                                                        class="block text-[10px] font-bold uppercase tracking-wider text-theme-dim font-mono mb-1.5">
                                                         Select Blockchain
                                                     </label>
                                                     <select id="selectedBlockchain" name="selectedBlockchain" v-model="selectedBlockchain"
-                                                        class="block w-full px-3.5 py-2.5 bg-[#182235] border border-[rgba(148,163,184,0.16)] text-white rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition sm:text-sm sm:leading-6">
-                                                        <option value="" disabled selected>
+                                                        class="block w-full px-3.5 py-2.5 bg-theme-panel3 border border-theme-line text-theme-ink rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition sm:text-sm sm:leading-6 cursor-pointer">
+                                                        <option value="" disabled selected class="bg-theme-panel text-theme-dim">
                                                             Choose a blockchain
                                                         </option>
-                                                        <option v-for="blockchain in blockchainOptions" :key="blockchain.key" :value="blockchain.id">
+                                                        <option v-for="blockchain in blockchainOptions" :key="blockchain.key" :value="blockchain.id" class="bg-theme-panel text-theme-ink">
                                                             {{ blockchain.name }}
                                                         </option>
                                                     </select>
                                                 </div>
                                                 <div class="mb-4">
                                                     <label for="selectedWallet"
-                                                        class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono mb-1.5">
+                                                        class="block text-[10px] font-bold uppercase tracking-wider text-theme-dim font-mono mb-1.5">
                                                         Select Wallet
                                                     </label>
                                                     <select id="selectedWallet" name="selectedWallet"
                                                         v-model="selectedWallet"
-                                                        class="block w-full px-3.5 py-2.5 bg-[#182235] border border-[rgba(148,163,184,0.16)] text-white rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition sm:text-sm sm:leading-6">
-                                                        <option value="" disabled selected>
+                                                        class="block w-full px-3.5 py-2.5 bg-theme-panel3 border border-theme-line text-theme-ink rounded-xl focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition sm:text-sm sm:leading-6 cursor-pointer">
+                                                        <option value="" disabled selected class="bg-theme-panel text-theme-dim">
                                                             Choose your Wallet
                                                         </option>
                                                         <option v-for="wallet in displayedWalletOptions" :key="wallet.key"
-                                                            :value="wallet.key">
+                                                            :value="wallet.key" class="bg-theme-panel text-theme-ink">
                                                             {{ wallet.name }}
                                                         </option>
                                                     </select>
@@ -87,21 +87,21 @@
                                         <!-- If connected -->
                                         <template v-else>
                                             <div class="modal-body text-center" style="word-break: break-all">
-                                                <h1 class="text-sm font-bold text-slate-400 mb-2">Connected Wallet</h1>
-                                                <div class="font-mono font-bold text-white bg-[#151D2D] border border-[rgba(148,163,184,0.16)] px-4 py-3 rounded-xl mb-4 text-xs select-all">
+                                                <h1 class="text-sm font-bold text-theme-dim mb-2">Connected Wallet</h1>
+                                                <div class="font-mono font-bold text-theme-ink bg-theme-panel3 border border-theme-line px-4 py-3 rounded-xl mb-4 text-xs select-all">
                                                     {{ UserData.walletKey || displayPk }}
                                                 </div>
                                             </div>
                                             <div class="mt-4">
                                                 <button id="connectWalletButton" @click="disconnectWallet()"
-                                                    type="button" class="w-full py-3 text-center text-xs font-extrabold uppercase tracking-wider text-red-400 bg-red-950/20 border border-red-900/30 rounded-xl hover:bg-red-950/30 transition duration-300">
+                                                    type="button" class="w-full py-3 text-center text-xs font-extrabold uppercase tracking-wider text-red-500 dark:text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition duration-300">
                                                     Disconnect Wallet
                                                 </button>
                                             </div>
                                         </template>
 
                                         <div class="mt-4">
-                                            <p class="text-center block text-[10px] text-slate-400 font-mono mb-1 leading-relaxed">
+                                            <p class="text-center block text-[10px] text-theme-dim font-mono mb-1 leading-relaxed">
                                                 We never store your wallet info. Used only for on-chain operations.
                                             </p>
                                         </div>

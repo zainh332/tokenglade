@@ -1,16 +1,16 @@
 {
-  "_hearing-e453608a.js": {
-    "file": "assets/hearing-e453608a.js"
+  "_hearing-cbe8e710.js": {
+    "file": "assets/hearing-cbe8e710.js"
   },
   "resources/css/app.css": {
-    "file": "assets/app-e1441cf6.css",
+    "file": "assets/app-c6f36ba2.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
   "src/admin-main.js": {
-    "file": "assets/admin-main-46815fd0.js",
+    "file": "assets/admin-main-c523a403.js",
     "imports": [
-      "_hearing-e453608a.js"
+      "_hearing-cbe8e710.js"
     ],
     "isEntry": true,
     "src": "src/admin-main.js"
@@ -34,10 +34,6 @@
   "src/assets/hero_ecosystem.png": {
     "file": "assets/hero_ecosystem-70981645.png",
     "src": "src/assets/hero_ecosystem.png"
-  },
-  "src/assets/lights.png": {
-    "file": "assets/lights-c425c569.png",
-    "src": "src/assets/lights.png"
   },
   "src/assets/reward.png": {
     "file": "assets/reward-9c1d8a04.png",
@@ -76,7 +72,7 @@
     "src": "src/assets/wallet.jpg"
   },
   "src/main.css": {
-    "file": "assets/main-88d28d3c.css",
+    "file": "assets/main-fd9edc59.css",
     "src": "src/main.css"
   },
   "src/main.js": {
@@ -97,11 +93,11 @@
       "assets/stop-abbef106.png"
     ],
     "css": [
-      "assets/main-88d28d3c.css"
+      "assets/main-fd9edc59.css"
     ],
-    "file": "assets/main-2c01a54f.js",
+    "file": "assets/main-86f38956.js",
     "imports": [
-      "_hearing-e453608a.js"
+      "_hearing-cbe8e710.js"
     ],
     "isEntry": true,
     "src": "src/main.js"

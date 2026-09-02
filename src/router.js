@@ -1,10 +1,6 @@
 
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "./pages/Home.vue";
-import TokenTransfer from "./pages/TokenTransfer.vue";
-import ClaimableBalance from "./pages/ClaimableBalance.vue";
-import ReclaimClaimableBalance from "./pages/ReclaimClaimableBalance.vue";
-import TomlFileGenerator from "./pages/TomlFileGenerator.vue";
 import aboutus from "./pages/about-us.vue";
 import privacypolicy from "./pages/privacy-policy.vue";
 import termsofservice from "./pages/terms-of-service.vue";

@@ -3,19 +3,20 @@
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm transition-all duration-300">
     <!-- Modal Card -->
     <div
-      class="relative w-full max-w-lg bg-[#0f172a]/95 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col text-left">
+      class="relative w-full max-w-lg bg-theme-panel border border-theme-line rounded-3xl overflow-hidden shadow-2xl flex flex-col text-left">
       <!-- Gradient Decorative Header Line -->
       <div class="h-1.5 w-full bg-gradient-to-r from-purple-500 via-cyan-500 to-emerald-500"></div>
 
       <!-- Modal Header -->
-      <div class="p-5 pb-3 border-b border-slate-850 flex items-center justify-between">
+      <div class="p-5 pb-4 border-b border-theme-line bg-theme-panel2 flex items-center justify-between">
         <div>
-          <h3 class="text-base font-bold text-white font-display">Report Incorrect Info</h3>
-          <p class="text-[10px] text-slate-500 uppercase mt-0.5 tracking-wider font-semibold">{{ token.asset_code }} —
+          <h3 class="text-base font-bold text-theme-ink font-display">Report Incorrect Info</h3>
+          <p class="text-[10px] text-theme-dim uppercase mt-0.5 tracking-wider font-semibold">{{ token.asset_code }} —
             Support Inquiry</p>
         </div>
         <button @click="closeModal"
-          class="p-1.5 rounded-xl bg-slate-900/60 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition">
+          class="p-1.5 rounded-xl bg-theme-panel hover:bg-theme-panel2 border border-theme-line text-theme-dim hover:text-theme-ink transition"
+          aria-label="Close modal">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -30,39 +31,38 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Your Name (Optional)</label>
+            <label class="block text-[10px] font-bold text-theme-dim uppercase mb-1.5">Your Name (Optional)</label>
             <input type="text" v-model="form.name" maxlength="100" placeholder="e.g. John Doe"
-              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/50" />
+              class="w-full bg-theme-panel3 border border-theme-line rounded-xl px-3 py-2.5 text-theme-ink placeholder:text-theme-very-muted focus:outline-none focus:border-cyan-500/50 transition" />
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Email Address</label>
+            <label class="block text-[10px] font-bold text-theme-dim uppercase mb-1.5">Email Address</label>
             <input type="email" v-model="form.email" required maxlength="150" placeholder="e.g. contact@project.com"
-              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/50" />
+              class="w-full bg-theme-panel3 border border-theme-line rounded-xl px-3 py-2.5 text-theme-ink placeholder:text-theme-very-muted focus:outline-none focus:border-cyan-500/50 transition" />
           </div>
         </div>
 
         <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Select Topic</label>
+          <label class="block text-[10px] font-bold text-theme-dim uppercase mb-1.5">Select Topic</label>
           <select v-model="form.topic" required
-            class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-cyan-500/50 cursor-pointer">
-            <option value="Incorrect About Details" class="bg-[#0f172a] text-slate-200">Incorrect About Details</option>
-            <option value="Stale/Incorrect Wallet Labels" class="bg-[#0f172a] text-slate-200">Stale/Incorrect Wallet
-              Labels</option>
-            <option value="Broken Links or Socials" class="bg-[#0f172a] text-slate-200">Broken Links or Socials</option>
-            <option value="General Support/Feedback" class="bg-[#0f172a] text-slate-200">General Support / Feedback</option>
-            <option value="Others" class="bg-[#0f172a] text-slate-200">Others</option>
+            class="w-full bg-theme-panel3 border border-theme-line rounded-xl px-3 py-2.5 text-theme-ink focus:outline-none focus:border-cyan-500/50 cursor-pointer transition">
+            <option value="Incorrect About Details" class="bg-theme-panel text-theme-ink">Incorrect About Details</option>
+            <option value="Stale/Incorrect Wallet Labels" class="bg-theme-panel text-theme-ink">Stale/Incorrect Wallet Labels</option>
+            <option value="Broken Links or Socials" class="bg-theme-panel text-theme-ink">Broken Links or Socials</option>
+            <option value="General Support/Feedback" class="bg-theme-panel text-theme-ink">General Support / Feedback</option>
+            <option value="Others" class="bg-theme-panel text-theme-ink">Others</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Message / Explanation</label>
+          <label class="block text-[10px] font-bold text-theme-dim uppercase mb-1.5">Message / Explanation</label>
           <textarea v-model="form.message" rows="4" required maxlength="2000"
             placeholder="Describe what is wrong or needs to be changed in detail (wallet addresses, correct links, descriptions, etc.)"
-            class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 resize-none leading-relaxed"></textarea>
+            class="w-full bg-theme-panel3 border border-theme-line rounded-xl p-3 text-theme-ink placeholder:text-theme-very-muted focus:outline-none focus:border-cyan-500/50 resize-none leading-relaxed transition"></textarea>
           <div class="flex justify-between items-center mt-1 px-1">
-            <span class="text-[9px] text-slate-500 font-medium">Max 2,000 characters</span>
+            <span class="text-[9px] text-theme-dim font-medium">Max 2,000 characters</span>
             <span class="text-[9px] font-medium"
-              :class="form.message.length >= 1900 ? 'text-rose-400 font-bold' : 'text-slate-500'">
+              :class="form.message.length >= 1900 ? 'text-rose-400 font-bold' : 'text-theme-dim'">
               {{ form.message.length }} / 2,000
             </span>
           </div>
@@ -148,8 +148,6 @@ const submitInquiry = async () => {
         icon: 'success',
         title: 'Inquiry Submitted',
         text: res.data.message || 'Your inquiry has been received.',
-        background: '#0f172a',
-        color: '#fff',
         confirmButtonColor: '#7c3aed'
       });
       // Reset form
