@@ -7,18 +7,13 @@
 
       <!-- SKELETON LOADER (Visible when loading is true) -->
       <div v-if="loading" class="space-y-8 animate-pulse mt-4">
-        <!-- BREADCRUMB SKELETON -->
-        <div class="h-4 w-48 bg-[#1D2531]/60 rounded"></div>
-
         <!-- ASSET HEADER CARD SKELETON -->
         <section class="card asset">
           <div class="ahead">
             <!-- Logo & Name Skeleton Container (Flex Row for Mobile side-by-side) -->
             <div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
               <!-- Icon Skeleton -->
-              <div class="token-ico flex-none">
-                <div class="w-full h-full bg-[#1D2531]/60 rounded-xl"></div>
-              </div>
+              <div class="w-[52px] h-[52px] rounded-xl bg-[#1D2531]/60 flex-none"></div>
 
               <!-- Name and Issuer Skeleton -->
               <div class="name-col space-y-2 flex-1 min-w-0">
@@ -41,7 +36,7 @@
                 <div class="h-4 w-20 bg-[#1D2531]/80 rounded ml-auto"></div>
                 <div class="h-2.5 w-24 bg-[#1D2531]/40 rounded ml-auto"></div>
               </div>
-              <div class="w-14 h-14 rounded-full border-4 border-theme-line/60 flex-none"></div>
+              <div class="w-14 h-14 rounded-full border-4 border-[#1D2531]/60 flex-none"></div>
             </div>
           </div>
 
@@ -56,7 +51,7 @@
 
           <!-- SECONDARY STRIP SKELETON -->
           <div
-            class="mt-3.5 py-2.5 px-4 bg-theme-panel2 rounded-xl border border-[rgba(148,163,184,0.12)] flex flex-wrap items-center justify-between gap-3">
+            class="mt-3.5 py-2.5 px-4 bg-[#0E131C] rounded-xl border border-[#1D2531] flex flex-wrap items-center justify-between gap-3">
             <div v-for="i in 6" :key="i" class="h-3.5 w-28 bg-[#1D2531]/60 rounded"></div>
           </div>
 
@@ -80,7 +75,7 @@
                 <div class="h-5 bg-[#1D2531]/60 rounded w-36"></div>
                 <div class="h-6 bg-[#1D2531]/60 rounded-lg w-40"></div>
               </div>
-              <div class="h-[340px] bg-theme-panel2/40 rounded-xl border border-theme-line/40"></div>
+              <div class="h-[340px] bg-[#0E131C] rounded-xl border border-[#1D2531]"></div>
             </div>
 
             <!-- Market Exposure Stats Skeleton -->
@@ -103,11 +98,11 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
                 <div class="space-y-4">
                   <div class="h-3.5 bg-[#1D2531]/60 rounded w-28"></div>
-                  <div class="h-[200px] bg-theme-panel2/40 rounded-xl border border-theme-line/40"></div>
+                  <div class="h-[200px] bg-[#0E131C] rounded-xl border border-[#1D2531]"></div>
                 </div>
                 <div class="space-y-4">
                   <div class="h-3.5 bg-[#1D2531]/60 rounded w-28"></div>
-                  <div class="h-[200px] bg-theme-panel2/40 rounded-xl border border-theme-line/40"></div>
+                  <div class="h-[200px] bg-[#0E131C] rounded-xl border border-[#1D2531]"></div>
                 </div>
               </div>
             </div>
@@ -117,7 +112,7 @@
               <div class="card-hd">
                 <div class="h-5 bg-[#1D2531]/60 rounded w-28"></div>
               </div>
-              <div class="h-[200px] bg-theme-panel2/40 rounded-xl border border-theme-line/40 mt-4"></div>
+              <div class="h-[200px] bg-[#0E131C] rounded-xl border border-[#1D2531] mt-4"></div>
             </div>
           </div>
 
@@ -133,8 +128,8 @@
                 <div class="h-3 bg-[#1D2531]/60 rounded w-full"></div>
                 <div class="h-2 bg-[#1D2531]/40 rounded w-1/2"></div>
               </div>
-              <div class="h-20 bg-theme-panel2/40 rounded-xl border border-theme-line/40"></div>
-              <div class="h-16 bg-theme-panel2/40 rounded-xl border border-theme-line/40"></div>
+              <div class="h-20 bg-[#0E131C] rounded-xl border border-[#1D2531]"></div>
+              <div class="h-16 bg-[#0E131C] rounded-xl border border-[#1D2531]"></div>
             </div>
 
             <!-- Whale Activity Card Skeleton -->
@@ -143,8 +138,8 @@
                 <div class="h-5 bg-[#1D2531]/60 rounded w-32"></div>
                 <div class="h-4 bg-[#1D2531]/40 rounded w-16"></div>
               </div>
-              <div class="space-y-3.5 bg-theme-panel2/40 p-4 rounded-xl border border-theme-line/40">
-                <div v-for="i in 3" :key="i" class="space-y-2 pb-3 border-b border-theme-line/20 last:border-b-0 last:pb-0">
+              <div class="space-y-3.5 bg-[#0E131C] p-4 rounded-xl border border-[#1D2531]">
+                <div v-for="i in 3" :key="i" class="space-y-2 pb-3 border-b border-[#1D2531] last:border-b-0 last:pb-0">
                   <div class="flex justify-between">
                     <div class="h-3 bg-[#1D2531]/60 rounded w-36"></div>
                     <div class="h-3 bg-[#1D2531]/40 rounded w-8"></div>
@@ -271,7 +266,7 @@
           <!-- STATS TIMEFRAME HEADER -->
           <div class="flex items-center justify-between mt-4 mb-2 px-1">
             <span class="text-xs font-sans font-semibold text-slate-400">Key Metrics</span>
-            <div class="flex items-center gap-1 bg-theme-panel2 p-1 rounded-lg border border-[rgba(148,163,184,0.12)]">
+            <div class="flex items-center gap-1 bg-theme-panel2 p-1 rounded-lg border border-theme-line">
               <button @click="changeStatsTimeframe('24h')"
                 class="px-2.5 py-0.5 rounded text-[11px] font-sans font-medium transition-all"
                 :class="selectedStatsTimeframe === '24h' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 font-semibold' : 'text-slate-400 hover:text-white'">
@@ -462,7 +457,7 @@
 
           <!-- COMPACT SECONDARY STRIP -->
           <div
-            class="mt-3.5 py-2.5 px-4 bg-theme-panel2 rounded-xl border border-[rgba(148,163,184,0.12)] grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-x-4 gap-y-3 text-xs font-mono">
+            class="mt-3.5 py-2.5 px-4 bg-theme-panel2 rounded-xl border border-theme-line grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center sm:justify-between gap-x-4 gap-y-3 text-xs font-mono">
             <!-- 1. 24H High -->
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 font-medium">24h High:</span>
@@ -4460,5 +4455,22 @@ html.light .custom-scrollbar {
   color: var(--amber);
   opacity: 1;
   font-weight: bold;
+}
+
+/* Light Mode Card Overrides */
+html.light .card {
+  background: #FFFFFF;
+  border-color: #E2E8F0;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+}
+
+html.light .card-hd {
+  background: #FFFFFF;
+  border-bottom-color: #E2E8F0;
+}
+
+html.light .token-ico {
+  background: #F8FAFC;
+  border-color: #E2E8F0;
 }
 </style>
