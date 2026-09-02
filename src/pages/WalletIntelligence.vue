@@ -55,18 +55,18 @@
                       :class="overviewData.is_connected_wallet ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' : 'bg-theme-panel2 text-theme-dim border border-theme-line'">
                   {{ overviewData.is_connected_wallet ? 'CONNECTED' : (overviewData.is_official_wallet ? 'OFFICIAL' : 'PUBLIC') }}
                 </span>
-                <span v-if="overviewData?.home_domain" class="text-[10px] font-mono text-cyan-600 dark:text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded">
+                <span v-if="overviewData?.home_domain" class="text-xs font-sans font-medium text-cyan-600 dark:text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-md">
                   🌐 {{ overviewData.home_domain }}
                 </span>
               </div>
               
-              <div class="flex items-center gap-3">
-                <h1 class="text-xs sm:text-sm md:text-base font-mono text-theme-ink break-all leading-relaxed font-semibold select-all flex-1 min-w-0" :title="address">
+              <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                <h1 class="text-xs sm:text-sm md:text-base font-mono text-theme-ink break-all font-semibold select-all" :title="address">
                   {{ address }}
                 </h1>
-                <button @click="copyAddress" class="p-2 bg-theme-panel2 border border-theme-line rounded-lg hover:border-theme-line2 hover:text-theme-ink transition flex-shrink-0" title="Copy Address">
+                <button @click="copyAddress" class="p-1.5 sm:p-2 bg-theme-panel2 border border-theme-line rounded-lg hover:border-theme-line2 hover:text-theme-ink transition flex-shrink-0 cursor-pointer" title="Copy Address">
                   <Check v-if="copied" class="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                  <Copy v-else class="w-4 h-4 text-theme-dim" />
+                  <Copy v-else class="w-4 h-4 text-theme-dim hover:text-theme-ink" />
                 </button>
               </div>
 
@@ -89,8 +89,8 @@
               <!-- Highlighted Portfolio Value Card -->
               <div class="bg-gradient-to-br from-cyan-500/10 to-purple-500/10 border border-cyan-500/30 p-4 rounded-xl flex-1 sm:flex-none min-w-[170px] space-y-1 shadow-lg shadow-cyan-500/5">
                 <div class="text-xs font-semibold text-cyan-600 dark:text-cyan-400">Portfolio Value</div>
-                <div class="text-2xl font-black text-theme-ink font-mono leading-none py-1">
-                  <span v-if="overviewLoading" class="inline-block w-28 h-7 bg-theme-line animate-pulse rounded"></span>
+                <div class="text-lg font-bold text-theme-ink font-mono leading-tight py-0.5">
+                  <span v-if="overviewLoading" class="inline-block w-24 h-6 bg-theme-line animate-pulse rounded"></span>
                   <span v-else>${{ formatNumber(overviewData?.portfolio_value_usd, 2) }}</span>
                 </div>
                 <div class="text-xs text-theme-dim font-mono">
@@ -102,8 +102,8 @@
               <!-- XLM Balance -->
               <div class="bg-theme-panel2 border border-theme-line p-4 rounded-xl flex-1 sm:flex-none min-w-[110px] space-y-1">
                 <div class="text-xs font-semibold text-slate-400">XLM Balance</div>
-                <div class="text-lg font-bold text-theme-ink font-mono leading-tight py-1">
-                  <span v-if="overviewLoading" class="inline-block w-16 h-5 bg-theme-line animate-pulse rounded"></span>
+                <div class="text-base font-bold text-theme-ink font-mono leading-tight py-0.5">
+                  <span v-if="overviewLoading" class="inline-block w-14 h-5 bg-theme-line animate-pulse rounded"></span>
                   <span v-else>{{ formatNumber(overviewData?.xlm_balance, 2) }}</span>
                 </div>
                 <div class="text-xs text-theme-dim font-medium">Native XLM</div>
@@ -112,8 +112,8 @@
               <!-- Assets Held -->
               <div class="bg-theme-panel2 border border-theme-line p-4 rounded-xl flex-1 sm:flex-none min-w-[100px] space-y-1">
                 <div class="text-xs font-semibold text-slate-400">Assets Held</div>
-                <div class="text-lg font-bold text-theme-ink font-mono leading-tight py-1">
-                  <span v-if="overviewLoading" class="inline-block w-10 h-5 bg-theme-line animate-pulse rounded"></span>
+                <div class="text-base font-bold text-theme-ink font-mono leading-tight py-0.5">
+                  <span v-if="overviewLoading" class="inline-block w-8 h-5 bg-theme-line animate-pulse rounded"></span>
                   <span v-else>{{ overviewData?.assets_held ?? 0 }}</span>
                 </div>
                 <div class="text-xs text-theme-dim font-medium">Positions</div>
@@ -121,22 +121,22 @@
 
               <!-- Trustlines -->
               <div class="bg-theme-panel2 border border-theme-line p-4 rounded-xl flex-1 sm:flex-none min-w-[100px] space-y-1">
-                <div class="text-[10px] uppercase text-theme-faint tracking-wider font-semibold">Trustlines</div>
-                <div class="text-lg font-bold text-cyan-500 dark:text-cyan-400 font-mono leading-tight py-1">
-                  <span v-if="overviewLoading" class="inline-block w-10 h-5 bg-theme-line animate-pulse rounded"></span>
+                <div class="text-xs font-semibold text-slate-400">Trustlines</div>
+                <div class="text-base font-bold text-cyan-500 dark:text-cyan-400 font-mono leading-tight py-0.5">
+                  <span v-if="overviewLoading" class="inline-block w-8 h-5 bg-theme-line animate-pulse rounded"></span>
                   <span v-else>{{ overviewData?.trustlines_count ?? 0 }}</span>
                 </div>
-                <div class="text-[11px] text-theme-dim font-semibold uppercase">Established</div>
+                <div class="text-xs text-theme-dim font-medium">Established</div>
               </div>
 
               <!-- Pools -->
               <div class="bg-theme-panel2 border border-theme-line p-4 rounded-xl flex-1 sm:flex-none min-w-[100px] space-y-1">
-                <div class="text-[10px] uppercase text-theme-faint tracking-wider font-semibold">Pools</div>
-                <div class="text-lg font-bold text-amber-500 dark:text-amber-400 font-mono leading-tight py-1">
-                  <span v-if="overviewLoading" class="inline-block w-10 h-5 bg-theme-line animate-pulse rounded"></span>
+                <div class="text-xs font-semibold text-slate-400">Pools</div>
+                <div class="text-base font-bold text-amber-500 dark:text-amber-400 font-mono leading-tight py-0.5">
+                  <span v-if="overviewLoading" class="inline-block w-8 h-5 bg-theme-line animate-pulse rounded"></span>
                   <span v-else>{{ overviewData?.pools_count ?? 0 }}</span>
                 </div>
-                <div class="text-[11px] text-theme-dim font-semibold uppercase">Participated</div>
+                <div class="text-xs text-theme-dim font-medium">Participated</div>
               </div>
             </div>
           </div>
@@ -490,23 +490,27 @@
               
               <div class="p-6 flex-1 flex flex-col justify-center items-center space-y-6">
                 <!-- SVG Donut Chart -->
-                <div class="relative w-44 h-44 flex items-center justify-center">
+                <div class="relative w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center flex-shrink-0">
                   <svg class="w-full h-full transform -rotate-90" viewBox="0 0 42 42">
                     <circle class="donut-hole" cx="21" cy="21" r="15.91549430918954" fill="transparent"></circle>
-                    <circle class="donut-ring" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="var(--line)" stroke-width="3.5"></circle>
+                    <circle class="donut-ring" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="var(--line)" stroke-width="3"></circle>
                     
                     <circle v-for="(slice, index) in donutSlices" :key="index"
                             cx="21" cy="21" r="15.91549430918954" fill="transparent"
-                            :stroke="slice.color" stroke-width="3.5"
+                            :stroke="slice.color" stroke-width="3"
                             :stroke-dasharray="`${slice.percentage} ${100 - slice.percentage}`"
                             :stroke-dashoffset="slice.offset"
                             class="donut-segment transition-all duration-300"></circle>
                   </svg>
                   
-                  <div class="absolute text-center space-y-0.5 select-none pointer-events-none">
-                    <span class="text-[10px] text-theme-faint font-mono uppercase tracking-wider block">PORTFOLIO</span>
-                    <span class="text-lg font-extrabold text-theme-ink font-mono leading-none">
-                      {{ overviewData?.portfolio_value_usd !== null && overviewData?.portfolio_value_usd !== undefined ? '$' + formatNumber(overviewData.portfolio_value_usd, 2) : '--' }}
+                  <div class="absolute inset-0 flex flex-col items-center justify-center p-3 text-center select-none pointer-events-none max-w-[130px] sm:max-w-[155px] mx-auto">
+                    <span class="text-[10px] font-sans font-semibold text-slate-400 dark:text-slate-400 tracking-wider uppercase block">PORTFOLIO</span>
+                    <span 
+                      class="font-extrabold text-theme-ink font-mono leading-tight tracking-tight block truncate w-full mt-0.5"
+                      :class="formattedPortfolioDonutValue.length > 13 ? 'text-xs sm:text-sm' : (formattedPortfolioDonutValue.length > 9 ? 'text-sm sm:text-base' : 'text-base sm:text-lg')"
+                      :title="formattedPortfolioDonutValue"
+                    >
+                      {{ formattedPortfolioDonutValue }}
                     </span>
                   </div>
                 </div>
@@ -1279,6 +1283,15 @@ const donutSlices = computed(() => {
 });
 
 const legendSlices = computed(() => donutData.value);
+
+const formattedPortfolioDonutValue = computed(() => {
+  if (overviewData.value?.portfolio_value_usd === null || overviewData.value?.portfolio_value_usd === undefined) {
+    return '--';
+  }
+  const val = Number(overviewData.value.portfolio_value_usd);
+  if (isNaN(val)) return '$0.00';
+  return '$' + formatNumber(val, 2);
+});
 
 // Helper formatting
 function formatNumber(value, decimals = 2) {
