@@ -884,7 +884,7 @@
 
           <!-- SECTION 5: ACCOUNT DETAILS & SIGNERS (RIGHT 1 COL) -->
           <div class="space-y-6">
-            <section class="card">
+            <section class="card !overflow-visible relative z-20">
               <div class="card-hd">
                 <h3 class="font-sans font-semibold text-sm text-theme-ink">
                   Account Configuration
@@ -895,17 +895,28 @@
               <div class="p-5 space-y-5">
                 <!-- Signers List -->
                 <div class="space-y-2 font-sans">
-                  <div class="text-xs font-semibold text-slate-400">Signers & Weights</div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-xs font-bold text-theme-ink">Signers & Weights</span>
+                      <div class="group relative flex items-center">
+                        <HelpCircle class="w-3.5 h-3.5 text-theme-dim hover:text-cyan-500 dark:hover:text-cyan-400 cursor-help transition" />
+                        <div class="wallet-tooltip absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-2.5 rounded-lg text-[11px] font-sans shadow-2xl z-50 leading-relaxed pointer-events-none">
+                          Stellar accounts can have multiple keys (signers) with assigned weights. Transactions require enough combined weight to meet the required threshold.
+                        </div>
+                      </div>
+                    </div>
+                    <span class="text-[11px] font-medium text-theme-dim">Total: {{ overviewData?.signers?.length ?? 1 }}</span>
+                  </div>
                   <div class="space-y-1.5">
                     <div v-for="signer in sortedSigners" :key="signer.key" 
                          class="p-2.5 bg-theme-panel2 border border-theme-line rounded-lg flex items-center justify-between text-xs font-mono">
                       <div class="flex items-center gap-2 min-w-0 font-sans">
-                        <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="signer.key === address ? 'bg-cyan-500' : 'bg-theme-faint'"></span>
-                        <router-link v-if="signer.key !== address" :to="`/wallet/${signer.key}`" class="text-cyan-600 dark:text-cyan-400 hover:underline truncate max-w-[170px] transition-colors font-mono" :title="signer.key">
+                        <span class="w-2 h-2 rounded-full flex-shrink-0" :class="signer.key === address ? 'bg-cyan-500' : 'bg-theme-faint'"></span>
+                        <router-link v-if="signer.key !== address" :to="`/wallet/${signer.key}`" class="text-cyan-600 dark:text-cyan-400 font-semibold hover:underline truncate max-w-[170px] transition-colors font-mono" :title="signer.key">
                           {{ shortenAddress(signer.key) }}
                         </router-link>
-                        <span v-else class="text-theme-ink truncate max-w-[170px] font-mono" :title="signer.key">{{ shortenAddress(signer.key) }}</span>
-                        <span v-if="signer.key === address" class="text-[10px] px-2 py-0.5 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 rounded font-semibold">Master</span>
+                        <span v-else class="text-theme-ink font-semibold truncate max-w-[170px] font-mono" :title="signer.key">{{ shortenAddress(signer.key) }}</span>
+                        <span v-if="signer.key === address" class="text-[10px] px-2 py-0.5 bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/30 rounded font-bold">Master</span>
                       </div>
                       <span class="text-theme-ink font-semibold bg-theme-panel border border-theme-line px-2.5 py-0.5 rounded text-xs font-sans">Weight: <span class="font-mono font-bold">{{ signer.weight }}</span></span>
                     </div>
@@ -917,62 +928,101 @@
 
                 <!-- Thresholds -->
                 <div class="space-y-2 pt-2 border-t border-theme-line font-sans">
-                  <div class="text-xs font-semibold text-slate-400">Operation Thresholds</div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-xs font-bold text-theme-ink">Operation Thresholds</span>
+                      <div class="group relative flex items-center">
+                        <HelpCircle class="w-3.5 h-3.5 text-theme-dim hover:text-cyan-500 dark:hover:text-cyan-400 cursor-help transition" />
+                        <div class="wallet-tooltip absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-2.5 rounded-lg text-[11px] font-sans shadow-2xl z-50 leading-relaxed pointer-events-none">
+                          Minimum signing weight required to approve actions. Standard payments and DEX trades require Medium threshold, while critical account changes require High threshold.
+                        </div>
+                      </div>
+                    </div>
+                    <span class="text-[10px] font-medium text-theme-dim">Required Weights</span>
+                  </div>
+
                   <div class="grid grid-cols-3 gap-2 text-center">
-                    <div class="p-2 bg-theme-panel2 border border-theme-line rounded-lg">
-                      <div class="text-[11px] text-theme-dim">Low</div>
+                    <div class="p-2.5 bg-theme-panel2 border border-theme-line rounded-lg group relative cursor-help hover:border-cyan-500/40 transition">
+                      <div class="text-[11px] font-semibold text-theme-dim flex items-center justify-center gap-1">
+                        Low
+                      </div>
                       <div class="text-sm font-bold text-theme-ink font-mono">{{ overviewData?.thresholds?.low_threshold ?? 0 }}</div>
+                      <div class="wallet-tooltip absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-52 p-2 rounded-lg text-[10px] font-sans shadow-2xl z-50 leading-normal pointer-events-none">
+                        Controls minor actions like transaction sequence bumps and trustline approvals.
+                      </div>
                     </div>
-                    <div class="p-2 bg-theme-panel2 border border-theme-line rounded-lg">
-                      <div class="text-[11px] text-theme-dim">Medium</div>
+
+                    <div class="p-2.5 bg-theme-panel2 border border-theme-line rounded-lg group relative cursor-help hover:border-cyan-500/40 transition">
+                      <div class="text-[11px] font-semibold text-theme-dim flex items-center justify-center gap-1">
+                        Medium
+                      </div>
                       <div class="text-sm font-bold text-cyan-600 dark:text-cyan-400 font-mono">{{ overviewData?.thresholds?.med_threshold ?? 0 }}</div>
+                      <div class="wallet-tooltip absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-52 p-2 rounded-lg text-[10px] font-sans shadow-2xl z-50 leading-normal pointer-events-none">
+                        Controls standard transactions: payments, DEX trading offers, and trustlines.
+                      </div>
                     </div>
-                    <div class="p-2 bg-theme-panel2 border border-theme-line rounded-lg">
-                      <div class="text-[11px] text-theme-dim">High</div>
+
+                    <div class="p-2.5 bg-theme-panel2 border border-theme-line rounded-lg group relative cursor-help hover:border-cyan-500/40 transition">
+                      <div class="text-[11px] font-semibold text-theme-dim flex items-center justify-center gap-1">
+                        High
+                      </div>
                       <div class="text-sm font-bold text-rose-600 dark:text-rose-400 font-mono">{{ overviewData?.thresholds?.high_threshold ?? 0 }}</div>
+                      <div class="wallet-tooltip absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-52 p-2 rounded-lg text-[10px] font-sans shadow-2xl z-50 leading-normal pointer-events-none">
+                        Controls critical security: changing signers, modifying thresholds, or account merges.
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <!-- Flags -->
                 <div class="space-y-2 pt-2 border-t border-theme-line font-sans">
-                  <div class="text-xs font-semibold text-slate-400">Account Flags</div>
-                  <div class="grid grid-cols-2 gap-1.5 text-xs">
-                    <div class="p-2 bg-theme-panel2 border border-theme-line rounded flex items-center justify-between">
-                      <span class="text-theme-dim">Auth Required</span>
-                      <span class="font-semibold" :class="overviewData?.flags?.auth_required ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-faint'">{{ overviewData?.flags?.auth_required ? 'Yes' : 'No' }}</span>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-xs font-bold text-theme-ink">Account Flags</span>
+                      <div class="group relative flex items-center">
+                        <HelpCircle class="w-3.5 h-3.5 text-theme-dim hover:text-cyan-500 dark:hover:text-cyan-400 cursor-help transition" />
+                        <div class="wallet-tooltip absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-2.5 rounded-lg text-[11px] font-sans shadow-2xl z-50 leading-relaxed pointer-events-none">
+                          On-chain permissions and compliance rules (primarily used by token issuers to regulate asset distribution or guarantee permanent decentralization).
+                        </div>
+                      </div>
                     </div>
-                    <div class="p-2 bg-theme-panel2 border border-theme-line rounded flex items-center justify-between">
-                      <span class="text-theme-dim">Auth Revocable</span>
-                      <span class="font-semibold" :class="overviewData?.flags?.auth_revocable ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-faint'">{{ overviewData?.flags?.auth_revocable ? 'Yes' : 'No' }}</span>
+                    <span class="text-[10px] font-medium text-theme-dim">Permissions</span>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="p-2.5 bg-theme-panel2 border border-theme-line rounded-lg flex items-center justify-between group relative cursor-help hover:border-cyan-500/40 transition">
+                      <span class="text-theme-ink font-medium">Auth Required</span>
+                      <span class="font-bold" :class="overviewData?.flags?.auth_required ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-dim'">{{ overviewData?.flags?.auth_required ? 'Yes' : 'No' }}</span>
+                      <div class="wallet-tooltip absolute left-0 bottom-full mb-1.5 hidden group-hover:block w-56 p-2 rounded-lg text-[10px] font-sans shadow-2xl z-50 leading-normal pointer-events-none">
+                        Requires issuer permission before any user can hold this token.
+                      </div>
                     </div>
-                    <div class="p-2 bg-theme-panel2 border border-theme-line rounded flex items-center justify-between">
-                      <span class="text-theme-dim">Auth Immutable</span>
-                      <span class="font-semibold" :class="overviewData?.flags?.auth_immutable ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-faint'">{{ overviewData?.flags?.auth_immutable ? 'Yes' : 'No' }}</span>
+
+                    <div class="p-2.5 bg-theme-panel2 border border-theme-line rounded-lg flex items-center justify-between group relative cursor-help hover:border-cyan-500/40 transition">
+                      <span class="text-theme-ink font-medium">Auth Revocable</span>
+                      <span class="font-bold" :class="overviewData?.flags?.auth_revocable ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-dim'">{{ overviewData?.flags?.auth_revocable ? 'Yes' : 'No' }}</span>
+                      <div class="wallet-tooltip absolute right-0 bottom-full mb-1.5 hidden group-hover:block w-56 p-2 rounded-lg text-[10px] font-sans shadow-2xl z-50 leading-normal pointer-events-none">
+                        Allows issuer to freeze or revoke token balances in user wallets.
+                      </div>
                     </div>
-                    <div class="p-2 bg-theme-panel2 border border-theme-line rounded flex items-center justify-between">
-                      <span class="text-theme-dim">Clawback</span>
-                      <span class="font-semibold" :class="overviewData?.flags?.auth_clawback_enabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-faint'">{{ overviewData?.flags?.auth_clawback_enabled ? 'Yes' : 'No' }}</span>
+
+                    <div class="p-2.5 bg-theme-panel2 border border-theme-line rounded-lg flex items-center justify-between group relative cursor-help hover:border-cyan-500/40 transition">
+                      <span class="text-theme-ink font-medium">Auth Immutable</span>
+                      <span class="font-bold" :class="overviewData?.flags?.auth_immutable ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-dim'">{{ overviewData?.flags?.auth_immutable ? 'Yes' : 'No' }}</span>
+                      <div class="wallet-tooltip absolute left-0 bottom-full mb-1.5 hidden group-hover:block w-56 p-2 rounded-lg text-[10px] font-sans shadow-2xl z-50 leading-normal pointer-events-none">
+                        Flags can never be altered again, guaranteeing decentralization.
+                      </div>
+                    </div>
+
+                    <div class="p-2.5 bg-theme-panel2 border border-theme-line rounded-lg flex items-center justify-between group relative cursor-help hover:border-cyan-500/40 transition">
+                      <span class="text-theme-ink font-medium">Clawback</span>
+                      <span class="font-bold" :class="overviewData?.flags?.auth_clawback_enabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-theme-dim'">{{ overviewData?.flags?.auth_clawback_enabled ? 'Yes' : 'No' }}</span>
+                      <div class="wallet-tooltip absolute right-0 bottom-full mb-1.5 hidden group-hover:block w-56 p-2 rounded-lg text-[10px] font-sans shadow-2xl z-50 leading-normal pointer-events-none">
+                        Allows issuer to claw back tokens for legal/regulatory compliance.
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                <!-- Additional Details -->
-                <div class="space-y-2 pt-2 border-t border-theme-line text-xs font-mono">
-                  <div class="flex items-center justify-between">
-                    <span class="text-theme-dim font-sans">Subentries</span>
-                    <span class="text-theme-ink font-semibold">{{ overviewData?.subentry_count ?? 0 }}</span>
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <span class="text-theme-dim font-sans">Sequence #</span>
-                    <span class="text-theme-dim font-semibold">{{ overviewData?.sequence ?? '--' }}</span>
-                  </div>
-                  <div v-if="overviewData?.home_domain" class="flex items-center justify-between">
-                    <span class="text-theme-dim font-sans">Home Domain</span>
-                    <span class="text-cyan-600 dark:text-cyan-400 font-semibold">{{ overviewData.home_domain }}</span>
-                  </div>
-                </div>
-
               </div>
             </section>
           </div>
@@ -991,7 +1041,7 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
-import { Copy, Check, AlertCircle, Coins, Activity, ArrowUpRight } from "lucide-vue-next";
+import { Copy, Check, AlertCircle, Coins, Activity, ArrowUpRight, HelpCircle } from "lucide-vue-next";
 
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
@@ -1629,6 +1679,58 @@ html.light .hero-glow {
 .donut-segment:hover {
   stroke-width: 4.5;
   cursor: pointer;
+}
+
+/* Tooltip popovers: Guaranteed high contrast in both themes */
+.wallet-tooltip {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border: 1px solid #334155 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+  z-index: 9999 !important;
+}
+
+.config-header-title {
+  color: #e2e8f0;
+}
+
+html.light .config-header-title {
+  color: #0f172a !important;
+}
+
+/* Light Theme explicit text contrast overrides */
+html.light .text-theme-ink {
+  color: #0f172a !important;
+}
+
+html.light .text-theme-dim {
+  color: #475569 !important;
+}
+
+html.light .text-theme-faint {
+  color: #64748b !important;
+}
+
+html.light .card-hd h3 {
+  color: #0f172a !important;
+}
+
+html.light .card {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light .card-hd {
+  background: #ffffff !important;
+  border-bottom-color: #e2e8f0 !important;
+}
+
+html.light .wallet-tooltip {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border: 1px solid #1e293b !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3) !important;
 }
 
 /* Custom scrollbar */
