@@ -771,4 +771,21 @@ class AdminController extends Controller
             'inquiry' => $inquiry
         ]);
     }
+
+    /**
+     * Get pending counts for admin sidebar badges.
+     */
+    public function getSidebarCounts()
+    {
+        $pendingVerifications = \App\Models\VerifiedProject::where('status', 2)->count();
+        $pendingInquiries = \App\Models\ProjectInquiry::where('status', 'pending')->count();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'pending_verifications' => $pendingVerifications,
+                'pending_inquiries' => $pendingInquiries,
+            ]
+        ]);
+    }
 }

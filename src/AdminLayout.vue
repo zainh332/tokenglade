@@ -17,11 +17,20 @@
           v-for="item in navItems"
           :key="item.name"
           :to="item.to"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition"
+          class="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition group"
           :class="isRouteActive(item.to) ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'"
         >
-          <component :is="item.icon" class="w-5 h-5" />
-          {{ item.name }}
+          <div class="flex items-center gap-3">
+            <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
+            <span class="truncate">{{ item.name }}</span>
+          </div>
+          <span
+            v-if="item.badgeCount && item.badgeCount > 0"
+            class="px-2 py-0.5 text-[11px] font-black rounded-full font-mono transition flex-shrink-0 shadow-sm"
+            :class="isRouteActive(item.to) ? 'bg-white text-purple-700 font-extrabold' : (item.badgeColor || 'bg-amber-500/20 text-amber-300 border border-amber-500/40')"
+          >
+            {{ item.badgeCount }}
+          </span>
         </router-link>
       </nav>
 
@@ -60,8 +69,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
+import axios from 'axios';
 import { getCookie } from './utils/utils.js';
 
 // Icons represent placeholders as inline components to avoid import dependency limits
@@ -142,17 +152,45 @@ const route = useRoute();
 const adminPk = ref(getCookie('public_key') || localStorage.getItem('public_key') || 'Not Connected');
 const csrfToken = window.Laravel?.csrfToken || '';
 
-const navItems = [
+const pendingVerificationsCount = ref(0);
+const pendingInquiriesCount = ref(0);
+let countPollTimer = null;
+
+async function fetchSidebarCounts() {
+  try {
+    const res = await axios.get('/api/admin/sidebar_counts');
+    if (res.data && res.data.status === 'success' && res.data.data) {
+      pendingVerificationsCount.value = res.data.data.pending_verifications || 0;
+      pendingInquiriesCount.value = res.data.data.pending_inquiries || 0;
+    }
+  } catch (err) {
+    // Silently handle if unauthenticated or network drop
+  }
+}
+
+const navItems = computed(() => [
   { name: 'Connected Wallets', to: '/admin/wallets', icon: WalletIcon },
   { name: 'Minted Tokens', to: '/admin/tokens', icon: TokenIcon },
   { name: 'Staking Analytics', to: '/admin/staking', icon: StakingIcon },
   { name: 'LP Participants', to: '/admin/lp-participants', icon: LpIcon },
   { name: 'LP Reward History', to: '/admin/lp-history', icon: HistoryIcon },
   { name: 'Verification Fees', to: '/admin/verification-fees', icon: FeeIcon },
-  { name: 'Project Verification', to: '/admin/project-verification', icon: VerificationIcon },
+  { 
+    name: 'Project Verification', 
+    to: '/admin/project-verification', 
+    icon: VerificationIcon,
+    badgeCount: pendingVerificationsCount.value,
+    badgeColor: 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
+  },
   { name: 'Metadata CRUD', to: '/admin/metadata-management', icon: TagIcon },
-  { name: 'Support Inquiries', to: '/admin/support-queries', icon: SupportIcon },
-];
+  { 
+    name: 'Support Inquiries', 
+    to: '/admin/support-queries', 
+    icon: SupportIcon,
+    badgeCount: pendingInquiriesCount.value,
+    badgeColor: 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+  },
+]);
 
 const currentPageTitle = computed(() => {
   if (route.path.includes('/wallets')) return 'Wallets Base Registry';
@@ -175,4 +213,17 @@ function shortAddress(addr) {
   if (!addr || addr.length < 10) return addr;
   return `${addr.slice(0, 6)}...${addr.slice(-6)}`;
 }
+
+onMounted(() => {
+  fetchSidebarCounts();
+  window.addEventListener('admin-counts-updated', fetchSidebarCounts);
+  countPollTimer = setInterval(fetchSidebarCounts, 25000);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('admin-counts-updated', fetchSidebarCounts);
+  if (countPollTimer) {
+    clearInterval(countPollTimer);
+  }
+});
 </script>
