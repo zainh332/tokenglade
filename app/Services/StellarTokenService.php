@@ -832,6 +832,7 @@ class StellarTokenService
                                 'id' => $er['id'],
                                 'fee_bp' => $er['fee'] ?? 30,
                                 'total_shares' => (string)($er['shares'] ?? 0),
+                                'total_trustlines' => (int)($er['accounts'] ?? ($er['trustlines'] ?? 0)),
                                 'reserves' => $res,
                                 'expert_tvl' => $er['total_value'] ?? null,
                                 'expert_vol' => $er['volume'] ?? null,
@@ -918,6 +919,9 @@ class StellarTokenService
             $amountB = (float)($assetB['amount'] ?? 0);
             $reservesFormatted = number_format($amountA, $amountA >= 100 ? 0 : 2) . " {$codeA} + " . number_format($amountB, $amountB >= 100 ? 0 : 2) . " {$codeB}";
             
+            $totalShares = (float)($record['total_shares'] ?? ($record['shares'] ?? 0));
+            $trustlines = (int)($record['total_trustlines'] ?? ($record['accounts'] ?? ($record['trustlines'] ?? 0)));
+
             $pools[] = [
                 'id' => $record['id'],
                 'name' => $poolName,
@@ -925,7 +929,8 @@ class StellarTokenService
                 'apr' => $apr,
                 'volume' => $volume,
                 'fee_bp' => $record['fee_bp'] ?? 30,
-                'total_shares' => (float)($record['total_shares'] ?? 0),
+                'total_shares' => $totalShares,
+                'trustlines' => $trustlines,
                 'reserves_formatted' => $reservesFormatted,
             ];
         }

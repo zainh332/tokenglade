@@ -1147,13 +1147,30 @@
                         {{ token.liquidity_overview.pools.length }} Active
                       </span>
                     </div>
-                    <div v-if="(token.liquidity_overview?.pools?.length || 0) > 3" class="relative">
-                      <input
-                        v-model="poolSearch"
-                        type="text"
-                        placeholder="Search pool pair..."
-                        class="pool-search-input"
-                      />
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <div class="relative">
+                        <select
+                          v-model="poolSortKey"
+                          @change="poolSortDir = (poolSortKey === 'name' ? 'asc' : 'desc')"
+                          class="pool-sort-select"
+                          aria-label="Sort liquidity pools"
+                        >
+                          <option value="tvl">Sort: TVL</option>
+                          <option value="apr">Sort: APR</option>
+                          <option value="volume">Sort: 24h Volume</option>
+                          <option value="total_shares">Sort: Shares</option>
+                          <option value="trustlines">Sort: Trustlines</option>
+                          <option value="name">Sort: Pair Name</option>
+                        </select>
+                      </div>
+                      <div v-if="(token.liquidity_overview?.pools?.length || 0) > 3" class="relative">
+                        <input
+                          v-model="poolSearch"
+                          type="text"
+                          placeholder="Search pool pair..."
+                          class="pool-search-input"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1162,27 +1179,66 @@
                     <table class="trades">
                       <thead>
                         <tr>
-                          <th style="text-align:left;width:28%">Market / Pool Pair</th>
-                          <th style="text-align:left;width:32%">Reserves Breakdown</th>
-                          <th style="width:14%">Total TVL</th>
-                          <th style="width:12%">APR</th>
-                          <th style="width:14%">24h Volume</th>
+                          <th @click="togglePoolSort('name')" class="sortable-th" style="text-align:left;width:22%">
+                            <div class="flex items-center gap-1.5 cursor-pointer select-none">
+                              <span>Market / Pool Pair</span>
+                              <span class="sort-icon" :class="{ active: poolSortKey === 'name' }">
+                                {{ poolSortKey === 'name' ? (poolSortDir === 'asc' ? '↑' : '↓') : '↕' }}
+                              </span>
+                            </div>
+                          </th>
+                          <th style="text-align:left;width:25%">Reserves Breakdown</th>
+                          <th @click="togglePoolSort('total_shares')" class="sortable-th" style="width:13%">
+                            <div class="flex items-center justify-end gap-1.5 cursor-pointer select-none">
+                              <span>Shares</span>
+                              <span class="sort-icon" :class="{ active: poolSortKey === 'total_shares' }">
+                                {{ poolSortKey === 'total_shares' ? (poolSortDir === 'asc' ? '↑' : '↓') : '↕' }}
+                              </span>
+                            </div>
+                          </th>
+                          <th @click="togglePoolSort('trustlines')" class="sortable-th" style="width:10%">
+                            <div class="flex items-center justify-end gap-1.5 cursor-pointer select-none">
+                              <span>Trustlines</span>
+                              <span class="sort-icon" :class="{ active: poolSortKey === 'trustlines' }">
+                                {{ poolSortKey === 'trustlines' ? (poolSortDir === 'asc' ? '↑' : '↓') : '↕' }}
+                              </span>
+                            </div>
+                          </th>
+                          <th @click="togglePoolSort('tvl')" class="sortable-th" style="width:11%">
+                            <div class="flex items-center justify-end gap-1.5 cursor-pointer select-none">
+                              <span>Total TVL</span>
+                              <span class="sort-icon" :class="{ active: poolSortKey === 'tvl' }">
+                                {{ poolSortKey === 'tvl' ? (poolSortDir === 'asc' ? '↑' : '↓') : '↕' }}
+                              </span>
+                            </div>
+                          </th>
+                          <th @click="togglePoolSort('apr')" class="sortable-th" style="width:9%">
+                            <div class="flex items-center justify-end gap-1.5 cursor-pointer select-none">
+                              <span>APR</span>
+                              <span class="sort-icon" :class="{ active: poolSortKey === 'apr' }">
+                                {{ poolSortKey === 'apr' ? (poolSortDir === 'asc' ? '↑' : '↓') : '↕' }}
+                              </span>
+                            </div>
+                          </th>
+                          <th @click="togglePoolSort('volume')" class="sortable-th" style="width:10%">
+                            <div class="flex items-center justify-end gap-1.5 cursor-pointer select-none">
+                              <span>24h Volume</span>
+                              <span class="sort-icon" :class="{ active: poolSortKey === 'volume' }">
+                                {{ poolSortKey === 'volume' ? (poolSortDir === 'asc' ? '↑' : '↓') : '↕' }}
+                              </span>
+                            </div>
+                          </th>
                         </tr>
                       </thead>
                       <tbody v-if="filteredPools && filteredPools.length" class="font-mono">
                         <tr v-for="(pool, index) in filteredPools" :key="index"
                           class="hover:bg-white/2 transition">
                           <td style="text-align:left">
-                            <div class="flex items-center gap-2">
-                              <a :href="`https://stellar.expert/explorer/public/liquidity-pool/${pool.id}`"
-                                target="_blank" rel="noopener noreferrer"
-                                class="pool-pair-link font-semibold truncate block max-w-[140px] xs:max-w-[180px] sm:max-w-none">
-                                {{ pool.name }}
-                              </a>
-                              <span v-if="pool.fee_bp" class="pool-fee-badge">
-                                {{ (pool.fee_bp / 100).toFixed(2) }}% fee
-                              </span>
-                            </div>
+                            <a :href="`https://stellar.expert/explorer/public/liquidity-pool/${pool.id}`"
+                              target="_blank" rel="noopener noreferrer"
+                              class="pool-pair-link font-semibold truncate block max-w-[140px] xs:max-w-[180px] sm:max-w-none">
+                              {{ pool.name }}
+                            </a>
                             <span class="text-[10.5px] dim font-mono block mt-0.5" :title="pool.id">
                               {{ shorten(pool.id) }}
                             </span>
@@ -1192,6 +1248,16 @@
                               {{ pool.reserves_formatted }}
                             </span>
                             <span v-else class="text-xs faint">—</span>
+                          </td>
+                          <td>
+                            <span class="text-xs font-mono font-medium" style="color: var(--ink)" :title="pool.total_shares ? pool.total_shares.toString() : '0'">
+                              {{ formatCompactNumber(pool.total_shares || 0) }}
+                            </span>
+                          </td>
+                          <td>
+                            <span class="text-xs font-mono font-medium" style="color: var(--dim)">
+                              {{ formatNumber(pool.trustlines || 0) }}
+                            </span>
                           </td>
                           <td>
                             <span class="font-bold font-mono" style="color: var(--ink)">
@@ -1215,7 +1281,7 @@
                       </tbody>
                       <tbody v-else>
                         <tr>
-                          <td colspan="5" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">
+                          <td colspan="7" class="py-6 text-center text-sm font-medium" style="color:var(--faint)">
                             {{ poolSearch ? 'No liquidity pools match your search query.' : 'No liquidity pool data detected on-chain' }}
                           </td>
                         </tr>
@@ -1848,16 +1914,45 @@ const liquidityLoading = ref(true)
 const largeEvents = ref([])
 const largeEventsLoading = ref(true)
 const poolSearch = ref('')
+const poolSortKey = ref('tvl')
+const poolSortDir = ref('desc')
+
+const togglePoolSort = (key) => {
+  if (poolSortKey.value === key) {
+    poolSortDir.value = poolSortDir.value === 'desc' ? 'asc' : 'desc'
+  } else {
+    poolSortKey.value = key
+    poolSortDir.value = (key === 'name') ? 'asc' : 'desc'
+  }
+}
 
 const filteredPools = computed(() => {
-  const pools = token.liquidity_overview?.pools || []
-  if (!poolSearch.value.trim()) return pools
-  const q = poolSearch.value.trim().toLowerCase()
-  return pools.filter(p => 
-    (p.name && p.name.toLowerCase().includes(q)) ||
-    (p.id && p.id.toLowerCase().includes(q)) ||
-    (p.reserves_formatted && p.reserves_formatted.toLowerCase().includes(q))
-  )
+  const pools = [...(token.liquidity_overview?.pools || [])]
+  let result = pools
+  if (poolSearch.value.trim()) {
+    const q = poolSearch.value.trim().toLowerCase()
+    result = result.filter(p => 
+      (p.name && p.name.toLowerCase().includes(q)) ||
+      (p.id && p.id.toLowerCase().includes(q)) ||
+      (p.reserves_formatted && p.reserves_formatted.toLowerCase().includes(q))
+    )
+  }
+
+  const key = poolSortKey.value
+  const dir = poolSortDir.value === 'asc' ? 1 : -1
+
+  return result.sort((a, b) => {
+    let valA = a[key] ?? 0
+    let valB = b[key] ?? 0
+
+    if (key === 'name') {
+      valA = (a.name || '').toLowerCase()
+      valB = (b.name || '').toLowerCase()
+      return dir * valA.localeCompare(valB)
+    }
+
+    return dir * ((Number(valA) || 0) - (Number(valB) || 0))
+  })
 })
 
 const refreshLiveTrades = async () => {
@@ -4259,19 +4354,6 @@ html.light .custom-scrollbar {
   scrollbar-color: #cbd5e1 var(--panel2);
 }
 
-.pool-fee-badge {
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 5px;
-  background: var(--panel2);
-  border: 1px solid var(--line2);
-  color: var(--dim);
-  display: inline-flex;
-  align-items: center;
-  line-height: 1.2;
-}
 
 .apr-badge {
   font-family: var(--mono);
@@ -4322,5 +4404,48 @@ html.light .custom-scrollbar {
 
 .pool-search-input::placeholder {
   color: var(--faint);
+}
+
+.pool-sort-select {
+  background: var(--panel2);
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  padding: 6px 28px 6px 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink);
+  outline: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+.pool-sort-select:focus {
+  border-color: var(--amber);
+}
+
+.sortable-th {
+  transition: color 0.15s ease;
+  user-select: none;
+}
+
+.sortable-th:hover {
+  color: var(--ink);
+}
+
+.sort-icon {
+  font-size: 10px;
+  color: var(--faint);
+  transition: color 0.15s ease;
+  opacity: 0.5;
+}
+
+.sort-icon.active {
+  color: var(--amber);
+  opacity: 1;
+  font-weight: bold;
 }
 </style>
