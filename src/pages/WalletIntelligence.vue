@@ -853,15 +853,21 @@
                     <div class="text-xs text-theme-ink font-extrabold">
                       {{ event.value_usd ? '$' + formatNumber(event.value_usd, 2) : '--' }}
                     </div>
-                    <div class="text-[10px] text-theme-dim flex items-center justify-end">
+                    <div class="text-[10px] text-theme-dim flex items-center justify-end gap-1.5">
                       <span>{{ formatRelativeTime(event.occurred_at) }}</span>
+                      <router-link v-if="event.transaction_hash" 
+                                   :to="`/tx/${event.transaction_hash}`" 
+                                   class="p-1 bg-theme-panel border border-theme-line hover:border-theme-line2 rounded text-theme-dim hover:text-cyan-500 dark:hover:text-cyan-400 transition"
+                                   title="View Transaction Details">
+                        <ArrowUpRight class="w-3 h-3" />
+                      </router-link>
                     </div>
                   </div>
                 </div>
               </div>
 
               <!-- REAL-TIME PAGINATION: LOAD MORE VIA HORIZON CURSOR -->
-              <div v-if="hasMoreEvents" class="p-4 text-center border-t border-theme-line bg-theme-panel2/50">
+              <div v-if="hasMoreEvents && filteredEvents.length > 0" class="p-4 text-center border-t border-theme-line bg-theme-panel2/50">
                 <button @click="loadMoreEvents" 
                         :disabled="activityLoading"
                         class="text-[10px] font-mono font-bold uppercase tracking-wider px-5 py-2 bg-theme-panel border border-theme-line hover:border-theme-line2 transition rounded-lg text-theme-ink cursor-pointer disabled:opacity-50">
@@ -887,7 +893,7 @@
                 <div class="space-y-2">
                   <div class="text-[10px] font-mono uppercase tracking-wider text-theme-dim font-semibold">Signers & Weights</div>
                   <div class="space-y-1.5">
-                    <div v-for="signer in overviewData?.signers ?? []" :key="signer.key" 
+                    <div v-for="signer in sortedSigners" :key="signer.key" 
                          class="p-2.5 bg-theme-panel2 border border-theme-line rounded-lg flex items-center justify-between text-xs font-mono">
                       <div class="flex items-center gap-2 min-w-0">
                         <span class="w-1.5 h-1.5 rounded-full" :class="signer.key === address ? 'bg-cyan-500' : 'bg-theme-faint'"></span>
@@ -1208,6 +1214,16 @@ function getTrustlineStatus(hold) {
   if (hold.is_authorized) return 'Active';
   return '--';
 }
+
+const sortedSigners = computed(() => {
+  const signers = overviewData.value?.signers ?? [];
+  if (!signers.length) return [];
+  return [...signers].sort((a, b) => {
+    if (a.key === address.value) return -1;
+    if (b.key === address.value) return 1;
+    return (b.weight || 0) - (a.weight || 0);
+  });
+});
 
 // Donut Chart slices calculation
 const donutColors = ['#12CBEE', '#A78BFA', '#F472B6', '#34D399', '#FBBF24', '#60A5FA', '#94A3B8'];

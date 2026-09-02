@@ -123,6 +123,10 @@ Route::prefix('token')->group(function () {
 });
 
 
+Route::prefix('tx')->group(function () {
+    Route::get('{hash}', 'TransactionController@show')->name('transaction.show');
+});
+
 Route::prefix('tkg')->group(function () {
     Route::get('meta', 'TkgBuyController@meta')->name('tkg.meta');
     Route::get('quote', 'TkgBuyController@quote')->name('tkg.quote');

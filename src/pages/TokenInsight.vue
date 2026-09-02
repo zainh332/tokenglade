@@ -1646,12 +1646,11 @@
                       </div>
                       
                       <!-- Transaction Link -->
-                      <a :href="`https://stellar.expert/explorer/public/tx/${event.transaction_hash}`" 
-                         target="_blank" 
-                         class="text-[10px] text-slate-500 hover:text-cyan-400 transition-colors font-mono flex-shrink-0"
-                         title="View Tx on Stellar.Expert">
+                      <router-link :to="`/tx/${event.transaction_hash}`" 
+                                   class="text-[10px] text-slate-500 hover:text-cyan-400 transition-colors font-mono flex-shrink-0"
+                                   title="View Transaction Details">
                         tx ↗
-                      </a>
+                      </router-link>
                     </div>
                     
                     <div class="flex items-center justify-between gap-2 text-[11px] text-slate-400 flex-wrap">

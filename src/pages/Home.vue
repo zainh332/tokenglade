@@ -263,15 +263,19 @@
             <transition-group name="list" tag="div">
               <div v-for="act in activityFeed.slice(0, 8)" :key="act.id" 
                 class="row transition duration-150" 
-                :class="act.txHash ? 'cursor-pointer hover:bg-theme-panel3' : 'cursor-default'"
-                @click="openTx(act)">
+                :class="act.txHash ? 'cursor-pointer hover:bg-theme-panel3/70' : 'cursor-default'"
+                @click="openTx(act)"
+                :title="act.txHash ? 'View on-chain transaction details' : ''">
                 <span class="badge" :class="{
                   'b-lp': act.type === 'LIQUIDITY',
                   'b-swap': act.type === 'SWAP',
                   'b-mint': act.type === 'MINT' || act.type === 'REWARD'
                 }">{{ act.type === 'LIQUIDITY' ? 'LP+' : act.type }}</span>
                 <span class="amt truncate max-w-[420px]" :title="act.message">{{ act.message }}</span>
-                <span class="ago">{{ act.time }}</span>
+                <span class="ago flex items-center gap-1">
+                  {{ act.time }}
+                  <span v-if="act.txHash" class="text-[10px] text-cyan-400 font-mono" title="View Transaction">↗</span>
+                </span>
               </div>
             </transition-group>
           </div>
@@ -1183,7 +1187,7 @@ function shortenAddress(str) {
 
 function openTx(act) {
   if (act && act.txHash) {
-    window.open(`https://stellar.expert/explorer/public/tx/${act.txHash}`, '_blank');
+    router.push(`/tx/${act.txHash}`);
   }
 }
 

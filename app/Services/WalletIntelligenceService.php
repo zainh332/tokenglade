@@ -75,6 +75,12 @@ class WalletIntelligenceService
                 }
 
                 $balances = $data['balances'] ?? [];
+                $rawSigners = $data['signers'] ?? [];
+                usort($rawSigners, function ($a, $b) use ($address) {
+                    if (($a['key'] ?? '') === $address) return -1;
+                    if (($b['key'] ?? '') === $address) return 1;
+                    return ($b['weight'] ?? 0) <=> ($a['weight'] ?? 0);
+                });
                 
                 return [
                     'active' => true,
@@ -82,7 +88,7 @@ class WalletIntelligenceService
                     'claimable_balances' => $claimableBalances,
                     'sequence' => (int) ($data['sequence'] ?? 0),
                     'subentry_count' => (int) ($data['subentry_count'] ?? 0),
-                    'signers' => $data['signers'] ?? [],
+                    'signers' => $rawSigners,
                     'thresholds' => $data['thresholds'] ?? [],
                     'flags' => $data['flags'] ?? [],
                     'home_domain' => $data['home_domain'] ?? null,

@@ -7,6 +7,7 @@ import termsofservice from "./pages/terms-of-service.vue";
 import Staking from "./pages/staking.vue";
 import TokenInsight from "./pages/TokenInsight.vue";
 import WalletIntelligence from "./pages/WalletIntelligence.vue"; // Wallet Intel V1 Page
+import TransactionDetails from "./pages/TransactionDetails.vue"; // Transaction Details Page
 
 function hasRequiredCookies() {
     const public_key = getCookie('public_key');
@@ -114,6 +115,14 @@ const routes = [
         meta: {
             title: "Wallet Intelligence | TokenGlade",
             description: "Explore on-chain portfolio value, token holdings, historical balance trends, and trading activity for any Stellar wallet with TokenGlade Wallet Intelligence."
+        },
+    },
+    {
+        path: "/tx/:hash",
+        component: TransactionDetails,
+        meta: {
+            title: "Transaction Details | TokenGlade",
+            description: "Explore on-chain operations, effects, fees, signatures, and cryptographic details for any Stellar transaction with TokenGlade."
         },
     },
 ];

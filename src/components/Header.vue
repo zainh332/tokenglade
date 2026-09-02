@@ -58,7 +58,15 @@
                   <div v-for="asset in assets" :key="`${asset.asset_code}_${asset.asset_issuer}`"
                       @click="() => { selectAsset(asset); close(); }"
                       class="p-3.5 cursor-pointer hover:bg-[#182235]/70 transition duration-150 text-left">
-                      <div v-if="asset.is_wallet" class="flex flex-col gap-1">
+                      <div v-if="asset.is_tx" class="flex flex-col gap-1">
+                          <div class="font-sans font-bold text-xs text-cyan-400 flex items-center gap-1.5">
+                              <span>Explore Transaction</span>
+                          </div>
+                          <div class="text-[10px] font-mono text-slate-400 truncate">
+                              Hash: {{ asset.tx_hash }}
+                          </div>
+                      </div>
+                      <div v-else-if="asset.is_wallet" class="flex flex-col gap-1">
                           <div class="font-sans font-bold text-xs text-cyan-400 flex items-center gap-1.5">
                               <span>Analyze Wallet Intelligence</span>
                           </div>
@@ -186,7 +194,15 @@
               <div v-for="asset in assets" :key="`${asset.asset_code}_${asset.asset_issuer}`"
                   @click="() => { selectAsset(asset); close(); }"
                   class="p-3.5 cursor-pointer hover:bg-[#182235]/70 transition duration-150 text-left">
-                  <div v-if="asset.is_wallet" class="flex flex-col gap-1">
+                  <div v-if="asset.is_tx" class="flex flex-col gap-1">
+                      <div class="font-sans font-bold text-xs text-cyan-400 flex items-center gap-1.5">
+                          <span>Explore Transaction</span>
+                      </div>
+                      <div class="text-[10px] font-mono text-slate-400 truncate">
+                          Hash: {{ asset.tx_hash }}
+                      </div>
+                  </div>
+                  <div v-else-if="asset.is_wallet" class="flex flex-col gap-1">
                       <div class="font-sans font-bold text-xs text-cyan-400 flex items-center gap-1.5">
                           <span>Analyze Wallet Intelligence</span>
                       </div>
@@ -392,6 +408,16 @@ async function searchAssets() {
     return;
   }
 
+  // Detect Stellar Transaction Hash Search (64 hex characters)
+  if (/^[a-f0-9]{64}$/i.test(rawInput)) {
+    assets.value = [{
+      is_tx: true,
+      tx_hash: rawInput.toLowerCase()
+    }];
+    loading.value = false;
+    return;
+  }
+
   // Detect Stellar Wallet Address Search
   if (/^G[A-Z2-7]{55}$/.test(rawInput)) {
     assets.value = [{
@@ -461,7 +487,9 @@ watch(searchQuery, (newValue) => {
 
 function selectAsset(asset) {
   document.activeElement?.blur();
-  if (asset.is_wallet) {
+  if (asset.is_tx) {
+    router.push(`/tx/${asset.tx_hash}`);
+  } else if (asset.is_wallet) {
     router.push(`/wallet/${asset.asset_issuer}`);
   } else {
     router.push({
@@ -480,7 +508,12 @@ function selectAsset(asset) {
 
 function handleEnterKey() {
   const rawInput = searchQuery.value.trim();
-  if (/^G[A-Z2-7]{55}$/.test(rawInput)) {
+  if (/^[a-f0-9]{64}$/i.test(rawInput)) {
+    selectAsset({
+      is_tx: true,
+      tx_hash: rawInput.toLowerCase()
+    });
+  } else if (/^G[A-Z2-7]{55}$/.test(rawInput)) {
     selectAsset({
       asset_code: 'Analyze Wallet',
       asset_issuer: rawInput,
