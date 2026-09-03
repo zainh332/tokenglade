@@ -242,6 +242,10 @@
                     <span v-if="copied" class="text-emerald-400 font-bold">✓ Copied</span>
                     <span v-else class="text-theme-dim">Copy Address</span>
                   </button>
+                  <button @click="shareModalOpen = true" class="px-2.5 py-0.5 bg-gradient-to-r from-purple-500/10 via-cyan-500/10 to-emerald-500/10 hover:from-purple-500/20 hover:to-cyan-500/20 border border-cyan-500/30 hover:border-cyan-400/60 rounded text-[11px] font-mono text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5 transition cursor-pointer select-none font-bold shadow-sm" title="Generate Shareable Price Card / Embed Widget">
+                    <Share2 class="w-3 h-3 text-cyan-500" />
+                    <span>Share / Embed</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1831,9 +1835,9 @@
       :token="token" 
       :usd-price="token.usd_price || 0" 
       :xlm-price="token.xlm_price || 0" 
-      :price-change="historicalStats?.price_change_pct || 0"
-      :liquidity="token.liquidity_overview?.total_tvl || token.liquidity_tvl || 0"
-      :holders="token.holders || 0"
+      :price-change="historicalStats?.price_change_pct || token.price_change_24h || 0"
+      :liquidity="token.liquidity_overview?.total_tvl || token.liquidity_tvl || totalLiquidity || 0"
+      :holders="token.trustlines?.total || token.holders || token.trustlines || 0"
     />
     <ReportModal v-model="reportModalOpen" :token="token" />
     <Footer />

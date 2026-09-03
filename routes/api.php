@@ -119,6 +119,7 @@ Route::prefix('token')->group(function () {
     Route::get('download-toml', 'TokenController@downloadToml')->name('token.downloadToml');
     Route::get('{code}/{issuer}/whale-activity', 'TokenController@whaleActivity')->name('token.whaleActivity');
     Route::get('stellar-proxy', 'TokenController@stellarProxy')->name('token.stellarProxy');
+    Route::get('image-proxy', 'TokenController@imageProxy')->name('token.imageProxy');
     Route::post('report-issue', 'TokenController@reportIssue')->name('token.reportIssue')->middleware('throttle:3,1');
 });
 

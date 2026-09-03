@@ -3196,6 +3196,40 @@ EOT;
         }
     }
 
+    public function imageProxy(\Illuminate\Http\Request $request)
+    {
+        $url = $request->query('url');
+        if (!$url || !filter_var($url, FILTER_VALIDATE_URL)) {
+            return response()->json(['error' => 'Invalid or missing URL'], 400);
+        }
+
+        $cacheKey = 'img_proxy_v2_' . md5($url);
+        $cached = \Illuminate\Support\Facades\Cache::get($cacheKey);
+        if ($cached) {
+            return response($cached['body'], 200)
+                ->header('Content-Type', $cached['type'])
+                ->header('Access-Control-Allow-Origin', '*')
+                ->header('Cache-Control', 'public, max-age=86400');
+        }
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(6)->get($url);
+            if (!$response->ok()) {
+                return response()->json(['error' => 'Failed to fetch image'], 404);
+            }
+            $type = $response->header('Content-Type') ?: 'image/png';
+            $body = $response->body();
+            \Illuminate\Support\Facades\Cache::put($cacheKey, ['body' => $body, 'type' => $type], 86400);
+
+            return response($body, 200)
+                ->header('Content-Type', $type)
+                ->header('Access-Control-Allow-Origin', '*')
+                ->header('Cache-Control', 'public, max-age=86400');
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'Error fetching image: ' . $e->getMessage()], 500);
+        }
+    }
+
     public function whaleActivity(string $code, string $issuer)
     {
         $events = \App\Models\TokenWhaleEvent::where('asset_code', $code)
