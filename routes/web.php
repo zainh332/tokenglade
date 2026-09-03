@@ -24,16 +24,25 @@ Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admi
 Route::get('/t/{issuer}/card.png', [TokenController::class, 'generateCard']);
 Route::get('/t/{issuer}', [TokenController::class, 'renderCrawlerMeta']);
 
+// Token Insight Route (for browsers and social scrapers like Twitterbot, Discord, Telegram, Facebook)
+Route::get('/token-insight', function (\Illuminate\Http\Request $request, \App\Services\StellarTokenService $service) {
+    $issuer = $request->query('issuer');
+    if ($issuer) {
+        return app(TokenController::class)->renderCrawlerMeta($issuer, $service);
+    }
+    return view('welcome');
+});
+
 // Protected Admin SPA Routes
 Route::middleware('admin')->get('/admin/{any?}', function () {
     return view('admin');
 })->where('any', '.*');
 
 // Fallback to core SPA welcome layout
-Route::get('/{any}', function () {
-    $userAgent = request()->header('User-Agent', '');
-    if (preg_match('/Twitterbot|facebookexternalhit|LinkedInBot/i', $userAgent)) {
-        return response('<html><head><title>TokenGlade</title></head><body></body></html>');
+Route::get('/{any}', function (\Illuminate\Http\Request $request, \App\Services\StellarTokenService $service) {
+    $issuer = $request->query('issuer');
+    if ($issuer) {
+        return app(TokenController::class)->renderCrawlerMeta($issuer, $service);
     }
     return view('welcome');
 })->where('any', '.*');

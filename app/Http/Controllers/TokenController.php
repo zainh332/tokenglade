@@ -2762,12 +2762,12 @@ EOT;
         $rating = number_format($insight['rating']['average'] ?? 7.5, 1);
 
         $cardUrl = url("/t/{$issuer}/card.png");
-        $tokenUrl = url("/t/{$issuer}");
+        $tokenUrl = url("/token-insight?asset_code={$code}&issuer={$issuer}");
 
         return view('welcome', [
             'meta' => [
-                'title' => "Check out \${$code} on TokenGlade 👀",
-                'description' => "💰 Price: \${$usdPrice} USD ({$xlmPrice} \$XLM) | 📊 24H Change: {$change}% | 💧 Liquidity: \${$liquidity} | 👥 Holders: {$holders} | 🛡️ Trust Score: {$rating}/10",
+                'title' => "\${$code} Price, Live Charts & Token Insight | TokenGlade",
+                'description' => "Price: \${$usdPrice} USD ({$xlmPrice} XLM) | 24H Change: {$change}% | Liquidity: \${$liquidity} | Holders: {$holders} | Trust Score: {$rating}/10",
                 'image' => $cardUrl,
                 'url' => $tokenUrl,
             ]
@@ -3114,15 +3114,16 @@ EOT;
             imagestring($img, 5, $boxX1 + 700, $boxY1 + 270, $rating . " / 10", $purpleColor);
         }
 
-        if (!headers_sent() && php_sapi_name() !== 'cli') {
-            header('Content-Type: image/png');
-            header('Cache-Control: public, max-age=600');
-        }
+        ob_start();
         imagepng($img);
+        $imageData = ob_get_clean();
         imagedestroy($img);
-        if (php_sapi_name() !== 'cli') {
-            exit;
-        }
+
+        return response($imageData, 200, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'public, max-age=600',
+            'Access-Control-Allow-Origin' => '*'
+        ]);
     }
 
     private function drawFilledRoundedRectangle($img, $x1, $y1, $x2, $y2, $radius, $color)

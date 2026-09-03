@@ -320,11 +320,11 @@ const shareText = computed(() => {
   const code = props.token.asset_code || 'TOKEN';
   const price = formatPrice(props.usdPrice);
   const xlm = formatXlmPrice(props.xlmPrice);
-  const change = (props.priceChange || 0) >= 0 ? `+${props.priceChange}% 🚀` : `${props.priceChange}%`;
+  const change = (props.priceChange || 0) >= 0 ? `+${props.priceChange}%` : `${props.priceChange}%`;
   const liq = formatPrice(props.liquidity);
   const hld = formatNumber(props.holders);
 
-  return `$${code} on @TokenGlade: $${price} (${xlm} XLM) | 24h: ${change}\n💧 Liquidity: $${liq} • 👥 Holders: ${hld}\n\nTrack real-time Stellar DEX charts & orderbook:`;
+  return `$${code} on @TokenGlade: $${price} (${xlm} XLM) | 24h: ${change}\nLiquidity: $${liq} • Holders: ${hld}\n\nTrack real-time Stellar DEX charts & orderbook:`;
 });
 
 // Social Share URLs
@@ -590,9 +590,9 @@ async function renderCard() {
   const gap = 30;
 
   const stats = [
-    { label: '💧 TOTAL LIQUIDITY', val: '$' + formatNumber(props.liquidity), color: '#FFFFFF' },
-    { label: '👥 TOTAL HOLDERS', val: formatNumber(props.holders), color: '#FFFFFF' },
-    { label: '🛡️ TRUST SCORE', val: ((props.token.rating?.average ?? 7.5)).toFixed(1) + ' / 10', color: (props.token.rating?.average ?? 7.5) >= 8 ? '#2ED47A' : '#12CBEE' }
+    { label: 'TOTAL LIQUIDITY', val: '$' + formatNumber(props.liquidity), color: '#FFFFFF' },
+    { label: 'TOTAL HOLDERS', val: formatNumber(props.holders), color: '#FFFFFF' },
+    { label: 'TRUST SCORE', val: ((props.token.rating?.average ?? 7.5)).toFixed(1) + ' / 10', color: (props.token.rating?.average ?? 7.5) >= 8 ? '#2ED47A' : '#12CBEE' }
   ];
 
   stats.forEach((st, idx) => {
