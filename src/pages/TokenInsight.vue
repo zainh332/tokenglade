@@ -1836,7 +1836,7 @@
       :usd-price="token.usd_price || 0" 
       :xlm-price="token.xlm_price || 0" 
       :price-change="historicalStats?.price_change_pct || token.price_change_24h || 0"
-      :liquidity="token.liquidity_overview?.total_tvl || token.liquidity_tvl || totalLiquidity || 0"
+      :liquidity="token.liquidity_overview?.total_tvl || token.liquidity_tvl || 0"
       :holders="token.trustlines?.total || token.holders || token.trustlines || 0"
     />
     <ReportModal v-model="reportModalOpen" :token="token" />
@@ -2904,6 +2904,9 @@ async function fetchLiquidity() {
       avg_apr: 0,
       depth_2pct: 0,
       pools: []
+    }
+    if (res.data && res.data.total_tvl !== undefined && res.data.total_tvl !== null) {
+      token.liquidity_tvl = Number(res.data.total_tvl);
     }
   } catch (error) {
     console.error("Error fetching liquidity:", error)

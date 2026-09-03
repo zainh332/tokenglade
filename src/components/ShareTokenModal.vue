@@ -275,6 +275,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
+import axios from 'axios';
 import Swal from 'sweetalert2';
 import tgLogo from '@/assets/token-glade-logo.png';
 import { 
@@ -293,9 +294,9 @@ const props = defineProps({
   token: { type: Object, required: true },
   usdPrice: { type: [Number, String], default: 0 },
   xlmPrice: { type: [Number, String], default: 0 },
-  priceChange: { type: Number, default: 0 },
-  liquidity: { type: Number, default: 0 },
-  holders: { type: Number, default: 0 }
+  priceChange: { type: [Number, String], default: 0 },
+  liquidity: { type: [Number, String], default: 0 },
+  holders: { type: [Number, String], default: 0 }
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -306,6 +307,45 @@ const renderingCanvas = ref(false);
 const linkCopied = ref(false);
 const imageCopied = ref(false);
 const embedCopied = ref(false);
+const resolvedLiquidity = ref(Number(props.liquidity) || 0);
+
+// Sync resolvedLiquidity whenever props.liquidity provides a valid number
+watch(
+  () => props.liquidity,
+  (newVal) => {
+    const num = Number(newVal) || 0;
+    if (num > 0 || resolvedLiquidity.value === 0) {
+      resolvedLiquidity.value = num;
+    }
+  },
+  { immediate: true }
+);
+
+// Standalone liquidity fetch if modal is opened before parent page finishes liquidity fetch
+async function fetchModalLiquidity() {
+  const issuer = props.token?.issuer || props.token?.asset_issuer;
+  const code = props.token?.asset_code || props.token?.code;
+  if (!issuer || !code) return;
+
+  try {
+    const res = await axios.get('/api/token/liquidity', {
+      params: {
+        issuer: issuer,
+        code: code,
+        usd_price: props.usdPrice || props.token?.usd_price || 0
+      },
+      timeout: 8000
+    });
+    if (res.data && (res.data.total_tvl !== undefined || res.data.total_tvl !== null)) {
+      const tvl = Number(res.data.total_tvl) || 0;
+      if (tvl > 0) {
+        resolvedLiquidity.value = tvl;
+      }
+    }
+  } catch (e) {
+    // Silent catch
+  }
+}
 
 // Get absolute URL of the token insight page
 const tokenUrl = computed(() => {
@@ -319,7 +359,8 @@ const shareText = computed(() => {
   const price = formatPrice(props.usdPrice);
   const xlm = formatXlmPrice(props.xlmPrice);
   const change = (props.priceChange || 0) >= 0 ? `+${props.priceChange}%` : `${props.priceChange}%`;
-  const liq = formatPrice(props.liquidity);
+  const effectiveLiq = resolvedLiquidity.value > 0 ? resolvedLiquidity.value : (Number(props.liquidity) || 0);
+  const liq = formatPrice(effectiveLiq);
   const hld = formatNumber(props.holders);
 
   return `$${code} on @TokenGlade: $${price} (${xlm} $XLM) | 24h: ${change}\nLiquidity: $${liq} • Holders: ${hld}\n\nTrack real-time Stellar DEX charts & orderbook:`;
@@ -351,9 +392,22 @@ function closeModal() {
   emit('update:modelValue', false);
 }
 
+let currentRenderId = 0;
+let renderDebounceTimer = null;
+
+function triggerRender(delay = 50) {
+  if (renderDebounceTimer) clearTimeout(renderDebounceTimer);
+  renderDebounceTimer = setTimeout(() => {
+    renderCard();
+  }, delay);
+}
+
 // Draw Viral Price Card on HTML5 Canvas
 async function renderCard() {
+  const renderId = ++currentRenderId;
   await nextTick();
+  if (renderId !== currentRenderId) return;
+
   const canvas = cardCanvas.value;
   if (!canvas) return;
 
@@ -402,6 +456,8 @@ async function renderCard() {
     brandImg.onload = () => { brandLogoLoaded = true; resolve(); };
     brandImg.onerror = () => resolve();
   });
+
+  if (renderId !== currentRenderId) return;
 
   // 4. Header Bar with Official TokenGlade Logo & Lockup
   if (brandLogoLoaded) {
@@ -505,6 +561,8 @@ async function renderCard() {
     } catch (e) {}
   }
 
+  if (renderId !== currentRenderId) return;
+
   if (!imgLoaded) {
     ctx.fillStyle = 'rgba(18, 203, 238, 0.15)';
     ctx.beginPath();
@@ -587,8 +645,10 @@ async function renderCard() {
   const tileW = 340;
   const gap = 30;
 
+  const effectiveLiquidity = resolvedLiquidity.value > 0 ? resolvedLiquidity.value : (Number(props.liquidity) || 0);
+
   const stats = [
-    { label: 'TOTAL LIQUIDITY', val: '$' + formatNumber(props.liquidity), color: '#FFFFFF' },
+    { label: 'TOTAL LIQUIDITY', val: '$' + formatNumber(effectiveLiquidity), color: '#FFFFFF' },
     { label: 'TOTAL HOLDERS', val: formatNumber(props.holders), color: '#FFFFFF' },
     { label: 'TRUST SCORE', val: ((props.token.rating?.average ?? 7.5)).toFixed(1) + ' / 10', color: (props.token.rating?.average ?? 7.5) >= 8 ? '#2ED47A' : '#12CBEE' }
   ];
@@ -629,7 +689,9 @@ async function renderCard() {
   ctx.fillStyle = '#12CBEE';
   ctx.fillText('glade.com', footerLogoX + tW, 578);
 
-  renderingCanvas.value = false;
+  if (renderId === currentRenderId) {
+    renderingCanvas.value = false;
+  }
 }
 
 // Download image file
@@ -707,19 +769,40 @@ async function copyEmbedCode() {
 // Watch modal state & re-render canvas when opened
 watch(() => props.modelValue, (open) => {
   if (open) {
-    setTimeout(() => {
-      renderCard();
-    }, 150);
+    if (resolvedLiquidity.value <= 0) {
+      fetchModalLiquidity();
+    }
+    triggerRender(100);
   }
 });
 
 watch(activeTab, (tab) => {
-  if (tab === 'card') {
-    setTimeout(() => {
-      renderCard();
-    }, 100);
+  if (tab === 'card' && props.modelValue) {
+    if (resolvedLiquidity.value <= 0) {
+      fetchModalLiquidity();
+    }
+    triggerRender(80);
   }
 });
+
+// Auto re-render canvas when liquidity, price, or holders data arrives asynchronously
+watch(
+  [
+    resolvedLiquidity,
+    () => props.liquidity,
+    () => props.usdPrice,
+    () => props.xlmPrice,
+    () => props.holders,
+    () => props.priceChange,
+    () => props.token
+  ],
+  () => {
+    if (props.modelValue && activeTab.value === 'card') {
+      triggerRender(50);
+    }
+  },
+  { deep: true }
+);
 
 // Format helpers
 function formatPrice(val) {
