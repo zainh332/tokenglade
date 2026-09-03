@@ -844,40 +844,39 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
                   <!-- Left Half (50% Width): Donut Chart Card -->
                   <div
-                    class="flex flex-row md:flex-col items-center gap-4 sm:gap-6 justify-center bg-theme-panel2 p-4 sm:p-6 rounded-2xl border border-theme-line h-full">
+                    class="flex flex-col sm:flex-row md:flex-col items-center gap-4 sm:gap-6 justify-center bg-theme-panel2 p-4 sm:p-6 rounded-2xl border border-theme-line h-full">
                     <div
-                      class="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 flex items-center justify-center flex-shrink-0">
+                      class="relative w-32 h-32 sm:w-36 sm:h-36 md:w-44 md:h-44 flex items-center justify-center flex-shrink-0">
                       <svg class="w-full h-full" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="40" stroke="#1d2531" stroke-width="12" fill="transparent" />
-                        <circle cx="50" cy="50" r="40" stroke="#12CBEE" stroke-width="12" fill="transparent"
-                          stroke-linecap="round" :stroke-dasharray="251.3"
-                          :stroke-dashoffset="251.3 - (251.3 * parseFloat(top10Percentage)) / 100"
+                        <circle cx="50" cy="50" r="39" class="stroke-theme-line" stroke="currentColor" stroke-width="8" fill="transparent" />
+                        <circle cx="50" cy="50" r="39" stroke="#12CBEE" stroke-width="8" fill="transparent"
+                          stroke-linecap="round" :stroke-dasharray="245.04"
+                          :stroke-dashoffset="245.04 - (245.04 * parseFloat(top10Percentage)) / 100"
                           transform="rotate(-90 50 50)" />
                       </svg>
-                      <div class="absolute flex flex-col items-center justify-center text-center">
-                        <span class="text-lg sm:text-xl md:text-2xl font-black text-white">{{ top10Percentage }}%</span>
+                      <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none px-2">
+                        <span class="text-base sm:text-lg md:text-2xl font-black text-theme-ink tracking-tight font-mono leading-none">{{ top10Percentage }}%</span>
                         <span
-                          class="text-[7px] sm:text-[8px] md:text-[9px] text-slate-400 font-extrabold uppercase tracking-wider mt-0.5">Top
-                          10</span>
+                          class="text-[9px] sm:text-[10px] md:text-xs text-theme-dim font-extrabold uppercase tracking-wider mt-1">Top 10</span>
                       </div>
                     </div>
 
-                    <div class="space-y-2 sm:space-y-3 text-[10px] sm:text-xs font-mono w-full flex-1">
+                    <div class="space-y-2 sm:space-y-3 text-[11px] sm:text-xs font-mono w-full flex-1">
                       <div
-                        class="flex items-center justify-between gap-1.5 font-semibold bg-theme-panel p-2 sm:p-3 rounded-xl border border-theme-line">
-                        <div class="flex items-center gap-1.5">
+                        class="flex items-center justify-between gap-1.5 font-semibold bg-theme-panel p-2.5 sm:p-3 rounded-xl border border-theme-line">
+                        <div class="flex items-center gap-2">
                           <span class="w-2.5 h-2.5 rounded-full bg-[#12CBEE] flex-none"></span>
-                          <span class="text-slate-400">Top 10 Wallets:</span>
+                          <span class="text-theme-dim">Top 10 Wallets:</span>
                         </div>
-                        <span class="text-white font-bold">{{ top10Percentage }}%</span>
+                        <span class="text-theme-ink font-bold">{{ top10Percentage }}%</span>
                       </div>
                       <div
-                        class="flex items-center justify-between gap-1.5 font-semibold bg-theme-panel p-2 sm:p-3 rounded-xl border border-theme-line">
-                        <div class="flex items-center gap-1.5">
-                          <span class="w-2.5 h-2.5 rounded-full bg-[#1d2531] flex-none"></span>
-                          <span class="text-slate-400">Others:</span>
+                        class="flex items-center justify-between gap-1.5 font-semibold bg-theme-panel p-2.5 sm:p-3 rounded-xl border border-theme-line">
+                        <div class="flex items-center gap-2">
+                          <span class="w-2.5 h-2.5 rounded-full bg-slate-400 dark:bg-[#1d2531] flex-none"></span>
+                          <span class="text-theme-dim">Others:</span>
                         </div>
-                        <span class="text-white font-bold">{{ (100 - parseFloat(top10Percentage)).toFixed(2) }}%</span>
+                        <span class="text-theme-ink font-bold">{{ (100 - parseFloat(top10Percentage)).toFixed(2) }}%</span>
                       </div>
                     </div>
                   </div>

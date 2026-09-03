@@ -367,10 +367,7 @@
               <div>
                 <div class="flex items-center gap-1.5">
                   <span class="font-bold text-white block text-sm">{{ project.name }}</span>
-                  <svg class="w-3.5 h-3.5 text-[#5e54ff] fill-current flex-shrink-0" viewBox="0 0 24 24">
-                    <path
-                      d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                  </svg>
+                  <img :src="verified" alt="Verified" class="w-3.5 h-3.5 flex-shrink-0 object-contain" title="Verified Project" />
                 </div>
                 <span class="text-[9px] text-slate-500 uppercase font-mono font-semibold block mt-0.5">{{ project.symbol }}</span>
               </div>
@@ -448,9 +445,7 @@
                     <span class="font-bold text-white truncate max-w-[150px]" :title="token.name">{{ token.name }}</span>
                     <span class="text-[9px] text-slate-500 font-mono font-semibold uppercase">({{ token.asset_code }})</span>
                     <!-- Verified Badge -->
-                    <svg v-if="token.is_verified || token.status === 1" class="w-3.5 h-3.5 text-[#5e54ff] fill-current flex-shrink-0" viewBox="0 0 24 24">
-                      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                    </svg>
+                    <img v-if="token.is_verified || token.status === 1" :src="verified" alt="Verified" class="w-3.5 h-3.5 flex-shrink-0 object-contain" title="Verified Project" />
                   </div>
                 </div>
 

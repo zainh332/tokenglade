@@ -40,56 +40,56 @@
 
             <!-- Autocomplete dropdown -->
             <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
-              <div v-if="isFocused" class="hsearch-dropdown absolute right-0 mt-2 w-[380px] bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-xl shadow-2xl z-[99] max-h-[300px] overflow-y-auto custom-scrollbar divide-y divide-[rgba(148,163,184,0.12)]">
+              <div v-if="isFocused" class="hsearch-dropdown absolute right-0 mt-2 w-[380px] bg-theme-panel border border-theme-line rounded-xl shadow-2xl z-[99] max-h-[300px] overflow-y-auto custom-scrollbar divide-y divide-theme-line">
                 <!-- If search input is empty -->
-                <div v-if="searchQuery.trim() === ''" class="p-4 text-center text-xs text-slate-400 font-sans leading-relaxed">
-                  Search by token (e.g. <span class="text-cyan-400 font-bold">TKG</span>), wallet address (<span class="text-cyan-400 font-mono">G...</span>), or transaction hash
+                <div v-if="searchQuery.trim() === ''" class="p-4 text-center text-xs text-theme-dim font-sans leading-relaxed">
+                  Search by token (e.g. <span class="text-cyan-500 dark:text-cyan-400 font-bold">TKG</span>), wallet address (<span class="text-cyan-500 dark:text-cyan-400 font-mono">G...</span>), or transaction hash
                 </div>
                 <!-- If Loading -->
-                <div v-else-if="loading && assets.length === 0" class="p-4 text-center text-xs text-slate-400 font-mono">
+                <div v-else-if="loading && assets.length === 0" class="p-4 text-center text-xs text-theme-dim font-mono">
                   Searching Horizon ledger...
                 </div>
                 <!-- If Error/No results -->
-                <div v-else-if="error" class="p-4 text-center text-xs text-rose-400 font-mono">
+                <div v-else-if="error" class="p-4 text-center text-xs text-rose-500 dark:text-rose-400 font-mono">
                   {{ error }}
                 </div>
                 <!-- Results -->
                 <div v-else-if="assets.length > 0">
                   <div v-for="asset in assets" :key="`${asset.asset_code}_${asset.asset_issuer}`"
                       @click="() => { selectAsset(asset); close(); }"
-                      class="p-3.5 cursor-pointer hover:bg-[#182235]/70 transition duration-150 text-left">
+                      class="p-3.5 cursor-pointer hover:bg-theme-panel2 transition duration-150 text-left">
                       <div v-if="asset.is_tx" class="flex flex-col gap-1">
-                          <div class="font-sans font-bold text-xs text-cyan-400 flex items-center gap-1.5">
+                          <div class="font-sans font-bold text-xs text-cyan-500 dark:text-cyan-400 flex items-center gap-1.5">
                               <span>Explore Transaction</span>
                           </div>
-                          <div class="text-[10px] font-mono text-slate-400 truncate">
+                          <div class="text-[10px] font-mono text-theme-dim truncate">
                               Hash: {{ asset.tx_hash }}
                           </div>
                       </div>
                       <div v-else-if="asset.is_wallet" class="flex flex-col gap-1">
-                          <div class="font-sans font-bold text-xs text-cyan-400 flex items-center gap-1.5">
+                          <div class="font-sans font-bold text-xs text-cyan-500 dark:text-cyan-400 flex items-center gap-1.5">
                               <span>Analyze Wallet Intelligence</span>
                           </div>
-                          <div class="text-[10px] font-mono text-slate-400 truncate">
+                          <div class="text-[10px] font-mono text-theme-dim truncate">
                               Address: {{ asset.asset_issuer }}
                           </div>
                       </div>
                       <div v-else>
-                          <div class="flex items-center gap-1.5 font-bold text-xs text-white">
-                              <span v-if="getAssetName(asset)" class="font-sans font-semibold text-white">
-                                {{ getAssetName(asset) }} <span class="text-slate-400 font-mono font-normal text-[11px]">· {{ asset.asset_code }}</span>
+                          <div class="flex items-center gap-1.5 font-bold text-xs text-theme-ink">
+                              <span v-if="getAssetName(asset)" class="font-sans font-semibold text-theme-ink">
+                                {{ getAssetName(asset) }} <span class="text-theme-dim font-mono font-normal text-[11px]">· {{ asset.asset_code }}</span>
                               </span>
-                              <span v-else class="font-mono uppercase text-white">{{ asset.asset_code }}</span>
+                              <span v-else class="font-mono uppercase text-theme-ink">{{ asset.asset_code }}</span>
                               <img v-if="asset.is_verified" :src="verifiedImg" alt="Verified"
                                   class="flex-shrink-0 w-3.5 h-3.5" title="Verified Token" />
                           </div>
 
-                          <div class="mt-1 text-[10px] font-mono break-all text-slate-400 flex flex-wrap gap-1 leading-normal">
-                              <span class="text-slate-500">Issuer:</span>
-                              <span class="text-slate-400 select-all">{{ shorten(asset.asset_issuer) }}</span>
+                          <div class="mt-1 text-[10px] font-mono break-all text-theme-dim flex flex-wrap gap-1 leading-normal">
+                              <span class="text-theme-faint">Issuer:</span>
+                              <span class="text-theme-dim select-all">{{ shorten(asset.asset_issuer) }}</span>
                           </div>
 
-                          <div class="mt-1.5 text-[9.5px] font-mono text-cyan-400 font-semibold flex items-center gap-1">
+                          <div class="mt-1.5 text-[9.5px] font-mono text-cyan-500 dark:text-cyan-400 font-semibold flex items-center gap-1">
                               <span>●</span> Holders: {{ formatNumber(asset.accounts.authorized) }}
                           </div>
                       </div>
@@ -176,56 +176,56 @@
           </div>
 
           <!-- Autocomplete dropdown mobile -->
-          <div v-if="isFocusedMobile" class="mt-1 bg-[#111827] border border-[rgba(148,163,184,0.16)] rounded-xl shadow-2xl max-h-[220px] overflow-y-auto custom-scrollbar divide-y divide-[rgba(148,163,184,0.12)]">
+          <div v-if="isFocusedMobile" class="hsearch-dropdown mt-1 bg-theme-panel border border-theme-line rounded-xl shadow-2xl max-h-[220px] overflow-y-auto custom-scrollbar divide-y divide-theme-line">
             <!-- If search input is empty -->
-            <div v-if="searchQuery.trim() === ''" class="p-3 text-center text-xs text-slate-400 font-sans leading-relaxed">
-              Search by token (e.g. <span class="text-cyan-400 font-bold">TKG</span>), wallet address (<span class="text-cyan-400 font-mono">G...</span>), or transaction hash
+            <div v-if="searchQuery.trim() === ''" class="p-3 text-center text-xs text-theme-dim font-sans leading-relaxed">
+              Search by token (e.g. <span class="text-cyan-500 dark:text-cyan-400 font-bold">TKG</span>), wallet address (<span class="text-cyan-500 dark:text-cyan-400 font-mono">G...</span>), or transaction hash
             </div>
             <!-- If Loading -->
-            <div v-else-if="loading && assets.length === 0" class="p-3 text-center text-xs text-slate-400 font-mono">
+            <div v-else-if="loading && assets.length === 0" class="p-3 text-center text-xs text-theme-dim font-mono">
               Searching Horizon ledger...
             </div>
             <!-- If Error/No results -->
-            <div v-else-if="error" class="p-3 text-center text-xs text-rose-400 font-mono">
+            <div v-else-if="error" class="p-3 text-center text-xs text-rose-500 dark:text-rose-400 font-mono">
               {{ error }}
             </div>
             <!-- Results -->
             <div v-else-if="assets.length > 0">
               <div v-for="asset in assets" :key="`${asset.asset_code}_${asset.asset_issuer}`"
                   @click="() => { selectAsset(asset); close(); }"
-                  class="p-3.5 cursor-pointer hover:bg-[#182235]/70 transition duration-150 text-left">
+                  class="p-3.5 cursor-pointer hover:bg-theme-panel2 transition duration-150 text-left">
                   <div v-if="asset.is_tx" class="flex flex-col gap-1">
-                      <div class="font-sans font-bold text-xs text-cyan-400 flex items-center gap-1.5">
+                      <div class="font-sans font-bold text-xs text-cyan-500 dark:text-cyan-400 flex items-center gap-1.5">
                           <span>Explore Transaction</span>
                       </div>
-                      <div class="text-[10px] font-mono text-slate-400 truncate">
+                      <div class="text-[10px] font-mono text-theme-dim truncate">
                           Hash: {{ asset.tx_hash }}
                       </div>
                   </div>
                   <div v-else-if="asset.is_wallet" class="flex flex-col gap-1">
-                      <div class="font-sans font-bold text-xs text-cyan-400 flex items-center gap-1.5">
+                      <div class="font-sans font-bold text-xs text-cyan-500 dark:text-cyan-400 flex items-center gap-1.5">
                           <span>Analyze Wallet Intelligence</span>
                       </div>
-                      <div class="text-[10px] font-mono text-slate-400 truncate">
+                      <div class="text-[10px] font-mono text-theme-dim truncate">
                           Address: {{ asset.asset_issuer }}
                       </div>
                   </div>
                   <div v-else>
-                      <div class="flex items-center gap-1.5 font-bold text-xs text-white">
-                          <span v-if="getAssetName(asset)" class="font-sans font-semibold text-white">
-                            {{ getAssetName(asset) }} <span class="text-slate-400 font-mono font-normal text-[11px]">· {{ asset.asset_code }}</span>
+                      <div class="flex items-center gap-1.5 font-bold text-xs text-theme-ink">
+                          <span v-if="getAssetName(asset)" class="font-sans font-semibold text-theme-ink">
+                            {{ getAssetName(asset) }} <span class="text-theme-dim font-mono font-normal text-[11px]">· {{ asset.asset_code }}</span>
                           </span>
-                          <span v-else class="font-mono uppercase text-white">{{ asset.asset_code }}</span>
+                          <span v-else class="font-mono uppercase text-theme-ink">{{ asset.asset_code }}</span>
                           <img v-if="asset.is_verified" :src="verifiedImg" alt="Verified"
                               class="flex-shrink-0 w-3.5 h-3.5" title="Verified Token" />
                       </div>
 
-                      <div class="mt-1 text-[10px] font-mono break-all text-slate-400 flex flex-wrap gap-1 leading-normal">
-                          <span class="text-slate-500">Issuer:</span>
-                          <span class="text-slate-400 select-all">{{ shorten(asset.asset_issuer) }}</span>
+                      <div class="mt-1 text-[10px] font-mono break-all text-theme-dim flex flex-wrap gap-1 leading-normal">
+                          <span class="text-theme-faint">Issuer:</span>
+                          <span class="text-theme-dim select-all">{{ shorten(asset.asset_issuer) }}</span>
                       </div>
 
-                      <div class="mt-1.5 text-[9.5px] font-mono text-cyan-400 font-semibold flex items-center gap-1">
+                      <div class="mt-1.5 text-[9.5px] font-mono text-cyan-500 dark:text-cyan-400 font-semibold flex items-center gap-1">
                           <span>●</span> Holders: {{ formatNumber(asset.accounts.authorized) }}
                       </div>
                   </div>
@@ -749,28 +749,38 @@ html.light .hsearch:hover {
 /* Light Theme overrides for Autocomplete Dropdown */
 html.light .hsearch-dropdown {
   background: #ffffff !important;
-  border-color: rgba(15, 23, 42, 0.08) !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
   color: #0f172a !important;
 }
 
-html.light .hsearch-dropdown div {
+html.light .hsearch-dropdown .text-white,
+html.light .hsearch-dropdown .text-theme-ink {
+  color: #0f172a !important;
+}
+
+html.light .hsearch-dropdown .text-slate-400,
+html.light .hsearch-dropdown .text-theme-dim {
   color: #475569 !important;
 }
 
-html.light .hsearch-dropdown .text-white {
-  color: #0f172a !important;
+html.light .hsearch-dropdown .text-slate-500,
+html.light .hsearch-dropdown .text-theme-faint {
+  color: #94a3b8 !important;
 }
 
+html.light .hsearch-dropdown .hover\:bg-theme-panel2:hover,
 html.light .hsearch-dropdown .hover\:bg-\[\#182235\]\/70:hover {
-  background-color: #f1f5f9 !important;
+  background-color: #f8fafc !important;
 }
 
-html.light .hsearch-dropdown .text-cyan-400 {
+html.light .hsearch-dropdown .text-cyan-400,
+html.light .hsearch-dropdown .text-cyan-500 {
   color: #0891b2 !important;
 }
 
-html.light .hsearch-dropdown .text-rose-400 {
+html.light .hsearch-dropdown .text-rose-400,
+html.light .hsearch-dropdown .text-rose-500 {
   color: #e11d48 !important;
 }
 </style>
