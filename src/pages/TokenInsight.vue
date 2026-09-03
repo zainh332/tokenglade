@@ -668,15 +668,15 @@
                   <div class="sub dim font-mono">executions</div>
                 </div>
                 <div class="st">
-                  <div class="k">Payments Vol</div>
+                  <div class="k">Payments count</div>
                   <div class="v font-mono">
-                    <template v-if="token.activity?.payments_volume !== undefined">{{
-                      formatNumber(token.activity?.payments_volume) }}</template>
+                    <template v-if="token.activity?.payments !== undefined || token.activity?.payments_volume !== undefined">{{
+                      formatNumber(token.activity?.payments ?? token.activity?.payments_volume) }}</template>
                     <template v-else-if="loading"><span
                         class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                     <template v-else>0</template>
                   </div>
-                  <div class="sub dim font-mono">lifetime</div>
+                  <div class="sub dim font-mono">transfers</div>
                 </div>
               </div>
             </div>

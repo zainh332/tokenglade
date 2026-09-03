@@ -300,7 +300,7 @@ class StellarTokenService
                 'total_trades' => $totalTrades,
                 'traded_volume' => $tradedAmount,
                 'payments' => $payments,
-                'payments_volume' => $paymentsAmount,
+                'payments_volume' => $payments ?: $paymentsAmount,
             ],
 
             'rating' => [
