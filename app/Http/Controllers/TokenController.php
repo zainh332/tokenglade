@@ -1445,12 +1445,12 @@ EOT;
                 ->latest()->first();
 
             // 1. Fetch assets for issuer (only cache when non-empty)
-            $cacheKeyAssets = "issuer_assets_{$issuer}";
+            $cacheKeyAssets = "issuer_assets_{$issuer}" . ($code ? "_{$code}" : "");
             $assets = Cache::get($cacheKeyAssets);
 
             if (empty($assets)) {
                 try {
-                    $assets = $service->getAssetsByIssuer($issuer);
+                    $assets = $service->getAssetsByIssuer($issuer, $code);
                     if (!empty($assets)) {
                         Cache::put($cacheKeyAssets, $assets, 3600);
                     }
@@ -1507,6 +1507,31 @@ EOT;
                         ]
                     ]];
                 }
+            }
+
+            // 4. Fallback for Platform Token (e.g. TKG) or if code is known and issuer is valid
+            if (empty($assets) && $code) {
+                $isTkg = ($code === env('ASSET_CODE', 'TKG') && ($issuer === env('TKG_ISSUER_PUBLIC') || $issuer === env('TKG_ISSUER_TESTNET')));
+                
+                $assets = [[
+                    'asset_code' => $code,
+                    'asset_issuer' => $issuer,
+                    'asset_type' => strlen($code) <= 4 ? 'credit_alphanum4' : 'credit_alphanum12',
+                    'accounts' => ['authorized' => 0],
+                    'balances' => ['authorized' => $isTkg ? '100000000' : '0'],
+                    'num_claimable_balances' => 0,
+                    'num_liquidity_pools' => 0,
+                    'num_contracts' => 0,
+                    'claimable_balances_amount' => '0',
+                    'liquidity_pools_amount' => '0',
+                    'contracts_amount' => '0',
+                    'flags' => [
+                        'auth_required' => false,
+                        'auth_revocable' => false,
+                        'auth_immutable' => false,
+                        'auth_clawback_enabled' => false,
+                    ]
+                ]];
             }
 
             if (empty($assets)) {

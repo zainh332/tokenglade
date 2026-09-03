@@ -510,39 +510,139 @@ class StellarTokenService
         return preg_match('/^G[A-Z2-7]{55}$/', $address) === 1;
     }
 
-    public function getAssetsByIssuer(string $issuer): array
+    public function getAssetsByIssuer(string $issuer, ?string $preferredCode = null): array
     {
         if (!$this->isValidStellarAddress($issuer)) {
             return [];
         }
 
-        try {
-            $response = Http::timeout(6)->get($this->horizon . '/assets', [
-                'asset_issuer' => $issuer,
-                'limit' => 200
-            ]);
+        $records = [];
 
-            if (!$response->ok()) {
-                return [];
+        // 1. Primary Horizon lookup across fallback endpoints
+        $horizonEndpoints = [
+            $this->horizon,
+            'https://stellar-horizon.publicnode.com',
+            'https://horizon.stellar.lobstr.co'
+        ];
+
+        foreach ($horizonEndpoints as $node) {
+            try {
+                $params = ['asset_issuer' => $issuer, 'limit' => 200];
+                if ($preferredCode) {
+                    $params['asset_code'] = $preferredCode;
+                }
+                $response = Http::timeout(4)->get($node . '/assets', $params);
+
+                if ($response->ok()) {
+                    $resRecords = $response->json('_embedded.records') ?? [];
+                    if (!empty($resRecords)) {
+                        $records = $resRecords;
+                        break;
+                    }
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Horizon {$node} getAssetsByIssuer failed: " . $e->getMessage());
             }
+        }
 
-            $records = $response->json('_embedded.records') ?? [];
+        // 2. If empty and preferredCode was provided, try Horizon query without preferredCode in case of code filter discrepancy
+        if (empty($records) && $preferredCode) {
+            try {
+                $response = Http::timeout(4)->get($this->horizon . '/assets', [
+                    'asset_issuer' => $issuer,
+                    'limit' => 200
+                ]);
+                if ($response->ok()) {
+                    $records = $response->json('_embedded.records') ?? [];
+                }
+            } catch (\Throwable $e) {}
+        }
 
-            if (empty($records)) {
-                return [];
+        // 3. Fallback to StellarExpert assets API by issuer
+        if (empty($records)) {
+            try {
+                $response = Http::timeout(4)->get("https://api.stellar.expert/explorer/public/asset", [
+                    'issuer' => $issuer,
+                    'limit' => 50
+                ]);
+                if ($response->ok()) {
+                    $seRecords = $response->json('_embedded.records') ?? [];
+                    foreach ($seRecords as $sr) {
+                        $assetStr = $sr['asset'] ?? '';
+                        $parts = explode('-', $assetStr);
+                        $aCode = $parts[0] ?? '';
+                        $aIssuer = $parts[1] ?? $issuer;
+                        if (empty($aCode)) continue;
+                        $supply = isset($sr['supply']) ? (string)($sr['supply'] / 10000000) : '0';
+                        $trustlines = isset($sr['trustlines'][0]) ? (int)$sr['trustlines'][0] : 0;
+                        $records[] = [
+                            'asset_code' => $aCode,
+                            'asset_issuer' => $aIssuer,
+                            'asset_type' => strlen($aCode) <= 4 ? 'credit_alphanum4' : 'credit_alphanum12',
+                            'accounts' => ['authorized' => $trustlines],
+                            'balances' => ['authorized' => $supply],
+                            'num_claimable_balances' => 0,
+                            'num_liquidity_pools' => 0,
+                            'num_contracts' => 0,
+                            'claimable_balances_amount' => '0',
+                            'liquidity_pools_amount' => '0',
+                            'contracts_amount' => '0',
+                            'flags' => [
+                                'auth_required' => false,
+                                'auth_revocable' => false,
+                                'auth_immutable' => false,
+                                'auth_clawback_enabled' => false,
+                            ]
+                        ];
+                    }
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("StellarExpert getAssetsByIssuer fallback error: " . $e->getMessage());
             }
+        }
 
-            // SMART SELECTION
-            usort($records, function ($a, $b) {
-                return ($b['accounts']['authorized'] ?? 0)
-                    <=> ($a['accounts']['authorized'] ?? 0);
-            });
+        // 4. Fallback to direct single asset StellarExpert lookup if preferredCode is set
+        if (empty($records) && $preferredCode) {
+            try {
+                $seSingle = Http::timeout(4)->get("https://api.stellar.expert/explorer/public/asset/{$preferredCode}-{$issuer}");
+                if ($seSingle->ok()) {
+                    $sr = $seSingle->json();
+                    $supply = isset($sr['supply']) ? (string)($sr['supply'] / 10000000) : '0';
+                    $trustlines = isset($sr['trustlines'][0]) ? (int)$sr['trustlines'][0] : 0;
+                    $records[] = [
+                        'asset_code' => $preferredCode,
+                        'asset_issuer' => $issuer,
+                        'asset_type' => strlen($preferredCode) <= 4 ? 'credit_alphanum4' : 'credit_alphanum12',
+                        'accounts' => ['authorized' => $trustlines],
+                        'balances' => ['authorized' => $supply],
+                        'num_claimable_balances' => 0,
+                        'num_liquidity_pools' => 0,
+                        'num_contracts' => 0,
+                        'claimable_balances_amount' => '0',
+                        'liquidity_pools_amount' => '0',
+                        'contracts_amount' => '0',
+                        'flags' => [
+                            'auth_required' => false,
+                            'auth_revocable' => false,
+                            'auth_immutable' => false,
+                            'auth_clawback_enabled' => false,
+                        ]
+                    ];
+                }
+            } catch (\Throwable $e) {}
+        }
 
-            return $records;
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning("getAssetsByIssuer error for {$issuer}: " . $e->getMessage());
+        if (empty($records)) {
             return [];
         }
+
+        // SMART SELECTION
+        usort($records, function ($a, $b) {
+            return ($b['accounts']['authorized'] ?? 0)
+                <=> ($a['accounts']['authorized'] ?? 0);
+        });
+
+        return $records;
     }
 
     protected function fetchTomlMetadata(?array $asset): array

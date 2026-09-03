@@ -180,14 +180,20 @@
         <div
           class="w-16 h-16 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20 text-3xl mb-4">
           ⚠️</div>
-        <h2 class="text-xl font-bold text-white tracking-tight font-display">Asset Not Found</h2>
-        <p class="text-xs text-slate-400 mt-2 max-w-sm leading-relaxed">
+        <h2 class="text-xl font-bold text-theme-ink tracking-tight font-display">Asset Not Found</h2>
+        <p class="text-xs text-theme-dim mt-2 max-w-sm leading-relaxed">
           We couldn't retrieve on-chain ledger information for the requested issuer address on the Stellar network.
         </p>
-        <router-link to="/"
-          class="mt-6 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-95 text-xs font-extrabold uppercase tracking-wider text-white rounded-xl transition duration-150">
-          Back to Homepage
-        </router-link>
+        <div class="flex items-center gap-3 mt-6">
+          <button @click="fetchToken(0)"
+            class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-95 text-xs font-extrabold uppercase tracking-wider text-white rounded-xl transition duration-150 cursor-pointer shadow-lg shadow-cyan-500/10">
+            Retry Connection
+          </button>
+          <router-link to="/"
+            class="px-5 py-2.5 bg-theme-panel2 hover:bg-theme-panel3 border border-theme-line text-xs font-extrabold uppercase tracking-wider text-theme-ink rounded-xl transition duration-150">
+            Back to Homepage
+          </router-link>
+        </div>
       </div>
 
       <!-- ACTUAL CONTENT (Visible when loading is false and notFound is false) -->
@@ -679,7 +685,7 @@
             <div class="card">
               <div class="card-hd">
                 <h3>Order Book</h3>
-                <span class="tag">DEX Depth</span>
+                <span class="tag">Spread: <span class="font-mono text-slate-300 font-medium">{{ spreadPercent }}%</span></span>
               </div>
 
               <div style="padding: 20px;">
@@ -695,7 +701,6 @@
                       <span class="font-medium text-emerald-500 dark:text-emerald-400">
                         Bids ({{ orderBook.bids.length }}): <span class="font-mono text-emerald-400 font-semibold">{{ formatNumber(totalBidVolume) }} {{ token.asset_code }} / {{ formatNumber(totalBidValue) }} XLM</span>
                       </span>
-                      <span class="text-slate-400">Spread: <span class="font-mono text-slate-300 font-medium">{{ spreadPercent }}%</span></span>
                     </div>
                     <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
                       <table class="trades select-all">
@@ -747,7 +752,7 @@
                             <th style="text-align: left; padding: 6px 12px; color: var(--down);">Price (XLM)</th>
                             <th style="text-align: right; padding: 6px 12px;">Size ({{ token.asset_code }})</th>
                             <th style="text-align: right; padding: 6px 12px;">Total (XLM)</th>
-                            <th style="text-align: right; padding: 6px 12px;">Depth ({{ token.asset_code }})</th>
+                            <th style="text-align: right; padding: 6px 12px;">Depth (XLM)</th>
                           </tr>
                         </thead>
                         <tbody v-if="orderBook.asks.length">
@@ -760,7 +765,7 @@
                               *
                               ask.price) }}</td>
                             <td style="text-align: right; padding: 7px 12px;" class="dim">{{
-                              formatNumber(getAskDepth(index)) }}
+                              formatPrice2Deci(getAskDepth(index)) }}
                             </td>
                           </tr>
                         </tbody>
@@ -1671,7 +1676,7 @@
                     <span class="shield">🛡</span>Clawback disabled
                     <span
                       class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-theme-panel3 border border-theme-line text-[9px] text-theme-dim font-serif italic select-none cursor-default hover:bg-theme-panel2 hover:text-theme-ink transition-all ml-1.5"
-                      title="YES means clawbacks are disabled; the issuer cannot seize or recall tokens from user accounts.">i</span>
+                      title="YES means clawbacks are disabled, the issuer cannot seize or recall tokens from user accounts.">i</span>
                   </span>
                   <span class="sval" :class="!token.auth_clawback_enabled ? 'yes' : 'none'">{{
                     !token.auth_clawback_enabled ?
@@ -1682,7 +1687,7 @@
                     <span class="shield">🛡</span>Revocation disabled
                     <span
                       class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-theme-panel3 border border-theme-line text-[9px] text-theme-dim font-serif italic select-none cursor-default hover:bg-theme-panel2 hover:text-theme-ink transition-all ml-1.5"
-                      title="YES means authorization revocation is disabled; the issuer cannot freeze your account's trustline.">i</span>
+                      title="YES means authorization revocation is disabled, the issuer cannot freeze your account's trustline.">i</span>
                   </span>
                   <span class="sval" :class="!token.auth_revocable ? 'yes' : 'none'">{{ !token.auth_revocable ? 'YES' :
                     'NO'
@@ -2328,7 +2333,10 @@ const getBidDepth = (index) => {
 const getAskDepth = (index) => {
   let sum = 0
   for (let i = 0; i <= index; i++) {
-    sum += parseFloat(orderBook.asks[i]?.amount || 0)
+    const ask = orderBook.asks[i]
+    if (ask) {
+      sum += (parseFloat(ask.amount || 0) * parseFloat(ask.price || 0))
+    }
   }
   return sum
 }
@@ -2711,7 +2719,7 @@ function fallbackCopy(onSuccess) {
   onSuccess()
 }
 
-async function fetchToken() {
+async function fetchToken(retryCount = 0) {
   const currentIssuer = issuerInput.value || route.query.issuer || route.params.issuer;
   const currentCode = route.query.asset_code || route.query.code || route.params.code;
   if (!currentIssuer && !currentCode) {
@@ -2738,10 +2746,15 @@ async function fetchToken() {
       params: {
         issuer: currentIssuer || undefined,
         code: currentCode || undefined,
-      }
+      },
+      timeout: 10000
     })
 
     if (res.data?.error || !res.data?.asset_code) {
+      if (retryCount < 2) {
+        await new Promise(r => setTimeout(r, 800));
+        return fetchToken(retryCount + 1);
+      }
       notFound.value = true
       loading.value = false
       return
@@ -2780,6 +2793,10 @@ async function fetchToken() {
     fetchLargeEvents()
   } catch (error) {
     console.error("Error fetching token data:", error)
+    if (retryCount < 2) {
+      await new Promise(r => setTimeout(r, 800));
+      return fetchToken(retryCount + 1);
+    }
     notFound.value = true
   } finally {
     loading.value = false
