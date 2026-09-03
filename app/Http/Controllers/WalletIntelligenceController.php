@@ -30,14 +30,13 @@ class WalletIntelligenceController extends Controller
             ]);
         } catch (Throwable $e) {
             $msg = $e->getMessage();
-            $isConnectionError = str_contains(strtolower($msg), 'connection') 
-                || str_contains(strtolower($msg), 'resolve host') 
-                || str_contains(strtolower($msg), 'refused')
-                || str_contains(strtolower($msg), 'curl error');
+            $isNotFound = str_contains(strtolower($msg), 'not found on the stellar network')
+                || str_contains(strtolower($msg), 'account not found')
+                || str_contains(strtolower($msg), 'wallet not found');
 
             return response()->json([
                 'status' => 'error',
-                'error_type' => $isConnectionError ? 'connection_error' : 'not_found',
+                'error_type' => $isNotFound ? 'not_found' : 'connection_error',
                 'message' => 'Failed to fetch overview: ' . $msg
             ], 500);
         }

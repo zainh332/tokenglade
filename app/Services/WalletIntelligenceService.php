@@ -39,6 +39,48 @@ class WalletIntelligenceService
                 $response = $this->sendHorizonRequest('GET', "accounts/{$address}", [], 5, 1);
                 
                 if ($response->status() === 404) {
+                    // Secondary check against StellarExpert account API before concluding not found
+                    try {
+                        $seAcc = Http::timeout(4)->get("https://api.stellar.expert/explorer/public/account/{$address}");
+                        if ($seAcc->ok()) {
+                            $seData = $seAcc->json();
+                            $parsedBalances = [];
+                            foreach ($seData['balances'] ?? [] as $sb) {
+                                $asset = $sb['asset'] ?? '';
+                                if ($asset === 'native') {
+                                    $parsedBalances[] = [
+                                        'asset_type' => 'native',
+                                        'balance' => (string)(($sb['amount'] ?? 0) / 10000000),
+                                    ];
+                                } else {
+                                    $parts = explode('-', $asset);
+                                    $code = $parts[0] ?? '';
+                                    $issuer = $parts[1] ?? '';
+                                    $parsedBalances[] = [
+                                        'asset_type' => strlen($code) <= 4 ? 'credit_alphanum4' : 'credit_alphanum12',
+                                        'asset_code' => $code,
+                                        'asset_issuer' => $issuer,
+                                        'balance' => (string)(($sb['amount'] ?? 0) / 10000000),
+                                    ];
+                                }
+                            }
+
+                            return [
+                                'active' => true,
+                                'balances' => $parsedBalances,
+                                'claimable_balances' => [],
+                                'sequence' => (int) ($seData['sequence'] ?? 0),
+                                'subentry_count' => (int) ($seData['subentry_count'] ?? 0),
+                                'signers' => $seData['signers'] ?? [],
+                                'thresholds' => $seData['thresholds'] ?? [],
+                                'flags' => $seData['flags'] ?? [],
+                                'home_domain' => $seData['home_domain'] ?? null,
+                                'inflation_destination' => $seData['inflation_destination'] ?? null,
+                                'num_assets' => count($parsedBalances),
+                            ];
+                        }
+                    } catch (Throwable $e) {}
+
                     return [
                         'active' => false,
                         'balances' => [],
@@ -889,7 +931,8 @@ class WalletIntelligenceService
         } else {
             $urls = [
                 'https://horizon.stellar.org',
-                'https://stellar-horizon.publicnode.is',
+                'https://stellar-horizon.publicnode.com',
+                'https://horizon.stellar.lobstr.co',
             ];
         }
 
@@ -911,7 +954,7 @@ class WalletIntelligenceService
                 }
 
                 if ($response->status() === 429) {
-                    sleep(1);
+                    usleep(500000);
                     continue;
                 }
                 

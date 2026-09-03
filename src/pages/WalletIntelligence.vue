@@ -3,7 +3,7 @@
     <Header />
 
     <!-- MAIN CONTAINER -->
-    <div class="wrap space-y-6 pb-24 sm:pb-32 pt-4">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10 pb-16 space-y-6">
 
       <!-- ERROR / NOT FOUND STATE -->
       <div v-if="notFound" class="card p-12 text-center max-w-xl mx-auto space-y-4 my-12">
@@ -13,9 +13,14 @@
         <p class="text-sm text-theme-faint">
           This address does not appear to exist on the Stellar network or is invalid. Please verify the address and try again.
         </p>
-        <router-link to="/" class="inline-block text-xs uppercase tracking-wider font-extrabold px-6 py-2.5 bg-theme-panel border border-theme-line hover:border-theme-line2 transition rounded-lg text-theme-ink">
-          Back to Home
-        </router-link>
+        <div class="flex items-center justify-center gap-3 mt-4">
+          <button @click="retryLoad" class="text-xs uppercase tracking-wider font-extrabold px-6 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-95 text-white transition rounded-lg cursor-pointer shadow-md">
+            Retry
+          </button>
+          <router-link to="/" class="inline-block text-xs uppercase tracking-wider font-extrabold px-6 py-2.5 bg-theme-panel border border-theme-line hover:border-theme-line2 transition rounded-lg text-theme-ink">
+            Back to Home
+          </router-link>
+        </div>
       </div>
 
       <!-- CONNECTION / NETWORK ERROR STATE -->
@@ -1041,6 +1046,7 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
+import Swal from "sweetalert2";
 import { Copy, Check, AlertCircle, Coins, Activity, ArrowUpRight, HelpCircle } from "lucide-vue-next";
 
 import Header from "@/components/Header.vue";
@@ -1433,24 +1439,66 @@ function getEventName(type) {
   return map[type] || (type ? type.replace(/_/g, ' ') : 'Operation');
 }
 
+function showRetryPopup(message) {
+  const isLight = document.documentElement.classList.contains('light');
+  Swal.fire({
+    title: 'Wallet Loading Failed',
+    text: message || 'We could not retrieve on-chain ledger information for this wallet address. Would you like to retry?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Retry Connection',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#06b6d4',
+    cancelButtonColor: isLight ? '#94a3b8' : '#334155',
+    background: isLight ? '#ffffff' : '#0e131c',
+    color: isLight ? '#0f172a' : '#ffffff',
+    customClass: {
+      popup: 'rounded-2xl border border-theme-line shadow-2xl',
+      title: 'text-base font-bold font-sans',
+      htmlContainer: 'text-xs text-theme-dim font-sans',
+      confirmButton: 'text-xs font-bold uppercase tracking-wider px-5 py-2.5 rounded-xl cursor-pointer',
+      cancelButton: 'text-xs font-bold uppercase tracking-wider px-5 py-2.5 rounded-xl cursor-pointer'
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      retryLoad();
+    }
+  });
+}
+
 // API Loader functions
-async function loadOverview() {
+async function loadOverview(retryCount = 0) {
   try {
     overviewLoading.value = true;
     notFound.value = false;
     connectionError.value = false;
-    const { data } = await axios.get(`/api/wallet/${address.value}/overview`);
+    const { data } = await axios.get(`/api/wallet/${address.value}/overview`, { timeout: 10000 });
     if (data.status === 'success') {
       overviewData.value = data.data;
     } else {
+      if (retryCount === 0) {
+        await new Promise(r => setTimeout(r, 1000));
+        return loadOverview(retryCount + 1);
+      }
       notFound.value = true;
+      showRetryPopup('We could not retrieve on-chain ledger information for this wallet address. Would you like to retry?');
     }
   } catch (err) {
     const errorType = err.response?.data?.error_type;
     if (errorType === 'connection_error') {
+      if (retryCount === 0) {
+        await new Promise(r => setTimeout(r, 1000));
+        return loadOverview(retryCount + 1);
+      }
       connectionError.value = true;
+      showRetryPopup('Connection to Stellar Horizon network timed out or failed. Would you like to retry?');
     } else {
+      if (retryCount === 0) {
+        await new Promise(r => setTimeout(r, 1000));
+        return loadOverview(retryCount + 1);
+      }
       notFound.value = true;
+      showRetryPopup('This wallet address could not be loaded from the Stellar network. Would you like to retry?');
     }
     console.error(err);
   } finally {
@@ -1493,15 +1541,19 @@ async function resolveMissingLogos() {
   });
 }
 
-async function loadHoldings() {
+async function loadHoldings(retryCount = 0) {
   try {
     holdingsLoading.value = true;
-    const { data } = await axios.get(`/api/wallet/${address.value}/holdings`);
+    const { data } = await axios.get(`/api/wallet/${address.value}/holdings`, { timeout: 10000 });
     if (data.status === 'success') {
       holdings.value = data.data ?? [];
       resolveMissingLogos();
     }
   } catch (err) {
+    if (retryCount < 2) {
+      await new Promise(r => setTimeout(r, 800));
+      return loadHoldings(retryCount + 1);
+    }
     console.error(err);
   } finally {
     holdingsLoading.value = false;
@@ -1607,25 +1659,7 @@ html.light .asset-page-wrapper {
   background-image: radial-gradient(900px 460px at 84% -12%, rgba(18, 203, 238, .03), transparent 62%), radial-gradient(760px 420px at 6% -8%, rgba(240, 24, 156, .02), transparent 60%);
 }
 
-.wrap {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 16px 2.6rem;
-}
 
-@media (min-width: 640px) {
-  .wrap {
-    padding-left: 24px;
-    padding-right: 24px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .wrap {
-    padding-left: 32px;
-    padding-right: 32px;
-  }
-}
 
 .card {
   background: var(--panel);
