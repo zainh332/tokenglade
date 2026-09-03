@@ -2777,6 +2777,15 @@ EOT;
     public function generateCard($issuer, StellarTokenService $service)
     {
         $issuer = strtoupper($issuer);
+        $cachedPng = Cache::get("og_card_png_{$issuer}");
+        if ($cachedPng) {
+            return response($cachedPng, 200, [
+                'Content-Type' => 'image/png',
+                'Cache-Control' => 'public, max-age=600',
+                'Access-Control-Allow-Origin' => '*'
+            ]);
+        }
+
         $token = StellarToken::where('issuer_public_key', $issuer)->first();
 
         $cacheKeyAssets = "issuer_assets_{$issuer}";
@@ -2917,9 +2926,9 @@ EOT;
         imagealphablending($img, true);
         imagesavealpha($img, true);
 
-        // Fill canvas with fully transparent background
-        $transparent = imagecolorallocatealpha($img, 0, 0, 0, 127);
-        imagefill($img, 0, 0, $transparent);
+        // Fill canvas with deep obsidian dark background (#070A10)
+        $canvasBg = imagecolorallocate($img, 7, 10, 16);
+        imagefill($img, 0, 0, $canvasBg);
 
         // 2. Define colors
         $white = imagecolorallocate($img, 255, 255, 255);
@@ -3118,6 +3127,8 @@ EOT;
         imagepng($img);
         $imageData = ob_get_clean();
         imagedestroy($img);
+
+        Cache::put("og_card_png_{$issuer}", $imageData, 300);
 
         return response($imageData, 200, [
             'Content-Type' => 'image/png',

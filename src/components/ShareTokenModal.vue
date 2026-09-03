@@ -35,7 +35,6 @@
         >
           <ImageIcon class="w-3.5 h-3.5" />
           <span>Price Card Image</span>
-          <span class="text-[9px] px-1.5 py-0.2 bg-purple-500/15 text-purple-600 dark:text-purple-400 rounded-full font-mono font-bold">Viral</span>
         </button>
 
         <button 
@@ -64,7 +63,6 @@
         <div v-if="activeTab === 'card'" class="space-y-4">
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-theme-dim uppercase tracking-wider">Social Share Card Preview</span>
-            <span class="text-[11px] text-theme-faint font-mono">1200 × 630 HD PNG</span>
           </div>
 
           <!-- Canvas Preview Container -->
@@ -244,7 +242,7 @@
                 </div>
 
                 <div class="flex items-center justify-between text-[10px] text-slate-400 pt-2 border-t border-slate-800">
-                  <span>⚡ Powered by TokenGlade</span>
+                  <span>Powered by TokenGlade</span>
                   <span class="text-cyan-400 hover:underline cursor-pointer">Live Analytics &rarr;</span>
                 </div>
               </div>
@@ -617,7 +615,7 @@ async function renderCard() {
   // 8. Footer Bar
   ctx.fillStyle = '#64748B';
   ctx.font = '500 14px "Inter", sans-serif';
-  ctx.fillText('⚡ Real-time Order Books, Candlesticks & Whale Tracking', 60, 580);
+  ctx.fillText('Real-time Order Books, Candlesticks & Whale Tracking', 60, 580);
 
   if (brandLogoLoaded) {
     ctx.drawImage(brandImg, w - 215, 562, 22, 22);
