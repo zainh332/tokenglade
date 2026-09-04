@@ -1,7 +1,7 @@
 <template>
-  <div class="flex items-center gap-2">
-    <!-- 1. NOTIFICATION BELL BUTTON & DROPDOWN -->
-    <div class="relative" ref="bellContainer">
+  <div class="flex items-center gap-1.5 sm:gap-2">
+    <!-- 1. NOTIFICATION BELL BUTTON & DROPDOWN (Desktop / Tablet) -->
+    <div class="relative hidden sm:block" ref="bellContainer">
       <button
         @click="toggleBell"
         class="relative p-2 rounded-lg border border-theme-line bg-theme-panel hover:bg-theme-panel2 text-theme-dim hover:text-theme-ink transition-all duration-200 focus:outline-none flex items-center justify-center cursor-pointer shadow-sm hover:scale-[1.03] active:scale-[0.97]"
@@ -30,7 +30,7 @@
       >
         <div
           v-if="isBellOpen"
-          class="absolute right-0 mt-2 w-[340px] sm:w-[380px] rounded-2xl bg-theme-panel border border-theme-line shadow-2xl z-[90] overflow-hidden"
+          class="absolute right-0 mt-2 w-[min(340px,calc(100vw-24px))] sm:w-[380px] rounded-2xl bg-theme-panel border border-theme-line shadow-2xl z-[90] overflow-hidden"
         >
           <!-- Bell Header -->
           <div class="flex items-center justify-between px-4 py-3 border-b border-theme-line bg-theme-panel2">
@@ -98,23 +98,23 @@
     <div class="relative" ref="dropdownContainer">
       <button
         @click="toggleDropdown"
-        class="relative px-3 py-1.5 rounded-lg border border-theme-line bg-theme-panel hover:bg-theme-panel2 text-theme-dim hover:text-theme-ink transition-all duration-200 focus:outline-none flex items-center gap-2 cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+        class="relative px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-theme-line bg-theme-panel hover:bg-theme-panel2 text-theme-dim hover:text-theme-ink transition-all duration-200 focus:outline-none flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98]"
         aria-label="Watchlist and Alerts"
       >
         <!-- Star icon with active watchlist count -->
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-1">
           <Star class="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 fill-amber-500 dark:fill-amber-400" />
-          <span class="text-xs font-extrabold uppercase tracking-wider text-theme-ink font-mono">
+          <span class="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-theme-ink font-mono">
             {{ watchlist.length }}
           </span>
         </div>
 
-        <span class="text-theme-line">|</span>
+        <span class="text-theme-line text-xs">|</span>
 
         <!-- Bell icon with active alerts count -->
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-1">
           <BellRing class="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />
-          <span class="text-xs font-extrabold uppercase tracking-wider text-theme-ink font-mono">
+          <span class="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-theme-ink font-mono">
             {{ activeAlertsCount }}
           </span>
         </div>
@@ -133,7 +133,7 @@
       >
         <div
           v-if="isOpen"
-          class="absolute right-0 mt-2 w-[340px] sm:w-[420px] rounded-2xl bg-theme-panel border border-theme-line shadow-2xl z-[90] overflow-hidden"
+          class="absolute right-0 mt-2 w-[min(340px,calc(100vw-24px))] sm:w-[420px] rounded-2xl bg-theme-panel border border-theme-line shadow-2xl z-[90] overflow-hidden"
         >
           <!-- Combined Tab Navigation Bar -->
           <div class="flex items-center p-1.5 bg-theme-panel2 border-b border-theme-line gap-1.5">

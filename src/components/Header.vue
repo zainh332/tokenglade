@@ -9,10 +9,10 @@
       <div class="flex justify-between h-[58px] items-center">
         
         <!-- Left: Logo & Links -->
-        <div class="flex items-center gap-8">
+        <div class="flex items-center gap-4 sm:gap-8 flex-shrink-0 min-w-0">
           <router-link to="/" class="flex items-center gap-2 flex-shrink-0">
-            <img class="w-8 h-8 object-contain" :src="logo" alt="TokenGlade Logo" />
-            <span class="text-base font-black text-white tracking-tight uppercase">Token<span class="text-cyan-400">Glade</span></span>
+            <img class="w-7 h-7 sm:w-8 sm:h-8 object-contain flex-shrink-0" :src="logo" alt="TokenGlade Logo" />
+            <span class="text-sm sm:text-base font-black text-theme-ink tracking-tight uppercase select-none">Token<span class="text-cyan-500 dark:text-cyan-400">Glade</span></span>
           </router-link>
           
           <div class="hidden lg:flex items-center space-x-6">
@@ -141,21 +141,21 @@
         </div>
 
         <!-- Mobile Toggle -->
-        <div class="flex items-center lg:hidden gap-2">
+        <div class="flex items-center lg:hidden gap-1.5 sm:gap-2 flex-shrink-0">
           <!-- Watchlist & Price Alerts on mobile -->
           <HeaderWatchlistAlerts :wallet-key="walletPk" @open-wallet="OpenWalletModal" />
 
           <!-- Theme Toggle (mobile) -->
-          <button @click="toggleTheme" class="p-1.5 rounded-lg border border-theme-line bg-theme-panel text-theme-dim hover:text-theme-ink focus:outline-none flex items-center justify-center cursor-pointer" aria-label="Toggle theme">
+          <button @click="toggleTheme" class="p-1.5 rounded-lg border border-theme-line bg-theme-panel text-theme-dim hover:text-theme-ink focus:outline-none flex items-center justify-center cursor-pointer flex-shrink-0" aria-label="Toggle theme">
             <Sun v-if="theme === 'light'" class="w-4 h-4 text-amber-500" />
             <Moon v-else class="w-4 h-4 text-indigo-400" />
           </button>
 
           <!-- Connect Wallet (mini) -->
-          <button v-if="!isConnected" @click="OpenWalletModal" class="text-[10px] text-white font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-[6px] bg-gradient-to-r from-purple-600 to-cyan-500 focus:outline-none">
+          <button v-if="!isConnected" @click="OpenWalletModal" class="hidden xs:inline-flex text-[10px] text-white font-extrabold uppercase tracking-wider px-2.5 py-1.5 rounded-[6px] bg-gradient-to-r from-purple-600 to-cyan-500 focus:outline-none flex-shrink-0">
             Connect
           </button>
-          <DisclosureButton class="p-2 text-slate-400 hover:text-white transition focus:outline-none">
+          <DisclosureButton class="p-1.5 text-slate-400 hover:text-white transition focus:outline-none flex-shrink-0">
             <Bars3Icon v-if="!open" class="block w-5 h-5" />
             <XMarkIcon v-else class="block w-5 h-5" />
           </DisclosureButton>
