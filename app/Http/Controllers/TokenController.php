@@ -1554,11 +1554,11 @@ EOT;
             $cacheKey = "token_insight_v3_{$issuer}_{$code}";
             $insight = Cache::get($cacheKey);
 
-            if (!$insight || empty($insight['asset_code'])) {
+            if (!$insight || empty($insight['asset_code']) || !isset($insight['total_supply'])) {
                 try {
                     $insight = $service->getTokenInsight($issuer, $code, $matchedAsset);
                     if (!empty($insight) && !empty($insight['asset_code'])) {
-                        Cache::put($cacheKey, $insight, 15);
+                        Cache::put($cacheKey, $insight, 300);
                     }
                 } catch (\Throwable $e) {
                     Log::warning("Failed to get token insight for {$code}-{$issuer}: " . $e->getMessage());
@@ -2736,29 +2736,14 @@ EOT;
 
         $cacheKey = "token_insight_v3_{$issuer}_{$code}";
         $insight = Cache::get($cacheKey);
-        if (!$insight || empty($insight['asset_code'])) {
-            $marketToken = StellarMarketToken::where('asset_issuer', $issuer)->where('asset_code', $code)->first();
-            if ($marketToken && $marketToken->current_price_usd) {
-                $insight = [
-                    'asset_code' => $marketToken->asset_code,
-                    'name' => $marketToken->name,
-                    'image' => $marketToken->image,
-                    'usd_price' => $marketToken->current_price_usd,
-                    'xlm_price' => $marketToken->current_price_xlm,
-                    'holders' => $marketToken->current_holders,
-                    'rating' => ['average' => 7.5],
-                    'price_change_24h' => 0.0,
-                ];
-                Cache::put($cacheKey, $insight, 600);
-            } else {
-                try {
-                    $insight = $service->getTokenInsight($issuer, $code, $assets[0]);
-                    if (!empty($insight) && !empty($insight['asset_code'])) {
-                        Cache::put($cacheKey, $insight, 1800);
-                    }
-                } catch (\Throwable $e) {
-                    $insight = [];
+        if (!$insight || empty($insight['asset_code']) || !isset($insight['total_supply'])) {
+            try {
+                $insight = $service->getTokenInsight($issuer, $code, $assets[0]);
+                if (!empty($insight) && !empty($insight['asset_code'])) {
+                    Cache::put($cacheKey, $insight, 1800);
                 }
+            } catch (\Throwable $e) {
+                $insight = [];
             }
         }
 
@@ -2855,29 +2840,14 @@ EOT;
 
         $cacheKey = "token_insight_v3_{$issuer}_{$code}";
         $insight = Cache::get($cacheKey);
-        if (!$insight || empty($insight['asset_code'])) {
-            $marketToken = StellarMarketToken::where('asset_issuer', $issuer)->where('asset_code', $code)->first();
-            if ($marketToken && $marketToken->current_price_usd) {
-                $insight = [
-                    'asset_code' => $marketToken->asset_code,
-                    'name' => $marketToken->name,
-                    'image' => $marketToken->image,
-                    'usd_price' => $marketToken->current_price_usd,
-                    'xlm_price' => $marketToken->current_price_xlm,
-                    'holders' => $marketToken->current_holders,
-                    'rating' => ['average' => 7.5],
-                    'price_change_24h' => 0.0,
-                ];
-                Cache::put($cacheKey, $insight, 600);
-            } else {
-                try {
-                    $insight = $service->getTokenInsight($issuer, $code, $assets[0]);
-                    if (!empty($insight) && !empty($insight['asset_code'])) {
-                        Cache::put($cacheKey, $insight, 1800);
-                    }
-                } catch (\Throwable $e) {
-                    $insight = [];
+        if (!$insight || empty($insight['asset_code']) || !isset($insight['total_supply'])) {
+            try {
+                $insight = $service->getTokenInsight($issuer, $code, $assets[0]);
+                if (!empty($insight) && !empty($insight['asset_code'])) {
+                    Cache::put($cacheKey, $insight, 1800);
                 }
+            } catch (\Throwable $e) {
+                $insight = [];
             }
         }
 
