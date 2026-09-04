@@ -350,6 +350,10 @@ async function fetchModalLiquidity() {
 // Get absolute URL of the token insight page
 const tokenUrl = computed(() => {
   if (typeof window === 'undefined') return '';
+  const issuer = props.token?.issuer || props.token?.asset_issuer;
+  if (issuer) {
+    return `${window.location.origin}/t/${issuer}`;
+  }
   return `${window.location.origin}/token-insight?asset_code=${props.token.asset_code}&issuer=${props.token.issuer}`;
 });
 

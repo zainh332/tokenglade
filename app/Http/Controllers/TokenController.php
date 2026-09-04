@@ -2785,7 +2785,8 @@ EOT;
 
         $rating = number_format((float)($insight['rating']['average'] ?? 7.5), 1);
 
-        $cardUrl = "https://tokenglade.com/t/{$issuer}/card.png";
+        $cardVersion = substr(md5($usdPrice . $liquidity . $holders . floor(time() / 300)), 0, 8);
+        $cardUrl = "https://tokenglade.com/t/{$issuer}/card.png?v={$cardVersion}";
         $canonicalUrl = "https://tokenglade.com/t/{$issuer}";
 
         return view('welcome', [
