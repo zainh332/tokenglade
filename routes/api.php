@@ -173,3 +173,36 @@ Route::prefix('supply')->group(function () {
     Route::get('circulating', 'CirculatingSupplyController@show')->name('supply.circulating');
     Route::get('total', 'CirculatingSupplyController@total')->name('supply.total');
 });
+
+// ==========================
+// WatchlistController
+// ==========================
+Route::prefix('watchlist')->group(function () {
+    Route::get('/', 'WatchlistController@index')->name('watchlist.index');
+    Route::post('/', 'WatchlistController@store')->name('watchlist.store');
+    Route::delete('/{id?}', 'WatchlistController@destroy')->name('watchlist.destroy');
+    Route::post('/sync', 'WatchlistController@sync')->name('watchlist.sync');
+});
+
+// ==========================
+// PriceAlertController & Push
+// ==========================
+Route::prefix('alerts')->group(function () {
+    Route::get('/', 'PriceAlertController@index')->name('alerts.index');
+    Route::post('/', 'PriceAlertController@store')->name('alerts.store');
+    Route::delete('/{id}', 'PriceAlertController@destroy')->name('alerts.destroy');
+});
+
+Route::prefix('push')->group(function () {
+    Route::post('subscribe', 'PriceAlertController@saveSubscription')->name('push.subscribe');
+    Route::get('vapid-public-key', 'PriceAlertController@getVapidPublicKey')->name('push.vapidPublicKey');
+});
+
+// ==========================
+// NotificationController
+// ==========================
+Route::prefix('notifications')->group(function () {
+    Route::get('/', 'NotificationController@index')->name('notifications.index');
+    Route::post('{id}/read', 'NotificationController@markAsRead')->name('notifications.markAsRead');
+    Route::post('read-all', 'NotificationController@markAllAsRead')->name('notifications.markAllAsRead');
+});
