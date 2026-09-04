@@ -3,36 +3,49 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        @if(isset($meta))
-            <title>{{ $meta['title'] }}</title>
+        <title>{{ $meta['title'] ?? 'TokenGlade | Create, Mint, Discover & Trade Stellar Tokens' }}</title>
+        @if(!empty($meta['description']))
             <meta name="description" content="{{ $meta['description'] }}">
+        @endif
 
-            <!-- Open Graph / Facebook / Discord / Telegram -->
-            <meta property="og:type" content="website">
-            <meta property="og:site_name" content="TokenGlade">
-            <meta property="og:url" content="{{ $meta['url'] }}">
-            <meta property="og:title" content="{{ $meta['title'] }}">
+        @if(!empty($meta['canonical']))
+            <link rel="canonical" href="{{ $meta['canonical'] }}">
+        @endif
+
+        @if(!empty($meta['robots']))
+            <meta name="robots" content="{{ $meta['robots'] }}">
+        @elseif(config('app.env') === 'staging')
+            <meta name="robots" content="noindex, nofollow">
+        @endif
+
+        <!-- Open Graph / Facebook / Discord / Telegram -->
+        <meta property="og:type" content="{{ $meta['type'] ?? 'website' }}">
+        <meta property="og:site_name" content="TokenGlade">
+        <meta property="og:url" content="{{ $meta['url'] ?? $meta['canonical'] ?? 'https://tokenglade.com/' }}">
+        <meta property="og:title" content="{{ $meta['title'] ?? 'TokenGlade | Create, Mint, Discover & Trade Stellar Tokens' }}">
+        @if(!empty($meta['description']))
             <meta property="og:description" content="{{ $meta['description'] }}">
+        @endif
+        @if(!empty($meta['image']))
             <meta property="og:image" content="{{ $meta['image'] }}">
             <meta property="og:image:secure_url" content="{{ $meta['image'] }}">
-            <meta property="og:image:type" content="image/png">
+            <meta property="og:image:type" content="{{ $meta['image_type'] ?? 'image/png' }}">
             <meta property="og:image:width" content="1200">
             <meta property="og:image:height" content="630">
+        @endif
 
-            <!-- Twitter / X Cards -->
-            <meta name="twitter:card" content="summary_large_image">
-            <meta name="twitter:site" content="@TokenGlade">
-            <meta name="twitter:creator" content="@TokenGlade">
-            <meta name="twitter:url" content="{{ $meta['url'] }}">
-            <meta name="twitter:title" content="{{ $meta['title'] }}">
+        <!-- Twitter / X Cards -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:site" content="@TokenGlade">
+        <meta name="twitter:creator" content="@TokenGlade">
+        <meta name="twitter:url" content="{{ $meta['url'] ?? $meta['canonical'] ?? 'https://tokenglade.com/' }}">
+        <meta name="twitter:title" content="{{ $meta['title'] ?? 'TokenGlade | Create, Mint, Discover & Trade Stellar Tokens' }}">
+        @if(!empty($meta['description']))
             <meta name="twitter:description" content="{{ $meta['description'] }}">
+        @endif
+        @if(!empty($meta['image']))
             <meta name="twitter:image" content="{{ $meta['image'] }}">
             <meta name="twitter:image:src" content="{{ $meta['image'] }}">
-        @else
-            <title>TokenGlade | Mint, Discover & Trade Stellar Tokens</title>
-        @endif
-        @if(config('app.env') === 'staging')
-            <meta name="robots" content="noindex, nofollow">
         @endif
         <meta name="csrf-token" content="{{ csrf_token() }}">
         @vite(['src/main.js', 'resources/css/app.css'])
