@@ -25,22 +25,16 @@
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <DialogPanel class="w-full max-w-md transform overflow-hidden rounded-2xl bg-theme-panel border border-theme-line p-6 text-left align-middle shadow-2xl transition-all relative">
+            <DialogPanel class="set-alert-dialog w-full max-w-md transform overflow-hidden rounded-2xl bg-theme-panel border border-theme-line p-6 text-left align-middle shadow-2xl transition-all relative">
               <!-- Header -->
               <div class="flex items-center justify-between pb-4 border-b border-theme-line">
-                <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-xl bg-theme-panel2 border border-theme-line flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    <img v-if="token?.image || token?.logo || token?.token_image" :src="token.image || token.logo || token.token_image" class="w-full h-full object-cover" />
-                    <BellRing v-else class="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
-                  </div>
-                  <div>
-                    <DialogTitle as="h3" class="text-base font-bold text-theme-ink tracking-tight">
-                      <span>Set Price Alert</span>
-                    </DialogTitle>
-                    <p class="text-xs text-theme-dim font-sans mt-0.5">
-                      Get notified when price or volatility triggers hit your targets.
-                    </p>
-                  </div>
+                <div>
+                  <DialogTitle as="h3" class="alert-modal-title text-base font-bold text-theme-ink tracking-tight">
+                    <span>Set Price Alert</span>
+                  </DialogTitle>
+                  <p class="alert-modal-desc text-xs text-theme-dim font-sans mt-0.5">
+                    Get notified when price or volatility triggers hit your targets.
+                  </p>
                 </div>
 
                 <button @click="closeModal" class="p-1.5 rounded-lg text-theme-dim hover:text-theme-ink hover:bg-theme-panel2 transition focus:outline-none cursor-pointer">
@@ -78,16 +72,17 @@
                       <span v-else>{{ (token?.asset_code || '?').substring(0, 2) }}</span>
                     </div>
                     <div>
-                      <div class="text-xs font-bold text-theme-ink">{{ token?.name || token?.asset_code }}</div>
-                      <div class="text-[10px] font-mono text-theme-dim">Current Market Price</div>
+                      <div class="alert-token-name text-xs font-bold text-theme-ink tracking-tight">{{ token?.name || token?.asset_code }}</div>
+                      <div class="alert-market-label text-[10px] font-sans font-medium text-theme-dim uppercase tracking-wider mt-0.5">Current Market Price</div>
                     </div>
                   </div>
                   <div class="text-right">
-                    <div class="text-xs font-mono font-bold text-theme-ink">
-                      {{ formatReferencePrice(currentXlmPrice) }} <span class="text-[10px] text-cyan-600 dark:text-cyan-400 font-semibold">XLM</span>
+                    <div class="text-xs font-mono font-bold text-theme-ink flex items-center justify-end gap-1">
+                      <span class="alert-live-xlm">{{ formatReferencePrice(currentXlmPrice) }}</span>
+                      <span class="text-[10px] text-cyan-600 dark:text-cyan-400 font-bold uppercase">XLM</span>
                     </div>
-                    <div class="text-[10px] font-mono text-theme-dim">
-                      ${{ formatReferencePrice(currentPrice) }}
+                    <div class="text-[10px] font-mono text-theme-dim flex items-center justify-end gap-1 mt-0.5">
+                      <span class="alert-live-usd">${{ formatReferencePrice(currentPrice) }}</span>
                       <span :class="currentChange >= 0 ? 'text-emerald-500 dark:text-emerald-400 font-bold' : 'text-rose-500 dark:text-rose-400 font-bold'">
                         ({{ currentChange >= 0 ? '+' : '' }}{{ Number(currentChange).toFixed(2) }}%)
                       </span>
@@ -97,19 +92,19 @@
 
                 <!-- Condition Type Selector Tabs -->
                 <div class="space-y-1.5">
-                  <label class="text-[11px] font-semibold text-theme-ink uppercase tracking-wider">Alert Condition</label>
+                  <label class="alert-label alert-condition-label text-[11px] font-extrabold text-slate-950 dark:text-slate-200 uppercase tracking-wider">Alert Condition</label>
                   <div class="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       @click="setConditionType('price_above')"
                       :class="[
                         conditionType === 'price_above'
-                          ? 'bg-emerald-500/15 border-emerald-500/40 text-slate-900 dark:text-emerald-400 shadow-sm font-extrabold'
-                          : 'bg-theme-panel2 border-theme-line text-theme-dim hover:text-theme-ink font-medium',
-                        'p-2.5 rounded-xl border text-xs flex items-center gap-2 transition text-left cursor-pointer'
+                          ? 'is-active bg-emerald-500/15 border-emerald-500/50 text-slate-950 dark:text-white dark:bg-emerald-500/20 dark:border-emerald-500/50 shadow-sm font-black'
+                          : 'bg-slate-100/90 dark:bg-theme-panel2 border-slate-200 dark:border-theme-line text-slate-900 dark:text-slate-200 hover:text-black dark:hover:text-white font-extrabold',
+                        'alert-condition-btn p-2.5 rounded-xl border text-xs flex items-center gap-2 transition text-left cursor-pointer'
                       ]"
                     >
-                      <TrendingUp class="w-3.5 h-3.5 flex-shrink-0 text-emerald-500 dark:text-emerald-400" />
+                      <TrendingUp class="w-3.5 h-3.5 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
                       <span class="truncate">Price Rises Above</span>
                     </button>
 
@@ -118,12 +113,12 @@
                       @click="setConditionType('price_below')"
                       :class="[
                         conditionType === 'price_below'
-                          ? 'bg-rose-500/15 border-rose-500/40 text-slate-900 dark:text-rose-400 shadow-sm font-extrabold'
-                          : 'bg-theme-panel2 border-theme-line text-theme-dim hover:text-theme-ink font-medium',
-                        'p-2.5 rounded-xl border text-xs flex items-center gap-2 transition text-left cursor-pointer'
+                          ? 'is-active bg-rose-500/15 border-rose-500/50 text-slate-950 dark:text-white dark:bg-rose-500/20 dark:border-rose-500/50 shadow-sm font-black'
+                          : 'bg-slate-100/90 dark:bg-theme-panel2 border-slate-200 dark:border-theme-line text-slate-900 dark:text-slate-200 hover:text-black dark:hover:text-white font-extrabold',
+                        'alert-condition-btn p-2.5 rounded-xl border text-xs flex items-center gap-2 transition text-left cursor-pointer'
                       ]"
                     >
-                      <TrendingDown class="w-3.5 h-3.5 flex-shrink-0 text-rose-500 dark:text-rose-400" />
+                      <TrendingDown class="w-3.5 h-3.5 flex-shrink-0 text-rose-600 dark:text-rose-400" />
                       <span class="truncate">Price Drops Below</span>
                     </button>
 
@@ -132,12 +127,12 @@
                       @click="setConditionType('pct_change_up')"
                       :class="[
                         conditionType === 'pct_change_up'
-                          ? 'bg-cyan-500/15 border-cyan-500/40 text-slate-900 dark:text-cyan-400 shadow-sm font-extrabold'
-                          : 'bg-theme-panel2 border-theme-line text-theme-dim hover:text-theme-ink font-medium',
-                        'p-2.5 rounded-xl border text-xs flex items-center gap-2 transition text-left cursor-pointer'
+                          ? 'is-active bg-cyan-500/15 border-cyan-500/50 text-slate-950 dark:text-white dark:bg-cyan-500/20 dark:border-cyan-500/50 shadow-sm font-black'
+                          : 'bg-slate-100/90 dark:bg-theme-panel2 border-slate-200 dark:border-theme-line text-slate-900 dark:text-slate-200 hover:text-black dark:hover:text-white font-extrabold',
+                        'alert-condition-btn p-2.5 rounded-xl border text-xs flex items-center gap-2 transition text-left cursor-pointer'
                       ]"
                     >
-                      <Percent class="w-3.5 h-3.5 flex-shrink-0 text-cyan-500 dark:text-cyan-400" />
+                      <Percent class="w-3.5 h-3.5 flex-shrink-0 text-cyan-600 dark:text-cyan-400" />
                       <span class="truncate">24h Gain Above +%</span>
                     </button>
 
@@ -146,32 +141,32 @@
                       @click="setConditionType('pct_change_down')"
                       :class="[
                         conditionType === 'pct_change_down'
-                          ? 'bg-purple-500/15 border-purple-500/40 text-slate-900 dark:text-purple-400 shadow-sm font-extrabold'
-                          : 'bg-theme-panel2 border-theme-line text-theme-dim hover:text-theme-ink font-medium',
-                        'p-2.5 rounded-xl border text-xs flex items-center gap-2 transition text-left cursor-pointer'
+                          ? 'is-active bg-purple-500/15 border-purple-500/50 text-slate-950 dark:text-white dark:bg-purple-500/20 dark:border-purple-500/50 shadow-sm font-black'
+                          : 'bg-slate-100/90 dark:bg-theme-panel2 border-slate-200 dark:border-theme-line text-slate-900 dark:text-slate-200 hover:text-black dark:hover:text-white font-extrabold',
+                        'alert-condition-btn p-2.5 rounded-xl border text-xs flex items-center gap-2 transition text-left cursor-pointer'
                       ]"
                     >
-                      <Percent class="w-3.5 h-3.5 flex-shrink-0 text-purple-500 dark:text-purple-400" />
+                      <Percent class="w-3.5 h-3.5 flex-shrink-0 text-purple-600 dark:text-purple-400" />
                       <span class="truncate">24h Drop Below -%</span>
                     </button>
                   </div>
                 </div>
 
                 <!-- Price Denomination Selector (XLM vs USD) -->
-                <div v-if="isPriceCondition" class="p-2.5 rounded-xl bg-theme-panel2 border border-theme-line flex items-center justify-between gap-2">
+                <div v-if="isPriceCondition" class="p-2.5 rounded-xl bg-slate-50 dark:bg-theme-panel2 border border-slate-200 dark:border-theme-line flex items-center justify-between gap-2">
                   <div>
-                    <div class="text-xs font-bold text-theme-ink">Price Denomination</div>
-                    <div class="text-[10px] text-theme-dim">Set your price target in XLM or USD</div>
+                    <div class="alert-denom-title text-xs font-black text-slate-950 dark:text-slate-100">Price Denomination</div>
+                    <div class="alert-denom-desc text-[10.5px] text-slate-700 dark:text-slate-400 font-semibold mt-0.5">Set your price target in XLM or USD</div>
                   </div>
-                  <div class="flex items-center p-0.5 bg-theme-panel border border-theme-line rounded-lg gap-1">
+                  <div class="flex items-center p-0.5 bg-white dark:bg-theme-panel border border-slate-200 dark:border-theme-line rounded-lg gap-1">
                     <button
                       type="button"
                       @click="setCurrency('xlm')"
                       :class="[
                         selectedCurrency === 'xlm'
-                          ? 'bg-cyan-500/20 text-slate-900 dark:text-cyan-400 border-cyan-500/40 shadow-xs font-extrabold'
-                          : 'text-theme-dim hover:text-theme-ink border-transparent font-medium',
-                        'px-2.5 py-1 rounded-md text-xs font-mono border transition cursor-pointer'
+                          ? 'is-active bg-cyan-500/20 text-slate-950 dark:text-white dark:bg-cyan-500/25 border-cyan-500/50 dark:border-cyan-500/60 shadow-xs font-black'
+                          : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white border-transparent font-extrabold',
+                        'alert-currency-btn px-2.5 py-1 rounded-md text-xs font-mono border transition cursor-pointer'
                       ]"
                     >
                       XLM
@@ -181,9 +176,9 @@
                       @click="setCurrency('usd')"
                       :class="[
                         selectedCurrency === 'usd'
-                          ? 'bg-cyan-500/20 text-slate-900 dark:text-cyan-400 border-cyan-500/40 shadow-xs font-extrabold'
-                          : 'text-theme-dim hover:text-theme-ink border-transparent font-medium',
-                        'px-2.5 py-1 rounded-md text-xs font-mono border transition cursor-pointer'
+                          ? 'is-active bg-cyan-500/20 text-slate-950 dark:text-white dark:bg-cyan-500/25 border-cyan-500/50 dark:border-cyan-500/60 shadow-xs font-black'
+                          : 'text-slate-800 dark:text-slate-300 hover:text-black dark:hover:text-white border-transparent font-extrabold',
+                        'alert-currency-btn px-2.5 py-1 rounded-md text-xs font-mono border transition cursor-pointer'
                       ]"
                     >
                       USD ($)
@@ -194,16 +189,22 @@
                 <!-- Target Input & Quick Percent Selectors -->
                 <div class="space-y-1.5">
                   <div class="flex items-center justify-between">
-                    <label class="text-[11px] font-semibold text-theme-ink uppercase tracking-wider">
+                    <label class="alert-label alert-target-label text-[11px] font-extrabold text-slate-950 dark:text-slate-200 uppercase tracking-wider">
                       {{ isPriceCondition ? `Target Price (${selectedCurrency.toUpperCase()})` : 'Target % Threshold' }}
                     </label>
-                    <span class="text-[10px] font-mono text-theme-dim">
-                      {{ isPriceCondition ? (selectedCurrency === 'xlm' ? `Current: ${formatReferencePrice(currentXlmPrice)} XLM` : `Current: $${formatReferencePrice(currentPrice)}`) : `Current 24h: ${Number(currentChange).toFixed(2)}%` }}
-                    </span>
+                    <div class="text-[10.5px] font-mono flex items-center gap-1">
+                      <span class="alert-current-label text-slate-800 dark:text-slate-300 font-bold">Current:</span>
+                      <span v-if="isPriceCondition" class="alert-current-val font-black text-slate-950 dark:text-cyan-400">
+                        {{ selectedCurrency === 'xlm' ? `${formatReferencePrice(currentXlmPrice)} XLM` : `$${formatReferencePrice(currentPrice)}` }}
+                      </span>
+                      <span v-else class="alert-current-val font-black" :class="Number(currentChange) >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'">
+                        {{ Number(currentChange) >= 0 ? '+' : '' }}{{ Number(currentChange).toFixed(2) }}%
+                      </span>
+                    </div>
                   </div>
 
-                  <div class="relative flex items-center bg-theme-panel2 border border-theme-line focus-within:border-cyan-500/50 rounded-xl px-3 py-2.5 transition">
-                    <span class="text-xs font-mono font-bold text-theme-dim mr-1.5 select-none uppercase">
+                  <div class="relative flex items-center bg-slate-50 dark:bg-theme-panel2 border border-slate-200 dark:border-theme-line focus-within:border-cyan-500/50 focus-within:ring-1 focus-within:ring-cyan-500/30 rounded-xl px-3 py-2.5 transition">
+                    <span class="alert-input-prefix text-xs font-mono font-black text-slate-950 dark:text-slate-200 mr-1.5 select-none uppercase">
                       {{ isPriceCondition ? (selectedCurrency === 'usd' ? '$' : 'XLM') : '%' }}
                     </span>
                     <input
@@ -211,7 +212,7 @@
                       type="number"
                       step="any"
                       placeholder="0.00"
-                      class="bg-transparent border-0 outline-none text-sm font-mono font-bold text-theme-ink placeholder-theme-dim w-full p-0 focus:ring-0"
+                      class="alert-target-input bg-transparent border-0 outline-none text-sm font-mono font-black text-slate-950 dark:text-white placeholder-slate-400 w-full p-0 focus:ring-0"
                     />
                   </div>
 
@@ -222,7 +223,7 @@
                       :key="preset.label"
                       type="button"
                       @click="applyPreset(preset.multiplier)"
-                      class="px-2.5 py-1 rounded-lg bg-theme-panel2 hover:bg-theme-panel border border-theme-line text-[10px] font-mono font-bold text-theme-dim hover:text-theme-ink transition flex-shrink-0 cursor-pointer"
+                      class="alert-preset-btn px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-theme-panel2 dark:hover:bg-cyan-500/10 border border-slate-200 dark:border-theme-line hover:border-slate-300 dark:hover:border-cyan-500/30 text-[10.5px] font-mono font-black text-slate-950 dark:text-slate-100 hover:text-black dark:hover:text-cyan-400 transition flex-shrink-0 cursor-pointer shadow-2xs"
                     >
                       {{ preset.label }}
                     </button>
@@ -230,19 +231,19 @@
                 </div>
 
                 <!-- Notification Delivery Channels -->
-                <div class="space-y-2 pt-2 border-t border-theme-line">
-                  <label class="text-[11px] font-semibold text-theme-ink uppercase tracking-wider">Delivery Channels</label>
+                <div class="space-y-2 pt-2 border-t border-slate-200 dark:border-theme-line">
+                  <label class="alert-label alert-channels-label text-[11px] font-extrabold text-slate-950 dark:text-slate-200 uppercase tracking-wider">Delivery Channels</label>
                   
                   <div class="space-y-2">
                     <!-- Browser Web Push -->
-                    <div class="flex items-center justify-between p-3 rounded-xl bg-theme-panel2 border border-theme-line">
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-theme-panel2 border border-slate-200 dark:border-theme-line">
                       <div class="flex items-center gap-2.5">
                         <div class="w-7 h-7 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-600 dark:text-cyan-400 flex-shrink-0">
                           <Globe class="w-3.5 h-3.5" />
                         </div>
                         <div>
-                          <div class="text-xs font-bold text-theme-ink">Browser Push Notifications</div>
-                          <p class="text-[10px] text-theme-dim">Receive desktop/mobile system popup alerts when price hits target</p>
+                          <div class="alert-channel-title text-xs font-black text-slate-950 dark:text-slate-100">Browser Push Notifications</div>
+                          <p class="alert-channel-desc text-[10px] text-slate-700 dark:text-slate-400 font-medium">Receive desktop/mobile system popup alerts when price hits target</p>
                         </div>
                       </div>
 
@@ -258,14 +259,14 @@
                     </div>
 
                     <!-- On-site Notification Bell -->
-                    <div class="flex items-center justify-between p-3 rounded-xl bg-theme-panel2 border border-theme-line">
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-theme-panel2 border border-slate-200 dark:border-theme-line">
                       <div class="flex items-center gap-2.5">
                         <div class="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400">
                           <Bell class="w-3.5 h-3.5" />
                         </div>
                         <div>
-                          <div class="text-xs font-bold text-theme-ink">On-site Notification Bell</div>
-                          <p class="text-[10px] text-theme-dim">Unread badge and alert message inside TokenGlade header</p>
+                          <div class="alert-channel-title text-xs font-black text-slate-950 dark:text-slate-100">On-site Notification Bell</div>
+                          <p class="alert-channel-desc text-[10px] text-slate-700 dark:text-slate-400 font-medium">Unread badge and alert message inside TokenGlade header</p>
                         </div>
                       </div>
 
@@ -522,13 +523,23 @@ async function handleSubmitAlert() {
     });
 
     if (res.status === 'success') {
+      const isLight = document.documentElement.classList.contains('light');
       Swal.fire({
         icon: 'success',
-        title: 'Price Alert Created!',
-        text: `You will be notified when ${props.token.asset_code} triggers your target condition in ${selectedCurrency.value.toUpperCase()}.`,
+        title: '<span style="font-family: inherit; font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em;">Price Alert Created!</span>',
+        html: `
+          <div style="font-family: inherit; font-size: 0.875rem; color: ${isLight ? '#475569' : '#94A3B8'}; line-height: 1.6; margin-top: 6px;">
+            You will be notified when <strong style="color: ${isLight ? '#0284c7' : '#38bdf8'}; font-weight: 700; font-family: ui-monospace, monospace; padding: 1px 4px; border-radius: 4px; background: ${isLight ? '#e0f2fe' : 'rgba(56,189,248,0.15)'};">${props.token.asset_code}</strong> triggers your target condition in <strong style="color: ${isLight ? '#0284c7' : '#38bdf8'}; font-weight: 700; font-family: ui-monospace, monospace; padding: 1px 4px; border-radius: 4px; background: ${isLight ? '#e0f2fe' : 'rgba(56,189,248,0.15)'};">${selectedCurrency.value.toUpperCase()}</strong>.
+          </div>
+        `,
         confirmButtonColor: '#06b6d4',
-        timer: 2500,
-        showConfirmButton: false
+        timer: 2800,
+        showConfirmButton: false,
+        background: isLight ? '#FFFFFF' : '#0B0F17',
+        color: isLight ? '#0F172A' : '#F8FAFC',
+        customClass: {
+          popup: 'rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl'
+        }
       });
       emit('alert-created', res.alert);
       closeModal();
@@ -567,3 +578,159 @@ watch(
   { immediate: true }
 );
 </script>
+
+<style scoped>
+/* LIGHT THEME EXPLICIT TEXT DARKENING */
+:global(html.light) .set-alert-dialog {
+  color: #0F172A !important;
+}
+
+:global(html.light) .alert-modal-title {
+  color: #0F172A !important;
+}
+
+:global(html.light) .alert-modal-desc {
+  color: #475569 !important;
+}
+
+:global(html.light) .alert-token-name {
+  color: #0F172A !important;
+}
+
+:global(html.light) .alert-market-label {
+  color: #475569 !important;
+}
+
+:global(html.light) .alert-live-xlm {
+  color: #0F172A !important;
+}
+
+:global(html.light) .alert-live-usd {
+  color: #475569 !important;
+}
+
+:global(html.light) .alert-label,
+:global(html.light) .alert-condition-label,
+:global(html.light) .alert-target-label,
+:global(html.light) .alert-channels-label {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+:global(html.light) .alert-condition-btn {
+  color: #0F172A !important;
+}
+
+:global(html.light) .alert-condition-btn span {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+:global(html.light) .alert-condition-btn.is-active span {
+  color: #020617 !important;
+  font-weight: 900 !important;
+}
+
+:global(html.light) .alert-denom-title {
+  color: #0F172A !important;
+  font-weight: 900 !important;
+}
+
+:global(html.light) .alert-denom-desc {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+:global(html.light) .alert-currency-btn {
+  color: #1E293B !important;
+  font-weight: 800 !important;
+}
+
+:global(html.light) .alert-currency-btn.is-active {
+  color: #020617 !important;
+  font-weight: 900 !important;
+}
+
+:global(html.light) .alert-current-label {
+  color: #1E293B !important;
+  font-weight: 700 !important;
+}
+
+:global(html.light) .alert-current-val {
+  color: #020617 !important;
+  font-weight: 900 !important;
+}
+
+:global(html.light) .alert-input-prefix {
+  color: #0F172A !important;
+  font-weight: 900 !important;
+}
+
+:global(html.light) .alert-target-input {
+  color: #020617 !important;
+  font-weight: 900 !important;
+}
+
+:global(html.light) .alert-preset-btn {
+  color: #0F172A !important;
+  font-weight: 900 !important;
+  background-color: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+}
+
+:global(html.light) .alert-preset-btn:hover {
+  color: #000000 !important;
+  background-color: #E2E8F0 !important;
+}
+
+:global(html.light) .alert-channel-title {
+  color: #0F172A !important;
+  font-weight: 900 !important;
+}
+
+:global(html.light) .alert-channel-desc {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+/* DARK THEME EXPLICIT LUMINOUS TEXT */
+:global(html:not(.light)) .alert-condition-btn span,
+:global(html.dark) .alert-condition-btn span {
+  color: #E2E8F0 !important;
+}
+
+:global(html:not(.light)) .alert-condition-btn.is-active span,
+:global(html.dark) .alert-condition-btn.is-active span {
+  color: #FFFFFF !important;
+}
+
+:global(html:not(.light)) .alert-currency-btn,
+:global(html.dark) .alert-currency-btn {
+  color: #CBD5E1 !important;
+}
+
+:global(html:not(.light)) .alert-currency-btn.is-active,
+:global(html.dark) .alert-currency-btn.is-active {
+  color: #FFFFFF !important;
+}
+
+:global(html:not(.light)) .alert-target-input,
+:global(html.dark) .alert-target-input {
+  color: #FFFFFF !important;
+}
+
+:global(html:not(.light)) .alert-preset-btn,
+:global(html.dark) .alert-preset-btn {
+  color: #F1F5F9 !important;
+}
+
+:global(html:not(.light)) .alert-channel-title,
+:global(html.dark) .alert-channel-title {
+  color: #F8FAFC !important;
+}
+
+:global(html:not(.light)) .alert-channel-desc,
+:global(html.dark) .alert-channel-desc {
+  color: #94A3B8 !important;
+}
+</style>
