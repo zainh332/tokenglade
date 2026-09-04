@@ -367,7 +367,7 @@ const shareText = computed(() => {
   const liq = formatNumber(effectiveLiq);
   const hld = formatNumber(props.holders);
 
-  return `$${code} on @TokenGlade: $${price} (${xlm} $XLM) | 24h: ${change}\nLiquidity: $${liq} • Holders: ${hld}\n\nTrack real-time Stellar DEX charts & orderbook:`;
+  return `$${code} on @TokenGlade: $${price} ( ${xlm} $XLM )\n24h: ${change}\nLiquidity: $${liq}\nHolders: ${hld}\n\nTrack real-time #Stellar DEX charts & orderbook:`;
 });
 
 // Social Share URLs
