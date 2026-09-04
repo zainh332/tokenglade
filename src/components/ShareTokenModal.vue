@@ -360,7 +360,7 @@ const shareText = computed(() => {
   const xlm = formatXlmPrice(props.xlmPrice);
   const change = (props.priceChange || 0) >= 0 ? `+${props.priceChange}%` : `${props.priceChange}%`;
   const effectiveLiq = resolvedLiquidity.value > 0 ? resolvedLiquidity.value : (Number(props.liquidity) || 0);
-  const liq = formatPrice(effectiveLiq);
+  const liq = formatNumber(effectiveLiq);
   const hld = formatNumber(props.holders);
 
   return `$${code} on @TokenGlade: $${price} (${xlm} $XLM) | 24h: ${change}\nLiquidity: $${liq} • Holders: ${hld}\n\nTrack real-time Stellar DEX charts & orderbook:`;

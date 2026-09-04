@@ -2765,15 +2765,13 @@ EOT;
         });
         $liquidity = $this->formatTokenNumber($liquidityVal);
         
-        $holdersCount = (int)($insight['trustlines'] ?? ($insight['holders'] ?? ($assets[0]['accounts']['authorized'] ?? 0)));
-        if ($holdersCount === 0 && isset($insight['holders']) && (int)$insight['holders'] > 0) {
-            $holdersCount = (int)$insight['holders'];
-        }
+        $holdersCount = (int)(!empty($insight['holders']) ? $insight['holders'] : ($insight['trustlines'] ?? ($assets[0]['accounts']['authorized'] ?? 0)));
         $holders = $this->formatTokenNumber($holdersCount);
 
         $rating = number_format((float)($insight['rating']['average'] ?? 7.5), 1);
 
-        $cardUrl = "https://tokenglade.com/t/{$issuer}/card.png";
+        $cardVersion = floor(time() / 120);
+        $cardUrl = "https://tokenglade.com/t/{$issuer}/card.png?v={$cardVersion}";
         $canonicalUrl = "https://tokenglade.com/t/{$issuer}";
 
         return view('welcome', [
@@ -2872,10 +2870,7 @@ EOT;
         $liquidityStr = $this->formatTokenNumber($liquidityVal);
 
         // Holders count matching frontend
-        $holdersCount = (int)($insight['trustlines'] ?? ($insight['holders'] ?? ($assets[0]['accounts']['authorized'] ?? 0)));
-        if ($holdersCount === 0 && isset($insight['holders']) && (int)$insight['holders'] > 0) {
-            $holdersCount = (int)$insight['holders'];
-        }
+        $holdersCount = (int)(!empty($insight['holders']) ? $insight['holders'] : ($insight['trustlines'] ?? ($assets[0]['accounts']['authorized'] ?? 0)));
         $holdersStr = $this->formatTokenNumber($holdersCount);
 
         $rating = number_format((float)($insight['rating']['average'] ?? 7.5), 1);
