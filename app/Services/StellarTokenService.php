@@ -858,29 +858,15 @@ class StellarTokenService
         
         $records = [];
         
-        // 1. Fetch general pools from Horizon with pagination (up to 1000 pools)
+        // 1. Fetch general pools from Horizon with pagination (up to 200 pools)
         try {
-            $nextUrl = $this->horizon . '/liquidity_pools?' . http_build_query([
+            $responseGeneral = Http::timeout(2.5)->get($this->horizon . '/liquidity_pools', [
                 'reserves' => $targetAssetString,
                 'limit' => 200,
             ]);
-            
-            $pages = 0;
-            while ($nextUrl && $pages < 5) {
-                $pages++;
-                $responseGeneral = Http::timeout(4)->get($nextUrl);
-                if ($responseGeneral->ok()) {
-                    $pageRecords = $responseGeneral->json('_embedded.records') ?? [];
-                    $records = array_merge($records, $pageRecords);
-                    $nextHref = $responseGeneral->json('_links.next.href');
-                    if (!empty($pageRecords) && count($pageRecords) === 200 && $nextHref && $nextHref !== $nextUrl) {
-                        $nextUrl = $nextHref;
-                    } else {
-                        break;
-                    }
-                } else {
-                    break;
-                }
+            if ($responseGeneral->ok()) {
+                $pageRecords = $responseGeneral->json('_embedded.records') ?? [];
+                $records = array_merge($records, $pageRecords);
             }
         } catch (\Throwable $e) {}
 

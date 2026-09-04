@@ -2737,13 +2737,28 @@ EOT;
         $cacheKey = "token_insight_v3_{$issuer}_{$code}";
         $insight = Cache::get($cacheKey);
         if (!$insight || empty($insight['asset_code'])) {
-            try {
-                $insight = $service->getTokenInsight($issuer, $code, $assets[0]);
-                if (!empty($insight) && !empty($insight['asset_code'])) {
-                    Cache::put($cacheKey, $insight, 30);
+            $marketToken = StellarMarketToken::where('asset_issuer', $issuer)->where('asset_code', $code)->first();
+            if ($marketToken && $marketToken->current_price_usd) {
+                $insight = [
+                    'asset_code' => $marketToken->asset_code,
+                    'name' => $marketToken->name,
+                    'image' => $marketToken->image,
+                    'usd_price' => $marketToken->current_price_usd,
+                    'xlm_price' => $marketToken->current_price_xlm,
+                    'holders' => $marketToken->current_holders,
+                    'rating' => ['average' => 7.5],
+                    'price_change_24h' => 0.0,
+                ];
+                Cache::put($cacheKey, $insight, 600);
+            } else {
+                try {
+                    $insight = $service->getTokenInsight($issuer, $code, $assets[0]);
+                    if (!empty($insight) && !empty($insight['asset_code'])) {
+                        Cache::put($cacheKey, $insight, 1800);
+                    }
+                } catch (\Throwable $e) {
+                    $insight = [];
                 }
-            } catch (\Throwable $e) {
-                $insight = [];
             }
         }
 
@@ -2754,7 +2769,7 @@ EOT;
         $changeVal = (float)($insight['price_change_24h'] ?? 0.0);
         $change = ($changeVal >= 0 ? '+' : '') . number_format($changeVal, 2);
         
-        $liquidityVal = Cache::remember("token_liq_tvl_{$issuer}_{$code}", 60, function () use ($service, $code, $issuer, $rawUsdPrice) {
+        $liquidityVal = Cache::remember("token_liq_tvl_{$issuer}_{$code}", 1800, function () use ($service, $code, $issuer, $rawUsdPrice) {
             try {
                 $xlmUsdPrice = $service->getXlmUsdPrice();
                 $liquidityInfo = $service->getLiquidityPoolsInfo($code, $issuer, $xlmUsdPrice, $rawUsdPrice);
@@ -2770,8 +2785,7 @@ EOT;
 
         $rating = number_format((float)($insight['rating']['average'] ?? 7.5), 1);
 
-        $cardVersion = floor(time() / 120);
-        $cardUrl = "https://tokenglade.com/t/{$issuer}/card.png?v={$cardVersion}";
+        $cardUrl = "https://tokenglade.com/t/{$issuer}/card.png";
         $canonicalUrl = "https://tokenglade.com/t/{$issuer}";
 
         return view('welcome', [
@@ -2791,7 +2805,7 @@ EOT;
         if ($cachedPng) {
             return response($cachedPng, 200, [
                 'Content-Type' => 'image/png',
-                'Cache-Control' => 'public, max-age=120, s-maxage=120',
+                'Cache-Control' => 'public, max-age=1800, s-maxage=1800',
                 'Access-Control-Allow-Origin' => '*'
             ]);
         }
@@ -2841,13 +2855,28 @@ EOT;
         $cacheKey = "token_insight_v3_{$issuer}_{$code}";
         $insight = Cache::get($cacheKey);
         if (!$insight || empty($insight['asset_code'])) {
-            try {
-                $insight = $service->getTokenInsight($issuer, $code, $assets[0]);
-                if (!empty($insight) && !empty($insight['asset_code'])) {
-                    Cache::put($cacheKey, $insight, 30);
+            $marketToken = StellarMarketToken::where('asset_issuer', $issuer)->where('asset_code', $code)->first();
+            if ($marketToken && $marketToken->current_price_usd) {
+                $insight = [
+                    'asset_code' => $marketToken->asset_code,
+                    'name' => $marketToken->name,
+                    'image' => $marketToken->image,
+                    'usd_price' => $marketToken->current_price_usd,
+                    'xlm_price' => $marketToken->current_price_xlm,
+                    'holders' => $marketToken->current_holders,
+                    'rating' => ['average' => 7.5],
+                    'price_change_24h' => 0.0,
+                ];
+                Cache::put($cacheKey, $insight, 600);
+            } else {
+                try {
+                    $insight = $service->getTokenInsight($issuer, $code, $assets[0]);
+                    if (!empty($insight) && !empty($insight['asset_code'])) {
+                        Cache::put($cacheKey, $insight, 1800);
+                    }
+                } catch (\Throwable $e) {
+                    $insight = [];
                 }
-            } catch (\Throwable $e) {
-                $insight = [];
             }
         }
 
@@ -2858,7 +2887,7 @@ EOT;
         $changeVal = (float)($insight['price_change_24h'] ?? 0.0);
 
         // Live calculated liquidity matching frontend
-        $liquidityVal = Cache::remember("token_liq_tvl_{$issuer}_{$code}", 60, function () use ($service, $code, $issuer, $rawUsdPrice) {
+        $liquidityVal = Cache::remember("token_liq_tvl_{$issuer}_{$code}", 1800, function () use ($service, $code, $issuer, $rawUsdPrice) {
             try {
                 $xlmUsdPrice = $service->getXlmUsdPrice();
                 $liqInfo = $service->getLiquidityPoolsInfo($code, $issuer, $xlmUsdPrice, $rawUsdPrice);
@@ -3152,11 +3181,11 @@ EOT;
         $imageData = ob_get_clean();
         imagedestroy($img);
 
-        Cache::put("og_card_png_{$issuer}", $imageData, 120);
+        Cache::put("og_card_png_{$issuer}", $imageData, 3600);
 
         return response($imageData, 200, [
             'Content-Type' => 'image/png',
-            'Cache-Control' => 'public, max-age=120, s-maxage=120',
+            'Cache-Control' => 'public, max-age=1800, s-maxage=1800',
             'Access-Control-Allow-Origin' => '*'
         ]);
     }

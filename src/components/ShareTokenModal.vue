@@ -773,6 +773,10 @@ watch(() => props.modelValue, (open) => {
       fetchModalLiquidity();
     }
     triggerRender(100);
+    const issuer = props.token?.issuer || props.token?.asset_issuer;
+    if (issuer) {
+      fetch(`/t/${issuer}/card.png`).catch(() => {});
+    }
   }
 });
 
