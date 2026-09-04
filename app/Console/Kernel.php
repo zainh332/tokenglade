@@ -11,6 +11,7 @@ class Kernel extends ConsoleKernel
         Commands\DistributeStakingRewards::class,
         Commands\TakeTokenSnapshots::class,
         Commands\TrackWhaleActivity::class,
+        Commands\CheckPriceAlerts::class,
     ];
 
     /**
@@ -18,6 +19,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        $schedule->command('alerts:check')
+            ->everyMinute()
+            ->withoutOverlapping()
+            ->runInBackground();
+
         $schedule->command('staking:reward')->hourly();
         $schedule->command('tokens:snapshot')->hourly();
         $schedule->command('tokens:track-whale-activity')->everyThirtyMinutes();

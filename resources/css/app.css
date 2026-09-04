@@ -855,3 +855,41 @@ html.light .search-ecosystem-card * {
 html.light .eco-tooltip {
   color: #ffffff !important;
 }
+
+/* Watchlist & Price Alerts Dropdown Tabs (Light Theme vs Dark Theme) */
+html.light .tab-badge {
+  color: #0F172A !important;
+}
+
+html.light .tab-watchlist-active,
+html.light .tab-watchlist-active .tab-label,
+html.light .tab-watchlist-active .tab-badge,
+html.light .tab-watchlist-active span {
+  color: #0F172A !important;
+}
+
+html.light .tab-alerts-active,
+html.light .tab-alerts-active .tab-label,
+html.light .tab-alerts-active .tab-badge,
+html.light .tab-alerts-active span {
+  color: #0F172A !important;
+}
+
+html.light .tab-watchlist-active {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  border-color: rgba(245, 158, 11, 0.45) !important;
+}
+
+html.light .tab-alerts-active {
+  background-color: rgba(6, 182, 212, 0.15) !important;
+  border-color: rgba(6, 182, 212, 0.45) !important;
+}
+
+html.light .tab-watchlist-active svg {
+  color: #d97706 !important;
+  fill: #d97706 !important;
+}
+
+html.light .tab-alerts-active svg {
+  color: #0891b2 !important;
+}

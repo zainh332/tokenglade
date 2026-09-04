@@ -221,9 +221,20 @@
 
               <!-- Name and Issuer info -->
               <div class="name-col min-w-0">
-                <div class="name-row">
+                <div class="name-row flex items-center gap-2">
                   <h1 class="truncate">{{ token.is_minted_on_tokenglade ? (token.name || token.project?.org_name ||
                     'Token Detail') : (token.project?.org_name || token.name || 'Token Detail') }}</h1>
+                  <button
+                    @click="handleToggleStar"
+                    class="p-1 rounded-lg text-theme-dim hover:text-amber-500 transition cursor-pointer select-none flex-shrink-0"
+                    :title="isCurrentTokenStarred ? 'Remove from Watchlist' : 'Add to Watchlist'"
+                    aria-label="Toggle Watchlist"
+                  >
+                    <Star
+                      class="w-5 h-5 transition-colors duration-150"
+                      :class="isCurrentTokenStarred ? 'text-amber-500 fill-amber-500' : 'text-theme-dim hover:text-amber-500'"
+                    />
+                  </button>
                   <span class="chip sym uppercase">{{ token.asset_code }}</span>
                   <span v-if="isVerified" class="chip verified">✓ Verified</span>
                   <span v-else-if="isVerificationPending" class="chip"
@@ -245,6 +256,10 @@
                   <button @click="shareModalOpen = true" class="px-2.5 py-0.5 bg-gradient-to-r from-purple-500/10 via-cyan-500/10 to-emerald-500/10 hover:from-purple-500/20 hover:to-cyan-500/20 border border-cyan-500/30 hover:border-cyan-400/60 rounded text-[11px] font-mono text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5 transition cursor-pointer select-none font-bold shadow-sm" title="Generate Shareable Price Card / Embed Widget">
                     <Share2 class="w-3 h-3 text-cyan-500" />
                     <span>Share / Embed</span>
+                  </button>
+                  <button @click="isAlertModalOpen = true" class="px-2.5 py-0.5 bg-gradient-to-r from-purple-500/10 via-cyan-500/10 to-emerald-500/10 hover:from-purple-500/20 hover:to-cyan-500/20 border border-cyan-500/30 hover:border-cyan-400/60 rounded text-[11px] font-mono text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5 transition cursor-pointer select-none font-bold shadow-sm" title="Set Price & Volatility Alert">
+                    <BellRing class="w-3 h-3 text-cyan-500" />
+                    <span>Set Alert</span>
                   </button>
                 </div>
               </div>
@@ -559,6 +574,12 @@
                 class="btn brand select-none inline-flex items-center gap-1.5">
                 <ArrowRightLeft class="w-4 h-4" /> Trade Asset
               </a>
+              <button @click="isAlertModalOpen = true"
+                class="btn dark select-none inline-flex items-center gap-1.5 hover:border-cyan-500/50 transition cursor-pointer"
+                title="Set Price & Volatility Alert">
+                <BellRing class="w-4 h-4 text-cyan-400" />
+                <span>Set Alert</span>
+              </button>
               <button @click="handleEstablishTrustline" :disabled="establishingTrustline"
                 class="btn dark select-none inline-flex items-center gap-1.5 hover:border-cyan-500/50 transition">
                 <Lock class="w-4 h-4 text-cyan-400" />
@@ -1840,6 +1861,12 @@
       :holders="token.trustlines?.total || token.holders || token.trustlines || 0"
     />
     <ReportModal v-model="reportModalOpen" :token="token" />
+    <SetAlertModal
+      v-model="isAlertModalOpen"
+      :token="token"
+      :wallet-key="walletKey"
+      @open-wallet="ConnectWalletModals = true"
+    />
     <Footer />
   </div>
 </template>
@@ -1858,11 +1885,13 @@ import { createChart, CrosshairMode, CandlestickSeries, LineSeries, AreaSeries, 
 import verified from "@/assets/verify.png";
 import { getCookie, signXdrWithWallet, updateLoader } from "../utils/utils.js";
 import { fetchXlmPrice } from "../utils/api.js";
+import { isStarred, toggleStar } from "../utils/watchlist.js";
 import Swal from 'sweetalert2';
 import ConnectWalletModal from '@/components/ConnectWallet.vue';
 import VerificationModal from '@/components/VerificationModal.vue';
 import ShareTokenModal from '@/components/ShareTokenModal.vue';
 import ReportModal from '@/components/ReportModal.vue';
+import SetAlertModal from '@/components/SetAlertModal.vue';
 import Header from "@/components/Header.vue"
 import Footer from "@/components/Footer.vue"
 
@@ -1892,7 +1921,9 @@ import {
   ArrowDownRight,
   Lock,
   Info,
-  Share2
+  Share2,
+  Star,
+  BellRing
 } from "lucide-vue-next";
 
 const loading = ref(true)
@@ -2080,6 +2111,7 @@ const route = useRoute()
 const isWalletConnected = ref(false)
 const walletKey = ref('')
 const ConnectWalletModals = ref(false)
+const isAlertModalOpen = ref(false)
 const verificationModal = ref(false)
 const shareModalOpen = ref(false)
 const reportModalOpen = ref(false)
@@ -2089,6 +2121,25 @@ const selectedChartType = ref('line')
 const selectedStatsTimeframe = ref('24h')
 const historicalStats = ref(null)
 const historicalStatsLoading = ref(true)
+
+const isCurrentTokenStarred = computed(() => {
+  return isStarred(token.asset_code, token.issuer || issuerInput.value);
+});
+
+function handleToggleStar() {
+  const code = token.asset_code || route.query.asset_code || route.params.code;
+  const issuer = token.issuer || route.query.issuer || route.params.issuer || issuerInput.value;
+  if (!code || !issuer) return;
+
+  toggleStar({
+    asset_code: code,
+    asset_issuer: issuer,
+    name: token.name || token.project?.org_name || code,
+    image: token.image,
+    usd_price: token.usd_price || 0,
+    price_change_24h: historicalStats.value?.price_change_pct || token.price_change_24h || 0
+  }, walletKey.value);
+}
 
 const xlmPriceInUsd = computed(() => {
   if (token.usd_price && token.xlm_price && token.xlm_price > 0) {

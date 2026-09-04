@@ -101,6 +101,9 @@
 
           <!-- Connect Wallet -->
           <div class="flex items-center gap-3">
+            <!-- Watchlist & Price Alerts combined dropdown with notification bell -->
+            <HeaderWatchlistAlerts :wallet-key="walletPk" @open-wallet="OpenWalletModal" />
+
             <!-- Theme Toggle -->
             <button @click="toggleTheme" class="p-2 rounded-lg border border-theme-line bg-theme-panel hover:bg-theme-panel2 text-theme-dim hover:text-theme-ink transition-all duration-200 focus:outline-none flex items-center justify-center cursor-pointer shadow-sm hover:scale-[1.03] active:scale-[0.97]" aria-label="Toggle theme">
               <Sun v-if="theme === 'light'" class="w-4.5 h-4.5 text-amber-500" />
@@ -122,12 +125,12 @@
                     <p class="mt-1 text-xs font-mono text-theme-ink truncate" :title="walletPk">{{ walletPk }}</p>
                   </div>
                   <MenuItem v-slot="{ active }">
-                    <router-link :to="`/wallet/${walletPk}`" :class="[active ? 'bg-slate-900' : '', 'block w-full px-4 py-2.5 text-left text-xs text-slate-300 font-extrabold uppercase tracking-wider transition']">
+                    <router-link :to="`/wallet/${walletPk}`" :class="[active ? 'bg-theme-panel2' : '', 'block w-full px-4 py-2.5 text-left text-xs text-theme-ink font-extrabold uppercase tracking-wider transition']">
                       Wallet Intelligence
                     </router-link>
                   </MenuItem>
                   <MenuItem v-slot="{ active }">
-                    <button type="button" @click="handleDisconnectWallet" :class="[active ? 'bg-red-500/10 text-red-500' : 'text-red-500 dark:text-red-400', 'block w-full px-4 py-2.5 text-left text-xs font-extrabold uppercase tracking-wider transition']">
+                    <button type="button" @click="handleDisconnectWallet" :class="[active ? 'bg-rose-500/10 text-rose-500' : 'text-rose-500 dark:text-rose-400', 'block w-full px-4 py-2.5 text-left text-xs font-extrabold uppercase tracking-wider transition']">
                        Disconnect
                     </button>
                   </MenuItem>
@@ -138,7 +141,10 @@
         </div>
 
         <!-- Mobile Toggle -->
-        <div class="flex items-center lg:hidden gap-2.5">
+        <div class="flex items-center lg:hidden gap-2">
+          <!-- Watchlist & Price Alerts on mobile -->
+          <HeaderWatchlistAlerts :wallet-key="walletPk" @open-wallet="OpenWalletModal" />
+
           <!-- Theme Toggle (mobile) -->
           <button @click="toggleTheme" class="p-1.5 rounded-lg border border-theme-line bg-theme-panel text-theme-dim hover:text-theme-ink focus:outline-none flex items-center justify-center cursor-pointer" aria-label="Toggle theme">
             <Sun v-if="theme === 'light'" class="w-4 h-4 text-amber-500" />
@@ -294,6 +300,7 @@ import Swal from "sweetalert2";
 import { getCookie, disconnectWalletSession } from "../utils/utils.js";
 import BuyTkgModal from "@/components/BuyTkgModal.vue";
 import GenerateTokenModal from '@/components/GenerateTokenModal.vue';
+import HeaderWatchlistAlerts from '@/components/HeaderWatchlistAlerts.vue';
 
 const router = useRouter();
 const route = useRoute();
