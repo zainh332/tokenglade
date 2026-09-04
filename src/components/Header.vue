@@ -287,8 +287,10 @@ const toggleTheme = () => {
   localStorage.setItem('theme', newTheme);
   if (newTheme === 'light') {
     document.documentElement.classList.add('light');
+    document.documentElement.classList.remove('dark');
   } else {
     document.documentElement.classList.remove('light');
+    document.documentElement.classList.add('dark');
   }
   window.dispatchEvent(new CustomEvent('theme-changed', { detail: newTheme }));
 };
