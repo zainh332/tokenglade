@@ -893,3 +893,109 @@ html.light .tab-watchlist-active svg {
 html.light .tab-alerts-active svg {
   color: #0891b2 !important;
 }
+
+/* SET PRICE ALERT MODAL (LIGHT THEME VS DARK THEME) */
+html.light .set-alert-dialog,
+html.light .set-alert-dialog * {
+  --ink: #0F172A;
+}
+
+html.light .set-alert-dialog .alert-modal-title,
+html.light .set-alert-dialog .alert-token-name,
+html.light .set-alert-dialog .alert-live-xlm {
+  color: #0F172A !important;
+}
+
+html.light .set-alert-dialog .alert-modal-desc,
+html.light .set-alert-dialog .alert-market-label,
+html.light .set-alert-dialog .alert-live-usd {
+  color: #475569 !important;
+}
+
+/* Alert Condition section & buttons */
+html.light .set-alert-dialog .alert-label,
+html.light .set-alert-dialog .alert-condition-label,
+html.light .set-alert-dialog .alert-target-label,
+html.light .set-alert-dialog .alert-channels-label {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+html.light .set-alert-dialog .alert-condition-btn,
+html.light .set-alert-dialog .alert-condition-btn span {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+html.light .set-alert-dialog .alert-condition-btn.is-active,
+html.light .set-alert-dialog .alert-condition-btn.is-active span {
+  color: #020617 !important;
+  font-weight: 900 !important;
+}
+
+/* Price Denomination */
+html.light .set-alert-dialog .alert-denom-title {
+  color: #0F172A !important;
+  font-weight: 900 !important;
+}
+
+html.light .set-alert-dialog .alert-denom-desc {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+html.light .set-alert-dialog .alert-currency-btn {
+  color: #1E293B !important;
+  font-weight: 800 !important;
+}
+
+html.light .set-alert-dialog .alert-currency-btn.is-active {
+  color: #020617 !important;
+  font-weight: 900 !important;
+}
+
+/* Target Price, Current live ref, & numerical input */
+html.light .set-alert-dialog .alert-current-label {
+  color: #1E293B !important;
+  font-weight: 700 !important;
+}
+
+html.light .set-alert-dialog .alert-current-val {
+  color: #020617 !important;
+  font-weight: 900 !important;
+}
+
+html.light .set-alert-dialog .alert-input-prefix {
+  color: #0F172A !important;
+  font-weight: 900 !important;
+}
+
+html.light .set-alert-dialog .alert-target-input,
+html.light .set-alert-dialog input[type="number"] {
+  color: #020617 !important;
+  font-weight: 900 !important;
+}
+
+/* Presets */
+html.light .set-alert-dialog .alert-preset-btn {
+  color: #0F172A !important;
+  font-weight: 900 !important;
+  background-color: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+}
+
+html.light .set-alert-dialog .alert-preset-btn:hover {
+  color: #000000 !important;
+  background-color: #E2E8F0 !important;
+}
+
+/* Delivery Channels */
+html.light .set-alert-dialog .alert-channel-title {
+  color: #0F172A !important;
+  font-weight: 900 !important;
+}
+
+html.light .set-alert-dialog .alert-channel-desc {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
