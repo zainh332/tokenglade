@@ -114,7 +114,8 @@ const routes = [
         component: WalletIntelligence,
         meta: {
             title: "Wallet Intelligence | TokenGlade",
-            description: "Explore on-chain portfolio value, token holdings, historical balance trends, and trading activity for any Stellar wallet with TokenGlade Wallet Intelligence."
+            description: "Explore on-chain portfolio value, token holdings, historical balance trends, and trading activity for any Stellar wallet with TokenGlade Wallet Intelligence.",
+            robots: "noindex, follow"
         },
     },
     {
@@ -122,7 +123,8 @@ const routes = [
         component: TransactionDetails,
         meta: {
             title: "Transaction Details | TokenGlade",
-            description: "Explore on-chain operations, effects, fees, signatures, and cryptographic details for any Stellar transaction with TokenGlade."
+            description: "Explore on-chain operations, effects, fees, signatures, and cryptographic details for any Stellar transaction with TokenGlade.",
+            robots: "noindex, follow"
         },
     },
 ];
@@ -146,13 +148,13 @@ const router = createRouter({
     }
 });
 
-// Set the page title dynamically when the route changes
+// Set page title, description, and robots meta dynamically when the route changes
 router.beforeEach((to, from, next) => {
     if (to.meta && to.meta.title) {
         document.title = to.meta.title;
     }
 
-    // Optional: Set meta description if needed
+    // Set meta description
     if (to.meta && to.meta.description) {
         let descriptionTag = document.querySelector('meta[name="description"]');
         if (descriptionTag) {
@@ -163,6 +165,22 @@ router.beforeEach((to, from, next) => {
             descriptionTag.setAttribute('content', to.meta.description);
             document.head.appendChild(descriptionTag);
         }
+    }
+
+    // Set meta robots (noindex, follow for user-centric/low-SEO routes like wallets and txs)
+    let robotsTag = document.querySelector('meta[name="robots"]');
+    if (to.meta && to.meta.robots) {
+        if (robotsTag) {
+            robotsTag.setAttribute('content', to.meta.robots);
+        } else {
+            robotsTag = document.createElement('meta');
+            robotsTag.setAttribute('name', 'robots');
+            robotsTag.setAttribute('content', to.meta.robots);
+            document.head.appendChild(robotsTag);
+        }
+    } else if (robotsTag) {
+        // If the route has no specific robots constraint, remove the tag or restore default indexable
+        robotsTag.remove();
     }
 
     next();

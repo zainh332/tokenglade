@@ -2761,15 +2761,18 @@ EOT;
         $holders = number_format($insight['holders'] ?? 0, 0);
         $rating = number_format($insight['rating']['average'] ?? 7.5, 1);
 
-        $cardUrl = url("/t/{$issuer}/card.png");
-        $tokenUrl = url("/token-insight?asset_code={$code}&issuer={$issuer}");
+        $baseUrl = rtrim(config('sitemap.base_url', 'https://tokenglade.com'), '/');
+        $cardUrl = "{$baseUrl}/t/{$issuer}/card.png";
+        $canonicalUrl = "{$baseUrl}/t/{$issuer}";
 
         return view('welcome', [
             'meta' => [
                 'title' => "\${$code} Price, Live Charts & Token Insight | TokenGlade",
                 'description' => "Price: \${$usdPrice} USD ({$xlmPrice} XLM) | 24H Change: {$change}% | Liquidity: \${$liquidity} | Holders: {$holders} | Trust Score: {$rating}/10",
                 'image' => $cardUrl,
-                'url' => $tokenUrl,
+                'url' => $canonicalUrl,
+                'canonical' => $canonicalUrl,
+                'type' => 'website',
             ]
         ]);
     }
