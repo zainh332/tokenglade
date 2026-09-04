@@ -34,11 +34,8 @@
                     <BellRing v-else class="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
                   </div>
                   <div>
-                    <DialogTitle as="h3" class="text-base font-bold text-theme-ink tracking-tight flex items-center gap-2">
+                    <DialogTitle as="h3" class="text-base font-bold text-theme-ink tracking-tight">
                       <span>Set Price Alert</span>
-                      <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 uppercase">
-                        {{ token?.asset_code || 'TOKEN' }}
-                      </span>
                     </DialogTitle>
                     <p class="text-xs text-theme-dim font-sans mt-0.5">
                       Get notified when price or volatility triggers hit your targets.
@@ -238,47 +235,26 @@
                   
                   <div class="space-y-2">
                     <!-- Browser Web Push -->
-                    <div class="p-3 rounded-xl bg-theme-panel2 border border-theme-line space-y-2">
-                      <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2.5">
-                          <div class="w-7 h-7 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-600 dark:text-cyan-400 flex-shrink-0">
-                            <Globe class="w-3.5 h-3.5" />
-                          </div>
-                          <div>
-                            <div class="text-xs font-bold text-theme-ink flex items-center gap-1.5">
-                              <span>Browser Push Notifications</span>
-                              <span v-if="!isPushSupported" class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">HTTPS Required</span>
-                              <span v-else-if="pushPermissionStatus === 'granted'" class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Active</span>
-                              <span v-else-if="pushPermissionStatus === 'denied'" class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">Blocked</span>
-                              <span v-else class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">Optional</span>
-                            </div>
-                            <p class="text-[10px] text-theme-dim">Receive desktop/mobile system popup alerts when price hits target</p>
-                          </div>
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-theme-panel2 border border-theme-line">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-600 dark:text-cyan-400 flex-shrink-0">
+                          <Globe class="w-3.5 h-3.5" />
                         </div>
-
-                        <label class="relative inline-flex items-center cursor-pointer flex-shrink-0" :class="{ 'opacity-50 pointer-events-none': !isPushSupported }">
-                          <input
-                            type="checkbox"
-                            v-model="channelPush"
-                            :disabled="!isPushSupported"
-                            @change="handlePushToggle"
-                            class="sr-only peer"
-                          />
-                          <div class="w-9 h-5 bg-slate-300 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:shadow-sm after:transition-all peer-checked:bg-cyan-500 peer-checked:border-cyan-500"></div>
-                        </label>
+                        <div>
+                          <div class="text-xs font-bold text-theme-ink">Browser Push Notifications</div>
+                          <p class="text-[10px] text-theme-dim">Receive desktop/mobile system popup alerts when price hits target</p>
+                        </div>
                       </div>
 
-                      <!-- Blocked Helper Hint -->
-                      <div v-if="isPushSupported && pushPermissionStatus === 'denied'" class="text-[10.5px] p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 flex items-start gap-1.5">
-                        <span class="font-bold flex-shrink-0">ℹ Note:</span>
-                        <span>Your browser has blocked notifications for this site. To receive desktop popups, click the <strong>tune/lock icon</strong> in your browser's address bar and switch Notifications to <strong>Allow</strong>.</span>
-                      </div>
-                      
-                      <!-- Unsupported Helper Hint -->
-                      <div v-else-if="!isPushSupported" class="text-[10.5px] p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-start gap-1.5">
-                        <span class="font-bold flex-shrink-0">ℹ Info:</span>
-                        <span>Native push alerts require a secure HTTPS origin or supported browser. On-site Bell notifications will still alert you reliably in your header.</span>
-                      </div>
+                      <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                        <input
+                          type="checkbox"
+                          v-model="channelPush"
+                          @change="handlePushToggle"
+                          class="sr-only peer"
+                        />
+                        <div class="w-9 h-5 bg-slate-300 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:shadow-sm after:transition-all peer-checked:bg-cyan-500 peer-checked:border-cyan-500"></div>
+                      </label>
                     </div>
 
                     <!-- On-site Notification Bell -->
@@ -327,7 +303,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import {
   BellRing,
@@ -443,9 +419,9 @@ function setCurrency(curr) {
 function setConditionType(type) {
   conditionType.value = type;
   // Initialize default suggested target based on type
-  if (type === 'price_above' && activeReferencePrice.value > 0) {
+  if (type === 'price_above') {
     applyPreset(1.05);
-  } else if (type === 'price_below' && activeReferencePrice.value > 0) {
+  } else if (type === 'price_below') {
     applyPreset(0.95);
   } else if (type === 'pct_change_up') {
     targetValue.value = '10';
@@ -460,6 +436,8 @@ function applyPreset(multiplier) {
     if (base > 0) {
       const calc = base * multiplier;
       targetValue.value = calc < 0.0001 ? calc.toFixed(7) : (calc < 1 ? calc.toFixed(6) : calc.toFixed(4));
+    } else {
+      targetValue.value = '';
     }
   } else {
     targetValue.value = String(multiplier);
@@ -566,9 +544,9 @@ async function handleSubmitAlert() {
 }
 
 watch(
-  () => props.modelValue,
-  (val) => {
-    if (val) {
+  () => [props.modelValue, props.token?.asset_code, props.token?.issuer || props.token?.asset_issuer, props.token?.xlm_price, props.token?.usd_price],
+  ([isOpen]) => {
+    if (isOpen) {
       if (typeof Notification !== 'undefined') {
         pushPermissionStatus.value = Notification.permission;
         if (!isPushSupported || Notification.permission === 'denied') {
@@ -579,10 +557,13 @@ watch(
       } else if (!isPushSupported) {
         channelPush.value = false;
       }
-      if (activeReferencePrice.value > 0 && !targetValue.value) {
-        setConditionType('price_above');
-      }
+      conditionType.value = 'price_above';
+      selectedCurrency.value = 'xlm';
+      nextTick(() => {
+        applyPreset(1.05);
+      });
     }
-  }
+  },
+  { immediate: true }
 );
 </script>

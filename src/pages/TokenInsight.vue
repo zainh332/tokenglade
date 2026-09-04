@@ -257,10 +257,6 @@
                     <Share2 class="w-3 h-3 text-cyan-500" />
                     <span>Share / Embed</span>
                   </button>
-                  <button @click="isAlertModalOpen = true" class="px-2.5 py-0.5 bg-gradient-to-r from-purple-500/10 via-cyan-500/10 to-emerald-500/10 hover:from-purple-500/20 hover:to-cyan-500/20 border border-cyan-500/30 hover:border-cyan-400/60 rounded text-[11px] font-mono text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5 transition cursor-pointer select-none font-bold shadow-sm" title="Set Price & Volatility Alert">
-                    <BellRing class="w-3 h-3 text-cyan-500" />
-                    <span>Set Alert</span>
-                  </button>
                 </div>
               </div>
             </div>
