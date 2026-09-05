@@ -2771,6 +2771,7 @@ function fallbackCopy(onSuccess) {
 }
 
 async function fetchToken(retryCount = 0) {
+  activeTab.value = 'overview';
   const currentIssuer = issuerInput.value || route.query.issuer || route.params.issuer;
   const currentCode = route.query.asset_code || route.query.code || route.params.code;
   if (!currentIssuer && !currentCode) {
@@ -3146,6 +3147,7 @@ const handleWalletChanged = (event) => {
 }
 
 onMounted(async () => {
+  activeTab.value = 'overview'
   walletKey.value = getCookie('public_key') || ''
   isWalletConnected.value = !!walletKey.value
   window.addEventListener('tokenglade-wallet-changed', handleWalletChanged)
@@ -3166,6 +3168,7 @@ onUnmounted(() => {
 })
 
 onActivated(async () => {
+  activeTab.value = 'overview'
   walletKey.value = getCookie('public_key') || ''
   isWalletConnected.value = !!walletKey.value
   startLiveTradesPolling()
@@ -3173,6 +3176,12 @@ onActivated(async () => {
   if (chartInstance && chartContainer.value) {
     try {
       chartInstance.timeScale().fitContent()
+    } catch (e) {}
+  } else if (token.asset_code && !loading.value && !notFound.value) {
+    try {
+      await initChart()
+      await fetchChartData()
+      fetchOrderBook()
     } catch (e) {}
   }
 })
@@ -3184,6 +3193,7 @@ onDeactivated(() => {
 watch(
   [() => route.query, () => route.params],
   ([query, params]) => {
+    activeTab.value = 'overview';
     const issuer = query.issuer || params.issuer;
     const code = query.asset_code || query.code || params.code;
     if (issuer || code) {

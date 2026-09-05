@@ -65,8 +65,8 @@
                 </span>
               </div>
               
-              <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                <h1 class="text-xs sm:text-sm md:text-base font-mono text-theme-ink break-all font-semibold select-all" :title="address">
+              <div class="flex items-center gap-2 flex-nowrap">
+                <h1 class="text-xs sm:text-sm md:text-base font-mono text-theme-ink break-all font-semibold select-all min-w-0 flex-1 sm:flex-none" :title="address">
                   {{ address }}
                 </h1>
                 <button @click="copyAddress" class="p-1.5 sm:p-2 bg-theme-panel2 border border-theme-line rounded-lg hover:border-theme-line2 hover:text-theme-ink transition flex-shrink-0 cursor-pointer" title="Copy Address">
