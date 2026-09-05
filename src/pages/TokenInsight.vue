@@ -718,28 +718,29 @@
                 <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                   <!-- Bids (Buy Orders) -->
                   <div class="min-w-0">
-                    <div class="flex justify-between items-center mb-2 px-1 font-sans text-xs">
-                      <span class="font-medium text-emerald-500 dark:text-emerald-400 truncate">
-                        Bids ({{ orderBook.bids.length }}): <span class="font-mono text-emerald-400 font-semibold">{{ formatNumber(totalBidVolume) }} {{ token.asset_code }} / {{ formatNumber(totalBidValue) }} XLM</span>
-                      </span>
+                    <div class="flex flex-wrap items-center justify-between gap-1 mb-2 px-1 font-sans text-xs">
+                      <div class="font-medium text-emerald-500 dark:text-emerald-400">
+                        Bids ({{ orderBook.bids.length }}): 
+                        <span class="font-mono text-emerald-400 font-semibold ml-0.5">{{ formatOrderBookNumber(totalBidVolume) }} {{ token.asset_code }} · {{ formatOrderBookNumber(totalBidValue) }} XLM</span>
+                      </div>
                     </div>
-                    <div class="overflow-y-auto overflow-x-hidden max-h-[300px] border border-theme-line/60 rounded-lg">
-                      <table class="trades select-all w-full table-fixed">
+                    <div class="overflow-y-auto max-h-[300px] border border-theme-line/60 rounded-lg">
+                      <table class="trades select-all w-full">
                         <thead>
                           <tr class="sticky top-0 z-10 bg-theme-panel border-b border-theme-line shadow-sm">
-                            <th class="w-1/4 text-left px-1.5 sm:px-3 py-2 text-[10px] sm:text-xs">
+                            <th class="text-left px-1 sm:px-2.5 py-2 text-[10px] sm:text-xs whitespace-nowrap">
                               <span class="hidden sm:inline">Depth (XLM)</span>
                               <span class="sm:hidden">Depth</span>
                             </th>
-                            <th class="w-1/4 text-right px-1.5 sm:px-3 py-2 text-[10px] sm:text-xs">
+                            <th class="text-right px-1 sm:px-2.5 py-2 text-[10px] sm:text-xs whitespace-nowrap">
                               <span class="hidden sm:inline">Total (XLM)</span>
                               <span class="sm:hidden">Total</span>
                             </th>
-                            <th class="w-1/4 text-right px-1.5 sm:px-3 py-2 text-[10px] sm:text-xs">
+                            <th class="text-right px-1 sm:px-2.5 py-2 text-[10px] sm:text-xs whitespace-nowrap">
                               <span class="hidden sm:inline">Size ({{ token.asset_code }})</span>
                               <span class="sm:hidden">Size</span>
                             </th>
-                            <th class="w-1/4 text-right px-1.5 sm:px-3 py-2 text-[10px] sm:text-xs text-emerald-400 font-bold">
+                            <th class="text-right px-1 sm:px-2.5 py-2 text-[10px] sm:text-xs text-emerald-400 font-bold whitespace-nowrap">
                               <span class="hidden sm:inline">Price (XLM)</span>
                               <span class="sm:hidden">Price</span>
                             </th>
@@ -748,15 +749,15 @@
                         <tbody v-if="orderBook.bids.length">
                           <tr v-for="(bid, index) in orderBook.bids" :key="'bid-' + index"
                             :style="{ background: 'linear-gradient(to left, rgba(46, 212, 122, 0.09) 0%, rgba(46, 212, 122, 0.09) ' + ((getBidDepth(index) / totalBidDepth) * 100) + '%, transparent ' + ((getBidDepth(index) / totalBidDepth) * 100) + '%)' }">
-                            <td class="text-left px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs dim font-mono truncate">{{
-                              formatNumber(getBidDepth(index)) }}
+                            <td class="text-left px-1 sm:px-2.5 py-1.5 sm:py-2 text-[10px] sm:text-xs dim font-mono whitespace-nowrap">{{
+                              formatOrderBookNumber(getBidDepth(index)) }}
                             </td>
-                            <td class="text-right px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs dim font-mono truncate">{{
-                              formatPrice2Deci(bid.amount) }}
+                            <td class="text-right px-1 sm:px-2.5 py-1.5 sm:py-2 text-[10px] sm:text-xs dim font-mono whitespace-nowrap">{{
+                              formatOrderBookNumber(bid.amount) }}
                             </td>
-                            <td class="text-right px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono truncate">{{ formatNumber(calculateBidSize(bid)) }}
+                            <td class="text-right px-1 sm:px-2.5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono whitespace-nowrap">{{ formatOrderBookNumber(calculateBidSize(bid)) }}
                             </td>
-                            <td class="text-right px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs up font-bold font-mono truncate">{{
+                            <td class="text-right px-1 sm:px-2.5 py-1.5 sm:py-2 text-[10px] sm:text-xs up font-bold font-mono whitespace-nowrap">{{
                               parseFloat(bid.price).toFixed(6) }}</td>
                           </tr>
                         </tbody>
@@ -773,28 +774,29 @@
 
                   <!-- Asks (Sell Orders) -->
                   <div class="min-w-0">
-                    <div class="flex justify-between items-center mb-2 px-1 font-sans text-xs">
-                      <span class="font-medium text-rose-500 dark:text-rose-400 truncate">
-                        Asks ({{ orderBook.asks.length }}): <span class="font-mono text-rose-400 font-semibold">{{ formatNumber(totalAskVolume) }} {{ token.asset_code }} / {{ formatNumber(totalAskValue) }} XLM</span>
-                      </span>
+                    <div class="flex flex-wrap items-center justify-between gap-1 mb-2 px-1 font-sans text-xs">
+                      <div class="font-medium text-rose-500 dark:text-rose-400">
+                        Asks ({{ orderBook.asks.length }}): 
+                        <span class="font-mono text-rose-400 font-semibold ml-0.5">{{ formatOrderBookNumber(totalAskVolume) }} {{ token.asset_code }} · {{ formatOrderBookNumber(totalAskValue) }} XLM</span>
+                      </div>
                     </div>
-                    <div class="overflow-y-auto overflow-x-hidden max-h-[300px] border border-theme-line/60 rounded-lg">
-                      <table class="trades select-all w-full table-fixed">
+                    <div class="overflow-y-auto max-h-[300px] border border-theme-line/60 rounded-lg">
+                      <table class="trades select-all w-full">
                         <thead>
                           <tr class="sticky top-0 z-10 bg-theme-panel border-b border-theme-line shadow-sm">
-                            <th class="w-1/4 text-left px-1.5 sm:px-3 py-2 text-[10px] sm:text-xs text-rose-400 font-bold">
+                            <th class="text-left px-1 sm:px-2.5 py-2 text-[10px] sm:text-xs text-rose-400 font-bold whitespace-nowrap">
                               <span class="hidden sm:inline">Price (XLM)</span>
                               <span class="sm:hidden">Price</span>
                             </th>
-                            <th class="w-1/4 text-right px-1.5 sm:px-3 py-2 text-[10px] sm:text-xs">
+                            <th class="text-right px-1 sm:px-2.5 py-2 text-[10px] sm:text-xs whitespace-nowrap">
                               <span class="hidden sm:inline">Size ({{ token.asset_code }})</span>
                               <span class="sm:hidden">Size</span>
                             </th>
-                            <th class="w-1/4 text-right px-1.5 sm:px-3 py-2 text-[10px] sm:text-xs">
+                            <th class="text-right px-1 sm:px-2.5 py-2 text-[10px] sm:text-xs whitespace-nowrap">
                               <span class="hidden sm:inline">Total (XLM)</span>
                               <span class="sm:hidden">Total</span>
                             </th>
-                            <th class="w-1/4 text-right px-1.5 sm:px-3 py-2 text-[10px] sm:text-xs">
+                            <th class="text-right px-1 sm:px-2.5 py-2 text-[10px] sm:text-xs whitespace-nowrap">
                               <span class="hidden sm:inline">Depth (XLM)</span>
                               <span class="sm:hidden">Depth</span>
                             </th>
@@ -803,14 +805,14 @@
                         <tbody v-if="orderBook.asks.length">
                           <tr v-for="(ask, index) in orderBook.asks" :key="'ask-' + index"
                             :style="{ background: 'linear-gradient(to right, rgba(240, 97, 109, 0.09) 0%, rgba(240, 97, 109, 0.09) ' + ((getAskDepth(index) / totalAskDepth) * 100) + '%, transparent ' + ((getAskDepth(index) / totalAskDepth) * 100) + '%)' }">
-                            <td class="text-left px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs down font-bold font-mono truncate">{{
+                            <td class="text-left px-1 sm:px-2.5 py-1.5 sm:py-2 text-[10px] sm:text-xs down font-bold font-mono whitespace-nowrap">{{
                               parseFloat(ask.price).toFixed(6) }}</td>
-                            <td class="text-right px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono truncate">{{ formatNumber(ask.amount) }}</td>
-                            <td class="text-right px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs dim font-mono truncate">{{ formatPrice2Deci(ask.amount
+                            <td class="text-right px-1 sm:px-2.5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono whitespace-nowrap">{{ formatOrderBookNumber(ask.amount) }}</td>
+                            <td class="text-right px-1 sm:px-2.5 py-1.5 sm:py-2 text-[10px] sm:text-xs dim font-mono whitespace-nowrap">{{ formatOrderBookNumber(ask.amount
                               *
                               ask.price) }}</td>
-                            <td class="text-right px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs dim font-mono truncate">{{
-                              formatPrice2Deci(getAskDepth(index)) }}
+                            <td class="text-right px-1 sm:px-2.5 py-1.5 sm:py-2 text-[10px] sm:text-xs dim font-mono whitespace-nowrap">{{
+                              formatOrderBookNumber(getAskDepth(index)) }}
                             </td>
                           </tr>
                         </tbody>
@@ -2764,6 +2766,17 @@ function formatCompactNumber(num) {
   return val.toFixed(0);
 }
 
+function formatOrderBookNumber(num) {
+  const val = parseFloat(num || 0);
+  if (!val || isNaN(val)) return '0';
+  if (val >= 1e9) return (val / 1e9).toFixed(2).replace(/\.?0+$/, '') + 'B';
+  if (val >= 1e6) return (val / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M';
+  if (val >= 1e3) return (val / 1e3).toFixed(1).replace(/\.?0+$/, '') + 'K';
+  if (val >= 1) return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(val);
+  if (val >= 0.0001) return val.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+  return val.toFixed(6);
+}
+
 function copyIssuer() {
   if (!token.issuer) return
   const success = () => {
@@ -4408,6 +4421,16 @@ table.trades tr:hover td {
 
   .st .v {
     font-size: 14px !important;
+  }
+
+  table.trades th {
+    padding: 6px 6px !important;
+    font-size: 10px !important;
+  }
+
+  table.trades td {
+    padding: 6px 6px !important;
+    font-size: 11px !important;
   }
 }
 
