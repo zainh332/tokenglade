@@ -709,42 +709,54 @@
                 <span class="tag">Spread: <span class="font-mono text-slate-300 font-medium">{{ spreadPercent }}%</span></span>
               </div>
 
-              <div style="padding: 20px;">
+              <div class="p-3 sm:p-5">
                 <div v-if="orderBook.loading" class="flex flex-col items-center justify-center py-12">
                   <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-cyan-500"></div>
                   <span class="text-xs text-slate-400 font-bold mt-2">Loading DEX order book...</span>
                 </div>
 
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                   <!-- Bids (Buy Orders) -->
-                  <div>
+                  <div class="min-w-0">
                     <div class="flex justify-between items-center mb-2 px-1 font-sans text-xs">
-                      <span class="font-medium text-emerald-500 dark:text-emerald-400">
+                      <span class="font-medium text-emerald-500 dark:text-emerald-400 truncate">
                         Bids ({{ orderBook.bids.length }}): <span class="font-mono text-emerald-400 font-semibold">{{ formatNumber(totalBidVolume) }} {{ token.asset_code }} / {{ formatNumber(totalBidValue) }} XLM</span>
                       </span>
                     </div>
-                    <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
-                      <table class="trades select-all">
+                    <div class="overflow-y-auto overflow-x-hidden max-h-[300px] border border-theme-line/60 rounded-lg">
+                      <table class="trades select-all w-full table-fixed">
                         <thead>
-                          <tr>
-                            <th style="text-align: left; padding: 6px 12px;">Depth (XLM)</th>
-                            <th style="text-align: right; padding: 6px 12px;">Total (XLM)</th>
-                            <th style="text-align: right; padding: 6px 12px;">Size ({{ token.asset_code }})</th>
-                            <th style="text-align: right; padding: 6px 12px; color: var(--up);">Price (XLM)</th>
+                          <tr class="sticky top-0 z-10 bg-theme-panel border-b border-theme-line shadow-sm">
+                            <th class="w-1/4 text-left px-1.5 sm:px-3 py-2 text-[10px] sm:text-xs">
+                              <span class="hidden sm:inline">Depth (XLM)</span>
+                              <span class="sm:hidden">Depth</span>
+                            </th>
+                            <th class="w-1/4 text-right px-1.5 sm:px-3 py-2 text-[10px] sm:text-xs">
+                              <span class="hidden sm:inline">Total (XLM)</span>
+                              <span class="sm:hidden">Total</span>
+                            </th>
+                            <th class="w-1/4 text-right px-1.5 sm:px-3 py-2 text-[10px] sm:text-xs">
+                              <span class="hidden sm:inline">Size ({{ token.asset_code }})</span>
+                              <span class="sm:hidden">Size</span>
+                            </th>
+                            <th class="w-1/4 text-right px-1.5 sm:px-3 py-2 text-[10px] sm:text-xs text-emerald-400 font-bold">
+                              <span class="hidden sm:inline">Price (XLM)</span>
+                              <span class="sm:hidden">Price</span>
+                            </th>
                           </tr>
                         </thead>
                         <tbody v-if="orderBook.bids.length">
                           <tr v-for="(bid, index) in orderBook.bids" :key="'bid-' + index"
                             :style="{ background: 'linear-gradient(to left, rgba(46, 212, 122, 0.09) 0%, rgba(46, 212, 122, 0.09) ' + ((getBidDepth(index) / totalBidDepth) * 100) + '%, transparent ' + ((getBidDepth(index) / totalBidDepth) * 100) + '%)' }">
-                            <td style="text-align: left; padding: 7px 12px;" class="dim">{{
+                            <td class="text-left px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs dim font-mono truncate">{{
                               formatNumber(getBidDepth(index)) }}
                             </td>
-                            <td style="text-align: right; padding: 7px 12px;" class="dim">{{
+                            <td class="text-right px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs dim font-mono truncate">{{
                               formatPrice2Deci(bid.amount) }}
                             </td>
-                            <td style="text-align: right; padding: 7px 12px;">{{ formatNumber(calculateBidSize(bid)) }}
+                            <td class="text-right px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono truncate">{{ formatNumber(calculateBidSize(bid)) }}
                             </td>
-                            <td style="text-align: right; padding: 7px 12px;" class="up font-bold">{{
+                            <td class="text-right px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs up font-bold font-mono truncate">{{
                               parseFloat(bid.price).toFixed(6) }}</td>
                           </tr>
                         </tbody>
@@ -760,32 +772,44 @@
                   </div>
 
                   <!-- Asks (Sell Orders) -->
-                  <div>
+                  <div class="min-w-0">
                     <div class="flex justify-between items-center mb-2 px-1 font-sans text-xs">
-                      <span class="font-medium text-rose-500 dark:text-rose-400">
+                      <span class="font-medium text-rose-500 dark:text-rose-400 truncate">
                         Asks ({{ orderBook.asks.length }}): <span class="font-mono text-rose-400 font-semibold">{{ formatNumber(totalAskVolume) }} {{ token.asset_code }} / {{ formatNumber(totalAskValue) }} XLM</span>
                       </span>
                     </div>
-                    <div class="overflow-x-auto overflow-y-auto max-h-[300px] pr-1">
-                      <table class="trades select-all">
+                    <div class="overflow-y-auto overflow-x-hidden max-h-[300px] border border-theme-line/60 rounded-lg">
+                      <table class="trades select-all w-full table-fixed">
                         <thead>
-                          <tr>
-                            <th style="text-align: left; padding: 6px 12px; color: var(--down);">Price (XLM)</th>
-                            <th style="text-align: right; padding: 6px 12px;">Size ({{ token.asset_code }})</th>
-                            <th style="text-align: right; padding: 6px 12px;">Total (XLM)</th>
-                            <th style="text-align: right; padding: 6px 12px;">Depth (XLM)</th>
+                          <tr class="sticky top-0 z-10 bg-theme-panel border-b border-theme-line shadow-sm">
+                            <th class="w-1/4 text-left px-1.5 sm:px-3 py-2 text-[10px] sm:text-xs text-rose-400 font-bold">
+                              <span class="hidden sm:inline">Price (XLM)</span>
+                              <span class="sm:hidden">Price</span>
+                            </th>
+                            <th class="w-1/4 text-right px-1.5 sm:px-3 py-2 text-[10px] sm:text-xs">
+                              <span class="hidden sm:inline">Size ({{ token.asset_code }})</span>
+                              <span class="sm:hidden">Size</span>
+                            </th>
+                            <th class="w-1/4 text-right px-1.5 sm:px-3 py-2 text-[10px] sm:text-xs">
+                              <span class="hidden sm:inline">Total (XLM)</span>
+                              <span class="sm:hidden">Total</span>
+                            </th>
+                            <th class="w-1/4 text-right px-1.5 sm:px-3 py-2 text-[10px] sm:text-xs">
+                              <span class="hidden sm:inline">Depth (XLM)</span>
+                              <span class="sm:hidden">Depth</span>
+                            </th>
                           </tr>
                         </thead>
                         <tbody v-if="orderBook.asks.length">
                           <tr v-for="(ask, index) in orderBook.asks" :key="'ask-' + index"
                             :style="{ background: 'linear-gradient(to right, rgba(240, 97, 109, 0.09) 0%, rgba(240, 97, 109, 0.09) ' + ((getAskDepth(index) / totalAskDepth) * 100) + '%, transparent ' + ((getAskDepth(index) / totalAskDepth) * 100) + '%)' }">
-                            <td style="text-align: left; padding: 7px 12px;" class="down font-bold">{{
+                            <td class="text-left px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs down font-bold font-mono truncate">{{
                               parseFloat(ask.price).toFixed(6) }}</td>
-                            <td style="text-align: right; padding: 7px 12px;">{{ formatNumber(ask.amount) }}</td>
-                            <td style="text-align: right; padding: 7px 12px;" class="dim">{{ formatPrice2Deci(ask.amount
+                            <td class="text-right px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono truncate">{{ formatNumber(ask.amount) }}</td>
+                            <td class="text-right px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs dim font-mono truncate">{{ formatPrice2Deci(ask.amount
                               *
                               ask.price) }}</td>
-                            <td style="text-align: right; padding: 7px 12px;" class="dim">{{
+                            <td class="text-right px-1.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs dim font-mono truncate">{{
                               formatPrice2Deci(getAskDepth(index)) }}
                             </td>
                           </tr>
@@ -4236,6 +4260,10 @@ table.trades th {
   padding: 8px 12px;
   font-weight: 600;
   border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  z-index: 10;
 }
 
 table.trades th:first-child {
