@@ -360,18 +360,14 @@
               </div>
               <div class="sub font-mono font-semibold"
                 :class="(historicalStats?.volume_change_pct || 0) >= 0 ? 'up' : 'down'">
-                <template v-if="loading || historicalStatsLoading"><span
+                <template v-if="loading || historicalStatsLoading || (token.volume_24h === undefined && liquidityLoading)"><span
                     class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 <template v-else-if="historicalStats">
                   {{ (historicalStats.volume_change_pct || 0) >= 0 ? '▲' : '▼' }} {{ (historicalStats.volume_change_pct
                     || 0) >= 0 ? '+' : '' }}{{ historicalStats.volume_change_pct }}% ({{
                     selectedStatsTimeframe.toUpperCase() }})
                 </template>
-                <template v-else-if="token.price_change_24h">
-                  {{ token.price_change_24h >= 0 ? '▲' : '▼' }} {{ token.price_change_24h >= 0 ? '+' : '' }}18%
-                </template>
-                <template v-else><span
-                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                <template v-else>▲ +0%</template>
               </div>
             </div>
 
@@ -396,18 +392,14 @@
               </div>
               <div class="sub font-mono font-semibold"
                 :class="(historicalStats?.liquidity_change_pct || 0) >= 0 ? 'up' : 'down'">
-                <template v-if="loading || historicalStatsLoading"><span
+                <template v-if="loading || liquidityLoading || historicalStatsLoading"><span
                     class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 <template v-else-if="historicalStats">
                   {{ (historicalStats.liquidity_change_pct || 0) >= 0 ? '▲' : '▼' }} {{ (historicalStats.liquidity_change_pct
                     || 0) >= 0 ? '+' : '' }}{{ historicalStats.liquidity_change_pct }}% ({{
                     selectedStatsTimeframe.toUpperCase() }})
                 </template>
-                <template v-else-if="token.price_change_24h">
-                  {{ token.price_change_24h >= 0 ? '▲' : '▼' }} {{ token.price_change_24h >= 0 ? '+' : '' }}12%
-                </template>
-                <template v-else><span
-                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                <template v-else>▲ +0%</template>
               </div>
             </div>
 
