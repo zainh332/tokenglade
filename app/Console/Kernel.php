@@ -25,7 +25,10 @@ class Kernel extends ConsoleKernel
             ->runInBackground();
 
         $schedule->command('staking:reward')->hourly();
-        $schedule->command('tokens:snapshot')->hourly();
+        $schedule->command('tokens:snapshot')
+            ->everyMinute()
+            ->withoutOverlapping()
+            ->runInBackground();
         $schedule->command('tokens:track-whale-activity')->everyThirtyMinutes();
 
         // LP rewards (controlled execution)
