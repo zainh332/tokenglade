@@ -1607,7 +1607,6 @@ EOT;
                         'liquidity_overview' => null,
                         'token_domain'       => null,
                     ];
-                }
             }
 
             $isDbVerified = false;
