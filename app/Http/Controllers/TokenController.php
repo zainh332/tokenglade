@@ -2573,6 +2573,17 @@ EOT;
             ? round((($latestNativeLiq - $pastNativeLiq) / $pastNativeLiq) * 100, 2)
             : 0;
 
+        $pastMarketCap = ($past->price_usd > 0 && $past->circulating_supply > 0)
+            ? ($past->price_usd * $past->circulating_supply)
+            : 0;
+        $latestMarketCap = ($latest->price_usd > 0 && $latest->circulating_supply > 0)
+            ? ($latest->price_usd * $latest->circulating_supply)
+            : 0;
+
+        $market_cap_change_pct = ($pastMarketCap > 0 && $latestMarketCap > 0)
+            ? round((($latestMarketCap - $pastMarketCap) / $pastMarketCap) * 100, 2)
+            : $price_change_pct;
+
         $stats = [
             'timeframe' => $timeframe,
             'current_holders' => $latest->holders,
@@ -2586,7 +2597,7 @@ EOT;
             'pools_change' => $latest->pools_count - $past->pools_count,
             'liquidity_change_pct' => $liquidity_change_pct,
             'price_change_pct' => $price_change_pct,
-            'market_cap_change_pct' => $price_change_pct,
+            'market_cap_change_pct' => $market_cap_change_pct,
             'circulating_supply_change_pct' => $past->circulating_supply > 0
                 ? round((($latest->circulating_supply - $past->circulating_supply) / $past->circulating_supply) * 100, 2)
                 : 0,

@@ -422,14 +422,25 @@
                 <template v-else>$0</template>
               </div>
               <div class="sub font-mono dim">
-                Fully Diluted
-              </div>
-              <div class="sub font-mono font-semibold text-cyan-400">
                 <template v-if="loading"><span
                     class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
-                <template v-else>
-                  {{ circulatingSupplyRatio }}% Circulating
+                <template v-else-if="token.usd_price && token.total_supply && xlmPriceInUsd">
+                  ≈ {{ formatNumber(((token.usd_price || 0) * (token.total_supply || 0)) / xlmPriceInUsd) }} XLM
                 </template>
+                <template v-else>≈ 0 XLM</template>
+              </div>
+              <div class="sub font-mono font-semibold"
+                :class="(historicalStats?.market_cap_change_pct ?? historicalStats?.price_change_pct ?? token.price_change_24h ?? 0) >= 0 ? 'up' : 'down'">
+                <template v-if="loading || historicalStatsLoading"><span
+                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="historicalStats">
+                  {{ (historicalStats.market_cap_change_pct ?? historicalStats.price_change_pct ?? 0) >= 0 ? '▲' : '▼' }} {{ (historicalStats.market_cap_change_pct ?? historicalStats.price_change_pct ?? 0) >= 0 ? '+' : '' }}{{ historicalStats.market_cap_change_pct ?? historicalStats.price_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase() }})
+                </template>
+                <template v-else-if="token.price_change_24h">
+                  {{ token.price_change_24h >= 0 ? '▲' : '▼' }} {{ token.price_change_24h >= 0 ? '+' : '' }}{{
+                    token.price_change_24h }}% (24H)
+                </template>
+                <template v-else>▲ +0%</template>
               </div>
             </div>
 
@@ -2437,7 +2448,7 @@ const changeStatsTimeframe = (tf) => {
 const chartContainer = ref(null)
 const chartData = ref([])
 
-const token = reactive({
+const createDefaultTokenState = () => ({
   name: "",
   asset_code: "",
   is_minted_on_tokenglade: false,
@@ -2454,11 +2465,12 @@ const token = reactive({
   conditions: null,
   usd_price: 0,
   xlm_price: 0,
-  price_change_24h: 2.4,
+  price_change_24h: 0,
   volume_24h: undefined,
-  total_supply: 10000000,
+  total_supply: 0,
   top_holders: [],
   project_holders: [],
+  transactions: [],
   activity: {
     total_trades: 0,
     traded_volume: 0,
@@ -2476,6 +2488,26 @@ const token = reactive({
     pools: []
   }
 })
+
+const token = reactive(createDefaultTokenState())
+
+function resetTokenState() {
+  Object.keys(token).forEach(key => {
+    delete token[key]
+  })
+  Object.assign(token, createDefaultTokenState())
+  orderBook.bids = []
+  orderBook.asks = []
+  orderBook.loading = true
+  chartData.value = []
+  historicalStats.value = null
+  largeEvents.value = []
+  votes.value = {
+    trusted: 0,
+    suspicious: 0,
+    scam: 0
+  }
+}
 
 const activeCandle = ref({
   open: null,
@@ -2809,12 +2841,15 @@ function fallbackCopy(onSuccess) {
 
 async function fetchToken(retryCount = 0) {
   activeTab.value = 'overview';
-  const currentIssuer = issuerInput.value || route.query.issuer || route.params.issuer;
+  const currentIssuer = route.query.issuer || route.params.issuer || issuerInput.value;
   const currentCode = route.query.asset_code || route.query.code || route.params.code;
   if (!currentIssuer && !currentCode) {
     loading.value = false;
     notFound.value = true;
     return;
+  }
+  if (retryCount === 0) {
+    resetTokenState();
   }
   loading.value = true
   imageError.value = false
@@ -2850,7 +2885,7 @@ async function fetchToken(retryCount = 0) {
     }
 
     Object.assign(token, res.data)
-    if (token.issuer && !issuerInput.value) {
+    if (token.issuer) {
       issuerInput.value = token.issuer;
     }
 
@@ -3231,12 +3266,10 @@ watch(
   [() => route.query, () => route.params],
   ([query, params]) => {
     activeTab.value = 'overview';
-    const issuer = query.issuer || params.issuer;
-    const code = query.asset_code || query.code || params.code;
+    const issuer = query.issuer || params.issuer || '';
+    const code = query.asset_code || query.code || params.code || '';
+    issuerInput.value = issuer;
     if (issuer || code) {
-      if (issuer) {
-        issuerInput.value = issuer;
-      }
       fetchToken();
       startLiveTradesPolling();
     } else {

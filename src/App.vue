@@ -1,9 +1,9 @@
 <template>
   <div>
     <!-- <beta-ribbon></beta-ribbon> -->
-    <router-view v-slot="{ Component }">
-      <keep-alive include="Home,TokenInsight">
-        <component :is="Component" />
+    <router-view v-slot="{ Component, route }">
+      <keep-alive include="Home">
+        <component :is="Component" :key="route.fullPath" />
       </keep-alive>
     </router-view>
   </div>
