@@ -848,7 +848,7 @@
                     </tr>
                   </thead>
                   <tbody v-if="token.transactions && token.transactions.length">
-                    <tr v-for="(tx, i) in (token.transactions || []).slice(0, 30)" :key="i">
+                    <tr v-for="(tx, i) in (token.transactions || []).slice(0, 60)" :key="i">
                       <td><span class="side" :class="tx.side === 'buy' ? 'buy' : 'sell'">{{ tx.side.toUpperCase()
                           }}</span></td>
                       <td>{{ formatPrice2Deci(tx.amount) }} {{ token.asset_code }}</td>
