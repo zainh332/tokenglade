@@ -653,7 +653,7 @@
                 </div>
                 <p class="text-[10px] text-slate-400 font-medium normal-case leading-relaxed"
                   style="margin: 2px 0 0 0;">
-                  Live ratio and trade size are based on the last 30 DEX fills.
+                  Live ratio and trade size are based on the last 60 DEX fills.
                 </p>
               </div>
               <div class="expo-stats">
@@ -2546,7 +2546,7 @@ const scopulyTradeUrl = computed(() => {
 });
 
 const buySellVolume = computed(() => {
-  const txs = token.transactions || [];
+  const txs = (token.transactions || []).slice(0, 60);
   let buyVol = 0;
   let sellVol = 0;
 
@@ -2588,7 +2588,7 @@ const buySellRatioText = computed(() => {
 });
 
 const avgTradeSizeUsd = computed(() => {
-  const txs = token.transactions || [];
+  const txs = (token.transactions || []).slice(0, 60);
   if (!txs.length) return null;
   let totalUsd = 0;
   const xlmUsd = token.usd_price && token.xlm_price ? (token.usd_price / token.xlm_price) : 0.12;
