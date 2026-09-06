@@ -205,7 +205,8 @@
           <span>&middot;</span>
           <span>ASSET INSIGHT</span>
           <span>&middot;</span>
-          <span class="text-cyan-400 font-semibold">{{ token.asset_code }}</span>
+          <span v-if="loading" class="text-cyan-400 animate-pulse">Loading...</span>
+          <span v-else class="text-cyan-400 font-semibold">{{ token.asset_code }}</span>
         </div>
 
         <!-- ASSET HEADER CARD -->
@@ -216,15 +217,19 @@
               <!-- Icon -->
               <div class="token-ico select-none flex-shrink-0">
                 <img v-if="token.image && !imageError" :src="token.image" @error="imageError = true" class="w-full h-full object-cover rounded-xl" />
+                <span v-else-if="loading" class="text-cyan-400 font-bold uppercase animate-pulse">...</span>
                 <span v-else class="text-cyan-400 font-bold uppercase">{{ getTokenInitials(token.asset_code) }}</span>
               </div>
 
               <!-- Name and Issuer info -->
               <div class="name-col min-w-0">
                 <div class="name-row flex items-center gap-2">
-                  <h1 class="truncate">{{ token.is_minted_on_tokenglade ? (token.name || token.project?.org_name ||
-                    'Token Detail') : (token.project?.org_name || token.name || 'Token Detail') }}</h1>
+                  <h1 class="truncate">
+                    <template v-if="loading"><span class="text-slate-500 font-normal animate-pulse">Loading Asset Details...</span></template>
+                    <template v-else>{{ token.is_minted_on_tokenglade ? (token.name || token.project?.org_name || token.asset_code) : (token.project?.org_name || token.name || token.asset_code) }}</template>
+                  </h1>
                   <button
+                    v-if="!loading"
                     @click="handleToggleStar"
                     class="p-1 rounded-lg text-theme-dim hover:text-amber-500 transition cursor-pointer select-none flex-shrink-0"
                     :title="isCurrentTokenStarred ? 'Remove from Watchlist' : 'Add to Watchlist'"
@@ -235,28 +240,36 @@
                       :class="isCurrentTokenStarred ? 'text-amber-500 fill-amber-500' : 'text-theme-dim hover:text-amber-500'"
                     />
                   </button>
-                  <span class="chip sym uppercase">{{ token.asset_code }}</span>
-                  <span v-if="isVerified" class="chip verified">✓ Verified</span>
-                  <span v-else-if="isVerificationPending" class="chip"
-                    style="color:var(--pink);border-color:rgba(240,24,156,0.25)">Pending</span>
-                  <button v-else @click="verificationModal = true"
-                    class="claim-btn select-none cursor-pointer transition">Claim & Verify Project</button>
+                  <span v-if="loading" class="chip sym animate-pulse">...</span>
+                  <span v-else class="chip sym uppercase">{{ token.asset_code }}</span>
+                  <template v-if="!loading">
+                    <span v-if="isVerified" class="chip verified">✓ Verified</span>
+                    <span v-else-if="isVerificationPending" class="chip"
+                      style="color:var(--pink);border-color:rgba(240,24,156,0.25)">Pending</span>
+                    <button v-else @click="verificationModal = true"
+                      class="claim-btn select-none cursor-pointer transition">Claim & Verify Project</button>
+                  </template>
                 </div>
 
                 <div class="issuer flex items-center gap-2 flex-wrap mt-2 font-mono text-xs">
                   <span class="text-theme-faint">Issuer:</span>
-                  <router-link :to="`/wallet/${token.issuer}`"
-                      class="text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 hover:underline transition-colors font-semibold select-all" :title="token.issuer">
-                    {{ shorten(token.issuer) }}
-                  </router-link>
-                  <button @click="copyIssuer" class="px-2.5 py-0.5 bg-theme-panel2 border border-theme-line hover:border-theme-line2 rounded text-[11px] font-mono text-theme-ink flex items-center gap-1 transition cursor-pointer select-none">
-                    <span v-if="copied" class="text-emerald-400 font-bold">✓ Copied</span>
-                    <span v-else class="text-theme-dim">Copy Address</span>
-                  </button>
-                  <button @click="shareModalOpen = true" class="px-2.5 py-0.5 bg-gradient-to-r from-purple-500/10 via-cyan-500/10 to-emerald-500/10 hover:from-purple-500/20 hover:to-cyan-500/20 border border-cyan-500/30 hover:border-cyan-400/60 rounded text-[11px] font-mono text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5 transition cursor-pointer select-none font-bold shadow-sm" title="Generate Shareable Price Card / Embed Widget">
-                    <Share2 class="w-3 h-3 text-cyan-500" />
-                    <span>Share / Embed</span>
-                  </button>
+                  <template v-if="loading">
+                    <span class="text-slate-500 animate-pulse">Loading issuer address...</span>
+                  </template>
+                  <template v-else>
+                    <router-link :to="`/wallet/${token.issuer}`"
+                        class="text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 hover:underline transition-colors font-semibold select-all" :title="token.issuer">
+                      {{ shorten(token.issuer) }}
+                    </router-link>
+                    <button @click="copyIssuer" class="px-2.5 py-0.5 bg-theme-panel2 border border-theme-line hover:border-theme-line2 rounded text-[11px] font-mono text-theme-ink flex items-center gap-1 transition cursor-pointer select-none">
+                      <span v-if="copied" class="text-emerald-400 font-bold">✓ Copied</span>
+                      <span v-else class="text-theme-dim">Copy Address</span>
+                    </button>
+                    <button @click="shareModalOpen = true" class="px-2.5 py-0.5 bg-gradient-to-r from-purple-500/10 via-cyan-500/10 to-emerald-500/10 hover:from-purple-500/20 hover:to-cyan-500/20 border border-cyan-500/30 hover:border-cyan-400/60 rounded text-[11px] font-mono text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5 transition cursor-pointer select-none font-bold shadow-sm" title="Generate Shareable Price Card / Embed Widget">
+                      <Share2 class="w-3 h-3 text-cyan-500" />
+                      <span>Share / Embed</span>
+                    </button>
+                  </template>
                 </div>
               </div>
             </div>
@@ -265,21 +278,23 @@
             <div class="trust">
               <div class="lbl">
                 <div class="k">Trust Score</div>
-                <div class="v uppercase"
+                <div v-if="loading || token.rating === null" class="v text-slate-500 animate-pulse text-xs font-normal">Analyzing...</div>
+                <div v-else class="v uppercase"
                   :class="token.rating?.average >= 8 ? 'up' : (token.rating?.average >= 5 ? 'dim' : 'down')">{{
                   healthLabel.text }} Risk</div>
               </div>
               <div class="gauge">
                 <svg viewBox="0 0 56 56" width="56" height="56">
                   <circle cx="28" cy="28" r="24" fill="none" stroke="#1a212c" stroke-width="5" />
-                  <circle cx="28" cy="28" r="24" fill="none"
+                  <circle v-if="!loading && token.rating !== null" cx="28" cy="28" r="24" fill="none"
                     :stroke="token.rating?.average >= 8 ? '#2ED47A' : (token.rating?.average >= 5 ? '#FF8A3D' : '#F0616D')"
                     stroke-width="5" stroke-linecap="round" :stroke-dasharray="150.8"
                     :stroke-dashoffset="150.8 - (150.8 * (token.rating?.average ?? 7.5)) / 10"
                     transform="rotate(-90 28 28)" />
                 </svg>
-                <b :class="token.rating?.average >= 8 ? 'up' : (token.rating?.average >= 5 ? 'dim' : 'down')">{{
-                  token.rating?.average?.toFixed(1) ?? '7.5' }}</b>
+                <b v-if="loading || token.rating === null" class="text-slate-500 animate-pulse text-xs font-normal">—</b>
+                <b v-else :class="token.rating?.average >= 8 ? 'up' : (token.rating?.average >= 5 ? 'dim' : 'down')">{{
+                  token.rating?.average ? token.rating.average.toFixed(1) : '7.5' }}</b>
               </div>
             </div>
           </div>
@@ -307,13 +322,13 @@
             <div class="st flex flex-col justify-between">
               <div class="k">Price</div>
               <div class="v font-mono">
-                <template v-if="loading"><span
+                <template v-if="loading || token.xlm_price === null"><span
                     class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                 <template v-else-if="token.xlm_price">{{ formatXlmPrice(token.xlm_price) }} XLM</template>
                 <template v-else>0 XLM</template>
               </div>
               <div class="sub font-mono dim">
-                <template v-if="loading"><span
+                <template v-if="loading || token.usd_price === null"><span
                     class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 <template v-else-if="token.usd_price">≈ ${{ formatPrice(token.usd_price) }}</template>
                 <template v-else>≈ $0</template>
@@ -339,28 +354,32 @@
             <div class="st flex flex-col justify-between">
               <div class="k">24H Volume</div>
               <div class="v font-mono">
+                <template v-if="loading || (token.volume_24h === undefined && !token.liquidity_overview?.lp_volume_24h && liquidityLoading)"><span
+                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                 <template
-                  v-if="token.volume_24h !== undefined ? token.volume_24h : token.liquidity_overview?.lp_volume_24h">
+                  v-else-if="token.volume_24h !== undefined ? token.volume_24h : token.liquidity_overview?.lp_volume_24h">
                   {{ formatNumber((token.volume_24h !== undefined ? token.volume_24h :
                     token.liquidity_overview?.lp_volume_24h) / xlmPriceInUsd) }} XLM
                 </template>
-                <template v-else-if="loading || liquidityLoading"><span
+                <template v-else-if="liquidityLoading"><span
                     class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                 <template v-else>0 XLM</template>
               </div>
               <div class="sub font-mono dim">
+                <template v-if="loading || (token.volume_24h === undefined && !token.liquidity_overview?.lp_volume_24h && liquidityLoading)"><span
+                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 <template
-                  v-if="token.volume_24h !== undefined ? token.volume_24h : token.liquidity_overview?.lp_volume_24h">
+                  v-else-if="token.volume_24h !== undefined ? token.volume_24h : token.liquidity_overview?.lp_volume_24h">
                   ≈ ${{ formatNumber(token.volume_24h !== undefined ? token.volume_24h :
                     token.liquidity_overview?.lp_volume_24h) }}
                 </template>
-                <template v-else-if="loading || liquidityLoading"><span
+                <template v-else-if="liquidityLoading"><span
                     class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 <template v-else>≈ $0</template>
               </div>
               <div class="sub font-mono font-semibold"
                 :class="(historicalStats?.volume_change_pct || 0) >= 0 ? 'up' : 'down'">
-                <template v-if="loading || historicalStatsLoading || (token.volume_24h === undefined && liquidityLoading)"><span
+                <template v-if="loading || historicalStatsLoading"><span
                     class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 <template v-else-if="historicalStats">
                   {{ (historicalStats.volume_change_pct || 0) >= 0 ? '▲' : '▼' }} {{ (historicalStats.volume_change_pct
@@ -375,18 +394,22 @@
             <div class="st flex flex-col justify-between">
               <div class="k">Liquidity</div>
               <div class="v font-mono">
-                <template v-if="token.liquidity_overview?.total_tvl || token.liquidity_tvl">
+                <template v-if="loading || liquidityLoading || (!token.liquidity_overview?.total_tvl && !token.liquidity_tvl && liquidityLoading)"><span
+                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="token.liquidity_overview?.total_tvl || token.liquidity_tvl">
                   {{ formatNumber((token.liquidity_overview?.total_tvl || token.liquidity_tvl) / xlmPriceInUsd) }} XLM
                 </template>
-                <template v-else-if="loading || liquidityLoading"><span
+                <template v-else-if="liquidityLoading"><span
                     class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                 <template v-else>0 XLM</template>
               </div>
               <div class="sub font-mono dim">
-                <template v-if="token.liquidity_overview?.total_tvl || token.liquidity_tvl">
+                <template v-if="loading || liquidityLoading || (!token.liquidity_overview?.total_tvl && !token.liquidity_tvl && liquidityLoading)"><span
+                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="token.liquidity_overview?.total_tvl || token.liquidity_tvl">
                   ≈ ${{ formatNumber(token.liquidity_overview?.total_tvl || token.liquidity_tvl) }}
                 </template>
-                <template v-else-if="loading || liquidityLoading"><span
+                <template v-else-if="liquidityLoading"><span
                     class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 <template v-else>≈ $0</template>
               </div>
@@ -407,14 +430,14 @@
             <div class="st flex flex-col justify-between">
               <div class="k">Market Cap</div>
               <div class="v font-mono">
-                <template v-if="loading"><span
+                <template v-if="loading || token.usd_price === null || token.total_supply === null"><span
                     class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                 <template v-else-if="token.usd_price && token.total_supply">${{ formatNumber((token.usd_price || 0) *
                   (token.total_supply || 0)) }}</template>
                 <template v-else>$0</template>
               </div>
               <div class="sub font-mono dim">
-                <template v-if="loading"><span
+                <template v-if="loading || token.usd_price === null || token.total_supply === null"><span
                     class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 <template v-else-if="token.usd_price && token.total_supply && xlmPriceInUsd">
                   ≈ {{ formatNumber(((token.usd_price || 0) * (token.total_supply || 0)) / xlmPriceInUsd) }} XLM
@@ -440,14 +463,14 @@
             <div class="st flex flex-col justify-between">
               <div class="k">Holders</div>
               <div class="v font-mono">
-                <template v-if="token.holders !== null && token.holders !== undefined && token.holders !== ''">{{ formatNumber(token.holders) }}</template>
-                <template v-else-if="loading || holdersLoading"><span
+                <template v-if="loading || token.holders === null || holdersLoading"><span
                     class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="token.holders !== null && token.holders !== undefined && token.holders !== ''">{{ formatNumber(token.holders) }}</template>
                 <template v-else>0</template>
               </div>
               <div class="sub font-mono font-semibold"
                 :class="(historicalStats?.holders_change || 0) >= 0 ? 'up' : 'down'">
-                <template v-if="loading || holdersLoading || historicalStatsLoading"><span
+                <template v-if="loading || token.holders === null || holdersLoading || historicalStatsLoading"><span
                     class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 <template v-else-if="historicalStats">
                   {{ (historicalStats.holders_change || 0) >= 0 ? '+' : '' }}{{
@@ -461,14 +484,14 @@
             <div class="st flex flex-col justify-between">
               <div class="k">Trustlines</div>
               <div class="v font-mono">
-                <template v-if="token.trustlines !== null && token.trustlines !== undefined && token.trustlines !== ''">{{ formatNumber(token.trustlines || token.holders) }}</template>
-                <template v-else-if="loading || holdersLoading"><span
+                <template v-if="loading || token.trustlines === null || holdersLoading"><span
                     class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="token.trustlines !== null && token.trustlines !== undefined && token.trustlines !== ''">{{ formatNumber(token.trustlines || token.holders) }}</template>
                 <template v-else>0</template>
               </div>
               <div class="sub font-mono font-semibold"
                 :class="(historicalStats?.trustlines_change || 0) >= 0 ? 'up' : 'down'">
-                <template v-if="loading || holdersLoading || historicalStatsLoading"><span
+                <template v-if="loading || token.trustlines === null || holdersLoading || historicalStatsLoading"><span
                     class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 <template v-else-if="historicalStats">
                   {{ (historicalStats.trustlines_change || 0) >= 0 ? '+' : '' }}{{
@@ -510,10 +533,11 @@
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 font-medium">Total Supply:</span>
               <span class="text-theme-ink font-bold">
-                <template v-if="token.total_supply">{{ formatCompactNumber(token.total_supply) }} {{ token.asset_code
-                  }}</template>
-                <template v-else><span
+                <template v-if="loading"><span
                     class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                <template v-else-if="token.total_supply">{{ formatCompactNumber(token.total_supply) }} {{ token.asset_code
+                  }}</template>
+                <template v-else>—</template>
               </span>
             </div>
             <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
@@ -522,11 +546,11 @@
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 font-medium">Created:</span>
               <span class="text-theme-ink font-bold">
-                <template v-if="token.mint_date_human && token.mint_date_human !== '-'">{{ token.mint_date_human
-                  }}</template>
-                <template v-else-if="loading"><span
+                <template v-if="loading"><span
                     class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                <template v-else>May 2019</template>
+                <template v-else-if="token.mint_date_human && token.mint_date_human !== '-'">{{ token.mint_date_human
+                  }}</template>
+                <template v-else>—</template>
               </span>
             </div>
             <div class="hidden sm:block w-[1px] h-3.5 bg-slate-800/80"></div>
@@ -535,11 +559,12 @@
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 font-medium">Circulating:</span>
               <span class="text-theme-ink font-bold flex items-center gap-1">
-                <template v-if="token.total_supply">{{ formatCompactNumber(token.circulating_supply ||
-                  (token.total_supply * 0.425)) }} {{ token.asset_code }}</template>
-                <template v-else><span
+                <template v-if="loading"><span
                     class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                <span v-if="!historicalStatsLoading && historicalStats?.circulating_supply_change_pct"
+                <template v-else-if="token.total_supply">{{ formatCompactNumber(token.circulating_supply ||
+                  (token.total_supply * 0.425)) }} {{ token.asset_code }}</template>
+                <template v-else>—</template>
+                <span v-if="!loading && !historicalStatsLoading && historicalStats?.circulating_supply_change_pct"
                   class="text-[10px] font-mono font-semibold"
                   :class="historicalStats.circulating_supply_change_pct >= 0 ? 'text-emerald-400' : 'text-rose-400'">
                   ({{ historicalStats.circulating_supply_change_pct >= 0 ? '+' : '' }}{{
@@ -553,11 +578,11 @@
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 font-medium">Pools:</span>
               <span class="text-theme-ink font-bold flex items-center gap-1">
-                <template v-if="liquidityLoading"><span
+                <template v-if="loading || liquidityLoading"><span
                     class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                 <template v-else>{{ token.liquidity_overview?.pools_count || token.num_liquidity_pools || 0
                   }}</template>
-                <span v-if="!liquidityLoading && !historicalStatsLoading && historicalStats?.pools_change"
+                <span v-if="!loading && !liquidityLoading && !historicalStatsLoading && historicalStats?.pools_change"
                   class="text-[10px] font-mono font-semibold"
                   :class="historicalStats.pools_change >= 0 ? 'text-emerald-400' : 'text-rose-400'">
                   ({{ historicalStats.pools_change >= 0 ? '+' : '' }}{{ historicalStats.pools_change }})
@@ -663,44 +688,59 @@
                 <div class="st">
                   <div class="k">Buy / Sell Ratio</div>
                   <div class="v font-mono"
-                    :class="buySellVolume.buyVol === 0 && buySellVolume.sellVol === 0 ? 'text-slate-400 font-semibold' : (buySellVolume.buyPercent >= 50 ? 'up font-bold' : 'down font-bold')">
-                    <template v-if="loading"><span
+                    :class="recentTradesSummary.buyTokens === 0 && recentTradesSummary.sellTokens === 0 ? 'text-slate-400 font-semibold' : (recentTradesSummary.buyPercent >= 50 ? 'up font-bold' : 'down font-bold')">
+                    <template v-if="loading || (!token.transactions?.length && recentTradesSummary.buyTokens === 0 && recentTradesSummary.sellTokens === 0)"><span
                         class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                     <template v-else>{{ buySellRatioText }}</template>
                   </div>
-                  <div class="sub dim font-mono">recent fills</div>
+                  <div class="sub dim font-mono">{{ recentTradesSummary.count ? `last ${recentTradesSummary.count} fills` : 'recent fills' }}</div>
+                </div>
+                <div class="st">
+                  <div class="k">Bought (60 Trades)</div>
+                  <div class="v font-mono up font-bold">
+                    <template v-if="loading || (!token.transactions?.length && recentTradesSummary.buyTokens === 0)"><span
+                        class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                    <template v-else-if="recentTradesSummary.buyTokens > 0">
+                      {{ formatOrderBookNumber(recentTradesSummary.buyTokens) }} <span class="text-[11px] font-medium text-slate-400 font-sans">{{ token.asset_code }}</span>
+                    </template>
+                    <template v-else>0 {{ token.asset_code }}</template>
+                  </div>
+                  <div class="sub dim font-mono">
+                    <template v-if="loading || (!token.transactions?.length && recentTradesSummary.buyTokens === 0)"><span
+                        class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                    <template v-else>≈ {{ formatOrderBookNumber(recentTradesSummary.buyXlm) }} XLM</template>
+                  </div>
+                </div>
+                <div class="st">
+                  <div class="k">Sold (60 Trades)</div>
+                  <div class="v font-mono down font-bold">
+                    <template v-if="loading || (!token.transactions?.length && recentTradesSummary.sellTokens === 0)"><span
+                        class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
+                    <template v-else-if="recentTradesSummary.sellTokens > 0">
+                      {{ formatOrderBookNumber(recentTradesSummary.sellTokens) }} <span class="text-[11px] font-medium text-slate-400 font-sans">{{ token.asset_code }}</span>
+                    </template>
+                    <template v-else>0 {{ token.asset_code }}</template>
+                  </div>
+                  <div class="sub dim font-mono">
+                    <template v-if="loading || (!token.transactions?.length && recentTradesSummary.sellTokens === 0)"><span
+                        class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                    <template v-else>≈ {{ formatOrderBookNumber(recentTradesSummary.sellXlm) }} XLM</template>
+                  </div>
                 </div>
                 <div class="st">
                   <div class="k">Avg Trade Size</div>
                   <div class="v font-mono">
-                    <template v-if="avgTradeSizeUsd !== null">${{ formatPrice2Deci(avgTradeSizeUsd) }}</template>
-                    <template v-else-if="loading"><span
+                    <template v-if="loading || avgTradeSizeUsd === null"><span
                         class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                    <template v-else>0</template>
+                    <template v-else-if="avgTradeSizeUsd !== null">${{ formatPrice2Deci(avgTradeSizeUsd) }}</template>
+                    <template v-else>$0</template>
                   </div>
-                  <div class="sub dim font-mono">per fill</div>
-                </div>
-                <div class="st">
-                  <div class="k">Trades count</div>
-                  <div class="v font-mono">
-                    <template v-if="token.activity?.total_trades !== undefined">{{
-                      formatNumber(token.activity?.total_trades) }}</template>
-                    <template v-else-if="loading"><span
-                        class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                    <template v-else>0</template>
+                  <div class="sub dim font-mono">
+                    <template v-if="loading || avgTradeSizeUsd === null"><span
+                        class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
+                    <template v-else-if="avgTradeSizeUsd && xlmPriceInUsd">≈ {{ formatOrderBookNumber(avgTradeSizeUsd / xlmPriceInUsd) }} XLM</template>
+                    <template v-else>per fill</template>
                   </div>
-                  <div class="sub dim font-mono">executions</div>
-                </div>
-                <div class="st">
-                  <div class="k">Payments count</div>
-                  <div class="v font-mono">
-                    <template v-if="token.activity?.payments !== undefined || token.activity?.payments_volume !== undefined">{{
-                      formatNumber(token.activity?.payments ?? token.activity?.payments_volume) }}</template>
-                    <template v-else-if="loading"><span
-                        class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
-                    <template v-else>0</template>
-                  </div>
-                  <div class="sub dim font-mono">transfers</div>
                 </div>
               </div>
             </div>
@@ -1567,14 +1607,14 @@
               <div class="px-4 pt-4 pb-2">
                 <div class="flex justify-between items-center mb-1.5">
                   <span class="text-xs font-sans font-medium text-slate-400">Composite Score</span>
-                  <span class="text-sm font-bold font-mono text-white">{{ token.rating?.average?.toFixed(1) ?? '7.5' }}
-                    /
-                    10</span>
+                  <span v-if="loading || token.rating === null" class="text-xs text-slate-500 font-mono animate-pulse">Calculating...</span>
+                  <span v-else class="text-sm font-bold font-mono text-white">{{ token.rating?.average ? token.rating.average.toFixed(1) : '7.5' }} / 10</span>
                 </div>
                 <div class="track h-2 bg-[#1a212c] rounded-full overflow-hidden">
-                  <i class="block h-full rounded-full transition-all duration-500"
+                  <i v-if="!loading && token.rating !== null" class="block h-full rounded-full transition-all duration-500"
                     :class="token.rating?.average >= 8 ? 'bg-[#2ED47A]' : (token.rating?.average >= 5 ? 'bg-[#FF8A3D]' : 'bg-[#F0616D]')"
                     :style="{ width: ((token.rating?.average ?? 7.5) * 10) + '%' }"></i>
+                  <i v-else class="block h-full bg-slate-700/40 animate-pulse w-full"></i>
                 </div>
               </div>
 
@@ -1718,7 +1758,8 @@
                       class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-theme-panel3 border border-theme-line text-[9px] text-theme-dim font-serif italic select-none cursor-default hover:bg-theme-panel2 hover:text-theme-ink transition-all ml-1.5"
                       title="YES means the issuer account is locked and cannot mint more tokens (0% inflation risk).">i</span>
                   </span>
-                  <span class="sval" :class="token.issuer_locked ? 'yes' : 'none'">{{ token.issuer_locked ? 'YES' : 'NO'
+                  <span v-if="loading" class="sval text-slate-500 font-mono text-[10px] animate-pulse">...</span>
+                  <span v-else class="sval" :class="token.issuer_locked ? 'yes' : 'none'">{{ token.issuer_locked ? 'YES' : 'NO'
                     }}</span>
                 </div>
                 <div class="row">
@@ -1728,7 +1769,8 @@
                       class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-theme-panel3 border border-theme-line text-[9px] text-theme-dim font-serif italic select-none cursor-default hover:bg-theme-panel2 hover:text-theme-ink transition-all ml-1.5"
                       title="YES means clawbacks are disabled, the issuer cannot seize or recall tokens from user accounts.">i</span>
                   </span>
-                  <span class="sval" :class="!token.auth_clawback_enabled ? 'yes' : 'none'">{{
+                  <span v-if="loading" class="sval text-slate-500 font-mono text-[10px] animate-pulse">...</span>
+                  <span v-else class="sval" :class="!token.auth_clawback_enabled ? 'yes' : 'none'">{{
                     !token.auth_clawback_enabled ?
                     'YES' : 'NO' }}</span>
                 </div>
@@ -1739,7 +1781,8 @@
                       class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-theme-panel3 border border-theme-line text-[9px] text-theme-dim font-serif italic select-none cursor-default hover:bg-theme-panel2 hover:text-theme-ink transition-all ml-1.5"
                       title="YES means authorization revocation is disabled, the issuer cannot freeze your account's trustline.">i</span>
                   </span>
-                  <span class="sval" :class="!token.auth_revocable ? 'yes' : 'none'">{{ !token.auth_revocable ? 'YES' :
+                  <span v-if="loading" class="sval text-slate-500 font-mono text-[10px] animate-pulse">...</span>
+                  <span v-else class="sval" :class="!token.auth_revocable ? 'yes' : 'none'">{{ !token.auth_revocable ? 'YES' :
                     'NO'
                     }}</span>
                 </div>
@@ -1750,7 +1793,8 @@
                       class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-theme-panel3 border border-theme-line text-[9px] text-theme-dim font-serif italic select-none cursor-default hover:bg-theme-panel2 hover:text-theme-ink transition-all ml-1.5"
                       title="NONE means anyone can hold, trade, or transfer this token freely without manual approval.">i</span>
                   </span>
-                  <span class="sval" :class="token.auth_required ? 'none' : 'yes'" style="font-size:10px">{{
+                  <span v-if="loading" class="sval text-slate-500 font-mono text-[10px] animate-pulse">...</span>
+                  <span v-else class="sval" :class="token.auth_required ? 'none' : 'yes'" style="font-size:10px">{{
                     token.auth_required
                     ? 'REQUIRED' : 'NONE' }}</span>
                 </div>
@@ -1766,17 +1810,26 @@
                 <div @click="submitVote('trusted')" class="vopt t">
                   <div class="ic"></div>
                   <div class="l">Trusted</div>
-                  <div class="n">{{ votes.trusted }}</div>
+                  <div class="n font-mono">
+                    <template v-if="loading"><span class="animate-pulse text-xs">...</span></template>
+                    <template v-else>{{ votes.trusted }}</template>
+                  </div>
                 </div>
                 <div @click="submitVote('suspicious')" class="vopt s">
                   <div class="ic"></div>
                   <div class="l">Suspicious</div>
-                  <div class="n">{{ votes.suspicious }}</div>
+                  <div class="n font-mono">
+                    <template v-if="loading"><span class="animate-pulse text-xs">...</span></template>
+                    <template v-else>{{ votes.suspicious }}</template>
+                  </div>
                 </div>
                 <div @click="submitVote('scam')" class="vopt x">
                   <div class="ic"></div>
                   <div class="l">Scam</div>
-                  <div class="n">{{ votes.scam }}</div>
+                  <div class="n font-mono">
+                    <template v-if="loading"><span class="animate-pulse text-xs">...</span></template>
+                    <template v-else>{{ votes.scam }}</template>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2450,19 +2503,20 @@ const createDefaultTokenState = () => ({
   image: null,
   description: "",
   project: {},
-  holders: 0,
-  trustlines: 0,
+  holders: null,
+  trustlines: null,
   mint_date_human: "-",
   updated_at: "-",
   conditions: null,
-  usd_price: 0,
-  xlm_price: 0,
-  price_change_24h: 0,
+  usd_price: null,
+  xlm_price: null,
+  price_change_24h: null,
   volume_24h: undefined,
-  total_supply: 0,
+  total_supply: null,
   top_holders: [],
   project_holders: [],
   transactions: [],
+  rating: null,
   activity: {
     total_trades: 0,
     traded_volume: 0,
@@ -2569,41 +2623,55 @@ const scopulyTradeUrl = computed(() => {
   return 'https://scopuly.com/trade';
 });
 
-const buySellVolume = computed(() => {
+const recentTradesSummary = computed(() => {
   const txs = (token.transactions || []).slice(0, 60);
-  let buyVol = 0;
-  let sellVol = 0;
+  let buyTokens = 0;
+  let buyXlm = 0;
+  let sellTokens = 0;
+  let sellXlm = 0;
 
   txs.forEach(tx => {
-    const vol = Number(tx.amount);
+    const amount = Number(tx.amount || 0);
+    const xlmValue = Number(tx.value) || (amount * Number(tx.price || 0));
     if (tx.side === 'buy') {
-      buyVol += vol;
+      buyTokens += amount;
+      buyXlm += xlmValue;
     } else if (tx.side === 'sell') {
-      sellVol += vol;
+      sellTokens += amount;
+      sellXlm += xlmValue;
     }
   });
 
-  const total = buyVol + sellVol;
-  if (total === 0) {
-    return {
-      buyVol: 0,
-      sellVol: 0,
-      buyPercent: 0,
-      sellPercent: 0
-    };
-  }
+  const totalTokens = buyTokens + sellTokens;
+  const totalXlm = buyXlm + sellXlm;
+  const buyPercent = totalTokens > 0 ? Math.round((buyTokens / totalTokens) * 100) : 0;
+  const sellPercent = totalTokens > 0 ? Math.round((sellTokens / totalTokens) * 100) : 0;
 
   return {
-    buyVol,
-    sellVol,
-    buyPercent: Math.round((buyVol / total) * 100),
-    sellPercent: Math.round((sellVol / total) * 100)
+    buyTokens,
+    buyXlm,
+    sellTokens,
+    sellXlm,
+    totalTokens,
+    totalXlm,
+    buyPercent,
+    sellPercent,
+    count: txs.length
+  };
+});
+
+const buySellVolume = computed(() => {
+  return {
+    buyVol: recentTradesSummary.value.buyTokens,
+    sellVol: recentTradesSummary.value.sellTokens,
+    buyPercent: recentTradesSummary.value.buyPercent,
+    sellPercent: recentTradesSummary.value.sellPercent
   };
 });
 
 const buySellRatioText = computed(() => {
-  const { buyVol, sellVol, buyPercent } = buySellVolume.value;
-  if (buyVol === 0 && sellVol === 0) return '0';
+  const { buyPercent, buyTokens, sellTokens } = recentTradesSummary.value;
+  if (buyTokens === 0 && sellTokens === 0) return '0';
   if (buyPercent >= 50) {
     return `${buyPercent}% Buy`;
   } else {
@@ -2863,7 +2931,7 @@ async function fetchToken(retryCount = 0) {
         issuer: currentIssuer || undefined,
         code: currentCode || undefined,
       },
-      timeout: 10000
+      timeout: 30000
     })
 
     if (res.data?.error || !res.data?.asset_code) {
