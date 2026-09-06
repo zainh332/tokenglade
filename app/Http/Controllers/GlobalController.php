@@ -282,24 +282,23 @@ class GlobalController extends Controller
                     $desc = $p->profile->short_description ?? ($p->profile->full_description ?? "Verified asset \"{$p->asset_code}\" on the Stellar network.");
                     $logoUrl = $p->profile->logo_url ?? null;
 
-                    // Instantly check if cached metrics already exist without blocking
-                    $cacheKey = "verified_project_analytics_v4_" . $p->id;
-                    $cached = \Illuminate\Support\Facades\Cache::get($cacheKey);
-
                     return [
                         'id' => $p->id,
                         'name' => $p->name ?? $p->asset_code,
                         'symbol' => $p->asset_code,
                         'issuer' => $p->identifier,
                         'desc' => $desc,
-                        'mcap' => isset($cached['mcap']) ? (float)$cached['mcap'] : null,
-                        'supply' => isset($cached['supply']) ? (float)$cached['supply'] : null,
-                        'price_xlm' => isset($cached['price_xlm']) ? (float)$cached['price_xlm'] : null,
-                        'price_usd' => isset($cached['price_usd']) ? (float)$cached['price_usd'] : null,
-                        'holders' => isset($cached['holders']) ? (int)$cached['holders'] : null,
-                        'logo_url' => $logoUrl ?? ($cached['logo_url'] ?? null),
+                        'mcap' => null,
+                        'supply' => null,
+                        'price_xlm' => null,
+                        'price_usd' => null,
+                        'holders' => null,
+                        'logo_url' => $logoUrl,
                         'website' => $p->website ?? ($p->profile->website ?? null),
                         'twitter' => $p->twitter ?? ($p->profile->twitter ?? null),
+                        'price_dir' => null,
+                        'holders_dir' => null,
+                        'mcap_dir' => null,
                     ];
                 });
 
@@ -325,60 +324,120 @@ class GlobalController extends Controller
             $metrics = [];
 
             foreach ($projects as $p) {
-                $cacheKey = "verified_project_analytics_v4_" . $p->id;
-                $projectMetrics = \Illuminate\Support\Facades\Cache::remember($cacheKey, 600, function () use ($p, $tokenService, $xlmUsdPrice) {
-                    $supply = 0;
-                    $price_xlm = 0.0;
-                    $price_usd = 0.0;
-                    $holders = 0;
-                    $logoUrl = null;
+                $supply = 0;
+                $price_xlm = 0.0;
+                $price_usd = 0.0;
+                $holders = 0;
+                $logoUrl = null;
+                $data = [];
 
-                    // 1. Fast fetch directly via StellarExpert asset endpoint
-                    try {
-                        $response = \Illuminate\Support\Facades\Http::timeout(3)
-                            ->get("https://api.stellar.expert/explorer/public/asset/{$p->asset_code}-{$p->identifier}");
+                // 1. Fast fetch directly via StellarExpert asset endpoint
+                try {
+                    $response = \Illuminate\Support\Facades\Http::timeout(3)
+                        ->get("https://api.stellar.expert/explorer/public/asset/{$p->asset_code}-{$p->identifier}");
 
-                        if ($response->successful()) {
-                            $data = $response->json();
-                            $price_usd = isset($data['price']) ? (float)$data['price'] : 0.0;
-                            $supply = isset($data['supply']) ? (float)$data['supply'] / 10000000 : 0;
-                            $logoUrl = $data['toml_info']['image'] ?? null;
-                            $price_xlm = $xlmUsdPrice > 0 ? ($price_usd / $xlmUsdPrice) : 0.0;
-                            
-                            if (isset($data['trustlines']['authorized'])) {
-                                $holders = (int)$data['trustlines']['authorized'];
-                            } elseif (isset($data['trustlines'])) {
-                                $holders = (int)$data['trustlines'];
-                            }
+                    if ($response->successful()) {
+                        $data = $response->json();
+                        $price_usd = isset($data['price']) ? (float)$data['price'] : 0.0;
+                        $supply = isset($data['supply']) ? (float)$data['supply'] / 10000000 : 0;
+                        $logoUrl = $data['toml_info']['image'] ?? null;
+                        $price_xlm = $xlmUsdPrice > 0 ? ($price_usd / $xlmUsdPrice) : 0.0;
+                        
+                        if (isset($data['trustlines']['authorized'])) {
+                            $holders = (int)$data['trustlines']['authorized'];
+                        } elseif (isset($data['trustlines'])) {
+                            $holders = (int)$data['trustlines'];
                         }
-                    } catch (\Throwable $seEx) {}
-
-                    // 2. Fallback to TokenInsight if no price/holders retrieved
-                    if ($price_usd == 0 && $holders == 0) {
-                        try {
-                            $insight = $tokenService->getTokenInsight($p->identifier, $p->asset_code);
-                            $supply = $insight['total_supply'] ?? $supply;
-                            $price_xlm = $insight['xlm_price'] ?? $price_xlm;
-                            $price_usd = $insight['usd_price'] ?? $price_usd;
-                            $holders = $insight['holders'] ?? $holders;
-                            $logoUrl = $insight['image'] ?? $logoUrl;
-                        } catch (\Throwable $ex) {}
                     }
+                } catch (\Throwable $seEx) {}
 
-                    $mcap = round($supply * $price_usd);
+                // 2. Fallback to TokenInsight if no price/holders retrieved
+                if ($price_usd == 0 && $holders == 0) {
+                    try {
+                        $insight = $tokenService->getTokenInsight($p->identifier, $p->asset_code);
+                        $supply = $insight['total_supply'] ?? $supply;
+                        $price_xlm = $insight['xlm_price'] ?? $price_xlm;
+                        $price_usd = $insight['usd_price'] ?? $price_usd;
+                        $holders = $insight['holders'] ?? $holders;
+                        $logoUrl = $insight['image'] ?? $logoUrl;
+                    } catch (\Throwable $ex) {}
+                }
 
-                    return [
-                        'id' => $p->id,
-                        'symbol' => $p->asset_code,
-                        'issuer' => $p->identifier,
-                        'mcap' => round($mcap),
-                        'supply' => round($supply),
-                        'price_xlm' => $price_xlm,
-                        'price_usd' => $price_usd,
-                        'holders' => $holders,
-                        'logo_url' => $logoUrl,
-                    ];
-                });
+                $mcap = round($supply * $price_usd);
+
+                // 3. Compute directional trends (up / down / null)
+                $price_dir = null;
+                $holders_dir = null;
+                $mcap_dir = null;
+
+                try {
+                    $latestSnap = \App\Models\TokenStatSnapshot::where('asset_code', $p->asset_code)
+                        ->where('asset_issuer', $p->identifier)
+                        ->latest()
+                        ->first();
+
+                    $pastSnap = \App\Models\TokenStatSnapshot::where('asset_code', $p->asset_code)
+                        ->where('asset_issuer', $p->identifier)
+                        ->where('created_at', '<=', now()->subHours(24))
+                        ->latest()
+                        ->first() ?? \App\Models\TokenStatSnapshot::where('asset_code', $p->asset_code)
+                        ->where('asset_issuer', $p->identifier)
+                        ->where('id', '!=', $latestSnap->id ?? 0)
+                        ->oldest()
+                        ->first();
+
+                    if ($latestSnap && $pastSnap) {
+                        if ($latestSnap->price_usd > $pastSnap->price_usd) $price_dir = 'up';
+                        elseif ($latestSnap->price_usd < $pastSnap->price_usd) $price_dir = 'down';
+
+                        if ($latestSnap->holders > $pastSnap->holders) $holders_dir = 'up';
+                        elseif ($latestSnap->holders < $pastSnap->holders) $holders_dir = 'down';
+
+                        if ($latestSnap->market_cap_usd > $pastSnap->market_cap_usd) $mcap_dir = 'up';
+                        elseif ($latestSnap->market_cap_usd < $pastSnap->market_cap_usd) $mcap_dir = 'down';
+                    }
+                } catch (\Throwable $snapEx) {}
+
+                if (!$price_dir && isset($data['price7d']) && is_array($data['price7d']) && count($data['price7d']) >= 2) {
+                    $history = $data['price7d'];
+                    $prevPrice = (float)($history[count($history) - 2][1] ?? 0);
+                    $currPrice = (float)($data['price'] ?? 0);
+                    if ($currPrice > $prevPrice && $prevPrice > 0) {
+                        $price_dir = 'up';
+                        if (!$mcap_dir) $mcap_dir = 'up';
+                    } elseif ($currPrice < $prevPrice && $prevPrice > 0) {
+                        $price_dir = 'down';
+                        if (!$mcap_dir) $mcap_dir = 'down';
+                    }
+                }
+
+                if (!$price_dir) {
+                    $smt = \App\Models\StellarMarketToken::where('asset_code', $p->asset_code)->where('asset_issuer', $p->identifier)->first();
+                    if ($smt && $smt->change_24h !== null) {
+                        if ((float)$smt->change_24h > 0) {
+                            $price_dir = 'up';
+                            if (!$mcap_dir) $mcap_dir = 'up';
+                        } elseif ((float)$smt->change_24h < 0) {
+                            $price_dir = 'down';
+                            if (!$mcap_dir) $mcap_dir = 'down';
+                        }
+                    }
+                }
+
+                $projectMetrics = [
+                    'id' => $p->id,
+                    'symbol' => $p->asset_code,
+                    'issuer' => $p->identifier,
+                    'mcap' => round($mcap),
+                    'supply' => round($supply),
+                    'price_xlm' => $price_xlm,
+                    'price_usd' => $price_usd,
+                    'holders' => $holders,
+                    'logo_url' => $logoUrl,
+                    'price_dir' => $price_dir,
+                    'holders_dir' => $holders_dir,
+                    'mcap_dir' => $mcap_dir,
+                ];
 
                 $metrics[$p->id] = $projectMetrics;
                 $metrics[$p->asset_code] = $projectMetrics;

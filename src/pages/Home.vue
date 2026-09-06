@@ -339,65 +339,104 @@
 
         <div v-if="loadingFeaturedProjects" class="flex overflow-x-auto gap-4 py-2 no-scrollbar">
           <div v-for="i in 4" :key="i"
-            class="flex-shrink-0 w-[calc(25%-12px)] min-w-[280px] flex items-center justify-between p-4 bg-theme-panel2 border border-theme-line rounded-2xl animate-pulse h-20">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-full bg-theme-line border border-theme-line2 flex-shrink-0"></div>
-              <div class="space-y-1">
-                <div class="h-3.5 w-16 bg-theme-line rounded"></div>
-                <div class="h-2 w-10 bg-theme-line/80 rounded"></div>
+            class="flex-shrink-0 w-[calc(25%-12px)] min-w-[280px] bg-theme-panel2 border border-theme-line rounded-2xl p-4 flex flex-col justify-between animate-pulse space-y-3.5 shadow-sm">
+            
+            <!-- Top Row: Logo & Name on Left -->
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 rounded-full bg-theme-line border border-theme-line2 flex-shrink-0"></div>
+                <div class="space-y-1.5 min-w-0">
+                  <div class="h-3.5 w-20 bg-theme-line rounded"></div>
+                  <div class="h-2.5 w-10 bg-theme-line/80 rounded"></div>
+                </div>
               </div>
             </div>
-            <div class="h-3.5 w-14 bg-theme-line rounded"></div>
+
+            <!-- Bottom Stats Grid -->
+            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-900/40">
+              <div class="flex flex-col space-y-1.5">
+                <div class="h-2 w-8 bg-theme-line/70 rounded"></div>
+                <div class="h-3 w-12 bg-theme-line rounded"></div>
+              </div>
+              <div class="flex flex-col space-y-1.5">
+                <div class="h-2 w-10 bg-theme-line/70 rounded"></div>
+                <div class="h-3 w-10 bg-theme-line rounded"></div>
+              </div>
+              <div class="flex flex-col space-y-1.5">
+                <div class="h-2 w-8 bg-theme-line/70 rounded"></div>
+                <div class="h-3 w-12 bg-theme-line rounded"></div>
+              </div>
+            </div>
+
           </div>
         </div>
         
         <div v-else ref="featuredSliderRef" class="flex overflow-x-auto gap-4 py-2 scroll-smooth no-scrollbar">
           <router-link v-for="project in displayedFeaturedProjects" :key="project.symbol"
             :to="{ path: '/token-insight', query: { asset_code: project.symbol, issuer: project.issuer } }"
-            class="flex-shrink-0 w-[calc(25%-12px)] min-w-[280px] bg-theme-panel2 border border-theme-line rounded-2xl p-4 flex flex-col justify-between hover:border-theme-line2 hover:bg-theme-panel3 transition cursor-pointer select-none space-y-3.5 no-underline">
+            class="group flex-shrink-0 w-[calc(25%-12px)] min-w-[280px] bg-theme-panel2 border border-theme-line rounded-2xl p-4 flex flex-col justify-between hover:border-cyan-500/40 hover:bg-theme-panel3 transition cursor-pointer select-none space-y-3.5 no-underline shadow-sm">
             
-            <!-- Top Logo & Name -->
-            <div class="flex items-center gap-3">
-              <img v-if="project.logo_url" :src="project.logo_url"
-                class="w-8 h-8 rounded-full object-contain p-0.5 bg-theme-panel3 border border-theme-line" />
-              <span v-else
-                class="w-8 h-8 rounded-full bg-theme-panel3 flex items-center justify-center font-bold text-[10px] text-cyan-400">
-                {{ project.symbol?.slice(0, 2) }}
-              </span>
-              <div>
-                <div class="flex items-center gap-1.5">
-                  <span class="font-bold text-white block text-sm">{{ project.name }}</span>
-                  <img :src="verified" alt="Verified" class="w-3.5 h-3.5 flex-shrink-0 object-contain" title="Verified Project" />
+            <!-- Top Row: Logo & Name on Left, View Details on Right -->
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-3 min-w-0">
+                <img v-if="project.logo_url" :src="project.logo_url"
+                  class="w-8 h-8 rounded-full object-contain p-0.5 bg-theme-panel3 border border-theme-line flex-shrink-0" />
+                <span v-else
+                  class="w-8 h-8 rounded-full bg-theme-panel3 flex items-center justify-center font-bold text-[10px] text-cyan-400 flex-shrink-0">
+                  {{ project.symbol?.slice(0, 2) }}
+                </span>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 min-w-0">
+                    <span class="font-bold text-white block text-sm truncate max-w-[110px]" :title="project.name">{{ project.name }}</span>
+                    <img :src="verified" alt="Verified" class="w-3.5 h-3.5 flex-shrink-0 object-contain" title="Verified Project" />
+                  </div>
+                  <span class="text-[9px] text-slate-500 uppercase font-mono font-semibold block mt-0.5">{{ project.symbol }}</span>
                 </div>
-                <span class="text-[9px] text-slate-500 uppercase font-mono font-semibold block mt-0.5">{{ project.symbol }}</span>
               </div>
             </div>
 
             <!-- Bottom Stats Grid -->
             <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-900/40">
+              <!-- M.Cap -->
               <div class="flex flex-col">
                 <span class="text-[8px] text-slate-555 uppercase font-bold tracking-wider">M.Cap</span>
-                <span class="font-mono text-[10px] text-white font-bold mt-0.5">
-                  <template v-if="project.mcap">{{ project.mcap }}</template>
+                <div class="flex items-center gap-1 font-mono text-[10px] text-white font-bold mt-0.5">
+                  <template v-if="project.mcap">
+                    <span>{{ project.mcap }}</span>
+                    <span v-if="project.mcap_dir === 'up'" class="text-emerald-400 font-black text-[11px] leading-none" title="Trending Up">↑</span>
+                    <span v-else-if="project.mcap_dir === 'down'" class="text-rose-400 font-black text-[11px] leading-none" title="Trending Down">↓</span>
+                  </template>
                   <template v-else-if="loadingFeaturedMetrics"><span class="text-slate-500 font-normal animate-pulse">...</span></template>
                   <template v-else>—</template>
-                </span>
+                </div>
               </div>
+
+              <!-- Holders -->
               <div class="flex flex-col">
                 <span class="text-[8px] text-slate-555 uppercase font-bold tracking-wider">Holders</span>
-                <span class="font-mono text-[10px] text-white font-bold mt-0.5">
-                  <template v-if="project.holders">{{ project.holders }}</template>
+                <div class="flex items-center gap-1 font-mono text-[10px] text-white font-bold mt-0.5">
+                  <template v-if="project.holders">
+                    <span>{{ project.holders }}</span>
+                    <span v-if="project.holders_dir === 'up'" class="text-emerald-400 font-black text-[11px] leading-none" title="Trending Up">↑</span>
+                    <span v-else-if="project.holders_dir === 'down'" class="text-rose-400 font-black text-[11px] leading-none" title="Trending Down">↓</span>
+                  </template>
                   <template v-else-if="loadingFeaturedMetrics"><span class="text-slate-500 font-normal animate-pulse">...</span></template>
                   <template v-else>—</template>
-                </span>
+                </div>
               </div>
+
+              <!-- Price -->
               <div class="flex flex-col">
                 <span class="text-[8px] text-slate-555 uppercase font-bold tracking-wider">Price</span>
-                <span class="font-mono text-[10px] text-white font-bold mt-0.5" style="line-height: 1.25;">
-                  <template v-if="project.price_xlm">{{ project.price_xlm }}</template>
+                <div class="flex items-center gap-1 font-mono text-[10px] text-white font-bold mt-0.5" style="line-height: 1.25;">
+                  <template v-if="project.price_xlm">
+                    <span class="truncate">{{ project.price_xlm }}</span>
+                    <span v-if="project.price_dir === 'up'" class="text-emerald-400 font-black text-[11px] leading-none flex-shrink-0" title="Trending Up">↑</span>
+                    <span v-else-if="project.price_dir === 'down'" class="text-rose-400 font-black text-[11px] leading-none flex-shrink-0" title="Trending Down">↓</span>
+                  </template>
                   <template v-else-if="loadingFeaturedMetrics"><span class="text-slate-500 font-normal animate-pulse">...</span></template>
                   <template v-else>—</template>
-                </span>
+                </div>
               </div>
             </div>
 
@@ -798,7 +837,10 @@ const displayedFeaturedProjects = computed(() => {
       holders: hasHolders ? formatNumber(p.holders) : null,
       price_usd: hasPriceUsd ? formatPrice(p.price_usd) : null,
       price_xlm: hasPriceXlm ? formatXlmPrice(p.price_xlm) : null,
-      isTkg: p.symbol === 'TKG'
+      isTkg: p.symbol === 'TKG',
+      price_dir: p.price_dir || null,
+      holders_dir: p.holders_dir || null,
+      mcap_dir: p.mcap_dir || null,
     };
   });
 });
@@ -1246,6 +1288,9 @@ async function fetchFeaturedProjectsMetrics() {
             price_xlm: (m.price_xlm !== undefined && m.price_xlm !== null) ? m.price_xlm : p.price_xlm,
             supply: (m.supply !== undefined && m.supply !== null) ? m.supply : p.supply,
             logo_url: m.logo_url || p.logo_url,
+            price_dir: m.price_dir || p.price_dir || null,
+            holders_dir: m.holders_dir || p.holders_dir || null,
+            mcap_dir: m.mcap_dir || p.mcap_dir || null,
           };
         }
         return p;

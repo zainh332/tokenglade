@@ -1444,20 +1444,12 @@ EOT;
             $stellarToken = StellarToken::where('issuer_public_key', $issuer)
                 ->latest()->first();
 
-            // 1. Fetch assets for issuer (only cache when non-empty)
-            $cacheKeyAssets = "issuer_assets_{$issuer}" . ($code ? "_{$code}" : "");
-            $assets = Cache::get($cacheKeyAssets);
-
-            if (empty($assets)) {
-                try {
-                    $assets = $service->getAssetsByIssuer($issuer, $code);
-                    if (!empty($assets)) {
-                        Cache::put($cacheKeyAssets, $assets, 3600);
-                    }
-                } catch (\Throwable $e) {
-                    Log::warning("Failed to get assets by issuer for {$issuer}: " . $e->getMessage());
-                    $assets = [];
-                }
+            // 1. Fetch assets for issuer
+            try {
+                $assets = $service->getAssetsByIssuer($issuer, $code);
+            } catch (\Throwable $e) {
+                Log::warning("Failed to get assets by issuer for {$issuer}: " . $e->getMessage());
+                $assets = [];
             }
 
             // 2. DB Fallback if Horizon returned empty or errored
@@ -1550,17 +1542,10 @@ EOT;
             }
             $code = $matchedAsset['asset_code'];
 
-            // 4. Cache or fetch Token Insight
-            $cacheKey = "token_insight_v3_{$issuer}_{$code}";
-            $insight = Cache::get($cacheKey);
-
-            if (!$insight || empty($insight['asset_code']) || !isset($insight['total_supply'])) {
-                try {
-                    $insight = $service->getTokenInsight($issuer, $code, $matchedAsset);
-                    if (!empty($insight) && !empty($insight['asset_code'])) {
-                        Cache::put($cacheKey, $insight, 300);
-                    }
-                } catch (\Throwable $e) {
+            // 4. Fetch Token Insight
+            try {
+                $insight = $service->getTokenInsight($issuer, $code, $matchedAsset);
+            } catch (\Throwable $e) {
                     Log::warning("Failed to get token insight for {$code}-{$issuer}: " . $e->getMessage());
                     $insight = [
                         'asset_code'       => $code,
@@ -2507,105 +2492,107 @@ EOT;
 
         $hours = ($timeframe === '7d') ? (24 * 7) : 24;
 
-        $stats = Cache::remember("token_stats_{$timeframe}_{$code}_{$issuer}", 300, function () use ($code, $issuer, $hours, $timeframe) {
+        $latest = \App\Models\TokenStatSnapshot::where('asset_code', $code)
+            ->where('asset_issuer', $issuer)
+            ->where('trustlines', '>', 0)
+            ->latest()
+            ->first();
+
+        if (!$latest) {
             $latest = \App\Models\TokenStatSnapshot::where('asset_code', $code)
                 ->where('asset_issuer', $issuer)
-                ->where('trustlines', '>', 0)
                 ->latest()
                 ->first();
+        }
 
-            if (!$latest) {
-                $latest = \App\Models\TokenStatSnapshot::where('asset_code', $code)
-                    ->where('asset_issuer', $issuer)
-                    ->latest()
-                    ->first();
-            }
+        $past = \App\Models\TokenStatSnapshot::where('asset_code', $code)
+            ->where('asset_issuer', $issuer)
+            ->where('trustlines', '>', 0)
+            ->where('created_at', '<=', now()->subHours($hours))
+            ->latest()
+            ->first();
 
+        if (!$past) {
             $past = \App\Models\TokenStatSnapshot::where('asset_code', $code)
                 ->where('asset_issuer', $issuer)
                 ->where('trustlines', '>', 0)
-                ->where('created_at', '<=', now()->subHours($hours))
-                ->latest()
+                ->where('id', '!=', $latest->id ?? 0)
+                ->oldest()
                 ->first();
+        }
 
-            if (!$past) {
-                $past = \App\Models\TokenStatSnapshot::where('asset_code', $code)
-                    ->where('asset_issuer', $issuer)
-                    ->where('trustlines', '>', 0)
-                    ->where('id', '!=', $latest->id ?? 0)
-                    ->oldest()
-                    ->first();
-            }
+        if (!$past) {
+            $past = \App\Models\TokenStatSnapshot::where('asset_code', $code)
+                ->where('asset_issuer', $issuer)
+                ->where('id', '!=', $latest->id ?? 0)
+                ->oldest()
+                ->first();
+        }
 
-            if (!$past) {
-                $past = \App\Models\TokenStatSnapshot::where('asset_code', $code)
-                    ->where('asset_issuer', $issuer)
-                    ->where('id', '!=', $latest->id ?? 0)
-                    ->oldest()
-                    ->first();
-            }
-
-            if (!$latest || !$past) {
-                return [
-                    'timeframe' => $timeframe,
-                    'holders_change' => 0,
-                    'trustlines_change' => 0,
-                    'pools_change' => 0,
-                    'liquidity_change_pct' => 0,
-                    'price_change_pct' => 0,
-                    'market_cap_change_pct' => 0,
-                    'circulating_supply_change_pct' => 0,
-                    'volume_change_pct' => 0,
-                ];
-            }
-
-            $price_change_pct = $past->price_usd > 0
-                ? round((($latest->price_usd - $past->price_usd) / $past->price_usd) * 100, 2)
-                : 0;
-
-            // Generate a realistic, deterministic volume change percentage
-            $hash = crc32($code . $issuer . $timeframe);
-            $volume_change_pct = ($hash % 40) - 15; // ranges from -15% to +25%
-            
-            // Align the direction of volume change slightly with price movement for realism
-            if ($price_change_pct > 2 && $volume_change_pct < 0) {
-                $volume_change_pct = abs($volume_change_pct);
-            } elseif ($price_change_pct < -2 && $volume_change_pct > 0) {
-                $volume_change_pct = -$volume_change_pct;
-            }
-
-            $pastNativeLiq = ($past->price_usd > 0 && $past->liquidity_usd > 0)
-                ? ($past->liquidity_usd / $past->price_usd)
-                : $past->liquidity_usd;
-            
-            $latestNativeLiq = ($latest->price_usd > 0 && $latest->liquidity_usd > 0)
-                ? ($latest->liquidity_usd / $latest->price_usd)
-                : $latest->liquidity_usd;
-
-            $liquidity_change_pct = ($pastNativeLiq > 0)
-                ? round((($latestNativeLiq - $pastNativeLiq) / $pastNativeLiq) * 100, 2)
-                : 0;
-
-            return [
+        if (!$latest || !$past) {
+            $stats = [
                 'timeframe' => $timeframe,
-                'current_holders' => $latest->holders,
-                'past_holders' => $past->holders,
-                'holders_change' => $latest->holders - $past->holders,
-                'current_trustlines' => $latest->trustlines,
-                'past_trustlines' => $past->trustlines,
-                'trustlines_change' => $latest->trustlines - $past->trustlines,
-                'current_pools' => $latest->pools_count,
-                'past_pools' => $past->pools_count,
-                'pools_change' => $latest->pools_count - $past->pools_count,
-                'liquidity_change_pct' => $liquidity_change_pct,
-                'price_change_pct' => $price_change_pct,
-                'market_cap_change_pct' => $price_change_pct,
-                'circulating_supply_change_pct' => $past->circulating_supply > 0
-                    ? round((($latest->circulating_supply - $past->circulating_supply) / $past->circulating_supply) * 100, 2)
-                    : 0,
-                'volume_change_pct' => $volume_change_pct,
+                'holders_change' => 0,
+                'trustlines_change' => 0,
+                'pools_change' => 0,
+                'liquidity_change_pct' => 0,
+                'price_change_pct' => 0,
+                'market_cap_change_pct' => 0,
+                'circulating_supply_change_pct' => 0,
+                'volume_change_pct' => 0,
             ];
-        });
+            return response()->json([
+                'status' => 'success',
+                'data' => $stats
+            ]);
+        }
+
+        $price_change_pct = $past->price_usd > 0
+            ? round((($latest->price_usd - $past->price_usd) / $past->price_usd) * 100, 2)
+            : 0;
+
+        // Generate a realistic, deterministic volume change percentage
+        $hash = crc32($code . $issuer . $timeframe);
+        $volume_change_pct = ($hash % 40) - 15; // ranges from -15% to +25%
+        
+        // Align the direction of volume change slightly with price movement for realism
+        if ($price_change_pct > 2 && $volume_change_pct < 0) {
+            $volume_change_pct = abs($volume_change_pct);
+        } elseif ($price_change_pct < -2 && $volume_change_pct > 0) {
+            $volume_change_pct = -$volume_change_pct;
+        }
+
+        $pastNativeLiq = ($past->price_usd > 0 && $past->liquidity_usd > 0)
+            ? ($past->liquidity_usd / $past->price_usd)
+            : $past->liquidity_usd;
+        
+        $latestNativeLiq = ($latest->price_usd > 0 && $latest->liquidity_usd > 0)
+            ? ($latest->liquidity_usd / $latest->price_usd)
+            : $latest->liquidity_usd;
+
+        $liquidity_change_pct = ($pastNativeLiq > 0)
+            ? round((($latestNativeLiq - $pastNativeLiq) / $pastNativeLiq) * 100, 2)
+            : 0;
+
+        $stats = [
+            'timeframe' => $timeframe,
+            'current_holders' => $latest->holders,
+            'past_holders' => $past->holders,
+            'holders_change' => $latest->holders - $past->holders,
+            'current_trustlines' => $latest->trustlines,
+            'past_trustlines' => $past->trustlines,
+            'trustlines_change' => $latest->trustlines - $past->trustlines,
+            'current_pools' => $latest->pools_count,
+            'past_pools' => $past->pools_count,
+            'pools_change' => $latest->pools_count - $past->pools_count,
+            'liquidity_change_pct' => $liquidity_change_pct,
+            'price_change_pct' => $price_change_pct,
+            'market_cap_change_pct' => $price_change_pct,
+            'circulating_supply_change_pct' => $past->circulating_supply > 0
+                ? round((($latest->circulating_supply - $past->circulating_supply) / $past->circulating_supply) * 100, 2)
+                : 0,
+            'volume_change_pct' => $volume_change_pct,
+        ];
 
         return response()->json([
             'status' => 'success',
@@ -2694,17 +2681,10 @@ EOT;
         $issuer = strtoupper($issuer);
         $token = StellarToken::where('issuer_public_key', $issuer)->first();
 
-        $cacheKeyAssets = "issuer_assets_{$issuer}";
-        $assets = Cache::get($cacheKeyAssets);
-        if (empty($assets)) {
-            try {
-                $assets = $service->getAssetsByIssuer($issuer);
-                if (!empty($assets)) {
-                    Cache::put($cacheKeyAssets, $assets, 3600);
-                }
-            } catch (\Throwable $e) {
-                $assets = [];
-            }
+        try {
+            $assets = $service->getAssetsByIssuer($issuer);
+        } catch (\Throwable $e) {
+            $assets = [];
         }
 
         if (empty($assets) && $token) {
@@ -2734,17 +2714,10 @@ EOT;
 
         $code = $assets[0]['asset_code'];
 
-        $cacheKey = "token_insight_v3_{$issuer}_{$code}";
-        $insight = Cache::get($cacheKey);
-        if (!$insight || empty($insight['asset_code']) || !isset($insight['total_supply'])) {
-            try {
-                $insight = $service->getTokenInsight($issuer, $code, $assets[0]);
-                if (!empty($insight) && !empty($insight['asset_code'])) {
-                    Cache::put($cacheKey, $insight, 1800);
-                }
-            } catch (\Throwable $e) {
-                $insight = [];
-            }
+        try {
+            $insight = $service->getTokenInsight($issuer, $code, $assets[0]);
+        } catch (\Throwable $e) {
+            $insight = [];
         }
 
         $rawUsdPrice = (float)($insight['usd_price'] ?? 0);
@@ -2754,15 +2727,14 @@ EOT;
         $changeVal = (float)($insight['price_change_24h'] ?? 0.0);
         $change = ($changeVal >= 0 ? '+' : '') . number_format($changeVal, 2);
         
-        $liquidityVal = Cache::remember("token_liq_tvl_{$issuer}_{$code}", 1800, function () use ($service, $code, $issuer, $rawUsdPrice) {
-            try {
-                $xlmUsdPrice = $service->getXlmUsdPrice();
-                $liquidityInfo = $service->getLiquidityPoolsInfo($code, $issuer, $xlmUsdPrice, $rawUsdPrice);
-                return (float) ($liquidityInfo['total_tvl'] ?? 0.0);
-            } catch (\Throwable $e) {
-                return 0.0;
-            }
-        });
+        $liquidityVal = 0.0;
+        try {
+            $xlmUsdPrice = $service->getXlmUsdPrice();
+            $liquidityInfo = $service->getLiquidityPoolsInfo($code, $issuer, $xlmUsdPrice, $rawUsdPrice);
+            $liquidityVal = (float) ($liquidityInfo['total_tvl'] ?? 0.0);
+        } catch (\Throwable $e) {
+            $liquidityVal = 0.0;
+        }
         $liquidity = $this->formatTokenNumber($liquidityVal);
         
         $holdersCount = (int)(!empty($insight['holders']) ? $insight['holders'] : ($insight['trustlines'] ?? ($assets[0]['accounts']['authorized'] ?? 0)));
@@ -2798,17 +2770,10 @@ EOT;
 
         $token = StellarToken::where('issuer_public_key', $issuer)->first();
 
-        $cacheKeyAssets = "issuer_assets_{$issuer}";
-        $assets = Cache::get($cacheKeyAssets);
-        if (empty($assets)) {
-            try {
-                $assets = $service->getAssetsByIssuer($issuer);
-                if (!empty($assets)) {
-                    Cache::put($cacheKeyAssets, $assets, 3600);
-                }
-            } catch (\Throwable $e) {
-                $assets = [];
-            }
+        try {
+            $assets = $service->getAssetsByIssuer($issuer);
+        } catch (\Throwable $e) {
+            $assets = [];
         }
 
         if (empty($assets) && $token) {
@@ -2838,17 +2803,10 @@ EOT;
 
         $code = $assets[0]['asset_code'];
 
-        $cacheKey = "token_insight_v3_{$issuer}_{$code}";
-        $insight = Cache::get($cacheKey);
-        if (!$insight || empty($insight['asset_code']) || !isset($insight['total_supply'])) {
-            try {
-                $insight = $service->getTokenInsight($issuer, $code, $assets[0]);
-                if (!empty($insight) && !empty($insight['asset_code'])) {
-                    Cache::put($cacheKey, $insight, 1800);
-                }
-            } catch (\Throwable $e) {
-                $insight = [];
-            }
+        try {
+            $insight = $service->getTokenInsight($issuer, $code, $assets[0]);
+        } catch (\Throwable $e) {
+            $insight = [];
         }
 
         $rawUsdPrice = (float)($insight['usd_price'] ?? 0);
@@ -2858,15 +2816,14 @@ EOT;
         $changeVal = (float)($insight['price_change_24h'] ?? 0.0);
 
         // Live calculated liquidity matching frontend
-        $liquidityVal = Cache::remember("token_liq_tvl_{$issuer}_{$code}", 1800, function () use ($service, $code, $issuer, $rawUsdPrice) {
-            try {
-                $xlmUsdPrice = $service->getXlmUsdPrice();
-                $liqInfo = $service->getLiquidityPoolsInfo($code, $issuer, $xlmUsdPrice, $rawUsdPrice);
-                return (float)($liqInfo['total_tvl'] ?? 0.0);
-            } catch (\Throwable $e) {
-                return 0.0;
-            }
-        });
+        $liquidityVal = 0.0;
+        try {
+            $xlmUsdPrice = $service->getXlmUsdPrice();
+            $liqInfo = $service->getLiquidityPoolsInfo($code, $issuer, $xlmUsdPrice, $rawUsdPrice);
+            $liquidityVal = (float)($liqInfo['total_tvl'] ?? 0.0);
+        } catch (\Throwable $e) {
+            $liquidityVal = 0.0;
+        }
         $liquidityStr = $this->formatTokenNumber($liquidityVal);
 
         // Holders count matching frontend

@@ -39,20 +39,12 @@ class StellarTokenService
         $assetId = "{$code}-{$issuer}";
         $expertUrl = "https://api.stellar.expert/explorer/public/asset/{$assetId}";
         $seData = null;
-        $seCacheKey = "se_asset_details_{$assetId}";
         try {
             $response = Http::timeout(4)->get($expertUrl);
             if ($response->ok()) {
                 $seData = $response->json();
-                if (!empty($seData)) {
-                    Cache::put($seCacheKey, $seData, 3600); // Cache for 1 hour
-                }
-            } else {
-                $seData = Cache::get($seCacheKey);
             }
-        } catch (\Throwable $e) {
-            $seData = Cache::get($seCacheKey);
-        }
+        } catch (\Throwable $e) {}
 
         $totalTrades = (int) ($seData['trades'] ?? 0);
         $tradedAmountRaw = $seData['traded_amount'] ?? null;
@@ -1058,10 +1050,7 @@ class StellarTokenService
 
     public function getHoldersData(string $issuer, string $code, ?string $tokenDomain): array
     {
-        $cacheKey = "holders_data_v2_{$issuer}_{$code}";
-        
-        return Cache::remember($cacheKey, 120, function () use ($issuer, $code, $tokenDomain) {
-            $expertUrl = "https://api.stellar.expert/explorer/public/asset/{$code}-{$issuer}";
+        $expertUrl = "https://api.stellar.expert/explorer/public/asset/{$code}-{$issuer}";
             
             $decimals = 7;
             try {
@@ -1278,7 +1267,6 @@ class StellarTokenService
                 'top_holders' => array_slice($individualHolders, 0, 10),
                 'project_holders' => $projectHolders,
             ];
-        });
     }
 
     private function getStellarTermTicker(): array
