@@ -56,11 +56,30 @@
           </div>
 
           <!-- ACTIONS SKELETON -->
-          <div class="acts">
-            <div class="h-9 w-32 bg-[#1D2531]/80 rounded-lg"></div>
-            <div class="h-9 w-40 bg-[#1D2531]/80 rounded-lg"></div>
-            <div class="h-9 w-10 bg-[#1D2531]/60 rounded-lg"></div>
-            <div class="h-9 w-10 bg-[#1D2531]/60 rounded-lg"></div>
+          <div class="acts-container w-full mt-4">
+            <!-- Mobile Action Skeleton (< 640px) -->
+            <div class="flex flex-col gap-2.5 w-full sm:hidden">
+              <div class="h-10 w-full bg-[#1D2531]/80 rounded-lg"></div>
+              <div class="grid grid-cols-2 gap-2 w-full">
+                <div class="h-9 w-full bg-[#1D2531]/70 rounded-lg"></div>
+                <div class="h-9 w-full bg-[#1D2531]/70 rounded-lg"></div>
+              </div>
+              <div class="grid grid-cols-2 gap-2 w-full">
+                <div class="h-9 w-full bg-[#1D2531]/50 rounded-lg"></div>
+                <div class="h-9 w-full bg-[#1D2531]/50 rounded-lg"></div>
+              </div>
+            </div>
+
+            <!-- Desktop Action Skeleton (>= 640px) -->
+            <div class="hidden sm:flex sm:flex-row items-center justify-between w-full gap-2.5">
+              <div class="flex flex-wrap items-center gap-2.5">
+                <div class="h-9 w-32 bg-[#1D2531]/80 rounded-lg"></div>
+                <div class="h-9 w-28 bg-[#1D2531]/70 rounded-lg"></div>
+                <div class="h-9 w-40 bg-[#1D2531]/70 rounded-lg"></div>
+                <div class="h-9 w-10 bg-[#1D2531]/60 rounded-lg"></div>
+              </div>
+              <div class="h-9 w-44 bg-[#1D2531]/60 rounded-lg"></div>
+            </div>
           </div>
         </section>
 
@@ -592,35 +611,85 @@
           </div>
 
           <!-- Actions -->
-          <div class="acts flex flex-col sm:flex-row justify-between items-center w-full gap-2.5">
-            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 w-full sm:w-auto">
+          <div class="acts-container w-full mt-4">
+            <!-- Mobile Action Layout (< 640px) -->
+            <div class="flex flex-col gap-2.5 w-full sm:hidden">
+              <!-- Primary CTA: Trade Asset -->
               <a :href="scopulyTradeUrl" target="_blank" rel="noopener noreferrer"
-                class="btn brand select-none inline-flex items-center gap-1.5">
-                <ArrowRightLeft class="w-4 h-4" /> Trade Asset
+                class="acts-btn brand w-full justify-center h-10 text-sm font-bold shadow-md">
+                <ArrowRightLeft class="w-4 h-4 shrink-0" />
+                <span>Trade Asset</span>
               </a>
-              <button @click="isAlertModalOpen = true"
-                class="btn dark select-none inline-flex items-center gap-1.5 hover:border-cyan-500/50 transition cursor-pointer"
-                title="Set Price & Volatility Alert">
-                <BellRing class="w-4 h-4 text-cyan-400" />
-                <span>Set Alert</span>
-              </button>
-              <button @click="handleEstablishTrustline" :disabled="establishingTrustline"
-                class="btn dark select-none inline-flex items-center gap-1.5 hover:border-cyan-500/50 transition">
-                <Lock class="w-4 h-4 text-cyan-400" />
-                <span v-if="establishingTrustline" class="animate-pulse">Establishing...</span>
-                <span v-else>Establish Trustline</span>
-              </button>
-              <!-- Website -->
-              <a v-if="token.website" :href="token.website" target="_blank" title="Website" aria-label="Website"
-                class="btn icon-btn select-none hover:text-white transition">
-                <Globe class="w-4 h-4 text-slate-300" />
-              </a>
+
+              <!-- Secondary Row: Set Alert & Establish Trustline -->
+              <div class="grid grid-cols-2 gap-2 w-full">
+                <button @click="isAlertModalOpen = true"
+                  class="acts-btn dark w-full justify-center h-9 text-xs font-semibold"
+                  title="Set Price & Volatility Alert">
+                  <BellRing class="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span class="truncate">Set Alert</span>
+                </button>
+                <button @click="handleEstablishTrustline" :disabled="establishingTrustline"
+                  class="acts-btn dark w-full justify-center h-9 text-xs font-semibold"
+                  :title="establishingTrustline ? 'Establishing trustline...' : 'Establish Trustline'">
+                  <Lock class="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span v-if="establishingTrustline" class="animate-pulse truncate">Establishing...</span>
+                  <span v-else class="truncate">Establish Trustline</span>
+                </button>
+              </div>
+
+              <!-- Tertiary Row: Website & Report Info -->
+              <div class="grid gap-2 w-full" :class="token.website ? 'grid-cols-2' : 'grid-cols-1'">
+                <a v-if="token.website" :href="token.website" target="_blank" rel="noopener noreferrer"
+                  class="acts-btn dark w-full justify-center h-9 text-xs font-semibold text-slate-300 hover:text-white"
+                  title="Official Website">
+                  <Globe class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <span class="truncate">Website</span>
+                </a>
+                <button @click="isVerified ? (reportModalOpen = true) : (verificationModal = true)"
+                  class="acts-btn dark w-full justify-center h-9 text-xs font-semibold text-slate-400 hover:text-slate-200"
+                  title="Report Information">
+                  <Flag class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <span class="truncate">Report Info</span>
+                </button>
+              </div>
             </div>
-            <div class="w-full sm:w-auto flex justify-center sm:justify-end">
-              <button @click="isVerified ? (reportModalOpen = true) : (verificationModal = true)"
-                class="btn dark select-none inline-flex items-center gap-1.5 hover:border-cyan-500/50 transition">
-                <span>Report Incorrect Info</span>
-              </button>
+
+            <!-- Desktop Action Layout (>= 640px) -->
+            <div class="hidden sm:flex sm:flex-row items-center justify-between w-full gap-2.5">
+              <div class="flex flex-wrap items-center gap-2.5">
+                <a :href="scopulyTradeUrl" target="_blank" rel="noopener noreferrer"
+                  class="acts-btn brand inline-flex items-center gap-1.5">
+                  <ArrowRightLeft class="w-4 h-4 shrink-0" />
+                  <span>Trade Asset</span>
+                </a>
+                <button @click="isAlertModalOpen = true"
+                  class="acts-btn dark inline-flex items-center gap-1.5 hover:border-cyan-500/50 transition cursor-pointer"
+                  title="Set Price & Volatility Alert">
+                  <BellRing class="w-4 h-4 text-cyan-400 shrink-0" />
+                  <span>Set Alert</span>
+                </button>
+                <button @click="handleEstablishTrustline" :disabled="establishingTrustline"
+                  class="acts-btn dark inline-flex items-center gap-1.5 hover:border-cyan-500/50 transition cursor-pointer">
+                  <Lock class="w-4 h-4 text-cyan-400 shrink-0" />
+                  <span v-if="establishingTrustline" class="animate-pulse">Establishing...</span>
+                  <span v-else>Establish Trustline</span>
+                </button>
+                <!-- Website -->
+                <a v-if="token.website" :href="token.website" target="_blank" rel="noopener noreferrer"
+                  title="Official Website" aria-label="Website"
+                  class="acts-btn icon-btn hover:text-white transition">
+                  <Globe class="w-4 h-4 text-slate-300 shrink-0" />
+                </a>
+              </div>
+              <div class="flex items-center">
+                <button @click="isVerified ? (reportModalOpen = true) : (verificationModal = true)"
+                  class="acts-btn dark inline-flex items-center gap-1.5 hover:border-cyan-500/50 transition cursor-pointer"
+                  title="Report Information">
+                  <Flag class="w-4 h-4 text-slate-400 shrink-0" />
+                  <span>Report Info</span>
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -2001,7 +2070,8 @@ import {
   Info,
   Share2,
   Star,
-  BellRing
+  BellRing,
+  Flag
 } from "lucide-vue-next";
 
 const loading = ref(true)
@@ -3957,6 +4027,87 @@ watch(selectedChartType, () => {
   font-size: 11.5px;
   font-weight: 500;
   margin-top: 3px;
+}
+
+.acts-container {
+  margin-top: 18px;
+}
+
+.acts-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: normal;
+  border: 1px solid var(--line2);
+  background: var(--panel2);
+  color: var(--ink);
+  padding: 8px 16px;
+  border-radius: 9px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.acts-btn:hover {
+  border-color: var(--amber);
+  transform: translateY(-1px);
+}
+
+.acts-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.acts-btn.brand {
+  background: var(--amber);
+  color: #08131a;
+  border-color: transparent;
+  font-weight: 700;
+  box-shadow: 0 0 16px rgba(18, 203, 238, 0.25);
+}
+
+.acts-btn.brand:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 0 20px rgba(18, 203, 238, 0.35);
+}
+
+.acts-btn.dark {
+  background: var(--panel2);
+  border-color: var(--line);
+}
+
+.acts-btn.dark:hover {
+  background: var(--line);
+  border-color: var(--amber);
+}
+
+.acts-btn.icon-btn {
+  padding: 0;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+html.light .acts-btn.dark {
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+  color: #1E293B;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+html.light .acts-btn.dark:hover {
+  background: #F1F5F9;
+  border-color: #0284C7;
+  color: #0F172A;
 }
 
 .acts {
