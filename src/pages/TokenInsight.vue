@@ -1696,6 +1696,10 @@
                   <div v-if="loading || liquidityLoading" class="text-xs text-slate-400 font-sans animate-pulse">Analyzing...
                   </div>
                   <ul v-else class="text-xs space-y-1 text-slate-300 font-sans">
+                    <li v-if="bullishSignals.length === 0" class="flex items-start gap-1.5 leading-relaxed text-slate-500">
+                      <span class="text-slate-600 font-bold">—</span>
+                      <span>No bullish signals detected</span>
+                    </li>
                     <li v-for="sig in bullishSignals" :key="sig" class="flex items-start gap-1.5 leading-relaxed">
                       <span class="text-emerald-400 font-bold">✓</span>
                       <span>{{ sig }}</span>
@@ -1709,6 +1713,10 @@
                   <div v-if="loading || liquidityLoading" class="text-xs text-slate-400 font-sans animate-pulse">Analyzing...
                   </div>
                   <ul v-else class="text-xs space-y-1 text-slate-300 font-sans">
+                    <li v-if="bearishSignals.length === 0" class="flex items-start gap-1.5 leading-relaxed text-slate-500">
+                      <span class="text-slate-600 font-bold">—</span>
+                      <span>No critical bearish indicators flagged</span>
+                    </li>
                     <li v-for="sig in bearishSignals" :key="sig" class="flex items-start gap-1.5 leading-relaxed">
                       <span class="text-rose-400 font-bold">⚠</span>
                       <span>{{ sig }}</span>
@@ -2407,6 +2415,14 @@ const low24hUsd = computed(() => {
 })
 
 const bullishSignals = computed(() => {
+  const score = Number(token.rating?.average ?? 0)
+  const isHighRisk = score <= 0 || healthLabel.value.text === 'High'
+
+  // If Trust Score is 0.0 or High Risk, suppress all bullish signals
+  if (isHighRisk) {
+    return []
+  }
+
   const list = []
   if (historicalStats.value?.price_change_pct > 10) {
     list.push(`Price momentum is positive (+${historicalStats.value.price_change_pct}% recently)`)
@@ -2423,14 +2439,17 @@ const bullishSignals = computed(() => {
   if (historicalStats.value?.volume_change_pct > 10) {
     list.push(`Trading volume is up (+${historicalStats.value.volume_change_pct}% recently)`)
   }
-  if (list.length === 0) {
-    list.push('No critical bullish indicators flagged')
-  }
   return list
 })
 
 const bearishSignals = computed(() => {
   const list = []
+  const score = Number(token.rating?.average ?? 0)
+  const isHighRisk = score <= 0 || healthLabel.value.text === 'High'
+
+  if (isHighRisk) {
+    list.push(`Low baseline trust score (${score.toFixed(1)}/10 High Risk)`)
+  }
   const tvl = token.liquidity_overview?.total_tvl || token.liquidity_tvl || 0
   if (tvl < 500) {
     list.push(`Liquidity pool is shallow ($${formatNumber(tvl)} TVL), check slippage`)
@@ -2449,9 +2468,6 @@ const bearishSignals = computed(() => {
   }
   if (historicalStats.value?.volume_change_pct <= -10) {
     list.push(`Trading volume is down (${historicalStats.value.volume_change_pct}% recently)`)
-  }
-  if (list.length === 0) {
-    list.push('No critical bearish indicators flagged')
   }
   return list
 })
