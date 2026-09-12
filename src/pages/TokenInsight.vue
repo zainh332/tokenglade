@@ -308,12 +308,12 @@
                   <circle v-if="!loading && token.rating !== null" cx="28" cy="28" r="24" fill="none"
                     :stroke="token.rating?.average >= 8 ? '#2ED47A' : (token.rating?.average >= 5 ? '#FF8A3D' : '#F0616D')"
                     stroke-width="5" stroke-linecap="round" :stroke-dasharray="150.8"
-                    :stroke-dashoffset="150.8 - (150.8 * (token.rating?.average ?? 7.5)) / 10"
+                    :stroke-dashoffset="150.8 - (150.8 * (token.rating?.average ?? 0)) / 10"
                     transform="rotate(-90 28 28)" />
                 </svg>
                 <b v-if="loading || token.rating === null" class="text-slate-500 animate-pulse text-xs font-normal">—</b>
                 <b v-else :class="token.rating?.average >= 8 ? 'up' : (token.rating?.average >= 5 ? 'dim' : 'down')">{{
-                  token.rating?.average ? token.rating.average.toFixed(1) : '7.5' }}</b>
+                  (token.rating?.average ?? 0).toFixed(1) }}</b>
               </div>
             </div>
           </div>
@@ -1677,12 +1677,12 @@
                 <div class="flex justify-between items-center mb-1.5">
                   <span class="text-xs font-sans font-medium text-slate-400">Composite Score</span>
                   <span v-if="loading || token.rating === null" class="text-xs text-slate-500 font-mono animate-pulse">Calculating...</span>
-                  <span v-else class="text-sm font-bold font-mono text-white">{{ token.rating?.average ? token.rating.average.toFixed(1) : '7.5' }} / 10</span>
+                  <span v-else class="text-sm font-bold font-mono text-white">{{ (token.rating?.average ?? 0).toFixed(1) }} / 10</span>
                 </div>
                 <div class="track h-2 bg-[#1a212c] rounded-full overflow-hidden">
                   <i v-if="!loading && token.rating !== null" class="block h-full rounded-full transition-all duration-500"
                     :class="token.rating?.average >= 8 ? 'bg-[#2ED47A]' : (token.rating?.average >= 5 ? 'bg-[#FF8A3D]' : 'bg-[#F0616D]')"
-                    :style="{ width: ((token.rating?.average ?? 7.5) * 10) + '%' }"></i>
+                    :style="{ width: ((token.rating?.average ?? 0) * 10) + '%' }"></i>
                   <i v-else class="block h-full bg-slate-700/40 animate-pulse w-full"></i>
                 </div>
               </div>
@@ -2762,7 +2762,7 @@ const avgTradeSizeUsd = computed(() => {
 });
 
 const healthLabel = computed(() => {
-  const score = token.rating?.average ?? 7.5
+  const score = token.rating?.average ?? 0
   if (score >= 8) return { text: "Low", color: "text-green-600" }
   if (score >= 5) return { text: "Medium", color: "text-yellow-500" }
   return { text: "High", color: "text-red-500" }
@@ -2770,12 +2770,12 @@ const healthLabel = computed(() => {
 
 const ratingBars = computed(() => {
   const r = token.rating || {
-    age: 8.5,
-    activity: 7.2,
-    trustlines: 6.8,
-    liquidity: 7.5,
-    volume7d: 6.9,
-    interop: 8.0,
+    age: 0,
+    activity: 0,
+    trustlines: 0,
+    liquidity: 0,
+    volume7d: 0,
+    interop: 0,
   }
   return [
     { key: 'Age', label: 'Age', val: r.age || 0, sub: 'Asset age & creation longevity on Stellar network' },
@@ -2807,7 +2807,7 @@ const averageTokensPerHolder = computed(() => {
 
 const holderGrowth = computed(() => {
   const totalHolders = token.holders || 10;
-  const activityFactor = (token.rating?.activity ?? 5) / 10;
+  const activityFactor = (token.rating?.activity ?? 0) / 10;
 
   const growth24h = Math.max(1, totalHolders * 0.0005 * activityFactor);
   const growth7d = Math.max(3, totalHolders * 0.0035 * activityFactor);
@@ -2832,7 +2832,7 @@ const biggestIndividualHolder = computed(() => {
 
 const aiRiskSummary = computed(() => {
   const code = token.asset_code || 'this token';
-  const score = token.rating?.average ?? 7.5;
+  const score = token.rating?.average ?? 0;
   const tvl = token.liquidity_overview?.total_tvl || token.liquidity_tvl || 0;
   const totalTrades = token.activity?.total_trades || 0;
 

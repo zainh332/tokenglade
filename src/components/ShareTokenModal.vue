@@ -651,11 +651,13 @@ async function renderCard() {
 
   const effectiveLiquidity = resolvedLiquidity.value > 0 ? resolvedLiquidity.value : (Number(props.liquidity) || 0);
 
-  const stats = [
-    { label: 'TOTAL LIQUIDITY', val: '$' + formatNumber(effectiveLiquidity), color: '#FFFFFF' },
-    { label: 'TOTAL HOLDERS', val: formatNumber(props.holders), color: '#FFFFFF' },
-    { label: 'TRUST SCORE', val: ((props.token.rating?.average ?? 7.5)).toFixed(1) + ' / 10', color: (props.token.rating?.average ?? 7.5) >= 8 ? '#2ED47A' : '#12CBEE' }
-  ];
+    const trustScoreVal = Number(props.token.rating?.average ?? 0);
+    const trustScoreColor = trustScoreVal >= 8 ? '#2ED47A' : (trustScoreVal >= 5 ? '#12CBEE' : '#F0616D');
+    const stats = [
+      { label: 'TOTAL LIQUIDITY', val: '$' + formatNumber(effectiveLiquidity), color: '#FFFFFF' },
+      { label: 'TOTAL HOLDERS', val: formatNumber(props.holders), color: '#FFFFFF' },
+      { label: 'TRUST SCORE', val: trustScoreVal.toFixed(1) + ' / 10', color: trustScoreColor }
+    ];
 
   stats.forEach((st, idx) => {
     const x = 60 + idx * (tileW + gap);

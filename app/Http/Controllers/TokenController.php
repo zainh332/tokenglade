@@ -1596,13 +1596,13 @@ EOT;
                             'payments_volume' => 0,
                         ],
                         'rating'           => [
-                            'age'        => 5,
-                            'activity'   => 5,
-                            'trustlines' => 5,
-                            'liquidity'  => 5,
-                            'volume7d'   => 5,
-                            'interop'    => 5,
-                            'average'    => 5,
+                            'age'        => 0,
+                            'activity'   => 0,
+                            'trustlines' => 0,
+                            'liquidity'  => 0,
+                            'volume7d'   => 0,
+                            'interop'    => 0,
+                            'average'    => 0,
                         ],
                         'liquidity_overview' => null,
                         'token_domain'       => null,
@@ -2750,7 +2750,7 @@ EOT;
         $holdersCount = (int)(!empty($insight['holders']) ? $insight['holders'] : ($insight['trustlines'] ?? ($assets[0]['accounts']['authorized'] ?? 0)));
         $holders = $this->formatTokenNumber($holdersCount);
 
-        $rating = number_format((float)($insight['rating']['average'] ?? 7.5), 1);
+        $rating = number_format((float)($insight['rating']['average'] ?? 0), 1);
 
         $cardVersion = substr(md5($usdPrice . $liquidity . $holders . floor(time() / 300)), 0, 8);
         $cardUrl = "https://tokenglade.com/t/{$issuer}/card.png?v={$cardVersion}";
@@ -2840,7 +2840,7 @@ EOT;
         $holdersCount = (int)(!empty($insight['holders']) ? $insight['holders'] : ($insight['trustlines'] ?? ($assets[0]['accounts']['authorized'] ?? 0)));
         $holdersStr = $this->formatTokenNumber($holdersCount);
 
-        $rating = number_format((float)($insight['rating']['average'] ?? 7.5), 1);
+        $rating = number_format((float)($insight['rating']['average'] ?? 0), 1);
 
         $isDbVerified = false;
         if ($token) {
@@ -3066,7 +3066,7 @@ EOT;
             $stats = [
                 ['label' => 'TOTAL LIQUIDITY', 'val' => '$' . $liquidityStr, 'color' => $white],
                 ['label' => 'TOTAL HOLDERS', 'val' => $holdersStr, 'color' => $white],
-                ['label' => 'TRUST SCORE', 'val' => $rating . ' / 10', 'color' => ((float)$rating >= 8 ? $emeraldColor : $cyanColor)],
+                ['label' => 'TRUST SCORE', 'val' => $rating . ' / 10', 'color' => ((float)$rating >= 8 ? $emeraldColor : ((float)$rating >= 5 ? $cyanColor : $roseColor))],
             ];
 
             $cardBg = imagecolorallocatealpha($img, 255, 255, 255, 123); // rgba(255,255,255,0.03)
