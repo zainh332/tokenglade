@@ -204,7 +204,7 @@
           We couldn't retrieve on-chain ledger information for the requested issuer address on the Stellar network.
         </p>
         <div class="flex items-center gap-3 mt-6">
-          <button @click="fetchToken(0)"
+          <button @click="loadAllTokenData()"
             class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-95 text-xs font-extrabold uppercase tracking-wider text-white rounded-xl transition duration-150 cursor-pointer shadow-lg shadow-cyan-500/10">
             Retry Connection
           </button>
@@ -2245,7 +2245,7 @@ const handleEstablishTrustline = async () => {
         text: `Successfully established trustline for ${code}.`,
         confirmButtonColor: '#06b6d4'
       })
-      fetchToken()
+      loadAllTokenData()
     } else {
       Swal.fire('Submission Failed', resSubmit.data?.message || 'Failed to submit trustline transaction.', 'error')
     }
@@ -2482,9 +2482,14 @@ const calculatedSlippage = computed(() => {
 })
 
 
+const getAssetParams = () => {
+  const currentIssuer = route.query.issuer || route.params.issuer || issuerInput.value || token.issuer;
+  const currentCode = route.query.asset_code || route.query.code || route.params.code || token.asset_code;
+  return { code: currentCode, issuer: currentIssuer };
+}
+
 const fetchHistoricalStats = async () => {
-  const code = token.asset_code || route.params.code
-  const issuer = token.issuer || route.params.issuer
+  const { code, issuer } = getAssetParams()
   if (!code || !issuer) {
     historicalStatsLoading.value = false
     return
@@ -2509,20 +2514,15 @@ const fetchHistoricalStats = async () => {
 }
 
 const fetchOrderBook = async () => {
-  const code = token.asset_code || route.params.code
-  const issuer = token.issuer || route.params.issuer
+  const { code, issuer } = getAssetParams()
   if (!code || !issuer) {
     orderBook.loading = false
     return
   }
   orderBook.loading = true
   try {
-    const envRes = await axios.get('/api/env')
-    const isTestnet = envRes.data?.stellar_env !== 'public'
-    const horizonUrl = isTestnet ? 'https://horizon-testnet.stellar.org' : 'https://horizon.stellar.org'
-
     const sellingType = code.length <= 4 ? 'credit_alphanum4' : 'credit_alphanum12'
-    const res = await axios.get(`${horizonUrl}/order_book`, {
+    const res = await axios.get('https://horizon.stellar.org/order_book', {
       params: {
         selling_asset_type: sellingType,
         selling_asset_code: code,
@@ -2986,31 +2986,19 @@ function fallbackCopy(onSuccess) {
 }
 
 async function fetchToken(retryCount = 0) {
-  activeTab.value = 'overview';
-  const currentIssuer = route.query.issuer || route.params.issuer || issuerInput.value;
-  const currentCode = route.query.asset_code || route.query.code || route.params.code;
+  const { code: currentCode, issuer: currentIssuer } = getAssetParams();
   if (!currentIssuer && !currentCode) {
     loading.value = false;
     notFound.value = true;
     return;
   }
-  if (retryCount === 0) {
+  if (retryCount === 0 && !token.asset_code) {
     resetTokenState();
   }
   loading.value = true
   imageError.value = false
   notFound.value = false
-  holdersLoading.value = true
-  liquidityLoading.value = true
-  historicalStatsLoading.value = true
-  if (chartInstance) {
-    try {
-      chartInstance.remove()
-    } catch (e) {
-      console.error("Error removing chart instance:", e)
-    }
-    chartInstance = null
-  }
+  
   try {
     const res = await axios.get("/api/token/show", {
       params: {
@@ -3030,37 +3018,28 @@ async function fetchToken(retryCount = 0) {
       return
     }
 
-    Object.assign(token, res.data)
+    const resData = res.data;
+    Object.keys(resData).forEach(key => {
+      if (key === 'liquidity_overview') {
+        if (!token.liquidity_overview || !token.liquidity_overview.pools || token.liquidity_overview.pools.length === 0) {
+          token.liquidity_overview = resData.liquidity_overview;
+        }
+      } else if (key === 'top_holders' || key === 'project_holders') {
+        if (!token[key] || token[key].length === 0) {
+          token[key] = resData[key];
+        }
+      } else {
+        token[key] = resData[key];
+      }
+    });
+
     if (token.issuer) {
       issuerInput.value = token.issuer;
     }
 
-    // Reset holders and liquidity to empty state initially
-    token.top_holders = []
-    token.project_holders = []
-    token.liquidity_overview = {
-      total_tvl: 0,
-      pools_count: 0,
-      largest_pool_name: "-",
-      largest_pool_tvl: 0,
-      lp_volume_24h: 0,
-      avg_apr: 0,
-      depth_2pct: 0,
-      pools: []
+    if (res.data.votes) {
+      votes.value = res.data.votes;
     }
-
-    votes.value = res.data.votes || {
-      trusted: 0,
-      suspicious: 0,
-      scam: 0
-    }
-
-    // Trigger background loads immediately in the background
-    fetchHolders()
-    fetchLiquidity()
-    fetchHistoricalStats()
-    fetchOrderBook()
-    fetchLargeEvents()
   } catch (error) {
     console.error("Error fetching token data:", error)
     if (retryCount < 2) {
@@ -3070,15 +3049,48 @@ async function fetchToken(retryCount = 0) {
     notFound.value = true
   } finally {
     loading.value = false
-    if (!notFound.value) {
-      nextTick(() => {
-        setTimeout(async () => {
-          await initChart()
-          await fetchChartData()
-        }, 50)
-      })
-    }
   }
+}
+
+function loadAllTokenData() {
+  activeTab.value = 'overview';
+  const { code, issuer } = getAssetParams();
+  if (!issuer && !code) {
+    loading.value = false;
+    notFound.value = true;
+    return;
+  }
+
+  if (chartInstance) {
+    try {
+      chartInstance.remove()
+    } catch (e) {
+      console.error("Error removing chart instance:", e)
+    }
+    chartInstance = null
+  }
+
+  resetTokenState();
+  loading.value = true;
+  holdersLoading.value = true;
+  liquidityLoading.value = true;
+  historicalStatsLoading.value = true;
+  largeEventsLoading.value = true;
+
+  // Run all parallel requests immediately
+  fetchToken();
+  fetchLiquidity();
+  fetchHistoricalStats();
+  fetchHolders();
+  fetchOrderBook();
+  fetchLargeEvents();
+
+  nextTick(() => {
+    setTimeout(async () => {
+      await initChart();
+      await fetchChartData();
+    }, 50);
+  });
 }
 
 function switchTab(tab) {
@@ -3106,10 +3118,11 @@ const formatNumberWithCommas = (val) => {
 }
 
 async function fetchLargeEvents() {
-  const code = token.asset_code || route.params.code
-  const issuer = token.issuer || route.params.issuer || issuerInput.value
-  
-  if (!code || !issuer) return
+  const { code, issuer } = getAssetParams();
+  if (!code || !issuer) {
+    largeEventsLoading.value = false;
+    return;
+  }
   
   largeEventsLoading.value = true
   try {
@@ -3125,7 +3138,8 @@ async function fetchLargeEvents() {
 }
 
 async function fetchHolders() {
-  if (!token.issuer || !token.asset_code) {
+  const { code, issuer } = getAssetParams();
+  if (!issuer || !code) {
     holdersLoading.value = false
     return
   }
@@ -3133,9 +3147,9 @@ async function fetchHolders() {
   try {
     const res = await axios.get("/api/token/holders", {
       params: {
-        issuer: token.issuer,
-        code: token.asset_code,
-        token_domain: token.token_domain
+        issuer: issuer,
+        code: code,
+        token_domain: token.token_domain || undefined
       }
     })
     token.top_holders = res.data.top_holders || []
@@ -3148,7 +3162,8 @@ async function fetchHolders() {
 }
 
 async function fetchLiquidity() {
-  if (!token.issuer || !token.asset_code) {
+  const { code, issuer } = getAssetParams();
+  if (!issuer || !code) {
     liquidityLoading.value = false
     return
   }
@@ -3156,23 +3171,16 @@ async function fetchLiquidity() {
   try {
     const res = await axios.get("/api/token/liquidity", {
       params: {
-        issuer: token.issuer,
-        code: token.asset_code,
-        usd_price: token.usd_price
+        issuer: issuer,
+        code: code,
+        usd_price: token.usd_price || undefined
       }
     })
-    token.liquidity_overview = res.data || {
-      total_tvl: 0,
-      pools_count: 0,
-      largest_pool_name: "-",
-      largest_pool_tvl: 0,
-      lp_volume_24h: 0,
-      avg_apr: 0,
-      depth_2pct: 0,
-      pools: []
-    }
-    if (res.data && res.data.total_tvl !== undefined && res.data.total_tvl !== null) {
-      token.liquidity_tvl = Number(res.data.total_tvl);
+    if (res.data) {
+      token.liquidity_overview = res.data;
+      if (res.data.total_tvl !== undefined && res.data.total_tvl !== null) {
+        token.liquidity_tvl = Number(res.data.total_tvl);
+      }
     }
   } catch (error) {
     console.error("Error fetching liquidity:", error)
@@ -3307,7 +3315,7 @@ async function contactVerification(formData) {
     })
     verificationLoading.value = false
     verificationModal.value = false
-    fetchToken()
+    loadAllTokenData()
   } catch (e) {
     verificationLoading.value = false
     console.error(e)
@@ -3416,7 +3424,7 @@ watch(
     const code = query.asset_code || query.code || params.code || '';
     issuerInput.value = issuer;
     if (issuer || code) {
-      fetchToken();
+      loadAllTokenData();
       startLiveTradesPolling();
     } else {
       loading.value = false;

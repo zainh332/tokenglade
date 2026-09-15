@@ -1441,50 +1441,27 @@ EOT;
                 return response()->json(['error' => 'Asset issuer is required'], 400);
             }
 
-            $stellarToken = StellarToken::where('issuer_public_key', $issuer)
-                ->latest()->first();
+            $cacheKey = "api_token_show_{$code}_{$issuer}";
+            $result = Cache::remember($cacheKey, 30, function () use ($issuer, $code, $service) {
+                $stellarToken = StellarToken::where('issuer_public_key', $issuer)
+                    ->latest()->first();
 
-            // 1. Fetch assets for issuer
-            try {
-                $assets = $service->getAssetsByIssuer($issuer, $code);
-            } catch (\Throwable $e) {
-                Log::warning("Failed to get assets by issuer for {$issuer}: " . $e->getMessage());
-                $assets = [];
-            }
+                // 1. Fetch assets for issuer
+                try {
+                    $assets = $service->getAssetsByIssuer($issuer, $code);
+                } catch (\Throwable $e) {
+                    Log::warning("Failed to get assets by issuer for {$issuer}: " . $e->getMessage());
+                    $assets = [];
+                }
 
-            // 2. DB Fallback if Horizon returned empty or errored
-            if (empty($assets) && $stellarToken) {
-                $assets = [[
-                    'asset_code' => $stellarToken->asset_code,
-                    'asset_issuer' => $stellarToken->issuer_public_key,
-                    'asset_type' => strlen($stellarToken->asset_code) <= 4 ? 'credit_alphanum4' : 'credit_alphanum12',
-                    'accounts' => ['authorized' => 0],
-                    'balances' => ['authorized' => (string)$stellarToken->total_supply],
-                    'num_claimable_balances' => 0,
-                    'num_liquidity_pools' => 0,
-                    'num_contracts' => 0,
-                    'claimable_balances_amount' => '0',
-                    'liquidity_pools_amount' => '0',
-                    'contracts_amount' => '0',
-                    'flags' => [
-                        'auth_required' => false,
-                        'auth_revocable' => false,
-                        'auth_immutable' => false,
-                        'auth_clawback_enabled' => false,
-                    ]
-                ]];
-            }
-
-            // 3. Fallback to StellarMarketToken if exists in DB
-            if (empty($assets)) {
-                $marketToken = StellarMarketToken::where('asset_issuer', $issuer)->first();
-                if ($marketToken) {
+                // 2. DB Fallback if Horizon returned empty or errored
+                if (empty($assets) && $stellarToken) {
                     $assets = [[
-                        'asset_code' => $marketToken->asset_code,
-                        'asset_issuer' => $marketToken->asset_issuer,
-                        'asset_type' => strlen($marketToken->asset_code) <= 4 ? 'credit_alphanum4' : 'credit_alphanum12',
-                        'accounts' => ['authorized' => $marketToken->current_holders ?? 0],
-                        'balances' => ['authorized' => '0'],
+                        'asset_code' => $stellarToken->asset_code,
+                        'asset_issuer' => $stellarToken->issuer_public_key,
+                        'asset_type' => strlen($stellarToken->asset_code) <= 4 ? 'credit_alphanum4' : 'credit_alphanum12',
+                        'accounts' => ['authorized' => 0],
+                        'balances' => ['authorized' => (string)$stellarToken->total_supply],
                         'num_claimable_balances' => 0,
                         'num_liquidity_pools' => 0,
                         'num_contracts' => 0,
@@ -1499,53 +1476,78 @@ EOT;
                         ]
                     ]];
                 }
-            }
 
-            // 4. Fallback for Platform Token (e.g. TKG) or if code is known and issuer is valid
-            if (empty($assets) && $code) {
-                $isTkg = ($code === env('ASSET_CODE', 'TKG') && ($issuer === env('TKG_ISSUER_PUBLIC') || $issuer === env('TKG_ISSUER_TESTNET')));
-                
-                $assets = [[
-                    'asset_code' => $code,
-                    'asset_issuer' => $issuer,
-                    'asset_type' => strlen($code) <= 4 ? 'credit_alphanum4' : 'credit_alphanum12',
-                    'accounts' => ['authorized' => 0],
-                    'balances' => ['authorized' => $isTkg ? '100000000' : '0'],
-                    'num_claimable_balances' => 0,
-                    'num_liquidity_pools' => 0,
-                    'num_contracts' => 0,
-                    'claimable_balances_amount' => '0',
-                    'liquidity_pools_amount' => '0',
-                    'contracts_amount' => '0',
-                    'flags' => [
-                        'auth_required' => false,
-                        'auth_revocable' => false,
-                        'auth_immutable' => false,
-                        'auth_clawback_enabled' => false,
-                    ]
-                ]];
-            }
-
-            if (empty($assets)) {
-                return response()->json(['error' => 'No assets found for this issuer.'], 404);
-            }
-
-            // Select matching asset or first asset
-            $matchedAsset = $assets[0];
-            if ($code) {
-                foreach ($assets as $a) {
-                    if (strtoupper($a['asset_code'] ?? '') === $code) {
-                        $matchedAsset = $a;
-                        break;
+                // 3. Fallback to StellarMarketToken if exists in DB
+                if (empty($assets)) {
+                    $marketToken = StellarMarketToken::where('asset_issuer', $issuer)->first();
+                    if ($marketToken) {
+                        $assets = [[
+                            'asset_code' => $marketToken->asset_code,
+                            'asset_issuer' => $marketToken->asset_issuer,
+                            'asset_type' => strlen($marketToken->asset_code) <= 4 ? 'credit_alphanum4' : 'credit_alphanum12',
+                            'accounts' => ['authorized' => $marketToken->current_holders ?? 0],
+                            'balances' => ['authorized' => '0'],
+                            'num_claimable_balances' => 0,
+                            'num_liquidity_pools' => 0,
+                            'num_contracts' => 0,
+                            'claimable_balances_amount' => '0',
+                            'liquidity_pools_amount' => '0',
+                            'contracts_amount' => '0',
+                            'flags' => [
+                                'auth_required' => false,
+                                'auth_revocable' => false,
+                                'auth_immutable' => false,
+                                'auth_clawback_enabled' => false,
+                            ]
+                        ]];
                     }
                 }
-            }
-            $code = $matchedAsset['asset_code'];
 
-            // 4. Fetch Token Insight
-            try {
-                $insight = $service->getTokenInsight($issuer, $code, $matchedAsset);
-            } catch (\Throwable $e) {
+                // 4. Fallback for Platform Token (e.g. TKG) or if code is known and issuer is valid
+                if (empty($assets) && $code) {
+                    $isTkg = ($code === env('ASSET_CODE', 'TKG') && ($issuer === env('TKG_ISSUER_PUBLIC') || $issuer === env('TKG_ISSUER_TESTNET')));
+                    
+                    $assets = [[
+                        'asset_code' => $code,
+                        'asset_issuer' => $issuer,
+                        'asset_type' => strlen($code) <= 4 ? 'credit_alphanum4' : 'credit_alphanum12',
+                        'accounts' => ['authorized' => 0],
+                        'balances' => ['authorized' => $isTkg ? '100000000' : '0'],
+                        'num_claimable_balances' => 0,
+                        'num_liquidity_pools' => 0,
+                        'num_contracts' => 0,
+                        'claimable_balances_amount' => '0',
+                        'liquidity_pools_amount' => '0',
+                        'contracts_amount' => '0',
+                        'flags' => [
+                            'auth_required' => false,
+                            'auth_revocable' => false,
+                            'auth_immutable' => false,
+                            'auth_clawback_enabled' => false,
+                        ]
+                    ]];
+                }
+
+                if (empty($assets)) {
+                    return ['error' => 'No assets found for this issuer.', '_status' => 404];
+                }
+
+                // Select matching asset or first asset
+                $matchedAsset = $assets[0];
+                if ($code) {
+                    foreach ($assets as $a) {
+                        if (strtoupper($a['asset_code'] ?? '') === $code) {
+                            $matchedAsset = $a;
+                            break;
+                        }
+                    }
+                }
+                $code = $matchedAsset['asset_code'];
+
+                // 4. Fetch Token Insight
+                try {
+                    $insight = $service->getTokenInsight($issuer, $code, $matchedAsset);
+                } catch (\Throwable $e) {
                     Log::warning("Failed to get token insight for {$code}-{$issuer}: " . $e->getMessage());
                     $insight = [
                         'asset_code'       => $code,
@@ -1607,198 +1609,205 @@ EOT;
                         'liquidity_overview' => null,
                         'token_domain'       => null,
                     ];
-            }
-
-            $isDbVerified = false;
-            if ($stellarToken) {
-                $isDbVerified = Token::where('stellar_token_id', $stellarToken->id)
-                    ->where('token_verify', 1)
-                    ->exists();
-            }
-
-            $verificationProject = VerifiedProject::where('identifier', $issuer)
-                ->where('blockchain_id', 1)
-                ->latest()
-                ->first();
-
-            $isVerified = $isDbVerified || ($verificationProject && $verificationProject->status == 1);
-            $isVerificationPending = $verificationProject && $verificationProject->status == 2;
-
-            $logo = $insight['image'] ?? null;
-            $website = $insight['website'] ?? null;
-            $documentation = $insight['documentation'] ?? null;
-            $whitepaper = $insight['whitepaper'] ?? null;
-            $github = $insight['github'] ?? null;
-            $medium = $insight['medium'] ?? null;
-            $twitter = $insight['twitter'] ?? null;
-            $telegram = $insight['telegram'] ?? null;
-            $discord = $insight['discord'] ?? null;
-            $linkedin = $insight['linkedin'] ?? null;
-            $reddit = $insight['reddit'] ?? null;
-            $youtube = $insight['youtube'] ?? null;
-            $tiktok = $insight['tiktok'] ?? null;
-            $instagram = $insight['instagram'] ?? null;
-            $facebook = $insight['facebook'] ?? null;
-            $projectDetails = null;
-
-            $formatUrl = function ($url) {
-                if (!$url) return null;
-                $url = trim($url);
-                if ($url !== '' && !preg_match('/^https?:\/\//i', $url)) {
-                    return 'https://' . $url;
                 }
-                return $url;
-            };
 
-            if ($verificationProject && $verificationProject->status == 1) {
-                $projectDetails = $verificationProject->profile()
-                    ->with(['officialLinks', 'socialLinks', 'officialWallets', 'verifiedProject'])
+                $isDbVerified = false;
+                if ($stellarToken) {
+                    $isDbVerified = Token::where('stellar_token_id', $stellarToken->id)
+                        ->where('token_verify', 1)
+                        ->exists();
+                }
+
+                $verificationProject = VerifiedProject::where('identifier', $issuer)
+                    ->where('blockchain_id', 1)
+                    ->latest()
                     ->first();
 
-                // Auto-backfill profile for legacy verified projects
-                if (!$projectDetails) {
-                    try {
-                        $profile = ProjectProfile::create([
-                            'verified_project_id' => $verificationProject->id,
-                            'name'                => $verificationProject->name ?? $code,
-                            'category'            => 'Other',
-                        ]);
+                $isVerified = $isDbVerified || ($verificationProject && $verificationProject->status == 1);
+                $isVerificationPending = $verificationProject && $verificationProject->status == 2;
 
-                        ProjectOfficialLink::create([
-                            'project_profile_id' => $profile->id,
-                            'website'            => $verificationProject->website,
-                        ]);
+                $logo = $insight['image'] ?? null;
+                $website = $insight['website'] ?? null;
+                $documentation = $insight['documentation'] ?? null;
+                $whitepaper = $insight['whitepaper'] ?? null;
+                $github = $insight['github'] ?? null;
+                $medium = $insight['medium'] ?? null;
+                $twitter = $insight['twitter'] ?? null;
+                $telegram = $insight['telegram'] ?? null;
+                $discord = $insight['discord'] ?? null;
+                $linkedin = $insight['linkedin'] ?? null;
+                $reddit = $insight['reddit'] ?? null;
+                $youtube = $insight['youtube'] ?? null;
+                $tiktok = $insight['tiktok'] ?? null;
+                $instagram = $insight['instagram'] ?? null;
+                $facebook = $insight['facebook'] ?? null;
+                $projectDetails = null;
 
-                        ProjectSocialLink::create([
-                            'project_profile_id' => $profile->id,
-                            'twitter'            => $verificationProject->twitter,
-                        ]);
+                $formatUrl = function ($url) {
+                    if (!$url) return null;
+                    $url = trim($url);
+                    if ($url !== '' && !preg_match('/^https?:\/\//i', $url)) {
+                        return 'https://' . $url;
+                    }
+                    return $url;
+                };
 
-                        $projectDetails = $verificationProject->profile()
-                            ->with(['officialLinks', 'socialLinks', 'officialWallets', 'verifiedProject'])
-                            ->first();
-                    } catch (\Throwable $e) {
-                        Log::warning("Failed to auto-migrate legacy verified project profile: " . $e->getMessage());
+                if ($verificationProject && $verificationProject->status == 1) {
+                    $projectDetails = $verificationProject->profile()
+                        ->with(['officialLinks', 'socialLinks', 'officialWallets', 'verifiedProject'])
+                        ->first();
+
+                    // Auto-backfill profile for legacy verified projects
+                    if (!$projectDetails) {
+                        try {
+                            $profile = ProjectProfile::create([
+                                'verified_project_id' => $verificationProject->id,
+                                'name'                => $verificationProject->name ?? $code,
+                                'category'            => 'Other',
+                            ]);
+
+                            ProjectOfficialLink::create([
+                                'project_profile_id' => $profile->id,
+                                'website'            => $verificationProject->website,
+                            ]);
+
+                            ProjectSocialLink::create([
+                                'project_profile_id' => $profile->id,
+                                'twitter'            => $verificationProject->twitter,
+                            ]);
+
+                            $projectDetails = $verificationProject->profile()
+                                ->with(['officialLinks', 'socialLinks', 'officialWallets', 'verifiedProject'])
+                                ->first();
+                        } catch (\Throwable $e) {
+                            Log::warning("Failed to auto-migrate legacy verified project profile: " . $e->getMessage());
+                        }
+                    }
+
+                    if ($projectDetails) {
+                        if ($projectDetails->logo_url) {
+                            $logo = $projectDetails->logo_url;
+                        }
+                        if ($projectDetails->officialLinks) {
+                            if ($projectDetails->officialLinks->website) {
+                                $website = $formatUrl($projectDetails->officialLinks->website);
+                            }
+                            if ($projectDetails->officialLinks->documentation) {
+                                $documentation = $formatUrl($projectDetails->officialLinks->documentation);
+                            }
+                            if ($projectDetails->officialLinks->whitepaper) {
+                                $whitepaper = $formatUrl($projectDetails->officialLinks->whitepaper);
+                            }
+                            if ($projectDetails->officialLinks->github) {
+                                $github = $formatUrl($projectDetails->officialLinks->github);
+                            }
+                            if ($projectDetails->officialLinks->medium) {
+                                $medium = $formatUrl($projectDetails->officialLinks->medium);
+                            }
+                        }
+                        if ($projectDetails->socialLinks) {
+                            if ($projectDetails->socialLinks->twitter) {
+                                $twitter = $formatUrl($projectDetails->socialLinks->twitter);
+                            }
+                            if ($projectDetails->socialLinks->telegram) {
+                                $telegram = $formatUrl($projectDetails->socialLinks->telegram);
+                            }
+                            if ($projectDetails->socialLinks->discord) {
+                                $discord = $formatUrl($projectDetails->socialLinks->discord);
+                            }
+                            if ($projectDetails->socialLinks->linkedin) {
+                                $linkedin = $formatUrl($projectDetails->socialLinks->linkedin);
+                            }
+                            if ($projectDetails->socialLinks->reddit) {
+                                $reddit = $formatUrl($projectDetails->socialLinks->reddit);
+                            }
+                            if ($projectDetails->socialLinks->youtube) {
+                                $youtube = $formatUrl($projectDetails->socialLinks->youtube);
+                            }
+                            if ($projectDetails->socialLinks->tiktok) {
+                                $tiktok = $formatUrl($projectDetails->socialLinks->tiktok);
+                            }
+                            if ($projectDetails->socialLinks->instagram) {
+                                $instagram = $formatUrl($projectDetails->socialLinks->instagram);
+                            }
+                            if ($projectDetails->socialLinks->facebook) {
+                                $facebook = $formatUrl($projectDetails->socialLinks->facebook);
+                            }
+                        }
                     }
                 }
 
-                if ($projectDetails) {
-                    if ($projectDetails->logo_url) {
-                        $logo = $projectDetails->logo_url;
-                    }
-                    if ($projectDetails->officialLinks) {
-                        if ($projectDetails->officialLinks->website) {
-                            $website = $formatUrl($projectDetails->officialLinks->website);
-                        }
-                        if ($projectDetails->officialLinks->documentation) {
-                            $documentation = $formatUrl($projectDetails->officialLinks->documentation);
-                        }
-                        if ($projectDetails->officialLinks->whitepaper) {
-                            $whitepaper = $formatUrl($projectDetails->officialLinks->whitepaper);
-                        }
-                        if ($projectDetails->officialLinks->github) {
-                            $github = $formatUrl($projectDetails->officialLinks->github);
-                        }
-                        if ($projectDetails->officialLinks->medium) {
-                            $medium = $formatUrl($projectDetails->officialLinks->medium);
-                        }
-                    }
-                    if ($projectDetails->socialLinks) {
-                        if ($projectDetails->socialLinks->twitter) {
-                            $twitter = $formatUrl($projectDetails->socialLinks->twitter);
-                        }
-                        if ($projectDetails->socialLinks->telegram) {
-                            $telegram = $formatUrl($projectDetails->socialLinks->telegram);
-                        }
-                        if ($projectDetails->socialLinks->discord) {
-                            $discord = $formatUrl($projectDetails->socialLinks->discord);
-                        }
-                        if ($projectDetails->socialLinks->linkedin) {
-                            $linkedin = $formatUrl($projectDetails->socialLinks->linkedin);
-                        }
-                        if ($projectDetails->socialLinks->reddit) {
-                            $reddit = $formatUrl($projectDetails->socialLinks->reddit);
-                        }
-                        if ($projectDetails->socialLinks->youtube) {
-                            $youtube = $formatUrl($projectDetails->socialLinks->youtube);
-                        }
-                        if ($projectDetails->socialLinks->tiktok) {
-                            $tiktok = $formatUrl($projectDetails->socialLinks->tiktok);
-                        }
-                        if ($projectDetails->socialLinks->instagram) {
-                            $instagram = $formatUrl($projectDetails->socialLinks->instagram);
-                        }
-                        if ($projectDetails->socialLinks->facebook) {
-                            $facebook = $formatUrl($projectDetails->socialLinks->facebook);
-                        }
-                    }
+                try {
+                    $marketToken = StellarMarketToken::updateOrCreate(
+                        [
+                            'asset_code' => $code,
+                            'asset_issuer' => $issuer,
+                        ],
+                        [
+                            'name' => $insight['name'] ?? $code,
+                            'image' => $logo,
+                            'website' => $website,
+                            'is_verified' => $isVerified,
+                            'current_holders' => $insight['holders'] ?? 0,
+                            'current_price_usd' => $insight['usd_price'] ?? null,
+                            'current_price_xlm' => $insight['xlm_price'] ?? null,
+                            'last_viewed_at' => now(),
+                        ]
+                    );
+
+                    $votes = [
+                        'trusted' => $marketToken->votes()
+                            ->where('vote_type', 'trusted')
+                            ->count(),
+                        'suspicious' => $marketToken->votes()
+                            ->where('vote_type', 'suspicious')
+                            ->count(),
+                        'scam' => $marketToken->votes()
+                            ->where('vote_type', 'scam')
+                            ->count(),
+                    ];
+                } catch (\Throwable $e) {
+                    Log::warning("Market token updateOrCreate error: " . $e->getMessage());
+                    $votes = [
+                        'trusted' => 0,
+                        'suspicious' => 0,
+                        'scam' => 0,
+                    ];
                 }
+
+                $whaleActivityThreshold = \App\Models\Setting::where('key', 'whale_activity_threshold_xlm')->first();
+                $whaleActivityThresholdVal = $whaleActivityThreshold ? (float) $whaleActivityThreshold->value : 100.0;
+
+                return [
+                    ...$insight,
+                    'image' => $logo,
+                    'website' => $website,
+                    'documentation' => $documentation,
+                    'whitepaper' => $whitepaper,
+                    'github' => $github,
+                    'medium' => $medium,
+                    'twitter' => $twitter,
+                    'telegram' => $telegram,
+                    'discord' => $discord,
+                    'linkedin' => $linkedin,
+                    'reddit' => $reddit,
+                    'youtube' => $youtube,
+                    'tiktok' => $tiktok,
+                    'instagram' => $instagram,
+                    'facebook' => $facebook,
+                    'project_details' => $projectDetails,
+                    'is_verified' => $isVerified,
+                    'is_verification_pending' => $isVerificationPending,
+                    'votes' => $votes,
+                    'whale_activity_threshold_xlm' => $whaleActivityThresholdVal,
+                ];
+            });
+
+            if (isset($result['error'])) {
+                return response()->json(['error' => $result['error']], $result['_status'] ?? 400);
             }
 
-            try {
-                $marketToken = StellarMarketToken::updateOrCreate(
-                    [
-                        'asset_code' => $code,
-                        'asset_issuer' => $issuer,
-                    ],
-                    [
-                        'name' => $insight['name'] ?? $code,
-                        'image' => $logo,
-                        'website' => $website,
-                        'is_verified' => $isVerified,
-                        'current_holders' => $insight['holders'] ?? 0,
-                        'current_price_usd' => $insight['usd_price'] ?? null,
-                        'current_price_xlm' => $insight['xlm_price'] ?? null,
-                        'last_viewed_at' => now(),
-                    ]
-                );
-
-                $votes = [
-                    'trusted' => $marketToken->votes()
-                        ->where('vote_type', 'trusted')
-                        ->count(),
-                    'suspicious' => $marketToken->votes()
-                        ->where('vote_type', 'suspicious')
-                        ->count(),
-                    'scam' => $marketToken->votes()
-                        ->where('vote_type', 'scam')
-                        ->count(),
-                ];
-            } catch (\Throwable $e) {
-                Log::warning("Market token updateOrCreate error: " . $e->getMessage());
-                $votes = [
-                    'trusted' => 0,
-                    'suspicious' => 0,
-                    'scam' => 0,
-                ];
-            }
-
-            $whaleActivityThreshold = \App\Models\Setting::where('key', 'whale_activity_threshold_xlm')->first();
-            $whaleActivityThresholdVal = $whaleActivityThreshold ? (float) $whaleActivityThreshold->value : 100.0;
-
-            return response()->json([
-                ...$insight,
-                'image' => $logo,
-                'website' => $website,
-                'documentation' => $documentation,
-                'whitepaper' => $whitepaper,
-                'github' => $github,
-                'medium' => $medium,
-                'twitter' => $twitter,
-                'telegram' => $telegram,
-                'discord' => $discord,
-                'linkedin' => $linkedin,
-                'reddit' => $reddit,
-                'youtube' => $youtube,
-                'tiktok' => $tiktok,
-                'instagram' => $instagram,
-                'facebook' => $facebook,
-                'project_details' => $projectDetails,
-                'is_verified' => $isVerified,
-                'is_verification_pending' => $isVerificationPending,
-                'votes' => $votes,
-                'whale_activity_threshold_xlm' => $whaleActivityThresholdVal,
-            ]);
+            return response()->json($result);
         } catch (\Throwable $e) {
             Log::error("Critical error in TokenController@show: " . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
@@ -2481,128 +2490,127 @@ EOT;
 
     public function getHistoricalStats(Request $request)
     {
-        $code = strtoupper($request->query('code', ''));
-        $issuer = $request->query('issuer', '');
-        $timeframe = strtolower($request->query('timeframe', '24h')); // '24h' or '7d'
+        $code = strtoupper(trim($request->query('code', '')));
+        $issuer = strtoupper(trim($request->query('issuer', '')));
+        $timeframe = strtolower(trim($request->query('timeframe', '24h'))); // '24h' or '7d'
 
         if (empty($code) || empty($issuer)) {
             return response()->json(['status' => 'error', 'message' => 'Asset code and issuer are required.'], 400);
         }
 
-        $hours = ($timeframe === '7d') ? (24 * 7) : 24;
+        $cacheKey = "hist_stats_{$code}_{$issuer}_{$timeframe}";
+        $stats = Cache::remember($cacheKey, 60, function () use ($code, $issuer, $timeframe) {
+            $hours = ($timeframe === '7d') ? (24 * 7) : 24;
 
-        $latest = \App\Models\TokenStatSnapshot::where('asset_code', $code)
-            ->where('asset_issuer', $issuer)
-            ->where('trustlines', '>', 0)
-            ->latest()
-            ->first();
-
-        if (!$latest) {
             $latest = \App\Models\TokenStatSnapshot::where('asset_code', $code)
                 ->where('asset_issuer', $issuer)
+                ->where('trustlines', '>', 0)
                 ->latest()
                 ->first();
-        }
 
-        $past = \App\Models\TokenStatSnapshot::where('asset_code', $code)
-            ->where('asset_issuer', $issuer)
-            ->where('trustlines', '>', 0)
-            ->where('created_at', '<=', now()->subHours($hours))
-            ->latest()
-            ->first();
+            if (!$latest) {
+                $latest = \App\Models\TokenStatSnapshot::where('asset_code', $code)
+                    ->where('asset_issuer', $issuer)
+                    ->latest()
+                    ->first();
+            }
 
-        if (!$past) {
             $past = \App\Models\TokenStatSnapshot::where('asset_code', $code)
                 ->where('asset_issuer', $issuer)
                 ->where('trustlines', '>', 0)
-                ->where('id', '!=', $latest->id ?? 0)
-                ->oldest()
+                ->where('created_at', '<=', now()->subHours($hours))
+                ->latest()
                 ->first();
-        }
 
-        if (!$past) {
-            $past = \App\Models\TokenStatSnapshot::where('asset_code', $code)
-                ->where('asset_issuer', $issuer)
-                ->where('id', '!=', $latest->id ?? 0)
-                ->oldest()
-                ->first();
-        }
+            if (!$past) {
+                $past = \App\Models\TokenStatSnapshot::where('asset_code', $code)
+                    ->where('asset_issuer', $issuer)
+                    ->where('trustlines', '>', 0)
+                    ->where('id', '!=', $latest->id ?? 0)
+                    ->oldest()
+                    ->first();
+            }
 
-        if (!$latest || !$past) {
-            $stats = [
+            if (!$past) {
+                $past = \App\Models\TokenStatSnapshot::where('asset_code', $code)
+                    ->where('asset_issuer', $issuer)
+                    ->where('id', '!=', $latest->id ?? 0)
+                    ->oldest()
+                    ->first();
+            }
+
+            if (!$latest || !$past) {
+                return [
+                    'timeframe' => $timeframe,
+                    'holders_change' => 0,
+                    'trustlines_change' => 0,
+                    'pools_change' => 0,
+                    'liquidity_change_pct' => 0,
+                    'price_change_pct' => 0,
+                    'market_cap_change_pct' => 0,
+                    'circulating_supply_change_pct' => 0,
+                    'volume_change_pct' => 0,
+                ];
+            }
+
+            $price_change_pct = $past->price_usd > 0
+                ? round((($latest->price_usd - $past->price_usd) / $past->price_usd) * 100, 2)
+                : 0;
+
+            // Generate a realistic, deterministic volume change percentage
+            $hash = crc32($code . $issuer . $timeframe);
+            $volume_change_pct = ($hash % 40) - 15; // ranges from -15% to +25%
+            
+            // Align the direction of volume change slightly with price movement for realism
+            if ($price_change_pct > 2 && $volume_change_pct < 0) {
+                $volume_change_pct = abs($volume_change_pct);
+            } elseif ($price_change_pct < -2 && $volume_change_pct > 0) {
+                $volume_change_pct = -$volume_change_pct;
+            }
+
+            $pastNativeLiq = ($past->price_usd > 0 && $past->liquidity_usd > 0)
+                ? ($past->liquidity_usd / $past->price_usd)
+                : $past->liquidity_usd;
+            
+            $latestNativeLiq = ($latest->price_usd > 0 && $latest->liquidity_usd > 0)
+                ? ($latest->liquidity_usd / $latest->price_usd)
+                : $latest->liquidity_usd;
+
+            $liquidity_change_pct = ($pastNativeLiq > 0)
+                ? round((($latestNativeLiq - $pastNativeLiq) / $pastNativeLiq) * 100, 2)
+                : 0;
+
+            $pastMarketCap = ($past->price_usd > 0 && $past->circulating_supply > 0)
+                ? ($past->price_usd * $past->circulating_supply)
+                : 0;
+            $latestMarketCap = ($latest->price_usd > 0 && $latest->circulating_supply > 0)
+                ? ($latest->price_usd * $latest->circulating_supply)
+                : 0;
+
+            $market_cap_change_pct = ($pastMarketCap > 0 && $latestMarketCap > 0)
+                ? round((($latestMarketCap - $pastMarketCap) / $pastMarketCap) * 100, 2)
+                : $price_change_pct;
+
+            return [
                 'timeframe' => $timeframe,
-                'holders_change' => 0,
-                'trustlines_change' => 0,
-                'pools_change' => 0,
-                'liquidity_change_pct' => 0,
-                'price_change_pct' => 0,
-                'market_cap_change_pct' => 0,
-                'circulating_supply_change_pct' => 0,
-                'volume_change_pct' => 0,
+                'current_holders' => $latest->holders,
+                'past_holders' => $past->holders,
+                'holders_change' => $latest->holders - $past->holders,
+                'current_trustlines' => $latest->trustlines,
+                'past_trustlines' => $past->trustlines,
+                'trustlines_change' => $latest->trustlines - $past->trustlines,
+                'current_pools' => $latest->pools_count,
+                'past_pools' => $past->pools_count,
+                'pools_change' => $latest->pools_count - $past->pools_count,
+                'liquidity_change_pct' => $liquidity_change_pct,
+                'price_change_pct' => $price_change_pct,
+                'market_cap_change_pct' => $market_cap_change_pct,
+                'circulating_supply_change_pct' => $past->circulating_supply > 0
+                    ? round((($latest->circulating_supply - $past->circulating_supply) / $past->circulating_supply) * 100, 2)
+                    : 0,
+                'volume_change_pct' => $volume_change_pct,
             ];
-            return response()->json([
-                'status' => 'success',
-                'data' => $stats
-            ]);
-        }
-
-        $price_change_pct = $past->price_usd > 0
-            ? round((($latest->price_usd - $past->price_usd) / $past->price_usd) * 100, 2)
-            : 0;
-
-        // Generate a realistic, deterministic volume change percentage
-        $hash = crc32($code . $issuer . $timeframe);
-        $volume_change_pct = ($hash % 40) - 15; // ranges from -15% to +25%
-        
-        // Align the direction of volume change slightly with price movement for realism
-        if ($price_change_pct > 2 && $volume_change_pct < 0) {
-            $volume_change_pct = abs($volume_change_pct);
-        } elseif ($price_change_pct < -2 && $volume_change_pct > 0) {
-            $volume_change_pct = -$volume_change_pct;
-        }
-
-        $pastNativeLiq = ($past->price_usd > 0 && $past->liquidity_usd > 0)
-            ? ($past->liquidity_usd / $past->price_usd)
-            : $past->liquidity_usd;
-        
-        $latestNativeLiq = ($latest->price_usd > 0 && $latest->liquidity_usd > 0)
-            ? ($latest->liquidity_usd / $latest->price_usd)
-            : $latest->liquidity_usd;
-
-        $liquidity_change_pct = ($pastNativeLiq > 0)
-            ? round((($latestNativeLiq - $pastNativeLiq) / $pastNativeLiq) * 100, 2)
-            : 0;
-
-        $pastMarketCap = ($past->price_usd > 0 && $past->circulating_supply > 0)
-            ? ($past->price_usd * $past->circulating_supply)
-            : 0;
-        $latestMarketCap = ($latest->price_usd > 0 && $latest->circulating_supply > 0)
-            ? ($latest->price_usd * $latest->circulating_supply)
-            : 0;
-
-        $market_cap_change_pct = ($pastMarketCap > 0 && $latestMarketCap > 0)
-            ? round((($latestMarketCap - $pastMarketCap) / $pastMarketCap) * 100, 2)
-            : $price_change_pct;
-
-        $stats = [
-            'timeframe' => $timeframe,
-            'current_holders' => $latest->holders,
-            'past_holders' => $past->holders,
-            'holders_change' => $latest->holders - $past->holders,
-            'current_trustlines' => $latest->trustlines,
-            'past_trustlines' => $past->trustlines,
-            'trustlines_change' => $latest->trustlines - $past->trustlines,
-            'current_pools' => $latest->pools_count,
-            'past_pools' => $past->pools_count,
-            'pools_change' => $latest->pools_count - $past->pools_count,
-            'liquidity_change_pct' => $liquidity_change_pct,
-            'price_change_pct' => $price_change_pct,
-            'market_cap_change_pct' => $market_cap_change_pct,
-            'circulating_supply_change_pct' => $past->circulating_supply > 0
-                ? round((($latest->circulating_supply - $past->circulating_supply) / $past->circulating_supply) * 100, 2)
-                : 0,
-            'volume_change_pct' => $volume_change_pct,
-        ];
+        });
 
         return response()->json([
             'status' => 'success',
