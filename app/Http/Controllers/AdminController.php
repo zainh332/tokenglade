@@ -788,4 +788,115 @@ class AdminController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Staking Tiers Management (Admin)
+     */
+    public function getStakingTiers()
+    {
+        $tiers = \App\Models\StakingTier::orderBy('tier', 'asc')->orderBy('min_amount', 'asc')->get();
+
+        $data = $tiers->map(function ($tier) {
+            $activeStakersCount = \App\Models\Staking::where('is_withdrawn', false)
+                ->where('tier', $tier->tier)
+                ->count();
+
+            $minFormatted = number_format($tier->min_amount, 0);
+            $maxFormatted = $tier->max_amount !== null ? number_format($tier->max_amount, 0) : null;
+            $range = $tier->max_amount !== null ? "{$minFormatted} – {$maxFormatted}" : "{$minFormatted}+";
+
+            return [
+                'id'             => $tier->id,
+                'tier'           => (int) $tier->tier,
+                'name'           => $tier->name ?? ('Tier ' . $tier->tier),
+                'min_amount'     => (float) $tier->min_amount,
+                'max_amount'     => $tier->max_amount !== null ? (float) $tier->max_amount : null,
+                'apy'            => (float) $tier->apy,
+                'range'          => $range,
+                'is_active'      => (bool) $tier->is_active,
+                'active_stakers' => $activeStakersCount,
+                'created_at'     => $tier->created_at ? $tier->created_at->toIso8601String() : null,
+                'updated_at'     => $tier->updated_at ? $tier->updated_at->toIso8601String() : null,
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'data'   => $data,
+        ]);
+    }
+
+    public function storeStakingTier(Request $request)
+    {
+        $validated = $request->validate([
+            'tier'       => 'required|integer|min:1',
+            'name'       => 'required|string|max:100',
+            'min_amount' => 'required|numeric|min:0',
+            'max_amount' => 'nullable|numeric|gte:min_amount',
+            'apy'        => 'required|numeric|min:0|max:100',
+            'is_active'  => 'boolean',
+        ]);
+
+        $tier = \App\Models\StakingTier::create([
+            'tier'       => $validated['tier'],
+            'name'       => $validated['name'],
+            'min_amount' => $validated['min_amount'],
+            'max_amount' => $validated['max_amount'] ?? null,
+            'apy'        => $validated['apy'],
+            'is_active'  => $validated['is_active'] ?? true,
+        ]);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Staking tier created successfully.',
+            'data'    => $tier,
+        ]);
+    }
+
+    public function updateStakingTier(Request $request, $id)
+    {
+        $tier = \App\Models\StakingTier::findOrFail($id);
+
+        $validated = $request->validate([
+            'tier'       => 'required|integer|min:1',
+            'name'       => 'required|string|max:100',
+            'min_amount' => 'required|numeric|min:0',
+            'max_amount' => 'nullable|numeric',
+            'apy'        => 'required|numeric|min:0|max:100',
+            'is_active'  => 'required|boolean',
+        ]);
+
+        if (isset($validated['max_amount']) && $validated['max_amount'] !== null && $validated['max_amount'] < $validated['min_amount']) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Max amount must be greater than or equal to min amount.',
+            ], 422);
+        }
+
+        $tier->update([
+            'tier'       => $validated['tier'],
+            'name'       => $validated['name'],
+            'min_amount' => $validated['min_amount'],
+            'max_amount' => $validated['max_amount'] ?? null,
+            'apy'        => $validated['apy'],
+            'is_active'  => $validated['is_active'],
+        ]);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Staking tier updated successfully.',
+            'data'    => $tier,
+        ]);
+    }
+
+    public function deleteStakingTier($id)
+    {
+        $tier = \App\Models\StakingTier::findOrFail($id);
+        $tier->delete();
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Staking tier deleted successfully.',
+        ]);
+    }
 }

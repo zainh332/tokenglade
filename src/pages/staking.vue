@@ -23,7 +23,7 @@
                     <p class="text-[18px] sm:text-[20px] mt-4 text-gray-400 max-w-xl mx-auto lg:mx-0 px-4 sm:px-0">
                         Put your tokens to work with TokenGlade's staking module. Earn competitive rewards while helping
                         strengthen the ecosystem through secure, transparent, and fully on-chain staking. Rewards of up
-                        to <strong class="font-extrabold text-cyan-400">18% APY</strong> are available based on the
+                        to <strong class="font-extrabold text-cyan-400">{{ (loadingTiers && apyTiers.length === 0) ? '…' : maxApyFormatted + '% APY' }}</strong> are available based on the
                         staking program.
                     </p>
                 </div>
@@ -72,7 +72,7 @@
 
                                     </label>
                                     <span class="text-xs text-theme-dim font-mono">
-                                        Min: <strong class="text-theme-ink">1,500</strong> • Max: <strong
+                                        Min: <strong class="text-theme-ink">{{ (loadingTiers && apyTiers.length === 0) ? '…' : fmtInt(stakeMin) }}</strong> • Max: <strong
                                             class="text-theme-ink">{{ formattedMaxStake }}</strong>
                                     </span>
                                 </div>
@@ -113,10 +113,15 @@
                                 <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                                     <div class="text-sm text-slate-300">
                                         Projected after stake:
-                                        <strong>{{ fmtTKG(projectedTotal) }} TKG</strong>
+                                        <strong v-if="loadingTiers && apyTiers.length === 0">…</strong>
+                                        <strong v-else>{{ fmtTKG(projectedTotal) }} TKG</strong>
                                     </div>
                                     <div class="text-sm">
-                                        <span
+                                        <span v-if="loadingTiers && apyTiers.length === 0"
+                                            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-mono bg-theme-panel3 text-slate-400 border border-theme-line animate-pulse">
+                                            Loading APY…
+                                        </span>
+                                        <span v-else
                                             class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold"
                                             :class="projected.tier === 4 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                                                 : projected.tier === 3 ? 'bg-teal-500/10 text-teal-400 border border-teal-500/20'
@@ -133,26 +138,32 @@
                                     <div class="rounded-lg bg-theme-panel3 border border-theme-line p-2">
                                         <div class="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Est.
                                             Daily</div>
-                                        <div class="text-sm font-bold text-white font-mono mt-0.5">{{ fmtTKG(estDaily)
-                                            }}</div>
+                                        <div class="text-sm font-bold text-white font-mono mt-0.5">
+                                            <span v-if="loadingTiers && apyTiers.length === 0" class="text-slate-500 animate-pulse font-mono">…</span>
+                                            <span v-else>{{ fmtTKG(estDaily) }}</span>
+                                        </div>
                                     </div>
                                     <div class="rounded-lg bg-theme-panel3 border border-theme-line p-2">
                                         <div class="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Est.
                                             Monthly</div>
-                                        <div class="text-sm font-bold text-white font-mono mt-0.5">{{ fmtTKG(estMonthly)
-                                            }}</div>
+                                        <div class="text-sm font-bold text-white font-mono mt-0.5">
+                                            <span v-if="loadingTiers && apyTiers.length === 0" class="text-slate-500 animate-pulse font-mono">…</span>
+                                            <span v-else>{{ fmtTKG(estMonthly) }}</span>
+                                        </div>
                                     </div>
                                     <div class="rounded-lg bg-theme-panel3 border border-theme-line p-2">
                                         <div class="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Est.
                                             Yearly</div>
-                                        <div class="text-sm font-bold text-white font-mono mt-0.5">{{ fmtTKG(estYearly)
-                                            }}</div>
+                                        <div class="text-sm font-bold text-white font-mono mt-0.5">
+                                            <span v-if="loadingTiers && apyTiers.length === 0" class="text-slate-500 animate-pulse font-mono">…</span>
+                                            <span v-else>{{ fmtTKG(estYearly) }}</span>
+                                        </div>
                                     </div>
                                 </div>
 
                                 <!-- Hint when below threshold -->
-                                <p v-if="projected.tier === 0" class="mt-2 text-xs text-amber-400 font-mono">
-                                    Stake at least <strong>1,500 TKG</strong> to start earning rewards.
+                                <p v-if="projected.tier === 0 && (!loadingTiers || apyTiers.length > 0)" class="mt-2 text-xs text-amber-400 font-mono">
+                                    Stake at least <strong>{{ fmtInt(stakeMin) }} TKG</strong> to start earning rewards.
                                 </p>
                             </div>
 
@@ -345,14 +356,22 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-[rgba(148,163,184,0.16)]/60 text-slate-300">
-                                    <tr v-for="tier in apyTiers" :key="tier.tier"
+                                    <tr v-if="loadingTiers && apyTiers.length === 0">
+                                        <td colspan="3" class="py-8 text-center text-slate-400 text-xs font-mono">
+                                            <span class="inline-flex items-center gap-2">
+                                                <span class="w-4 h-4 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin"></span>
+                                                Loading staking tiers…
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr v-else v-for="tier in apyTiers" :key="tier.id || tier.tier"
                                         class="bg-transparent hover:bg-theme-panel3/40 transition">
-                                        <td class="py-3 px-4 font-bold text-white">Tier {{ tier.tier }}</td>
+                                        <td class="py-3 px-4 font-bold text-white">{{ tier.name || ('Tier ' + tier.tier) }}</td>
                                         <td class="py-3 px-4 font-mono">{{ tier.range }}</td>
                                         <td class="py-3 px-4">
                                             <span
                                                 class="inline-flex items-center rounded-full bg-gradient-to-r from-fuchsia-500/10 via-sky-500/10 to-cyan-500/10 px-2.5 py-0.5 text-sm font-bold text-cyan-400 border border-cyan-500/30 font-mono shadow-[0_0_8px_rgba(34,211,238,0.1)]">
-                                                {{ tier.apy }}%
+                                                {{ Number(tier.apy).toFixed(2) }}%
                                             </span>
                                         </td>
                                     </tr>
@@ -673,22 +692,78 @@ const hasPositions = computed(() => positions.value.length > 0);
 // ---------------------
 // TKG Balance & staking bounds
 // ---------------------
+// Dynamic Staking Tiers & Reward Rates
+// ---------------------
+const cachedTiers = (() => {
+    try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+            const raw = localStorage.getItem('tokenglade_staking_tiers');
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            }
+        }
+    } catch (e) {}
+    return [];
+})();
+
+const apiTiers = ref(cachedTiers);
+const loadingTiers = ref(cachedTiers.length === 0);
+const apyTiers = computed(() => apiTiers.value);
+
+const maxApy = computed(() => {
+    if (apyTiers.value.length === 0) return 0;
+    return Math.max(...apyTiers.value.map((t: any) => Number(t.apy) || 0));
+});
+
+const maxApyFormatted = computed(() => {
+    const v = maxApy.value;
+    return Number.isInteger(v) ? v.toString() : v.toFixed(2);
+});
+
+const stakeMin = computed(() => {
+    if (apyTiers.value.length === 0) return 1500;
+    const mins = apyTiers.value.map((t: any) => Number(t.min_amount)).filter((n: number) => !isNaN(n) && n > 0);
+    return mins.length > 0 ? Math.min(...mins) : 1500;
+});
+
+async function fetchTiers() {
+    try {
+        const { data } = await axios.get('/api/staking/tiers');
+        if (data && data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
+            apiTiers.value = data.data;
+            try {
+                if (typeof window !== 'undefined' && window.localStorage) {
+                    localStorage.setItem('tokenglade_staking_tiers', JSON.stringify(data.data));
+                }
+            } catch (e) {}
+        }
+    } catch (err) {
+        console.warn('Failed to load dynamic staking tiers:', err);
+    } finally {
+        loadingTiers.value = false;
+    }
+}
+
+// ---------------------
+// TKG Balance & staking bounds
+// ---------------------
 const tkgBalance = ref(0);
 const loadingBalance = ref(true);
 const publicKey = getCookie("public_key");
-const hasMinBalance = computed(() => Number(tkgBalance.value) >= 1500);
+const hasMinBalance = computed(() => Number(tkgBalance.value) >= stakeMin.value);
 const stakeLoading = ref(false);
 
 // Staking min/max amounts
-const stakeMin = 1500;
 const stakeMax = computed(() => publicKey ? Number(tkgBalance.value) : 1_000_000);
 
-// Map slider percent → token amount [1500 → tkgBalance]
+// Map slider percent → token amount [stakeMin → tkgBalance]
 const selectedTokens = computed(() => {
-    const max = Math.max(stakeMin, stakeMax.value || 0);
+    const minVal = stakeMin.value;
+    const max = Math.max(minVal, stakeMax.value || 0);
     const fraction = Number(rangeValue.value) / 100; // 0..1
-    const mapped = Math.round(stakeMin + (max - stakeMin) * fraction);
-    return isNaN(mapped) ? stakeMin : mapped;
+    const mapped = Math.round(minVal + (max - minVal) * fraction);
+    return isNaN(mapped) ? minVal : mapped;
 });
 
 // Formatting helpers
@@ -756,6 +831,7 @@ async function loadUserData() {
 
 onMounted(async () => {
     window.addEventListener("tokenglade-wallet-changed", loadUserData);
+    await fetchTiers();
     await loadUserData();
     await fetchrewards();
     await refreshStats();
@@ -782,13 +858,19 @@ const existingTkgStaked = computed(() =>
         .reduce((s, p) => s + Number(p.amount || 0), 0)
 );
 
-// --- Tier & APY rules (mirrors backend tkgTierAndApy) ---
-function tierAndApy(total) {
-    if (total >= 100000) return { tier: 4, apy: 18.00 };
-    if (total >= 50000) return { tier: 3, apy: 16.00 };
-    if (total >= 10000) return { tier: 2, apy: 15.00 };
-    if (total >= 1500) return { tier: 1, apy: 12.00 };
-    return { tier: 0, apy: 0.00 };
+// --- Dynamic Tier & APY rules based on admin-configured tiers ---
+function tierAndApy(total: number) {
+    const sorted = [...apyTiers.value].sort((a: any, b: any) => Number(b.min_amount) - Number(a.min_amount));
+    for (const t of sorted) {
+        if (total >= Number(t.min_amount)) {
+            return {
+                tier: Number(t.tier),
+                apy: Number(t.apy),
+                name: t.name || `Tier ${t.tier}`,
+            };
+        }
+    }
+    return { tier: 0, apy: 0.00, name: 'None' };
 }
 
 function isEnded(pos) {
@@ -846,18 +928,19 @@ async function onSubmit() {
     }
 
     if (!hasMinBalance.value) {
-        Swal.fire({ icon: "warning", title: "Insufficient Balance", text: "You need at least 1,500 TKG to stake." });
+        Swal.fire({ icon: "warning", title: "Insufficient Balance", text: `You need at least ${fmtInt(stakeMin.value)} TKG to stake.` });
         return;
     }
 
     const amount = Number(selectedTokens.value);
+    const minVal = stakeMin.value;
     const max = Number(stakeMax.value || 0);
 
-    if (isNaN(amount) || amount < stakeMin || amount > max) {
+    if (isNaN(amount) || amount < minVal || amount > max) {
         Swal.fire({
             icon: "error",
             title: "Invalid Amount",
-            text: `Stake amount must be between 1,500 and ${max.toLocaleString()} TKG.`,
+            text: `Stake amount must be between ${fmtInt(minVal)} and ${max.toLocaleString()} TKG.`,
         });
         return;
     }
@@ -1167,17 +1250,10 @@ async function fetchrewards() {
     }
 }
 
-const apyTiers = [
-    { tier: 1, range: '1,500 – 9,999', apy: 12 },
-    { tier: 2, range: '10,000 – 49,999', apy: 15 },
-    { tier: 3, range: '50,000 – 99,999', apy: 16 },
-    { tier: 4, range: '100,000+', apy: 18 },
-]
-
-const faq = [
+const faq = computed(() => [
     {
         q: "What’s the minimum stake?",
-        a: "You need at least <strong>1,500 TKG</strong> to start earning rewards."
+        a: `You need at least <strong>${fmtInt(stakeMin.value)} TKG</strong> to start earning rewards.`
     },
     {
         q: "How often are rewards paid?",
@@ -1195,7 +1271,7 @@ const faq = [
         q: "Where do rewards come from?",
         a: "Rewards are funded from the <strong>35M TKG reserve</strong> allocated for staking sustainability."
     }
-]
+]);
 
 const openIndex = ref<number | null>(null)
 

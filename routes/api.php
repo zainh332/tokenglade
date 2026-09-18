@@ -94,7 +94,16 @@ Route::middleware('admin')->prefix('admin')->group(function () {
     Route::post('wallet-labels', 'AdminController@storeWalletLabel');
     Route::put('wallet-labels/{id}', 'AdminController@updateWalletLabel');
     Route::delete('wallet-labels/{id}', 'AdminController@deleteWalletLabel');
+
+    // Staking Tiers CRUD
+    Route::get('staking/tiers', 'AdminController@getStakingTiers');
+    Route::post('staking/tiers', 'AdminController@storeStakingTier');
+    Route::put('staking/tiers/{id}', 'AdminController@updateStakingTier');
+    Route::delete('staking/tiers/{id}', 'AdminController@deleteStakingTier');
 });
+
+// Public Staking Tiers
+Route::get('staking/tiers', 'StakingController@get_tiers')->name('staking.tiers');
 
 Route::prefix('token')->group(function () {
     Route::get('search', 'TokenController@search')->name('token.search');

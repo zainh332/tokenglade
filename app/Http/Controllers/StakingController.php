@@ -7,6 +7,7 @@ use App\Models\Staking;
 use App\Models\StakingAsset;
 use App\Models\StakingReward;
 use App\Models\StakingTransaction;
+use App\Models\StakingTier;
 use App\Models\User;
 use App\Services\WalletService;
 use Exception;
@@ -58,23 +59,66 @@ class StakingController extends Controller
             $this->network = Network::testnet();
         }
 
-        $this->minAmount = 1500;
+        $this->minAmount = StakingTier::getMinAmount();
         $this->maxFee = 3000;
         $this->assetCode = 'TKG';
         $this->wallet = $wallet;
     }
 
+    /**
+     * Get active staking tiers for public UI
+     */
+    public function get_tiers()
+    {
+        try {
+            $tiers = StakingTier::active()
+                ->orderBy('min_amount', 'asc')
+                ->get();
+
+            $data = $tiers->map(function ($t) {
+                $minFormatted = number_format($t->min_amount, 0);
+                $maxFormatted = $t->max_amount !== null ? number_format($t->max_amount, 0) : null;
+                $range = $t->max_amount !== null ? "{$minFormatted} – {$maxFormatted}" : "{$minFormatted}+";
+
+                return [
+                    'id'         => $t->id,
+                    'tier'       => (int) $t->tier,
+                    'name'       => $t->name ?? ('Tier ' . $t->tier),
+                    'min_amount' => (float) $t->min_amount,
+                    'max_amount' => $t->max_amount !== null ? (float) $t->max_amount : null,
+                    'apy'        => (float) $t->apy,
+                    'range'      => $range,
+                ];
+            });
+
+            $minStake = StakingTier::getMinAmount();
+
+            return response()->json([
+                'status'    => 'success',
+                'data'      => $data,
+                'min_stake' => $minStake,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('staking.get_tiers.error', ['message' => $e->getMessage()]);
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Unable to fetch staking tiers',
+            ], 500);
+        }
+    }
 
     public function start_staking(Request $request)
     {
+        $minStake = (int) StakingTier::getMinAmount();
+
         $validator = Validator::make($request->all(), [
             'staking_asset_id' => ['required', 'integer'],
-            'amount' => ['required', 'integer', 'min:1500'],
+            'amount' => ['required', 'numeric', 'min:' . $minStake],
             'public_key' => ['required', 'string'],
         ], [
             'amount.required' => 'The amount field is required.',
-            'amount.integer'  => 'The amount must be a valid number.',
-            'amount.min'      => 'The amount must be at least 1500.',
+            'amount.numeric'  => 'The amount must be a valid number.',
+            'amount.min'      => 'The amount must be at least ' . number_format($minStake) . '.',
             'public_key.required' => 'The public key is required.',
         ]);
 
@@ -359,9 +403,11 @@ class StakingController extends Controller
     // Job distributing staking reward
     public function reward_distribution()
     {
+        $minAmount = StakingTier::getMinAmount();
+
         Log::info('staking.reward_distribution.start', [
             'now'      => now()->toIso8601String(),
-            'min'      => $this->minAmount,
+            'min'      => $minAmount,
             'env'      => env('VITE_STELLAR_ENVIRONMENT'),
         ]);
 
@@ -369,7 +415,7 @@ class StakingController extends Controller
             $invests = Staking::query()
                 ->with(['user:id,public_key'])
                 ->whereNotNull('transaction_id')
-                ->where('amount', '>=', $this->minAmount)
+                ->where('amount', '>=', $minAmount)
                 ->where('is_withdrawn', false)
                 ->where('staking_status_id', '<>', 4)
                 ->where('updated_at', '<=', now()->subHours(24)) // pay at most once a day
@@ -390,6 +436,21 @@ class StakingController extends Controller
 
             foreach ($invests as $invest) {
                 try {
+                    // Recalculate dynamic tier and APY in case rates were updated by admin
+                    [$currentTier, $currentApy] = $this->tkgTierAndApy((float) $invest->amount);
+                    if ($currentApy > 0 && ((float)$invest->apy !== (float)$currentApy || (int)$invest->tier !== (int)$currentTier)) {
+                        Log::info('staking.reward_distribution.tier_updated', [
+                            'staking_id' => $invest->id,
+                            'old_tier'   => $invest->tier,
+                            'new_tier'   => $currentTier,
+                            'old_apy'    => (float) $invest->apy,
+                            'new_apy'    => (float) $currentApy,
+                        ]);
+                        $invest->tier = $currentTier;
+                        $invest->apy  = $currentApy;
+                        $invest->save();
+                    }
+
                     $since = $invest->updated_at ?? $invest->created_at;
                     $days  = max(1, $since->diffInDays(now()));
 
@@ -584,21 +645,27 @@ class StakingController extends Controller
 
     private function tkgTierAndApy(float $total): array
     {
-        if ($total >= 100_000) {
-            return [4, 18.00];
-        }
-        if ($total >= 50_000) {
-            return [3, 16.00];
-        }
-        if ($total >= 10_000) {
-            return [2, 15.00];
-        }
-        if ($total >= 1_500) {
-            return [1, 12.00];
-        }
+        try {
+            [$tier, $apy] = StakingTier::resolveTierAndApy($total);
+            return [$tier, $apy];
+        } catch (\Throwable $e) {
+            Log::error('staking.tier_resolution.fallback', ['message' => $e->getMessage()]);
+            if ($total >= 100_000) {
+                return [4, 18.00];
+            }
+            if ($total >= 50_000) {
+                return [3, 16.00];
+            }
+            if ($total >= 10_000) {
+                return [2, 15.00];
+            }
+            if ($total >= 1_500) {
+                return [1, 12.00];
+            }
 
-        // below tier threshold
-        return [0, 0.00];
+            // below tier threshold
+            return [0, 0.00];
+        }
     }
 
     public function user_staking(Request $request)
