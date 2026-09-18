@@ -354,14 +354,14 @@
               </div>
               <div class="sub font-mono font-semibold"
                 :class="(historicalStats?.price_change_pct || 0) >= 0 ? 'up' : 'down'">
-                <template v-if="loading || historicalStatsLoading"><span
+                <template v-if="loading || (historicalStatsLoading && token.price_change_24h === null)"><span
                     class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 <template v-else-if="historicalStats">
                   {{ (historicalStats.price_change_pct || 0) >= 0 ? '▲' : '▼' }} {{ (historicalStats.price_change_pct ||
                     0) >= 0 ? '+' : '' }}{{ historicalStats.price_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase()
                   }})
                 </template>
-                <template v-else-if="token.price_change_24h">
+                <template v-else-if="token.price_change_24h !== null && token.price_change_24h !== undefined">
                   {{ token.price_change_24h >= 0 ? '▲' : '▼' }} {{ token.price_change_24h >= 0 ? '+' : '' }}{{
                     token.price_change_24h }}%
                 </template>
@@ -373,27 +373,23 @@
             <div class="st flex flex-col justify-between">
               <div class="k">24H Volume</div>
               <div class="v font-mono">
-                <template v-if="loading || (token.volume_24h === undefined && !token.liquidity_overview?.lp_volume_24h && liquidityLoading)"><span
+                <template v-if="loading || liquidityLoading || (token.volume_24h === undefined && !token.liquidity_overview?.lp_volume_24h)"><span
                     class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                 <template
                   v-else-if="token.volume_24h !== undefined ? token.volume_24h : token.liquidity_overview?.lp_volume_24h">
                   {{ formatNumber((token.volume_24h !== undefined ? token.volume_24h :
                     token.liquidity_overview?.lp_volume_24h) / xlmPriceInUsd) }} XLM
                 </template>
-                <template v-else-if="liquidityLoading"><span
-                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                 <template v-else>0 XLM</template>
               </div>
               <div class="sub font-mono dim">
-                <template v-if="loading || (token.volume_24h === undefined && !token.liquidity_overview?.lp_volume_24h && liquidityLoading)"><span
+                <template v-if="loading || liquidityLoading || (token.volume_24h === undefined && !token.liquidity_overview?.lp_volume_24h)"><span
                     class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 <template
                   v-else-if="token.volume_24h !== undefined ? token.volume_24h : token.liquidity_overview?.lp_volume_24h">
                   ≈ ${{ formatNumber(token.volume_24h !== undefined ? token.volume_24h :
                     token.liquidity_overview?.lp_volume_24h) }}
                 </template>
-                <template v-else-if="liquidityLoading"><span
-                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 <template v-else>≈ $0</template>
               </div>
               <div class="sub font-mono font-semibold"
@@ -413,23 +409,19 @@
             <div class="st flex flex-col justify-between">
               <div class="k">Liquidity</div>
               <div class="v font-mono">
-                <template v-if="loading || liquidityLoading || (!token.liquidity_overview?.total_tvl && !token.liquidity_tvl && liquidityLoading)"><span
+                <template v-if="loading || liquidityLoading"><span
                     class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                 <template v-else-if="token.liquidity_overview?.total_tvl || token.liquidity_tvl">
                   {{ formatNumber((token.liquidity_overview?.total_tvl || token.liquidity_tvl) / xlmPriceInUsd) }} XLM
                 </template>
-                <template v-else-if="liquidityLoading"><span
-                    class="text-slate-500 text-xs font-normal animate-pulse">Loading...</span></template>
                 <template v-else>0 XLM</template>
               </div>
               <div class="sub font-mono dim">
-                <template v-if="loading || liquidityLoading || (!token.liquidity_overview?.total_tvl && !token.liquidity_tvl && liquidityLoading)"><span
+                <template v-if="loading || liquidityLoading"><span
                     class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 <template v-else-if="token.liquidity_overview?.total_tvl || token.liquidity_tvl">
                   ≈ ${{ formatNumber(token.liquidity_overview?.total_tvl || token.liquidity_tvl) }}
                 </template>
-                <template v-else-if="liquidityLoading"><span
-                    class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 <template v-else>≈ $0</template>
               </div>
               <div class="sub font-mono font-semibold"
@@ -465,12 +457,12 @@
               </div>
               <div class="sub font-mono font-semibold"
                 :class="(historicalStats?.market_cap_change_pct ?? historicalStats?.price_change_pct ?? token.price_change_24h ?? 0) >= 0 ? 'up' : 'down'">
-                <template v-if="loading || historicalStatsLoading"><span
+                <template v-if="loading || (historicalStatsLoading && token.price_change_24h === null)"><span
                     class="text-slate-500 text-[10px] font-normal animate-pulse">Loading...</span></template>
                 <template v-else-if="historicalStats">
                   {{ (historicalStats.market_cap_change_pct ?? historicalStats.price_change_pct ?? 0) >= 0 ? '▲' : '▼' }} {{ (historicalStats.market_cap_change_pct ?? historicalStats.price_change_pct ?? 0) >= 0 ? '+' : '' }}{{ historicalStats.market_cap_change_pct ?? historicalStats.price_change_pct }}% ({{ selectedStatsTimeframe.toUpperCase() }})
                 </template>
-                <template v-else-if="token.price_change_24h">
+                <template v-else-if="token.price_change_24h !== null && token.price_change_24h !== undefined">
                   {{ token.price_change_24h >= 0 ? '▲' : '▼' }} {{ token.price_change_24h >= 0 ? '+' : '' }}{{
                     token.price_change_24h }}% (24H)
                 </template>

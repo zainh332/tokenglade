@@ -8,6 +8,7 @@ import Staking from "./pages/staking.vue";
 import TokenInsight from "./pages/TokenInsight.vue";
 import WalletIntelligence from "./pages/WalletIntelligence.vue"; // Wallet Intel V1 Page
 import TransactionDetails from "./pages/TransactionDetails.vue"; // Transaction Details Page
+import Multisig from "./pages/Multisig.vue";
 
 function hasRequiredCookies() {
     const public_key = getCookie('public_key');
@@ -123,6 +124,14 @@ const routes = [
         meta: {
             title: "Transaction Details | TokenGlade",
             description: "Explore on-chain operations, effects, fees, signatures, and cryptographic details for any Stellar transaction with TokenGlade."
+        },
+    },
+    {
+        path: "/multisig",
+        component: Multisig,
+        meta: {
+            title: "Stellar Multisig Account Management | TokenGlade",
+            description: "Configure Stellar multi-signature account signers, set operational thresholds, build multisig transactions, and collect signatures with TokenGlade."
         },
     },
 ];

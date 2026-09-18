@@ -206,3 +206,19 @@ Route::prefix('notifications')->group(function () {
     Route::post('{id}/read', 'NotificationController@markAsRead')->name('notifications.markAsRead');
     Route::post('read-all', 'NotificationController@markAllAsRead')->name('notifications.markAllAsRead');
 });
+
+// ==========================
+// MultisigController
+// ==========================
+Route::prefix('multisig')->group(function () {
+    Route::get('account/{address}', 'MultisigController@account')->name('multisig.account');
+    Route::post('build-signer-xdr', 'MultisigController@buildSignerXdr')->name('multisig.buildSignerXdr');
+    Route::post('build-thresholds-xdr', 'MultisigController@buildThresholdsXdr')->name('multisig.buildThresholdsXdr');
+    Route::post('build-payment-xdr', 'MultisigController@buildPaymentXdr')->name('multisig.buildPaymentXdr');
+    Route::post('inspect-xdr', 'MultisigController@inspectXdr')->name('multisig.inspectXdr');
+    Route::get('transactions', 'MultisigController@listTransactions')->name('multisig.transactions.index');
+    Route::post('transactions', 'MultisigController@createTransaction')->name('multisig.transactions.store');
+    Route::get('transactions/{id}', 'MultisigController@showTransaction')->name('multisig.transactions.show');
+    Route::post('transactions/{id}/sign', 'MultisigController@addSignature')->name('multisig.transactions.sign');
+    Route::post('transactions/{id}/submit', 'MultisigController@submit')->name('multisig.transactions.submit');
+});

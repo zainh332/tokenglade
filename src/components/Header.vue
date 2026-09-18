@@ -17,6 +17,7 @@
           
           <div class="hidden lg:flex items-center space-x-6">
             <router-link to="/stake" class="text-xs font-black uppercase tracking-wider text-slate-400 hover:text-white transition-colors">Staking</router-link>
+            <router-link to="/multisig" class="text-xs font-black uppercase tracking-wider text-slate-400 hover:text-white transition-colors">Multisig</router-link>
             <button @click="triggerLaunchToken" class="text-xs font-black uppercase tracking-wider text-slate-400 hover:text-white transition-colors focus:outline-none">Launch Token</button>
           </div>
         </div>
@@ -241,6 +242,7 @@
         </div>
 
         <router-link to="/stake" @click="close" class="block py-2.5 px-3 text-sm font-semibold text-theme-ink hover:bg-theme-panel2 rounded-lg">Staking</router-link>
+        <router-link to="/multisig" @click="close" class="block py-2.5 px-3 text-sm font-semibold text-theme-ink hover:bg-theme-panel2 rounded-lg">Multisig Vault</router-link>
         <button @click="() => { triggerLaunchToken(); close(); }" class="block w-full text-left py-2.5 px-3 text-sm font-semibold text-theme-ink hover:bg-theme-panel2 rounded-lg focus:outline-none">Launch Token</button>
         
         <div class="pt-3 border-t border-theme-line">
